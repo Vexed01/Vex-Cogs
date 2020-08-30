@@ -1,5 +1,6 @@
 # Vex-Cogs
 These are a few cogs I made for myself that may be useful to others. Mostly utility-based.
+These are for Red V3, an open source Discord bot. See their repo [here](https://github.com/Cog-Creators/Red-DiscordBot/).
 
 These cogs are unapproved.
 
