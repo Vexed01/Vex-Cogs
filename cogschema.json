@@ -12,7 +12,6 @@
                 "Vexed01 (Vexed#3211)"
             ],
             "install_msg": "Thanks for installing! If you find anything that's wrong or want to chat, feel free to make a GH issue or find me in the main Red server or in the cog support server - I'm Vexed#3211.\n<discord.gg/red> <discord.gg/GET4DVk>",
-            "name": "Name of your cog.",
             "short": "A short description. Displayed in the `[p]cog list` command.",
             "requirements": [
                 "Example library",
@@ -84,16 +83,6 @@
             "default": "",
             "examples": [
                 "Thanks for installing! If you find anything that's wrong or want to chat, feel free to make a GH issue or find me in the main Red server or in the cog support server - I'm Vexed#3211.\n<discord.gg/red> <discord.gg/GET4DVk>"
-            ]
-        },
-        "name": {
-            "$id": "#/properties/name",
-            "type": "string",
-            "title": "The name schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Name of your cog."
             ]
         },
         "short": {
@@ -181,7 +170,7 @@
             "description": "An explanation about the purpose of this instance.",
             "default": "",
             "examples": [
-                "3.8.1"
+                "3.8.5"
             ]
         },
         "min_bot_version": {
@@ -191,8 +180,15 @@
             "description": "An explanation about the purpose of this instance.",
             "default": "",
             "examples": [
-                "3.4.0"
+                "3.4.3"
             ]
+        },
+        "hidden": {
+            "$id": "#/properties/hidden",
+            "type": "boolean",
+            "title": "The hidden schema",
+            "description": "Determines if the cog should be hidden",
+            "default": false
         }
     },
     "additionalProperties": true
