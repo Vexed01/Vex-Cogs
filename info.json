@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog_repo.schema.json",
     "author": ["Vexed (Vexed#3211)"],
     "name": "Cogs made for Vance.",
     "install_msg" : "Thanks for installing this! These cogs are typically utility stuff that I wanted myself that might be useful to others.\nIf you find anything that's wrong, feel free to make a GH issue or find me in the main Red server or in the cog support server - I'm Vexed#3211.\ndiscord.gg/red discord.gg/GET4DVk",
