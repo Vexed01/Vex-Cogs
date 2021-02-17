@@ -1,0 +1,182 @@
+import re
+import datetime
+from feedparser.util import FeedParserDict
+import datetime
+import logging
+
+
+log = logging.getLogger("red.vexed.status.rsshelper")
+
+
+def __init__(self, bot):
+    self.bot = bot
+
+
+async def _strip_html(thing_to_strip) -> str:
+    """Strip dat HTML!
+
+    This removes anything between (and including) `<>` (be careful with this!).
+    It will NOT strip `<>` if there is nothing inbeteween.
+
+    `<br />` will be relaced with `\\n`.
+    `</p>` wil also be reaplaces with `\\n`.
+
+    Please don't use this elsewhere, it is very funky and tempremental.
+    """
+    tostrip = str(thing_to_strip)
+    raw = tostrip.replace("<br />", "\n")
+    raw = raw.replace("<p>", "=-=SPLIT=-=")
+    raw = raw.replace("</p>", "\n")
+    regex = re.compile("<.*?>")
+    stripped = re.sub(regex, "", raw)
+    return stripped
+
+
+async def parse_discord(feed: FeedParserDict) -> dict:
+    """Parse for Discord
+
+    Parameters
+    ----------
+    feed : FeedParserDict
+        From feedparser
+
+    Returns
+    -------
+    dict
+        Standard dict
+    """
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split(" - ", 1)
+                content = current[1]
+                tt = current[0].split("\n")
+                time = tt[0]
+                title = tt[1]
+                parseddict["fields"].append(
+                    {"name": "{} - {}".format(title, time), "value": content}
+                )
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section.",
+                    "value": f"I cound't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing the status for Discord. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+
+    parseddict.update(
+        {"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")}
+    )
+    parseddict.update({"title": "{} - Discord Status Update".format(feed["title"])})
+    parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
+    parseddict.update({"friendlyname": "Discord"})
+    parseddict.update({"colour": 7308754})
+    return parseddict
+
+
+async def parse_github(feed: FeedParserDict) -> dict:
+    """Parse for GitHub
+
+    Parameters
+    ----------
+    feed : FeedParserDict
+        From feedparser
+
+    Returns
+    -------
+    dict
+        Standard dict
+    """
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split(" - ", 1)
+                content = current[1]
+                tt = current[0].split("\n")
+                time = tt[0]
+                title = tt[1]
+                parseddict["fields"].append(
+                    {"name": "{} - {}".format(title, time), "value": content}
+                )
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section.",
+                    "value": f"I cound't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+
+    parseddict.update(
+        {"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")}
+    )
+    parseddict.update({"title": "GitHub Status Update"})
+    parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
+    parseddict.update({"friendlyname": "GitHub"})
+    parseddict.update({"colour": 1448738})
+    return parseddict
+
+
+async def parse_cloudflare(feed: FeedParserDict) -> dict:
+    """Parser for Cloudflare
+
+    Parameters
+    ----------
+    feed : FeedParserDict
+        From feedparser
+
+    Returns
+    -------
+    dict
+        Standard dict
+    """
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split("\n", 1)
+                tc = current[1].split("-", 1)
+                time = current[0]
+                title = tc[0]
+                content = tc[1]
+                parseddict["fields"].append(
+                    {"name": "{} - {}".format(title, time), "value": content}
+                )
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section.",
+                    "value": f"I cound't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing the status for Cloudflare. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+
+    parseddict.update(
+        {"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")}
+    )
+    parseddict.update({"title": "{} - Cloudflare Status Update".format(feed["title"])})
+    parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
+    parseddict.update({"friendlyname": "Cloudflare"})
+    parseddict.update({"colour": 16494144})
+    return parseddict
