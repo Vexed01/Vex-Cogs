@@ -5,6 +5,6 @@
     "install_msg" : "Thanks for installing! The commands are all in `statusset`, make sure to load the cog first first!\n\nThere are currently know issues with Cloudflare. This is my top priority.\nI'll be adding more services in the next few days.\nI will also shortly be adding a preview, which will not fetch a new update but use the last one that was stored.\nThis currently needs embed permissions. A non embed version will be coming soon.\n(today is the 17th Feb)\n\nFor feedback or requests, it's Vexed#3211 on Discord or on the GH repo. This is a new cog, I would certainly appreciate suggestions",
     "requirements": ["feedparser", "tabulate"],
     "description": "This cog can automatically send updates form various services. Primarily supports Statuspage.\nKnown issues with Cloudflare, should be resolved soon.\n\nIf you think I'm missing a status, contact Vexed#3211 in the main Red server or Cog Support, or my DMs.",
-    "short": "Get status automatic status updates from various services!",
+    "short": "Get automatic status updates from various services!",
     "tags": ["utility", "status"]
 }
