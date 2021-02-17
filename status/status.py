@@ -67,7 +67,7 @@ class Status(commands.Cog):
                         feeddict = await self.process_feed(feed[0], response)
                         channels = await self.get_channels(feed[0])
                         log.debug(
-                            f"Sending status update for {feed[0]} to {len(channels)} servers..."
+                            f"Sending status update for {feed[0]} to {len(channels)} channels..."
                         )
                         for channel in channels:
                             await self.send_updated_feed(feeddict, channel)
@@ -77,7 +77,7 @@ class Status(commands.Cog):
                 except (ConnectionRefusedError, URLError):
                     log.warning(f"Unable to connect to {feed[0]}")
                     continue
-                except KeyError:  # a new service has been aded, cba to be proper config migtation. will
+                except KeyError:  # a new service has been added, cba to be proper config migration. will
                     etags[feed[0]] = "hello"
 
     @check_for_updates.before_loop
@@ -98,18 +98,20 @@ class Status(commands.Cog):
         return feeddict
 
     async def get_channels(self, service: str) -> list:
-        """Get the channels for a feed. The list is channel IDs, they may be invalid."""
+        """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
+        # TODO: support multi channel
         feeds = await self.config.all_guilds()
         target_service = service
         channels = []
-        # example: {133049272517001216: {'feeds': {'discord': 133251234164375552, 'github': 133251234164375552}}}
+        # example server: {'github': [], 'cloudflare': [133251234164375552, 171665724262055936]}
         for server in feeds.items():
             for service in server[1]["feeds"].items():
                 if service[0] == target_service:
-                    channels.append(service[1])
+                    channels.extend(service[1])
         return channels
 
     async def send_updated_feed(self, feeddict: dict, channel: int):
+        """Send a feeddict to the specified channel. Currently will only send embed."""
         # TODO: non-embed version
         embed = discord.Embed(
             title=feeddict["title"],
@@ -128,19 +130,19 @@ class Status(commands.Cog):
             log.debug("Unable to send status update to guild")
 
     @checks.is_owner()
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, aliases=["dfs"])
     async def devforcestatus(self, ctx, service):
         """
         THIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.
 
-        It will send the current status of the service to the current channel.
+        It will send the current status of the service to **all
 
         Repeat: THIS COMMAND IS NOT SUPPORTED.
         """
         msg = await ctx.send(
             warning(
                 "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nIt will send the"
-                " current status of the service to the current channel.\n\n"
+                " current status of the service to **all registered channels in all servers**.\n\n"
                 "Repeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
             )
         )
@@ -150,7 +152,7 @@ class Status(commands.Cog):
         if pred.result is not True:
             return await ctx.send("Aborting.")
         if service not in FEED_URLS.keys():
-            return await ctx.send("Hmm, that doensn't look like a valid service.")
+            return await ctx.send("Hmm, that doesn't look like a valid service.")
 
         feed = feedparser.parse(FEED_URLS[service])
         if service == "discord":
@@ -160,7 +162,9 @@ class Status(commands.Cog):
         elif service == "cloudflare":
             feeddict = await parse_cloudflare(feed.entries[0])
 
-        await self.send_updated_feed(feeddict, ctx.channel.id)
+        to_send = await self.get_channels(service)
+        for channel in to_send:
+            await self.send_updated_feed(feeddict, channel)
 
     @guild_only()
     @checks.admin_or_permissions(manage_guild=True)
@@ -175,7 +179,7 @@ class Status(commands.Cog):
 
         There is a list of services you can use in the `[p]statusset list` command.
 
-        If you don't specify a specifc channel, I will use the current channel.
+        If you don't specify a specific channel, I will use the current channel.
         """
         service = service.lower()
         if service not in FEED_URLS.keys():
@@ -192,46 +196,36 @@ class Status(commands.Cog):
                 "This is called `embed links` in Discord's permission system."
             )
         async with self.config.guild(ctx.guild).feeds() as feeds:
-            if service in feeds.keys():
-                used_channel = feeds[service]
-                if used_channel == channel.id:
-                    return await ctx.send(
-                        f"I'm already sending {FEED_FRIENDLY_NAMES[service]} status updates in this channel!"
-                    )
-                else:
-                    return await ctx.send(  # maybe instead ask if they want to move it
-                        f"It look like I'm already sending {FEED_FRIENDLY_NAMES[service]} status updates"
-                        f" in {used_channel.mention}. I can only send to one channel. Use "
-                        f"the `{ctx.clean_prefix}statusset remove {service}` command, then try"
-                        f" adding it to {channel.mention}again."
-                    )
+            try:
+                if isinstance(feeds[service], int):  # config migration
+                    feeds[service] = [feeds[service]]
+            except KeyError:
+                feeds[service] = []
 
-            feeds[service] = channel.id
+            feeds[service].append(channel.id)
 
         await ctx.send(
-            f"Done, {channel.mention} will now recieve {FEED_FRIENDLY_NAMES[service]} status updates."
+            f"Done, {channel.mention} will now receive {FEED_FRIENDLY_NAMES[service]} status updates."
         )
 
     @statusset.command(name="remove", aliases=["del", "delete"])
-    async def statusset_remove(self, ctx, service: str):
-        """Stop staus updates for a specifc service in this server"""
+    async def statusset_remove(self, ctx, service: str, channel: discord.TextChannel):
+        """Stop status updates for a specific service in this server"""
         # TODO: multiple services in one command
         if service not in FEED_URLS.keys():
             return await ctx.send(
                 f"That's not a valid service. See `{ctx.clean_prefix}statusset list`."
             )
         async with self.config.guild(ctx.guild).feeds() as feeds:
-            if service not in feeds.keys():
-                return await ctx.send(
-                    "It looks like I already don't send status updates for that service in this server!"
-                )
-            removed = feeds.pop(service, None)
-            mention = self.bot.get_channel(removed).mention or "unknown"
-            await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {mention}")
+            print(feeds)
+            if channel.id not in feeds[service]:
+                return await ctx.send(f"It looks like I don't send {FEED_FRIENDLY_NAMES[service]} status updates to {channel.mention}")
+            feeds[service].remove(channel.id)
+            await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {channel.mention}")
 
     @statusset.command(name="list", aliases=["show"])
     async def statusset_list(self, ctx):
-        """List that avalible services and which ones are being used in this server"""
+        """List that available services and which ones are being used in this server"""
         guild_feeds = await self.config.guild(ctx.guild).feeds()
         pos_feeds = list(FEED_URLS.keys())
 
@@ -240,8 +234,18 @@ class Status(commands.Cog):
         else:
             data = []
             for feed in guild_feeds.items():
-                channel_name = self.bot.get_channel(feed[1]).name
-                data.append([feed[0], f"#{channel_name}"])
+                print(feed)
+                if not feed[1]:
+                    continue
+                if isinstance(feed[1], int):
+                    channel_ids = [feed[1]]
+                else:
+                    channel_ids = feed[1]
+                channel_names = []
+                for channel in channel_ids:
+                    channel_names.append(f"#{self.bot.get_channel(channel).name}")
+                channel_names = humanize_list(channel_names)
+                data.append([feed[0], channel_names])
                 try:
                     pos_feeds.remove(feed[0])
                 except Exception as e:
@@ -251,6 +255,6 @@ class Status(commands.Cog):
             msg = "**Services used in this server:**"
             msg += box(tabulate(data, tablefmt="plain"), lang="arduino")
         if pos_feeds:
-            msg += "**Other avalible services:** "
+            msg += "**Other available services:** "
             msg += humanize_list(pos_feeds)
         await ctx.send(msg)
