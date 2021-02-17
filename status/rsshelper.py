@@ -1,9 +1,8 @@
-import re
-import datetime
-from feedparser.util import FeedParserDict
 import datetime
 import logging
+import re
 
+from feedparser.util import FeedParserDict
 
 log = logging.getLogger("red.vexed.status.rsshelper")
 
