@@ -41,10 +41,9 @@ class Status(commands.Cog):
             "github": "hello",
             "cloudflare": "hello",
         }
-        second_default_global = []
+
         default_guild = {}
         self.config.register_global(etags=default_global)
-        self.config.register_global(to_check=second_default_global)
         self.config.register_guild(feeds=default_guild)
 
         self.check_for_updates.start()
