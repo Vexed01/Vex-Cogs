@@ -169,7 +169,7 @@ class Status(commands.Cog):
         """Base command for managing the Status cog."""
 
     @statusset.command(name="add")
-    async def statusset_add(self, ctx, service: str, *channel: discord.TextChannel):
+    async def statusset_add(self, ctx, service: str, channel: discord.TextChannel):
         """
         Start getting status updates for the choses service!
 
@@ -177,7 +177,6 @@ class Status(commands.Cog):
 
         If you don't specify a specifc channel, I will use the current channel.
         """
-        channel = channel or ctx.channel
         service = service.lower()
         if service not in FEED_URLS.keys():
             return await ctx.send(
