@@ -56,14 +56,12 @@ async def parse_discord(feed: FeedParserDict) -> dict:
                 tt = current[0].split("\n")
                 time = tt[0]
                 title = tt[1]
-                parseddict["fields"].append(
-                    {"name": "{} - {}".format(title, time), "value": content}
-                )
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section.",
-                    "value": f"I cound't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
                 }
             )
             log.warning(
@@ -71,9 +69,7 @@ async def parse_discord(feed: FeedParserDict) -> dict:
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    parseddict.update(
-        {"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")}
-    )
+    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")})
     parseddict.update({"title": "{} - Discord Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
     parseddict.update({"friendlyname": "Discord"})
@@ -106,14 +102,12 @@ async def parse_github(feed: FeedParserDict) -> dict:
                 tt = current[0].split("\n")
                 time = tt[0]
                 title = tt[1]
-                parseddict["fields"].append(
-                    {"name": "{} - {}".format(title, time), "value": content}
-                )
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section.",
-                    "value": f"I cound't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
                 }
             )
             log.warning(
@@ -121,9 +115,7 @@ async def parse_github(feed: FeedParserDict) -> dict:
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    parseddict.update(
-        {"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")}
-    )
+    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")})
     parseddict.update({"title": "GitHub Status Update"})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
     parseddict.update({"friendlyname": "GitHub"})
@@ -156,14 +148,12 @@ async def parse_cloudflare(feed: FeedParserDict) -> dict:
                 time = current[0]
                 title = tc[0]
                 content = tc[1]
-                parseddict["fields"].append(
-                    {"name": "{} - {}".format(title, time), "value": content}
-                )
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section.",
-                    "value": f"I cound't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
                 }
             )
             log.warning(
@@ -171,9 +161,7 @@ async def parse_cloudflare(feed: FeedParserDict) -> dict:
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    parseddict.update(
-        {"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")}
-    )
+    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")})
     parseddict.update({"title": "{} - Cloudflare Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
     parseddict.update({"friendlyname": "Cloudflare"})
