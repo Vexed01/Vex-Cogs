@@ -247,6 +247,11 @@ class Status(commands.Cog):
                 "This is called `embed links` in Discord's permission system."
             )
         async with self.config.guild(ctx.guild).feeds() as feeds:
+            if channel.id in feeds[service]:
+                return await ctx.send(
+                    f"{channel.mention} already receives {FEED_FRIENDLY_NAMES[service]} status updates!"
+                )
+
             try:
                 if isinstance(feeds[service], int):  # config migration
                     feeds[service] = [feeds[service]]
@@ -302,7 +307,7 @@ class Status(commands.Cog):
                 data.append([feed[0], channel_names])
                 try:
                     pos_feeds.remove(feed[0])
-                except Exception as e:
+                except Exception:
                     pass
             if data:
                 msg += "**Services used in this server:**"
