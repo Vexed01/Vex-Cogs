@@ -153,7 +153,6 @@ class Status(commands.Cog):
     async def send_updated_feed(self, feeddict: dict, channel: int):
         """Send a feeddict to the specified channel. Currently will only send embed."""
         # TODO: non-embed version
-        print(feeddict)
         try:  # doesn't trigger much, but for some reason can happen
             embed = discord.Embed(
                 title=feeddict["title"],
@@ -267,7 +266,6 @@ class Status(commands.Cog):
         if service not in FEED_URLS.keys():
             return await ctx.send(f"That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
         async with self.config.guild(ctx.guild).feeds() as feeds:
-            print(feeds)
             try:
                 if channel.id not in feeds[service]:
                     return await ctx.send(
@@ -291,7 +289,6 @@ class Status(commands.Cog):
             msg = ""
             data = []
             for feed in guild_feeds.items():
-                print(feed)
                 if not feed[1]:
                     continue
                 if isinstance(feed[1], int):
@@ -306,9 +303,7 @@ class Status(commands.Cog):
                 try:
                     pos_feeds.remove(feed[0])
                 except Exception as e:
-                    print(feed[0])
-                    print(pos_feeds)
-                    print(e)
+                    pass
             if data:
                 msg += "**Services used in this server:**"
                 msg += box(tabulate(data, tablefmt="plain"), lang="arduino")
