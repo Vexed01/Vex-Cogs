@@ -153,6 +153,7 @@ class Status(commands.Cog):
     async def send_updated_feed(self, feeddict: dict, channel: int):
         """Send a feeddict to the specified channel. Currently will only send embed."""
         # TODO: non-embed version
+        print(feeddict)
         try:  # doesn't trigger much, but for some reason can happen
             embed = discord.Embed(
                 title=feeddict["title"],
@@ -175,7 +176,7 @@ class Status(commands.Cog):
             embed.add_field(name=field["name"], value=field["value"], inline=False)
         try:
             await channel.send(embed=embed)
-        except Forbidden:
+        except (Forbidden, AttributeError):
             # TODO: maybe remove the feed from config to stop this happening in future?
             log.debug("Unable to send status update to guild")
 
