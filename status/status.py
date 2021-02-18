@@ -3,12 +3,12 @@ import datetime
 import logging
 import re
 from urllib.error import URLError
-
 import discord
 import feedparser
 from discord.errors import Forbidden
 from discord.ext import tasks
 from discord.ext.commands.core import guild_only
+from dateutil.parser import parse
 from feedparser.util import FeedParserDict
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
@@ -17,7 +17,8 @@ from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from tabulate import tabulate
 
-from . import rsshelper
+from .rsshelper import _strip_html
+from .rsshelper import process_feed as helper_process_feed
 
 
 FEED_URLS = {
@@ -25,6 +26,9 @@ FEED_URLS = {
     "github": "https://www.githubstatus.com/history.atom",
     "cloudflare": "https://www.cloudflarestatus.com/history.atom",
     "python": "https://status.python.org/history.atom",
+    "twitter_api": "https://api.twitterstat.us/history.atom",
+    "statuspage": "https://metastatuspage.com/history.atom",
+    "zoom": "https://status.zoom.us/history.atom",
 }
 
 FEED_FRIENDLY_NAMES = {
@@ -32,6 +36,9 @@ FEED_FRIENDLY_NAMES = {
     "github": "GitHub",
     "cloudflare": "Cloudflare",
     "python": "Python",
+    "twitter_api": "Twitter API",
+    "statuspage": "Statuspage",
+    "zoom": "Zoom",
 }
 
 log = logging.getLogger("red.vexed.status")
@@ -121,7 +128,7 @@ class Status(commands.Cog):
 
     async def process_feed(self, service: str, feedparser: FeedParserDict):
         """Process a FeedParserDict into a nicer dict for embeds."""
-        return await rsshelper.process_feed(service, feedparser)
+        return await helper_process_feed(service, feedparser)
 
     async def get_channels(self, service: str) -> list:
         """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
@@ -197,6 +204,23 @@ class Status(commands.Cog):
                     f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
                 )
 
+    async def dev_com(self, ctx):
+        """Returns whether to continue or not"""
+        if ctx.author.id != 418078199982063626:  # my id
+            msg = await ctx.send(
+                warning(
+                    "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things are likely to"
+                    "happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
+                )
+            )
+            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
+            await ctx.bot.wait_for("reaction_add", check=pred)
+            if pred.result is not True:
+                await ctx.send("Aborting.")
+                return False
+        return True
+
     @checks.is_owner()
     @commands.command(hidden=True, aliases=["dfs"])
     async def devforcestatus(self, ctx, service):
@@ -207,20 +231,9 @@ class Status(commands.Cog):
 
         Repeat: THIS COMMAND IS NOT SUPPORTED.
         """
-        if ctx.author.id != 418078199982063626:  # my id
-            msg = await ctx.send(
-                warning(
-                    "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nIt will send the"
-                    " current status of the service to **all registered channels in all servers**.\n\n"
-                    "This has a high change of causing the main task to skip a status update if you time this "
-                    "command correctly.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
-                )
-            )
-            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-            await ctx.bot.wait_for("reaction_add", check=pred)
-            if pred.result is not True:
-                return await ctx.send("Aborting.")
+        if not self.dev_com(ctx):
+            return
+
         if service not in FEED_URLS.keys():
             return await ctx.send("Hmm, that doesn't look like a valid service.")
 
@@ -333,11 +346,14 @@ class Status(commands.Cog):
         await ctx.send(msg)
 
     @checks.is_owner()
-    @commands.command(aliases=["cf"])
-    async def checkfeed(self, ctx, link: str):
+    @commands.command(aliases=["dcf"], hidden=True)
+    async def devcheckfeed(self, ctx, link: str):
+        if not self.dev_com(ctx):
+            return
         feed = feedparser.parse(link).entries[0]
+        ####### standard below:
 
-        strippedcontent = await rsshelper._strip_html(feed["content"][0]["value"])
+        strippedcontent = await _strip_html(feed["content"][0]["value"])
 
         sections = strippedcontent.split("=-=SPLIT=-=")
         parseddict = {"fields": []}
@@ -354,8 +370,8 @@ class Status(commands.Cog):
             except IndexError:  # this would be a likely error if something didn't format as expected
                 parseddict["fields"].append(
                     {
-                        "name": "Something went wrong with this section.",
-                        "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                        "name": "Something went wrong with this section",
+                        "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                     }
                 )
                 log.warning(
@@ -363,17 +379,19 @@ class Status(commands.Cog):
                     f" Timestamp: {datetime.datetime.utcnow()}"
                 )
 
-        parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")})
-        parseddict.update({"title": "{} - Python Status Update".format(feed["title"])})
+        parseddict.update({"time": parse(feed["published"])})
+        parseddict.update({"title": "{} - SERVICE Status Update".format(feed["title"])})
         parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-        parseddict.update({"friendlyname": "Python"})
-        parseddict.update({"colour": 3765669})
+        parseddict.update({"friendlyname": "SERVICE"})
+        parseddict.update({"colour": 2985215})
+
+        ######## end standard
 
         await self.send_updated_feed(parseddict, ctx.channel.id)
 
     @checks.is_owner()
-    @commands.command(aliases=["cfr"])
-    async def checkfeedraw(self, ctx, link: str):
+    @commands.command(aliases=["dcfr"])
+    async def devcheckfeedraw(self, ctx, link: str):
         feed = feedparser.parse(link).entries[0]
 
         pages = pagify(str(feed))

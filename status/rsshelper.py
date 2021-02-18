@@ -1,7 +1,7 @@
 import datetime
 import logging
 import re
-
+from dateutil.parser import parse
 from feedparser.util import FeedParserDict
 
 log = logging.getLogger("red.vexed.status.rsshelper")
@@ -64,8 +64,8 @@ async def parse_discord(feed: FeedParserDict) -> dict:
         except IndexError:  # this would be a likely error if something didn't format as expected
             parseddict["fields"].append(
                 {
-                    "name": "Something went wrong with this section.",
-                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
             log.warning(
@@ -110,8 +110,8 @@ async def parse_github(feed: FeedParserDict) -> dict:
         except IndexError:  # this would be a likely error if something didn't format as expected
             parseddict["fields"].append(
                 {
-                    "name": "Something went wrong with this section.",
-                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
             log.warning(
@@ -156,8 +156,8 @@ async def parse_cloudflare(feed: FeedParserDict) -> dict:
         except IndexError:  # this would be a likely error if something didn't format as expected
             parseddict["fields"].append(
                 {
-                    "name": "Something went wrong with this section.",
-                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
             log.warning(
@@ -190,8 +190,8 @@ async def parse_python(feed: FeedParserDict) -> dict:
         except IndexError:  # this would be a likely error if something didn't format as expected
             parseddict["fields"].append(
                 {
-                    "name": "Something went wrong with this section.",
-                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
             log.warning(
@@ -207,9 +207,114 @@ async def parse_python(feed: FeedParserDict) -> dict:
     return parseddict
 
 
+async def parse_twitter_api(feed: FeedParserDict):
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split(" - ", 1)
+                content = current[1]
+                tt = current[0].split("\n")
+                time = tt[0]
+                title = tt[1]
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")})
+    parseddict.update({"title": "{} - Twitter Status Update".format(feed["title"])})
+    parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
+    parseddict.update({"friendlyname": "Twitter"})
+    parseddict.update({"colour": 41715})
+    return parseddict
+
+
+async def parse_statuspage(feed: FeedParserDict):
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split(" - ", 1)
+                content = current[1]
+                tt = current[0].split("\n")
+                time = tt[0]
+                title = tt[1]
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+
+    parseddict.update({"time": parse(feed["published"])})
+    parseddict.update({"title": "{} - Statuspage Status Update".format(feed["title"])})
+    parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
+    parseddict.update({"friendlyname": "Statuspage"})
+    parseddict.update({"colour": 2524415})
+    return parseddict
+
+
+async def parse_zoom(feed: FeedParserDict):
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split(" - ", 1)
+                content = current[1]
+                tt = current[0].split("\n")
+                time = tt[0]
+                title = tt[1]
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+
+    parseddict.update({"time": parse(feed["published"])})
+    parseddict.update({"title": "{} - Zoom Status Update".format(feed["title"])})
+    parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
+    parseddict.update({"friendlyname": "Zoom"})
+    parseddict.update({"colour": 2985215})
+    return parseddict
+
+
 FEEDS = {
     "discord": parse_discord,
     "github": parse_github,
     "cloudflare": parse_cloudflare,
     "python": parse_python,
+    "twitter_api": parse_twitter_api,
+    "statuspage": parse_statuspage,
+    "zoom": parse_zoom,
 }
