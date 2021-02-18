@@ -29,6 +29,7 @@ FEED_URLS = {
     "twitter_api": "https://api.twitterstat.us/history.atom",
     "statuspage": "https://metastatuspage.com/history.atom",
     "zoom": "https://status.zoom.us/history.atom",
+    "oracle_cloud": "https://ocistatus.oraclecloud.com/history.atom",
 }
 
 FEED_FRIENDLY_NAMES = {
@@ -39,6 +40,7 @@ FEED_FRIENDLY_NAMES = {
     "twitter_api": "Twitter API",
     "statuspage": "Statuspage",
     "zoom": "Zoom",
+    "oracle_cloud": "Oracle Cloud",
 }
 
 log = logging.getLogger("red.vexed.status")
@@ -231,7 +233,7 @@ class Status(commands.Cog):
 
         Repeat: THIS COMMAND IS NOT SUPPORTED.
         """
-        if not self.dev_com(ctx):
+        if not await self.dev_com(ctx):
             return
 
         if service not in FEED_URLS.keys():
@@ -348,7 +350,7 @@ class Status(commands.Cog):
     @checks.is_owner()
     @commands.command(aliases=["dcf"], hidden=True)
     async def devcheckfeed(self, ctx, link: str):
-        if not self.dev_com(ctx):
+        if not await self.dev_com(ctx):
             return
         feed = feedparser.parse(link).entries[0]
         ####### standard below:

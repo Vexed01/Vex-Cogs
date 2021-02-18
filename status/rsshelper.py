@@ -309,6 +309,41 @@ async def parse_zoom(feed: FeedParserDict):
     return parseddict
 
 
+async def parse_oracle_cloud(feed: FeedParserDict):
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split(" - ", 1)
+                content = current[1]
+                tt = current[0].split("\n")
+                time = tt[0]
+                title = tt[1]
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+
+    parseddict.update({"time": parse(feed["published"])})
+    parseddict.update({"title": "{} - Oracle Cloud Status Update".format(feed["title"])})
+    parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
+    parseddict.update({"friendlyname": "Oracle Cloud"})
+    parseddict.update({"colour": 13059636})
+    return parseddict
+
+
 FEEDS = {
     "discord": parse_discord,
     "github": parse_github,
@@ -317,4 +352,5 @@ FEEDS = {
     "twitter_api": parse_twitter_api,
     "statuspage": parse_statuspage,
     "zoom": parse_zoom,
+    "oracle_cloud": parse_oracle_cloud,
 }
