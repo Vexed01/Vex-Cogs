@@ -15,6 +15,7 @@ from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
+from redbot.core.utils import deduplicate_iterables
 from tabulate import tabulate
 
 from .rsshelper import _strip_html
@@ -48,7 +49,7 @@ log = logging.getLogger("red.vexed.status")
 
 class Status(commands.Cog):
     def __init__(self, bot: Red):
-        self.config = Config.get_conf(self, identifier="Vexed-status", force_registration=True)
+        self.config = Config.get_conf(self, identifier="Vexed-status")
         default = {}
 
         self.config.register_global(etags=default)
@@ -65,46 +66,67 @@ class Status(commands.Cog):
     @tasks.loop(minutes=3.0)
     async def check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
-        # TODO: as more services get added, start only checking ones that have registered servers
         await asyncio.sleep(0.1)  # this stops some weird behaviour on loading the cog
+
+        log.debug("Getting feeds that need checking")
+        to_get = await self.make_used_feeds()
+        if not to_get:
+            log.debug("No feeds found!")
+
         try:
-            await asyncio.wait_for(self.actually_check_updates(), timeout=150.0)  # 2.5 mins
+            await asyncio.wait_for(self.actually_check_updates(to_get), timeout=150.0)  # 2.5 mins
         except TimeoutError:
             log.warning("Loop timed out after 2.5 minutes. Some updates were likely skipped.")
 
-    async def actually_check_updates(self):
+    async def actually_check_updates(self, to_get):
         async with self.config.etags() as etags:
-            for feed in FEED_URLS.items():  # change to await self.config.to_check()
+            for feed in to_get:  # change to await self.config.to_check()
                 try:
                     try:
-                        response = feedparser.parse(feed[1], etag=etags[feed[0]])
+                        response = feedparser.parse(FEED_URLS[feed], etag=etags[feed])
                     except KeyError:
-                        response = feedparser.parse(feed[1])
-                        etags[feed[0]] = "hello"
+                        response = feedparser.parse(FEED_URLS[feed])
+                        etags[feed] = "hello"
 
                     if response.status == 200:
-                        etags[feed[0]] = response.etag
-                        feeddict = await self.process_feed(feed[0], response)
-                        if not await self.check_real_update(feed[0], feeddict):
-                            log.debug(f"Ghost status update for {feed[0]} detected, skipping")
+                        etags[feed] = response.etag
+                        feeddict = await self.process_feed(feed, response)
+                        if not await self.check_real_update(feed, feeddict):
+                            log.debug(f"Ghost status update for {feed} detected, skipping")
                             continue
-                        log.debug(f"Feed dict for {feed[0]}: {feeddict}")
-                        channels = await self.get_channels(feed[0])
-                        log.debug(f"Sending status update for {feed[0]} to {len(channels)} channels...")
+                        log.debug(f"Feed dict for {feed}: {feeddict}")
+                        channels = await self.get_channels(feed)
+                        log.debug(f"Sending status update for {feed} to {len(channels)} channels...")
                         for channel in channels:
                             await self.send_updated_feed(feeddict, channel)
                         log.debug("Done")
                     else:
-                        log.debug(f"No status update for {feed[0]}")
+                        log.debug(f"No status update for {feed}")
                 except (ConnectionRefusedError, URLError):
-                    log.warning(f"Unable to connect to {feed[0]}")
+                    log.warning(f"Unable to connect to {feed}")
                     continue
                 except KeyError:  # a new service has been added
-                    etags[feed[0]] = "hello"
+                    etags[feed] = "hello"
 
     @check_for_updates.before_loop
     async def before_start(self):
         await self.bot.wait_until_red_ready()
+
+    async def make_used_feeds(self):
+        feeds = await self.config.all_guilds()
+        used_feeds = []
+        for server in feeds.items():
+            try:
+                feeds_in_server = server[1]["feeds"]
+                for i in feeds_in_server.items():
+                    if i[1]:  # could be just []
+                        used_feeds.append(i[0])
+            except KeyError:
+                continue
+            de_duped = deduplicate_iterables(used_feeds)
+            if len(de_duped) == len(FEED_URLS):  # no point checking more guilds now
+                return de_duped
+        return deduplicate_iterables(used_feeds)
 
     async def check_real_update(self, service: str, feeddict: dict) -> bool:
         """
