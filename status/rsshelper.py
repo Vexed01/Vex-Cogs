@@ -11,6 +11,10 @@ def __init__(self, bot):
     self.bot = bot
 
 
+async def process_feed(service: str, feed: FeedParserDict):
+    return await FEEDS[service](feed.entries[0])
+
+
 async def _strip_html(thing_to_strip) -> str:
     """Strip dat HTML!
 
@@ -167,3 +171,45 @@ async def parse_cloudflare(feed: FeedParserDict) -> dict:
     parseddict.update({"friendlyname": "Cloudflare"})
     parseddict.update({"colour": 16494144})
     return parseddict
+
+
+async def parse_python(feed: FeedParserDict) -> dict:
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split(" - ", 1)
+                content = current[1]
+                tt = current[0].split("\n")
+                time = tt[0]
+                title = tt[1]
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section.",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+
+    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")})
+    parseddict.update({"title": "{} - Python Status Update".format(feed["title"])})
+    parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
+    parseddict.update({"friendlyname": "Python"})
+    parseddict.update({"colour": 3765669})
+    return parseddict
+
+
+FEEDS = {
+    "discord": parse_discord,
+    "github": parse_github,
+    "cloudflare": parse_cloudflare,
+    "python": parse_python,
+}

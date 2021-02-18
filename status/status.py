@@ -1,5 +1,7 @@
 import asyncio
+import datetime
 import logging
+import re
 from urllib.error import URLError
 
 import discord
@@ -7,30 +9,30 @@ import feedparser
 from discord.errors import Forbidden
 from discord.ext import tasks
 from discord.ext.commands.core import guild_only
-from feedparser.exceptions import ThingsNobodyCaresAboutButMe
 from feedparser.util import FeedParserDict
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box, humanize_list, warning
-import datetime
+from redbot.core.utils.chat_formatting import box, humanize_list, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from tabulate import tabulate
 
-from .rsshelper import parse_cloudflare, parse_discord, parse_github
+from . import rsshelper
+
 
 FEED_URLS = {
     "discord": "https://discordstatus.com/history.atom",
     "github": "https://www.githubstatus.com/history.atom",
     "cloudflare": "https://www.cloudflarestatus.com/history.atom",
+    "python": "https://status.python.org/history.atom",
 }
 
 FEED_FRIENDLY_NAMES = {
     "discord": "Discord",
     "github": "GitHub",
     "cloudflare": "Cloudflare",
+    "python": "Python",
 }
-
 
 log = logging.getLogger("red.vexed.status")
 
@@ -38,21 +40,11 @@ log = logging.getLogger("red.vexed.status")
 class Status(commands.Cog):
     def __init__(self, bot: Red):
         self.config = Config.get_conf(self, identifier="Vexed-status", force_registration=True)
-        default_global = {
-            "discord": "hello",
-            "github": "hello",
-            "cloudflare": "hello",
-        }
-        feed_store = {
-            "discord": {"fields": "hello"},
-            "github": {"fields": "hello"},
-            "cloudflare": {"fields": "hello"},
-        }
+        default = {}
 
-        default_guild = {}
-        self.config.register_global(etags=default_global)
-        self.config.register_global(feed_store=feed_store)
-        self.config.register_guild(feeds=default_guild)
+        self.config.register_global(etags=default)
+        self.config.register_global(feed_store=default)
+        self.config.register_guild(feeds=default)
 
         self.check_for_updates.start()
 
@@ -69,13 +61,18 @@ class Status(commands.Cog):
         try:
             await asyncio.wait_for(self.actually_check_updates(), timeout=150.0)  # 2.5 mins
         except TimeoutError:
-            log.warning("Loop timed out after 2.5 minutes. Some updates were likely skiped.")
+            log.warning("Loop timed out after 2.5 minutes. Some updates were likely skipped.")
 
     async def actually_check_updates(self):
         async with self.config.etags() as etags:
             for feed in FEED_URLS.items():  # change to await self.config.to_check()
                 try:
-                    response = feedparser.parse(feed[1], etag=etags[feed[0]])
+                    try:
+                        response = feedparser.parse(feed[1], etag=etags[feed[0]])
+                    except KeyError:
+                        response = feedparser.parse(feed[1])
+                        etags[feed[0]] = "hello"
+
                     if response.status == 200:
                         etags[feed[0]] = response.etag
                         feeddict = await self.process_feed(feed[0], response)
@@ -106,9 +103,12 @@ class Status(commands.Cog):
         If so, will update the feed store.
         """
         async with self.config.feed_store() as feed_store:
-            old_fields = feed_store[service][
-                "fields"
-            ]  # not comparing whole feed as time is in feeddict and that could ghost update
+            try:
+                old_fields = feed_store[service][
+                    "fields"
+                ]  # not comparing whole feed as time is in feeddict and that could ghost update
+            except KeyError:
+                old_fields = "hello"
             new_fields = feeddict["fields"]
             log.debug(f"Old fields: {old_fields}")
             log.debug(f"New fields: {new_fields}")
@@ -121,16 +121,7 @@ class Status(commands.Cog):
 
     async def process_feed(self, service: str, feedparser: FeedParserDict):
         """Process a FeedParserDict into a nicer dict for embeds."""
-        # TODO: maybe improve this bit somehow?
-        if service == "discord":
-            feeddict = await parse_discord(feedparser.entries[0])
-        elif service == "github":
-            feeddict = await parse_github(feedparser.entries[0])
-        elif service == "cloudflare":
-            feeddict = await parse_cloudflare(feedparser.entries[0])
-        else:
-            feeddict = None
-        return feeddict
+        return await rsshelper.process_feed(service, feedparser)
 
     async def get_channels(self, service: str) -> list:
         """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
@@ -153,31 +144,58 @@ class Status(commands.Cog):
     async def send_updated_feed(self, feeddict: dict, channel: int):
         """Send a feeddict to the specified channel. Currently will only send embed."""
         # TODO: non-embed version
-        try:  # doesn't trigger much, but for some reason can happen
-            embed = discord.Embed(
-                title=feeddict["title"],
-                description=feeddict["desc"],
-                timestamp=feeddict["time"],
-                colour=feeddict["colour"],
-            )
-        except TypeError:
-            t = feeddict["time"]
-            tt = type(feeddict["time"])
-            log.warning(f"Error with timestamp: {t} and {tt}")
-            embed = discord.Embed(
-                title=feeddict["title"],
-                description=feeddict["desc"],
-                colour=feeddict["colour"],
-            )
-
         channel = self.bot.get_channel(channel)
-        for field in reversed(feeddict["fields"]):
-            embed.add_field(name=field["name"], value=field["value"], inline=False)
-        try:
-            await channel.send(embed=embed)
-        except (Forbidden, AttributeError):
-            # TODO: maybe remove the feed from config to stop this happening in future?
-            log.debug("Unable to send status update to guild")
+        if await self.bot.embed_requested(channel, None):
+            # this will error in dms (or if core code changes), however add command doesn't work in dms so should be not an issue
+            try:  # doesn't trigger much, but for some reason can happen
+                embed = discord.Embed(
+                    title=feeddict["title"],
+                    description=feeddict["desc"],
+                    timestamp=feeddict["time"],
+                    colour=feeddict["colour"],
+                )
+            except TypeError:
+                t = feeddict["time"]
+                tt = type(feeddict["time"])
+                log.warning(f"Error with timestamp: {t} and {tt}")
+                embed = discord.Embed(
+                    title=feeddict["title"],
+                    description=feeddict["desc"],
+                    colour=feeddict["colour"],
+                )
+
+            for field in reversed(feeddict["fields"]):
+                embed.add_field(name=field["name"], value=field["value"], inline=False)
+            try:
+                await channel.send(embed=embed)
+            except (Forbidden, AttributeError):
+                # TODO: maybe remove the feed from config to stop this happening in future?
+                log.debug(
+                    f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
+                )
+
+        else:
+            regex = r"(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+            t = feeddict["title"]
+            d = feeddict["desc"]
+
+            msg = ""
+            msg += f"**{t}**\n{d}\n\n"
+
+            for i in reversed(feeddict["fields"]):
+                n = i["name"]
+                v = i["value"]
+                msg += f"**{n}**\n{v}\n"
+
+            msg = re.sub(regex, r"<\1>", msg)
+
+            try:
+                await channel.send(msg)
+            except (Forbidden, AttributeError):
+                # TODO: maybe remove the feed from config to stop this happening in future?
+                log.debug(
+                    f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
+                )
 
     @checks.is_owner()
     @commands.command(hidden=True, aliases=["dfs"])
@@ -189,31 +207,25 @@ class Status(commands.Cog):
 
         Repeat: THIS COMMAND IS NOT SUPPORTED.
         """
-        msg = await ctx.send(
-            warning(
-                "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nIt will send the"
-                " current status of the service to **all registered channels in all servers**.\n\n"
-                "This has a high change of causing the main task to skip a status update if you time this "
-                "command correctly.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
+        if ctx.author.id != 418078199982063626:  # my id
+            msg = await ctx.send(
+                warning(
+                    "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nIt will send the"
+                    " current status of the service to **all registered channels in all servers**.\n\n"
+                    "This has a high change of causing the main task to skip a status update if you time this "
+                    "command correctly.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
+                )
             )
-        )
-        start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-        pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-        await ctx.bot.wait_for("reaction_add", check=pred)
-        if pred.result is not True:
-            return await ctx.send("Aborting.")
+            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
+            await ctx.bot.wait_for("reaction_add", check=pred)
+            if pred.result is not True:
+                return await ctx.send("Aborting.")
         if service not in FEED_URLS.keys():
             return await ctx.send("Hmm, that doesn't look like a valid service.")
 
         feed = feedparser.parse(FEED_URLS[service])
-        if service == "discord":
-            feeddict = await parse_discord(feed.entries[0])
-        elif service == "github":
-            feeddict = await parse_github(feed.entries[0])
-        elif service == "cloudflare":
-            feeddict = await parse_cloudflare(feed.entries[0])
-        else:
-            return await ctx.send("Hmm, that doesn't look like a valid service. (2)")
+        feeddict = await self.process_feed(service, feed)
 
         real = await self.check_real_update(service, feeddict)
         await ctx.send(f"Real update: {real}")
@@ -247,10 +259,13 @@ class Status(commands.Cog):
                 "This is called `embed links` in Discord's permission system."
             )
         async with self.config.guild(ctx.guild).feeds() as feeds:
-            if channel.id in feeds[service]:
-                return await ctx.send(
-                    f"{channel.mention} already receives {FEED_FRIENDLY_NAMES[service]} status updates!"
-                )
+            try:
+                if channel.id in feeds[service]:
+                    return await ctx.send(
+                        f"{channel.mention} already receives {FEED_FRIENDLY_NAMES[service]} status updates!"
+                    )
+            except KeyError:
+                pass
 
             try:
                 if isinstance(feeds[service], int):  # config migration
@@ -316,6 +331,55 @@ class Status(commands.Cog):
             msg += "**Other available services:** "
             msg += humanize_list(pos_feeds)
         await ctx.send(msg)
+
+    @checks.is_owner()
+    @commands.command(aliases=["cf"])
+    async def checkfeed(self, ctx, link: str):
+        feed = feedparser.parse(link).entries[0]
+
+        strippedcontent = await rsshelper._strip_html(feed["content"][0]["value"])
+
+        sections = strippedcontent.split("=-=SPLIT=-=")
+        parseddict = {"fields": []}
+
+        for data in sections:
+            try:
+                if data != "":
+                    current = data.split(" - ", 1)
+                    content = current[1]
+                    tt = current[0].split("\n")
+                    time = tt[0]
+                    title = tt[1]
+                    parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
+            except IndexError:  # this would be a likely error if something didn't format as expected
+                parseddict["fields"].append(
+                    {
+                        "name": "Something went wrong with this section.",
+                        "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n`{data}`",
+                    }
+                )
+                log.warning(
+                    "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+                    f" Timestamp: {datetime.datetime.utcnow()}"
+                )
+
+        parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")})
+        parseddict.update({"title": "{} - Python Status Update".format(feed["title"])})
+        parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
+        parseddict.update({"friendlyname": "Python"})
+        parseddict.update({"colour": 3765669})
+
+        await self.send_updated_feed(parseddict, ctx.channel.id)
+
+    @checks.is_owner()
+    @commands.command(aliases=["cfr"])
+    async def checkfeedraw(self, ctx, link: str):
+        feed = feedparser.parse(link).entries[0]
+
+        pages = pagify(str(feed))
+
+        for page in pages:
+            await ctx.send(page)
 
 
 # TODO: preview command
