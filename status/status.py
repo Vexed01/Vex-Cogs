@@ -92,6 +92,22 @@ class Status(commands.Cog):
         except TimeoutError:
             log.warning("Loop timed out after 2.5 minutes. Some updates were likely skipped.")
 
+    @check_for_updates.before_loop
+    async def before_start(self):
+        await self.bot.wait_until_red_ready()
+
+    async def make_used_feeds(self):
+        feeds = await self.config.all_channels()
+        used_feeds = []
+        for channel in feeds.items():
+            used_feeds.extend(channel[1]["feeds"].keys())
+
+            used_feeds = deduplicate_iterables(used_feeds)
+            if len(used_feeds) == len(FEED_URLS):  # no point checking more channels now
+                break
+        print(used_feeds)
+        self.used_feeds_cache = used_feeds
+
     async def migrate(self):
         old_feeds = await self.config.all_guilds()
         for guild in old_feeds.items():
@@ -114,50 +130,35 @@ class Status(commands.Cog):
         await self.config.migrated.set(True)
 
     async def actually_check_updates(self):
-        async with self.config.etags() as etags:
-            for feed in self.used_feeds_cache:
+        for feed in self.used_feeds_cache:
+            async with self.config.etags() as etags:
                 try:
-                    try:
-                        response = feedparser.parse(FEED_URLS[feed], etag=etags[feed])
-                    except KeyError:
-                        response = feedparser.parse(FEED_URLS[feed])
-                        etags[feed] = "hello"
-
+                    response = feedparser.parse(FEED_URLS[feed], etag=etags[feed])
                     if response.status == 200:
                         etags[feed] = response.etag
-                        feeddict = await self.process_feed(feed, response)
-                        if not await self.check_real_update(feed, feeddict):
-                            log.debug(f"Ghost status update for {feed} detected, skipping")
-                            continue
-                        log.debug(f"Feed dict for {feed}: {feeddict}")
-                        channels = await self.get_channels(feed)
-                        log.debug(f"Sending status update for {feed} to {len(channels)} channels...")
-                        for channel in channels:
-                            await self.send_updated_feed(feeddict, channel)
-                        log.debug("Done")
-                    else:
-                        log.debug(f"No status update for {feed}")
+                except KeyError:
+                    response = feedparser.parse(FEED_URLS[feed])
+                    etags[feed] = response.etag
                 except (ConnectionRefusedError, URLError):
                     log.warning(f"Unable to connect to {feed}")
+
+            if response.status == 200:
+                feeddict = await self.process_feed(feed, response)
+                if not await self.check_real_update(feed, feeddict):
+                    log.debug(f"Ghost status update for {feed} detected, skipping")
                     continue
-                except KeyError:  # a new service has been added
-                    etags[feed] = "hello"
+                log.debug(f"Feed dict for {feed}: {feeddict}")
+                channels = await self.get_channels(feed)
+                log.debug(f"Sending status update for {feed} to {len(channels)} channels...")
+                for channel in channels:
+                    await self.send_updated_feed(feeddict, channel)
+                log.debug("Done")
+            else:
+                log.debug(f"No status update for {feed}")
 
-    @check_for_updates.before_loop
-    async def before_start(self):
-        await self.bot.wait_until_red_ready()
-
-    async def make_used_feeds(self):
-        feeds = await self.config.all_channels()
-        used_feeds = []
-        for channel in feeds.items():
-            used_feeds.extend(channel[1]["feeds"].keys())
-
-            used_feeds = deduplicate_iterables(used_feeds)
-            if len(used_feeds) == len(FEED_URLS):  # no point checking more channels now
-                break
-        print(used_feeds)
-        self.used_feeds_cache = used_feeds
+    async def process_feed(self, service: str, feedparser: FeedParserDict):
+        """Process a FeedParserDict into a nicer dict for embeds."""
+        return await helper_process_feed(service, feedparser)
 
     async def check_real_update(self, service: str, feeddict: dict) -> bool:
         """
@@ -180,10 +181,6 @@ class Status(commands.Cog):
                 feeddict["time"] = feeddict["time"].timestamp()
                 feed_store[service] = feeddict
                 return True
-
-    async def process_feed(self, service: str, feedparser: FeedParserDict):
-        """Process a FeedParserDict into a nicer dict for embeds."""
-        return await helper_process_feed(service, feedparser)
 
     async def get_channels(self, service: str) -> list:
         """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
@@ -251,48 +248,6 @@ class Status(commands.Cog):
                 log.debug(
                     f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
                 )
-
-    async def dev_com(self, ctx):
-        """Returns whether to continue or not"""
-        if ctx.author.id != 418078199982063626:  # my id
-            msg = await ctx.send(
-                warning(
-                    "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things are likely to"
-                    "happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
-                )
-            )
-            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-            await ctx.bot.wait_for("reaction_add", check=pred)
-            if pred.result is not True:
-                await ctx.send("Aborting.")
-                return False
-        return True
-
-    @checks.is_owner()
-    @commands.command(hidden=True, aliases=["dfs"])
-    async def devforcestatus(self, ctx, service):
-        """
-        THIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.
-
-        It will send the current status of the service to **all
-
-        Repeat: THIS COMMAND IS NOT SUPPORTED.
-        """
-        if not await self.dev_com(ctx):
-            return
-
-        if service not in FEED_URLS.keys():
-            return await ctx.send("Hmm, that doesn't look like a valid service.")
-
-        feed = feedparser.parse(FEED_URLS[service])
-        feeddict = await self.process_feed(service, feed)
-
-        real = await self.check_real_update(service, feeddict)
-        await ctx.send(f"Real update: {real}")
-        to_send = await self.get_channels(service)
-        for channel in to_send:
-            await self.send_updated_feed(feeddict, channel)
 
     @guild_only()
     @checks.admin_or_permissions(manage_guild=True)
@@ -394,6 +349,48 @@ class Status(commands.Cog):
         await ctx.send(msg)
 
     # STARTING THE DEV COMMANDS
+
+    async def dev_com(self, ctx):
+        """Returns whether to continue or not"""
+        if ctx.author.id != 418078199982063626:  # my id
+            msg = await ctx.send(
+                warning(
+                    "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things are likely to"
+                    "happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
+                )
+            )
+            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
+            await ctx.bot.wait_for("reaction_add", check=pred)
+            if pred.result is not True:
+                await ctx.send("Aborting.")
+                return False
+        return True
+
+    @checks.is_owner()
+    @commands.command(hidden=True, aliases=["dfs"])
+    async def devforcestatus(self, ctx, service):
+        """
+        THIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.
+
+        It will send the current status of the service to **all
+
+        Repeat: THIS COMMAND IS NOT SUPPORTED.
+        """
+        if not await self.dev_com(ctx):
+            return
+
+        if service not in FEED_URLS.keys():
+            return await ctx.send("Hmm, that doesn't look like a valid service.")
+
+        feed = feedparser.parse(FEED_URLS[service])
+        feeddict = await self.process_feed(service, feed)
+
+        real = await self.check_real_update(service, feeddict)
+        await ctx.send(f"Real update: {real}")
+        to_send = await self.get_channels(service)
+        for channel in to_send:
+            await self.send_updated_feed(feeddict, channel)
 
     @checks.is_owner()
     @commands.command(aliases=["dcf"], hidden=True)
