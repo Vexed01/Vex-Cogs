@@ -187,7 +187,6 @@ class Status(commands.Cog):
         # TODO: make logic more efficient
         feeds = await self.config.all_channels()
         channels = []
-        # example server: {'github': [], 'cloudflare': [133251234164375552, 171665724262055936]}
         for feed in feeds.items():
             if service in feed[1]["feeds"].keys():
                 channels.append(feed[0])
@@ -196,7 +195,9 @@ class Status(commands.Cog):
     async def send_updated_feed(self, feeddict: dict, channel: int):
         """Send a feeddict to the specified channel. Currently will only send embed."""
         # TODO: non-embed version
-        channel = self.bot.get_channel(channel)
+        channel = self.bot.get_channel(channel)  # remove in later version
+        if channel is None:  # guilds can creep in here during migration, idk how but /shrug this is a janky fix
+            return
         if await self.bot.embed_requested(channel, None):
             # this will error in dms (or if core code changes), however add command doesn't work in dms so should be not an issue
             try:  # doesn't trigger much, but for some reason can happen
@@ -373,7 +374,8 @@ class Status(commands.Cog):
         """
         THIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.
 
-        It will send the current status of the service to **all
+        It will send the current status of the service to **all channels in all servers**
+        that haver registered for alerts.
 
         Repeat: THIS COMMAND IS NOT SUPPORTED.
         """
