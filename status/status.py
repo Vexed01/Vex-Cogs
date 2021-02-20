@@ -21,6 +21,11 @@ from tabulate import tabulate
 from .rsshelper import _strip_html
 from .rsshelper import process_feed as helper_process_feed
 
+ALL = "all"
+LATEST = "latest"
+EDIT = "edit"
+
+OLD_DEFAULTS = {"mode": ALL, "webhook": False}
 
 FEED_URLS = {
     "discord": "https://discordstatus.com/history.atom",
@@ -49,16 +54,18 @@ log = logging.getLogger("red.vexed.status")
 
 class Status(commands.Cog):
     def __init__(self, bot: Red):
+        self.bot = bot
+
         self.config = Config.get_conf(self, identifier="Vexed-status")
         default = {}
-
         self.config.register_global(etags=default)
         self.config.register_global(feed_store=default)
-        self.config.register_guild(feeds=default)
+        self.config.register_global(migrated=False)
+        self.config.register_channel(feeds=default)
+
+        self.used_feeds_cache = []
 
         self.check_for_updates.start()
-
-        self.bot = bot
 
     def cog_unload(self):
         self.check_for_updates.cancel()
@@ -66,21 +73,49 @@ class Status(commands.Cog):
     @tasks.loop(minutes=3.0)
     async def check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
-        await asyncio.sleep(0.1)  # this stops some weird behaviour on loading the cog
+        await asyncio.sleep(0.1)  # this stops some weird behaviur on loading the cog
 
-        log.debug("Getting feeds that need checking")
-        to_get = await self.make_used_feeds()
-        if not to_get:
-            log.debug("No feeds found!")
+        if self.check_for_updates.current_loop == 0:
+            await self.make_used_feeds()
+            if await self.config.migrated() is False:
+                log.info("Migrating to new config format...")
+                await self.migrate()
+                await self.config.clear_all_guilds()
+                log.info("Done!")
+
+        if not self.used_feeds_cache:
+            log.debug("No channels have registered a feed!")
+            return
 
         try:
-            await asyncio.wait_for(self.actually_check_updates(to_get), timeout=150.0)  # 2.5 mins
+            await asyncio.wait_for(self.actually_check_updates(), timeout=150.0)  # 2.5 mins
         except TimeoutError:
             log.warning("Loop timed out after 2.5 minutes. Some updates were likely skipped.")
 
-    async def actually_check_updates(self, to_get):
+    async def migrate(self):
+        old_feeds = await self.config.all_guilds()
+        for guild in old_feeds.items():
+            try:
+                feeds_in_guild = guild[1]["feeds"]
+                for feed in feeds_in_guild.items():
+                    if not feed[1]:  # could just be []
+                        continue
+                    feed_name = feed[0]
+                    channels = feed[1]
+                    if isinstance(channels, list):
+                        for c in channels:
+                            await self.config.channel_from_id(c).feeds.set_raw(feed_name, value=OLD_DEFAULTS)
+                    else:
+                        await self.config.channel_from_id(channels).feeds.set_raw(
+                            feed_name, value=OLD_DEFAULTS
+                        )
+            except KeyError:
+                continue
+        await self.config.migrated.set(True)
+
+    async def actually_check_updates(self):
         async with self.config.etags() as etags:
-            for feed in to_get:  # change to await self.config.to_check()
+            for feed in self.used_feeds_cache:
                 try:
                     try:
                         response = feedparser.parse(FEED_URLS[feed], etag=etags[feed])
@@ -113,20 +148,16 @@ class Status(commands.Cog):
         await self.bot.wait_until_red_ready()
 
     async def make_used_feeds(self):
-        feeds = await self.config.all_guilds()
+        feeds = await self.config.all_channels()
         used_feeds = []
-        for server in feeds.items():
-            try:
-                feeds_in_server = server[1]["feeds"]
-                for i in feeds_in_server.items():
-                    if i[1]:  # could be just []
-                        used_feeds.append(i[0])
-            except KeyError:
-                continue
-            de_duped = deduplicate_iterables(used_feeds)
-            if len(de_duped) == len(FEED_URLS):  # no point checking more guilds now
-                return de_duped
-        return deduplicate_iterables(used_feeds)
+        for channel in feeds.items():
+            used_feeds.extend(channel[1]["feeds"].keys())
+
+            used_feeds = deduplicate_iterables(used_feeds)
+            if len(used_feeds) == len(FEED_URLS):  # no point checking more channels now
+                break
+        print(used_feeds)
+        self.used_feeds_cache = used_feeds
 
     async def check_real_update(self, service: str, feeddict: dict) -> bool:
         """
@@ -157,19 +188,12 @@ class Status(commands.Cog):
     async def get_channels(self, service: str) -> list:
         """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
         # TODO: make logic more efficient
-        feeds = await self.config.all_guilds()
-        target_service = service
+        feeds = await self.config.all_channels()
         channels = []
         # example server: {'github': [], 'cloudflare': [133251234164375552, 171665724262055936]}
-        for server in feeds.items():
-            try:
-                to_append = server[1]["feeds"][target_service]
-            except KeyError:
-                continue
-            try:
-                channels.extend(to_append)
-            except TypeError:
-                channels.append(to_append)
+        for feed in feeds.items():
+            if service in feed[1]["feeds"].keys():
+                channels.append(feed[0])
         return channels
 
     async def send_updated_feed(self, feeddict: dict, channel: int):
@@ -277,7 +301,7 @@ class Status(commands.Cog):
         """Base command for managing the Status cog."""
 
     @statusset.command(name="add")
-    async def statusset_add(self, ctx, service: str, channel: discord.TextChannel):
+    async def statusset_add(self, ctx, service: str, *channel: discord.TextChannel):
         """
         Start getting status updates for the choses service!
 
@@ -285,7 +309,9 @@ class Status(commands.Cog):
 
         If you don't specify a specific channel, I will use the current channel.
         """
+        channel = channel or ctx.channel
         service = service.lower()
+
         if service not in FEED_URLS.keys():
             return await ctx.send("That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
         if not channel.permissions_for(ctx.me).send_messages:
@@ -295,50 +321,56 @@ class Status(commands.Cog):
                 f"I don't have permission to send embeds in {channel.mention}. "
                 "This is called `embed links` in Discord's permission system."
             )
-        async with self.config.guild(ctx.guild).feeds() as feeds:
-            try:
-                if channel.id in feeds[service]:
-                    return await ctx.send(
-                        f"{channel.mention} already receives {FEED_FRIENDLY_NAMES[service]} status updates!"
-                    )
-            except KeyError:
-                pass
+        async with self.config.channel(channel).feeds() as feeds:
+            if service in feeds.keys():
+                return await ctx.send(
+                    f"{channel.mention} already receives {FEED_FRIENDLY_NAMES[service]} status updates!"
+                )
 
-            try:
-                if isinstance(feeds[service], int):  # config migration
-                    feeds[service] = [feeds[service]]
-            except KeyError:
-                feeds[service] = []
+            feeds[service] = OLD_DEFAULTS
 
-            feeds[service].append(channel.id)
+        if service not in self.used_feeds_cache:
+            self.used_feeds_cache.append(service)
 
         await ctx.send(
             f"Done, {channel.mention} will now receive {FEED_FRIENDLY_NAMES[service]} status updates."
         )
 
     @statusset.command(name="remove", aliases=["del", "delete"])
-    async def statusset_remove(self, ctx, service: str, channel: discord.TextChannel):
-        """Stop status updates for a specific service in this server"""
+    async def statusset_remove(self, ctx, service: str, *channel: discord.TextChannel):
+        """
+        Stop status updates for a specific service in this server.
+
+        If you don't specify a channel, I will use the current channel
+        """
+        channel = channel or ctx.channel
+
         # TODO: multiple services in one command
         if service not in FEED_URLS.keys():
             return await ctx.send(f"That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
-        async with self.config.guild(ctx.guild).feeds() as feeds:
-            try:
-                if channel.id not in feeds[service]:
-                    return await ctx.send(
-                        f"It looks like I don't send {FEED_FRIENDLY_NAMES[service]} status updates to {channel.mention}"
-                    )
-                feeds[service].remove(channel.id)
-            except TypeError:
-                channel = self.bot.get_channel(feeds[service])
-                feeds[service] = []
+
+        channel_conf = self.config.channel(channel)
+        async with channel_conf.feeds() as feeds:
+            if service not in feeds.keys():
+                return await ctx.send(
+                    f"It looks like I don't send {FEED_FRIENDLY_NAMES[service]} status updates to {channel.mention}"
+                )
+            feeds.pop(service)
             await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {channel.mention}")
 
     @statusset.command(name="list", aliases=["show"])
     async def statusset_list(self, ctx):
         """List that available services and which ones are being used in this server"""
-        guild_feeds = await self.config.guild(ctx.guild).feeds()
-        pos_feeds = list(FEED_URLS.keys())
+        unused_feeds = list(FEED_URLS.keys())
+
+        guild_feeds = {}
+        for channel in ctx.guild.channels:
+            feeds = await self.config.channel(channel).feeds()
+            for feed in feeds.keys():
+                try:
+                    guild_feeds[feed].append(f"#{channel.name}")
+                except KeyError:
+                    guild_feeds[feed] = [f"#{channel.name}"]
 
         if not guild_feeds:
             msg = "There are no status updates set up in this server.\n"
@@ -348,26 +380,20 @@ class Status(commands.Cog):
             for feed in guild_feeds.items():
                 if not feed[1]:
                     continue
-                if isinstance(feed[1], int):
-                    channel_ids = [feed[1]]
-                else:
-                    channel_ids = feed[1]
-                channel_names = []
-                for channel in channel_ids:
-                    channel_names.append(f"#{self.bot.get_channel(channel).name}")
-                channel_names = humanize_list(channel_names)
-                data.append([feed[0], channel_names])
+                data.append([feed[0], humanize_list(feed[1])])
                 try:
-                    pos_feeds.remove(feed[0])
+                    unused_feeds.remove(feed[0])
                 except Exception:
                     pass
             if data:
                 msg += "**Services used in this server:**"
                 msg += box(tabulate(data, tablefmt="plain"), lang="arduino")
-        if pos_feeds:
+        if unused_feeds:
             msg += "**Other available services:** "
-            msg += humanize_list(pos_feeds)
+            msg += humanize_list(unused_feeds)
         await ctx.send(msg)
+
+    # STARTING THE DEV COMMANDS
 
     @checks.is_owner()
     @commands.command(aliases=["dcf"], hidden=True)
@@ -375,7 +401,7 @@ class Status(commands.Cog):
         if not await self.dev_com(ctx):
             return
         feed = feedparser.parse(link).entries[0]
-        ####### standard below:
+        # standard below:
 
         strippedcontent = await _strip_html(feed["content"][0]["value"])
 
@@ -409,7 +435,7 @@ class Status(commands.Cog):
         parseddict.update({"friendlyname": "SERVICE"})
         parseddict.update({"colour": 2985215})
 
-        ######## end standard
+        # end standard
 
         await self.send_updated_feed(parseddict, ctx.channel.id)
 

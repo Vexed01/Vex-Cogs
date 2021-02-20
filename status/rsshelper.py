@@ -232,7 +232,7 @@ async def parse_twitter_api(feed: FeedParserDict):
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
     parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")})
-    parseddict.update({"title": "{} - Twitter Status Update".format(feed["title"])})
+    parseddict.update({"title": "{} - Twitter API Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
     parseddict.update({"friendlyname": "Twitter"})
     parseddict.update({"colour": 41715})
