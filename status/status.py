@@ -90,7 +90,7 @@ class Status(commands.Cog):
         try:
             await asyncio.wait_for(self.actually_check_updates(), timeout=150.0)  # 2.5 mins
         except TimeoutError:
-            log.warning("Loop timed out after 2.5 minutes. Some updates were likely skipped.")
+            log.warning("Loop timed out after 2.5 minutes. Multiple updates were likely disrupted.")
 
     @check_for_updates.before_loop
     async def before_start(self):
@@ -139,7 +139,7 @@ class Status(commands.Cog):
                     response = feedparser.parse(FEED_URLS[feed])
                     etags[feed] = response.etag
                 except (ConnectionRefusedError, URLError):
-                    log.warning(f"Unable to connect to {feed}")
+                    log.warning(f"Unable to connect to {feed}. Will try again at next check.")
 
             if response.status == 200:
                 feeddict = await self.process_feed(feed, response)
@@ -209,7 +209,7 @@ class Status(commands.Cog):
             except TypeError:
                 t = feeddict["time"]
                 tt = type(feeddict["time"])
-                log.warning(f"Error with timestamp: {t} and {tt}")
+                log.debug(f"Error with timestamp: {t} and {tt}")
                 embed = discord.Embed(
                     title=feeddict["title"],
                     description=feeddict["desc"],
@@ -422,8 +422,8 @@ class Status(commands.Cog):
                         "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                     }
                 )
-                log.warning(
-                    "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+                log.debug(
+                    "Unable to parse feed properly. It was still send to all channels. See below debugs:"
                     f" Timestamp: {datetime.datetime.utcnow()}"
                 )
 
