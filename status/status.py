@@ -105,7 +105,6 @@ class Status(commands.Cog):
             used_feeds = deduplicate_iterables(used_feeds)
             if len(used_feeds) == len(FEED_URLS):  # no point checking more channels now
                 break
-        print(used_feeds)
         self.used_feeds_cache = used_feeds
 
     async def migrate(self):
