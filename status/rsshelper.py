@@ -114,12 +114,12 @@ async def parse_github(feed: FeedParserDict) -> dict:
                     "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
-            log.warning(
-                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+            log.debug(
+                "Unable to parse feed properly. It was still send to all channels. See below debugs:"
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")})
+    parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": "GitHub Status Update"})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
     parseddict.update({"friendlyname": "GitHub"})
@@ -194,12 +194,12 @@ async def parse_python(feed: FeedParserDict) -> dict:
                     "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
-            log.warning(
-                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+            log.debug(
+                "Unable to parse feed properly. It was still send to all channels. See below debugs:"
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")})
+    parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": "{} - Python Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
     parseddict.update({"friendlyname": "Python"})
@@ -227,11 +227,11 @@ async def parse_twitter_api(feed: FeedParserDict):
                     "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
-            log.warning(
-                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+            log.debug(
+                "Unable to parse feed properly. It was still send to all channels. See below debugs:"
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
-    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%SZ")})
+    parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": "{} - Twitter API Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
     parseddict.update({"friendlyname": "Twitter"})
@@ -261,8 +261,8 @@ async def parse_statuspage(feed: FeedParserDict):
                     "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
-            log.warning(
-                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+            log.debug(
+                "Unable to parse feed properly. It was still send to all channels. See below debugs:"
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
@@ -296,8 +296,8 @@ async def parse_zoom(feed: FeedParserDict):
                     "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
-            log.warning(
-                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+            log.debug(
+                "Unable to parse feed properly. It was still send to all channels. See below debugs:"
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
@@ -331,8 +331,8 @@ async def parse_oracle_cloud(feed: FeedParserDict):
                     "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 }
             )
-            log.warning(
-                "Something went wrong while parsing the status for GitHub. You can report this to Vexed#3211."
+            log.debug(
+                "Unable to parse feed properly. It was still send to all channels. See below debugs:"
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
