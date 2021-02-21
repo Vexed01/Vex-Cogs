@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import logging
 import re
+from typing import Optional
 from urllib.error import URLError
 import discord
 import feedparser
@@ -256,7 +257,7 @@ class Status(commands.Cog):
         """Base command for managing the Status cog."""
 
     @statusset.command(name="add")
-    async def statusset_add(self, ctx, service: str, *channel: discord.TextChannel):
+    async def statusset_add(self, ctx, service: str, channel: Optional[discord.TextChannel]):
         """
         Start getting status updates for the choses service!
 
@@ -270,12 +271,7 @@ class Status(commands.Cog):
         if service not in FEED_URLS.keys():
             return await ctx.send("That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
         if not channel.permissions_for(ctx.me).send_messages:
-            return await ctx.send(f"I don't have permission to send messages in {channel.mention}.")
-        if not channel.permissions_for(ctx.me).embed_links:
-            return await ctx.send(
-                f"I don't have permission to send embeds in {channel.mention}. "
-                "This is called `embed links` in Discord's permission system."
-            )
+            return await ctx.send(f"I don't have permission to send messages in {channel.mention}")
         async with self.config.channel(channel).feeds() as feeds:
             if service in feeds.keys():
                 return await ctx.send(
@@ -292,7 +288,7 @@ class Status(commands.Cog):
         )
 
     @statusset.command(name="remove", aliases=["del", "delete"])
-    async def statusset_remove(self, ctx, service: str, *channel: discord.TextChannel):
+    async def statusset_remove(self, ctx, service: str, channel: Optional[discord.TextChannel]):
         """
         Stop status updates for a specific service in this server.
 
