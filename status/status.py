@@ -71,7 +71,7 @@ log = logging.getLogger("red.vexed.status")
 class Status(commands.Cog):
     """Automatically check for status updates"""
 
-    __version__ = "0.2.0"
+    __version__ = "0.2.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -337,14 +337,14 @@ class Status(commands.Cog):
             )
         else:
             unsupported.append(LATEST)
-        if EDIT in AVALIBLE_MODES[service]:
-            modes += (
-                "**Edit**: When a new incident is created, I will send a message with the inital information. "
-                "As they update the incident, I will edit my message. Best used in a dedicated status "
-                "channel.\n\n"
-            )
-        else:
-            unsupported.append(EDIT)
+        # if EDIT in AVALIBLE_MODES[service]:
+        #     modes += (
+        #         "**Edit**: When a new incident is created, I will send a message with the inital information. "
+        #         "As they update the incident, I will edit my message. Best used in a dedicated status "
+        #         "channel.\n\n"
+        #     )
+        # else:
+        #     unsupported.append(EDIT)
 
         if unsupported:
             unsupported = humanize_list(unsupported)
