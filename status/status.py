@@ -4,19 +4,20 @@ import logging
 import re
 from typing import Optional
 from urllib.error import URLError
+
 import discord
 import feedparser
+from dateutil.parser import parse
 from discord.errors import Forbidden
 from discord.ext import tasks
 from discord.ext.commands.core import guild_only
-from dateutil.parser import parse
 from feedparser.util import FeedParserDict
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
+from redbot.core.utils import deduplicate_iterables
 from redbot.core.utils.chat_formatting import box, humanize_list, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
-from redbot.core.utils.predicates import ReactionPredicate
-from redbot.core.utils import deduplicate_iterables
+from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
 from tabulate import tabulate
 
 from .rsshelper import _strip_html
@@ -27,6 +28,9 @@ LATEST = "latest"
 EDIT = "edit"
 
 OLD_DEFAULTS = {"mode": ALL, "webhook": False}
+
+
+# TODO: put the below 3 into 1 dict
 
 FEED_URLS = {
     "discord": "https://discordstatus.com/history.atom",
@@ -50,10 +54,31 @@ FEED_FRIENDLY_NAMES = {
     "oracle_cloud": "Oracle Cloud",
 }
 
+AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aws, google
+    "discord": [ALL, LATEST, EDIT],
+    "github": [ALL, LATEST, EDIT],
+    "cloudflare": [ALL, LATEST, EDIT],
+    "python": [ALL, LATEST, EDIT],
+    "twitter_api": [ALL, LATEST, EDIT],
+    "statuspage": [ALL, LATEST, EDIT],
+    "zoom": [ALL, LATEST, EDIT],
+    "oracle_cloud": [ALL, LATEST, EDIT],
+}
+
 log = logging.getLogger("red.vexed.status")
 
 
 class Status(commands.Cog):
+    """Automatically check for status updates"""
+
+    __version__ = "0.2.0"
+    __author__ = "Vexed#3211"
+
+    def format_help_for_context(self, ctx: commands.Context):
+        """Thanks Sinbad."""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**"
+
     def __init__(self, bot: Red):
         self.bot = bot
 
@@ -150,7 +175,7 @@ class Status(commands.Cog):
                 log.debug(f"Feed dict for {feed}: {feeddict}")
                 channels = await self.get_channels(feed)
                 log.debug(f"Sending status update for {feed} to {len(channels)} channels...")
-                for channel in channels:
+                for channel in channels.items():
                     await self.send_updated_feed(feeddict, channel)
                 log.debug("Done")
             else:
@@ -182,82 +207,97 @@ class Status(commands.Cog):
                 feed_store[service] = feeddict
                 return True
 
-    async def get_channels(self, service: str) -> list:
+    async def get_channels(self, service: str) -> dict:
         """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
-        # TODO: make logic more efficient
+        # TODO: maybe logic more efficient
         feeds = await self.config.all_channels()
-        channels = []
+        channels = {}
         for feed in feeds.items():
             if service in feed[1]["feeds"].keys():
-                channels.append(feed[0])
+                channels[feed[0]] = feed[1]["feeds"][service]
         return channels
 
-    async def send_updated_feed(self, feeddict: dict, channel: int):
-        """Send a feeddict to the specified channel. Currently will only send embed."""
-        # TODO: non-embed version
-        channel = self.bot.get_channel(channel)  # remove in later version
-        if channel is None:  # guilds can creep in here during migration, idk how but /shrug this is a janky fix
+    async def send_updated_feed(self, feeddict: dict, channel: tuple):
+        """Send a feeddict to the specified channel."""
+        # TODO: cache the embed/message
+        print(channel)
+        mode = channel[1]["mode"]
+        # webhook = channel[1]["webhook"]
+        channel = self.bot.get_channel(channel[0])
+        if channel is None:  # guilds can creep in here, blame core for giving guilds from all_channels() /s
             return
-        if await self.bot.embed_requested(channel, None):
-            # this will error in dms (or if core code changes), however add command doesn't work in dms so should be not an issue
-            try:  # doesn't trigger much, but for some reason can happen
-                embed = discord.Embed(
-                    title=feeddict["title"],
-                    description=feeddict["desc"],
-                    timestamp=feeddict["time"],
-                    colour=feeddict["colour"],
-                )
-            except TypeError:
-                t = feeddict["time"]
-                tt = type(feeddict["time"])
-                log.debug(f"Error with timestamp: {t} and {tt}")
-                embed = discord.Embed(
-                    title=feeddict["title"],
-                    description=feeddict["desc"],
-                    colour=feeddict["colour"],
-                )
+        embed = await self.bot.embed_requested(channel, None)
 
-            for field in reversed(feeddict["fields"]):
-                embed.add_field(name=field["name"], value=field["value"], inline=False)
-            try:
-                await channel.send(embed=embed)
-            except (Forbidden, AttributeError):
-                # TODO: maybe remove the feed from config to stop this happening in future?
-                log.debug(
-                    f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
-                )
+        if mode == "all" or mode == "latest":
+            if embed:
+                try:
+                    embed = discord.Embed(
+                        title=feeddict["title"],
+                        description=feeddict["desc"],
+                        timestamp=feeddict["time"],
+                        colour=feeddict["colour"],
+                    )
+                except TypeError:  # doesn't trigger much, but for some reason can happen with timezone
+                    t = feeddict["time"]
+                    tt = type(feeddict["time"])
+                    log.debug(f"Error with timestamp: {t} and {tt}")
+                    embed = discord.Embed(
+                        title=feeddict["title"],
+                        description=feeddict["desc"],
+                        colour=feeddict["colour"],
+                    )
 
-        else:
-            regex = r"(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
-            t = feeddict["title"]
-            d = feeddict["desc"]
+                if mode == "all":
+                    for field in reversed(feeddict["fields"]):
+                        embed.add_field(name=field["name"], value=field["value"], inline=False)
+                elif mode == "latest":
+                    embed.add_field(
+                        name=feeddict["fields"][0]["name"], value=feeddict["fields"][0]["value"], inline=False
+                    )
 
-            msg = ""
-            msg += f"**{t}**\n{d}\n\n"
+                try:
+                    await channel.send(embed=embed)
+                except (Forbidden, AttributeError):
+                    # TODO: maybe remove the feed from config to stop this happening in future?
+                    log.debug(
+                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
+                    )
 
-            for i in reversed(feeddict["fields"]):
-                n = i["name"]
-                v = i["value"]
-                msg += f"**{n}**\n{v}\n"
+            else:
+                t = feeddict["title"]
+                d = feeddict["desc"]
 
-            msg = re.sub(regex, r"<\1>", msg)
+                msg = ""
+                msg += f"**{t}**\n{d}\n\n"
 
-            try:
-                await channel.send(msg)
-            except (Forbidden, AttributeError):
-                # TODO: maybe remove the feed from config to stop this happening in future?
-                log.debug(
-                    f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
-                )
+                for i in reversed(feeddict["fields"]):
+                    n = i["name"]
+                    v = i["value"]
+                    msg += f"**{n}**\n{v}\n"
+
+                regex = r"(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+                msg = re.sub(regex, r"<\1>", msg)  # wrap links in <> for no previews
+
+                try:
+                    await channel.send(msg)
+                except (Forbidden, AttributeError):
+                    # TODO: maybe remove the feed from config to stop this happening in future?
+                    log.debug(
+                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
+                    )
+        elif mode == "edit":
+            pass  # TODO: this
 
     @guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     @commands.group()
-    async def statusset(self, ctx):
+    async def statusset(self, ctx: commands.Context):
         """Base command for managing the Status cog."""
 
     @statusset.command(name="add")
-    async def statusset_add(self, ctx, service: str, channel: Optional[discord.TextChannel]):
+    async def statusset_add(
+        self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel]
+    ):
         """
         Start getting status updates for the choses service!
 
@@ -272,13 +312,78 @@ class Status(commands.Cog):
             return await ctx.send("That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
         if not channel.permissions_for(ctx.me).send_messages:
             return await ctx.send(f"I don't have permission to send messages in {channel.mention}")
-        async with self.config.channel(channel).feeds() as feeds:
-            if service in feeds.keys():
-                return await ctx.send(
-                    f"{channel.mention} already receives {FEED_FRIENDLY_NAMES[service]} status updates!"
-                )
+        feeds = await self.config.channel(channel).feeds()
+        if service in feeds.keys():
+            return await ctx.send(
+                f"{channel.mention} already receives {FEED_FRIENDLY_NAMES[service]} status updates!"
+            )
 
-            feeds[service] = OLD_DEFAULTS
+        friendly = FEED_FRIENDLY_NAMES[service]
+
+        modes = ""
+        unsupported = []
+        if ALL in AVALIBLE_MODES[service]:
+            modes += (
+                "**All**: Every time the service posts an update on an incident, I will send a new message "
+                "contaning the previus updates as well as the new update. Best used in a fast-moving "
+                "channel with other users.\n\n"
+            )
+        else:
+            unsupported.append(ALL)
+        if LATEST in AVALIBLE_MODES[service]:
+            modes += (
+                "**Latest**: Every time the service posts an update on an incident, I will send a new message "
+                "contanint only the latest update. Best used in a dedicated status channel.\n\n"
+            )
+        else:
+            unsupported.append(LATEST)
+        if EDIT in AVALIBLE_MODES[service]:
+            modes += (
+                "**Edit**: When a new incident is created, I will send a message with the inital information. "
+                "As they update the incident, I will edit my message. Best used in a dedicated status "
+                "channel.\n\n"
+            )
+        else:
+            unsupported.append(EDIT)
+
+        if unsupported:
+            unsupported = humanize_list(unsupported)
+            if len(unsupported) > 1:
+                extra = "s"
+            modes += f"Due to {friendly} limitations, I can't support the {unsupported} mode{extra}\n\n"
+
+        await ctx.send(
+            "This is an interactive configuration. You have 2 minutes to answer each question.\n"
+            f"**What mode do you want to use?**\n\n{modes}"
+        )
+        try:
+            mode = await self.bot.wait_for("message", check=MessagePredicate.same_context(ctx), timeout=120)
+        except TimeoutError:
+            return await ctx.send("Timed out. Canceling.")
+
+        mode = mode.content.lower()
+        if mode not in [ALL, LATEST, EDIT]:
+            return await ctx.send("Hmm, that doesn't look like a valid mode. Canceling.")
+
+        # await ctx.send(
+        #     "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means that the status "
+        #     f"updates will be sent with the avatar as {friendly}'s logo and the name will be `{friendly} "
+        #     "Status Update`, instead of my avatar and name."
+        # )
+
+        # pred = MessagePredicate.yes_or_no(ctx)
+        # try:
+        #     await self.bot.wait_for("message", check=pred, timeout=120)
+        # except TimeoutError:
+        #     return await ctx.send("Timed out. Canceling.")
+
+        # if pred.result is True:
+        #     webhook = True
+        # else:
+        webhook = False
+
+        settings = {"mode": mode, "webhook": webhook}
+        await self.config.channel(channel).feeds.set_raw(service, value=settings)
 
         if service not in self.used_feeds_cache:
             self.used_feeds_cache.append(service)
@@ -288,7 +393,9 @@ class Status(commands.Cog):
         )
 
     @statusset.command(name="remove", aliases=["del", "delete"])
-    async def statusset_remove(self, ctx, service: str, channel: Optional[discord.TextChannel]):
+    async def statusset_remove(
+        self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel]
+    ):
         """
         Stop status updates for a specific service in this server.
 
@@ -310,43 +417,69 @@ class Status(commands.Cog):
             await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {channel.mention}")
 
     @statusset.command(name="list", aliases=["show"])
-    async def statusset_list(self, ctx):
-        """List that available services and which ones are being used in this server"""
+    async def statusset_list(self, ctx: commands.Context, service: Optional[str]):
+        """
+        List that available services and which ones are being used in this server.
+
+        Optionally add a service at the end of the command to view detailed settings for that service.
+        """
         unused_feeds = list(FEED_URLS.keys())
 
-        guild_feeds = {}
-        for channel in ctx.guild.channels:
-            feeds = await self.config.channel(channel).feeds()
-            for feed in feeds.keys():
-                try:
-                    guild_feeds[feed].append(f"#{channel.name}")
-                except KeyError:
-                    guild_feeds[feed] = [f"#{channel.name}"]
-
-        if not guild_feeds:
-            msg = "There are no status updates set up in this server.\n"
-        else:
-            msg = ""
+        if service:
+            if service not in FEED_FRIENDLY_NAMES.keys():
+                return await ctx.send(
+                    f"That doesn't look like a valid service. You can run `{ctx.clean_prefix}statusset list` "
+                    "with no arguments."
+                )
             data = []
-            for feed in guild_feeds.items():
-                if not feed[1]:
-                    continue
-                data.append([feed[0], humanize_list(feed[1])])
-                try:
-                    unused_feeds.remove(feed[0])
-                except Exception:
-                    pass
-            if data:
-                msg += "**Services used in this server:**"
-                msg += box(tabulate(data, tablefmt="plain"), lang="arduino")
-        if unused_feeds:
-            msg += "**Other available services:** "
-            msg += humanize_list(unused_feeds)
-        await ctx.send(msg)
+            for channel in ctx.guild.channels:
+                feeds = await self.config.channel(channel).feeds()
+                for feed in feeds.items():
+                    if feed[0] != service:
+                        continue
+                    mode = feed[1]["mode"]
+                    # webhook = feed[1]["webhook"]  TODO: add when implemented
+                    data.append([f"#{channel.name}", mode])
+            table = box(tabulate(data, headers=["Channel", "Send mode"]))
+            await ctx.send(f"**Settings for {FEED_FRIENDLY_NAMES[service]}**: {table}")
+
+        else:
+            guild_feeds = {}
+            for channel in ctx.guild.channels:
+                feeds = await self.config.channel(channel).feeds()
+                for feed in feeds.keys():
+                    try:
+                        guild_feeds[feed].append(f"#{channel.name}")
+                    except KeyError:
+                        guild_feeds[feed] = [f"#{channel.name}"]
+
+            if not guild_feeds:
+                msg = "There are no status updates set up in this server.\n"
+            else:
+                msg = ""
+                data = []
+                for feed in guild_feeds.items():
+                    if not feed[1]:
+                        continue
+                    data.append([feed[0], humanize_list(feed[1])])
+                    try:
+                        unused_feeds.remove(feed[0])
+                    except Exception:
+                        pass
+                if data:
+                    msg += "**Services used in this server:**"
+                    msg += box(tabulate(data, tablefmt="plain"), lang="arduino")
+            if unused_feeds:
+                msg += "**Other available services:** "
+                msg += humanize_list(unused_feeds)
+            msg += (
+                f"\nTo see settings for a specific service, run `{ctx.clean_prefix}statusset list <service>`"
+            )
+            await ctx.send(msg)
 
     # STARTING THE DEV COMMANDS
 
-    async def dev_com(self, ctx):
+    async def dev_com(self, ctx: commands.Context):
         """Returns whether to continue or not"""
         if ctx.author.id != 418078199982063626:  # my id
             msg = await ctx.send(
@@ -365,7 +498,7 @@ class Status(commands.Cog):
 
     @checks.is_owner()
     @commands.command(hidden=True, aliases=["dfs"])
-    async def devforcestatus(self, ctx, service):
+    async def devforcestatus(self, ctx: commands.Context, service):
         """
         THIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.
 
@@ -386,12 +519,12 @@ class Status(commands.Cog):
         real = await self.check_real_update(service, feeddict)
         await ctx.send(f"Real update: {real}")
         to_send = await self.get_channels(service)
-        for channel in to_send:
+        for channel in to_send.items():
             await self.send_updated_feed(feeddict, channel)
 
     @checks.is_owner()
     @commands.command(aliases=["dcf"], hidden=True)
-    async def devcheckfeed(self, ctx, link: str):
+    async def devcheckfeed(self, ctx: commands.Context, link: str):
         if not await self.dev_com(ctx):
             return
         feed = feedparser.parse(link).entries[0]
@@ -435,7 +568,7 @@ class Status(commands.Cog):
 
     @checks.is_owner()
     @commands.command(aliases=["dcfr"])
-    async def devcheckfeedraw(self, ctx, link: str):
+    async def devcheckfeedraw(self, ctx: commands.Context, link: str):
         feed = feedparser.parse(link).entries[0]
 
         pages = pagify(str(feed))

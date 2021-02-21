@@ -76,7 +76,7 @@ async def parse_discord(feed: FeedParserDict) -> dict:
     parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")})
     parseddict.update({"title": "{} - Discord Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-    parseddict.update({"friendlyname": "Discord"})
+    parseddict.update({"rtitle": feed["title"]})
     parseddict.update({"colour": 7308754})
     return parseddict
 
@@ -122,7 +122,7 @@ async def parse_github(feed: FeedParserDict) -> dict:
     parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": "GitHub Status Update"})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-    parseddict.update({"friendlyname": "GitHub"})
+    parseddict.update({"rtitle": feed["title"]})
     parseddict.update({"colour": 1448738})
     return parseddict
 
@@ -168,7 +168,7 @@ async def parse_cloudflare(feed: FeedParserDict) -> dict:
     parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")})
     parseddict.update({"title": "{} - Cloudflare Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-    parseddict.update({"friendlyname": "Cloudflare"})
+    parseddict.update({"rtitle": feed["title"]})
     parseddict.update({"colour": 16494144})
     return parseddict
 
@@ -202,7 +202,7 @@ async def parse_python(feed: FeedParserDict) -> dict:
     parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": "{} - Python Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-    parseddict.update({"friendlyname": "Python"})
+    parseddict.update({"rtitle": feed["title"]})
     parseddict.update({"colour": 3765669})
     return parseddict
 
@@ -234,7 +234,7 @@ async def parse_twitter_api(feed: FeedParserDict):
     parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": "{} - Twitter API Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-    parseddict.update({"friendlyname": "Twitter"})
+    parseddict.update({"rtitle": feed["title"]})
     parseddict.update({"colour": 41715})
     return parseddict
 
@@ -269,7 +269,7 @@ async def parse_statuspage(feed: FeedParserDict):
     parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": "{} - Statuspage Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-    parseddict.update({"friendlyname": "Statuspage"})
+    parseddict.update({"rtitle": feed["title"]})
     parseddict.update({"colour": 2524415})
     return parseddict
 
@@ -304,7 +304,7 @@ async def parse_zoom(feed: FeedParserDict):
     parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": "{} - Zoom Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-    parseddict.update({"friendlyname": "Zoom"})
+    parseddict.update({"rtitle": feed["title"]})
     parseddict.update({"colour": 2985215})
     return parseddict
 
@@ -339,7 +339,7 @@ async def parse_oracle_cloud(feed: FeedParserDict):
     parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": "{} - Oracle Cloud Status Update".format(feed["title"])})
     parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-    parseddict.update({"friendlyname": "Oracle Cloud"})
+    parseddict.update({"rtitle": feed["title"]})
     parseddict.update({"colour": 13059636})
     return parseddict
 
