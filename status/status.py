@@ -30,7 +30,7 @@ EDIT = "edit"
 OLD_DEFAULTS = {"mode": ALL, "webhook": False}
 
 
-# TODO: put the below 3 into 1 dict
+# TODO: put the below 4 into 1 dict
 
 FEED_URLS = {
     "discord": "https://discordstatus.com/history.atom",
@@ -65,13 +65,24 @@ AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aw
     "oracle_cloud": [ALL, LATEST, EDIT],
 }
 
+AVATAR_URLS = {
+    "discord": "https://cdn.discordapp.com/attachments/813140082989989918/813140261987024976/statuspage.png",
+    "github": "https://cdn.discordapp.com/attachments/813140082989989918/813140279120232488/github.png",
+    "cloudflare": "https://cdn.discordapp.com/attachments/813140082989989918/813140275714195516/cloudflare.png",
+    "python": "https://cdn.discordapp.com/attachments/813140082989989918/813140283767783424/python.png",
+    "twitter_api": "https://cdn.discordapp.com/attachments/813140082989989918/813140272027926528/twitter_api.jpg",
+    "statuspage": "https://cdn.discordapp.com/attachments/813140082989989918/813140261987024976/statuspage.png",
+    "zoom": "https://cdn.discordapp.com/attachments/813140082989989918/813140273751523359/zoom.png",
+    "oracle_cloud": "https://cdn.discordapp.com/attachments/813140082989989918/813140282538721310/oracle_cloud.png",
+}
+
 log = logging.getLogger("red.vexed.status")
 
 
 class Status(commands.Cog):
     """Automatically check for status updates"""
 
-    __version__ = "0.2.1"
+    __version__ = "0.2.2"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -96,7 +107,7 @@ class Status(commands.Cog):
     def cog_unload(self):
         self.check_for_updates.cancel()
 
-    @tasks.loop(minutes=3.0)
+    @tasks.loop(minutes=2.5)
     async def check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
         await asyncio.sleep(0.1)  # this stops some weird behaviur on loading the cog
@@ -176,7 +187,7 @@ class Status(commands.Cog):
                 channels = await self.get_channels(feed)
                 log.debug(f"Sending status update for {feed} to {len(channels)} channels...")
                 for channel in channels.items():
-                    await self.send_updated_feed(feeddict, channel)
+                    await self.send_updated_feed(feeddict, channel, feed)
                 log.debug("Done")
             else:
                 log.debug(f"No status update for {feed}")
@@ -217,16 +228,21 @@ class Status(commands.Cog):
                 channels[feed[0]] = feed[1]["feeds"][service]
         return channels
 
-    async def send_updated_feed(self, feeddict: dict, channel: tuple):
+    async def send_updated_feed(self, feeddict: dict, channel: tuple, service: str):
         """Send a feeddict to the specified channel."""
         # TODO: cache the embed/message
         print(channel)
         mode = channel[1]["mode"]
-        # webhook = channel[1]["webhook"]
+        use_webhook = channel[1]["webhook"]
+        data = channel
         channel = self.bot.get_channel(channel[0])
+        print(data)
         if channel is None:  # guilds can creep in here, blame core for giving guilds from all_channels() /s
             return
-        embed = await self.bot.embed_requested(channel, None)
+        if not use_webhook:
+            embed = await self.bot.embed_requested(channel, None)
+        if use_webhook:
+            embed = True
 
         if mode == "all" or mode == "latest":
             if embed:
@@ -251,16 +267,36 @@ class Status(commands.Cog):
                     for field in reversed(feeddict["fields"]):
                         embed.add_field(name=field["name"], value=field["value"], inline=False)
                 elif mode == "latest":
-                    embed.add_field(
+                    embed.add_field(  # TODO: if two are published in quick succession could miss one
                         name=feeddict["fields"][0]["name"], value=feeddict["fields"][0]["value"], inline=False
                     )
 
                 try:
-                    await channel.send(embed=embed)
-                except (Forbidden, AttributeError):
+                    # thanks flare for your webhook logic (redditpost) (or trusty?oh)
+                    if use_webhook:
+                        if channel.guild.me.nick:
+                            botname = channel.guild.me.nick
+                        else:
+                            botname = channel.guild.me.name
+                        embed.set_footer(text=f"Powered by {botname}")
+                        webhook = None
+                        for hook in await channel.webhooks():
+                            if hook.name == channel.guild.me.name:
+                                webhook = hook
+                        if webhook is None:
+                            print(channel)
+                            webhook = await channel.create_webhook(name=channel.guild.me.name)
+                        await webhook.send(
+                            username=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
+                            avatar_url=AVATAR_URLS[service],
+                            embed=embed,
+                        )
+                    else:
+                        await channel.send(embed=embed)
+                except Exception:
                     # TODO: maybe remove the feed from config to stop this happening in future?
-                    log.debug(
-                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
+                    log.warning(
+                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}. All other updates WILL be sent."
                     )
 
             else:
@@ -365,22 +401,29 @@ class Status(commands.Cog):
         if mode not in [ALL, LATEST, EDIT]:
             return await ctx.send("Hmm, that doesn't look like a valid mode. Canceling.")
 
-        # await ctx.send(
-        #     "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means that the status "
-        #     f"updates will be sent with the avatar as {friendly}'s logo and the name will be `{friendly} "
-        #     "Status Update`, instead of my avatar and name."
-        # )
+        if ctx.channel.permissions_for(ctx.me).manage_webhooks:
+            await ctx.send(
+                "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means that the status "
+                f"updates will be sent with the avatar as {friendly}'s logo and the name will be `{friendly} "
+                "Status Update`, instead of my avatar and name."
+            )
 
-        # pred = MessagePredicate.yes_or_no(ctx)
-        # try:
-        #     await self.bot.wait_for("message", check=pred, timeout=120)
-        # except TimeoutError:
-        #     return await ctx.send("Timed out. Canceling.")
+            pred = MessagePredicate.yes_or_no(ctx)
+            try:
+                await self.bot.wait_for("message", check=pred, timeout=120)
+            except TimeoutError:
+                return await ctx.send("Timed out. Canceling.")
 
-        # if pred.result is True:
-        #     webhook = True
-        # else:
-        webhook = False
+            if pred.result is True:
+                webhook = True
+            else:
+                webhook = False
+        else:
+            await ctx.send(
+                "I would ask about whether you want me to send updates as a webhook (so they match the "
+                "service), however I don't have the `manage webhooks` permission."
+            )
+            webhook = False
 
         settings = {"mode": mode, "webhook": webhook}
         await self.config.channel(channel).feeds.set_raw(service, value=settings)
@@ -438,9 +481,9 @@ class Status(commands.Cog):
                     if feed[0] != service:
                         continue
                     mode = feed[1]["mode"]
-                    # webhook = feed[1]["webhook"]  TODO: add when implemented
-                    data.append([f"#{channel.name}", mode])
-            table = box(tabulate(data, headers=["Channel", "Send mode"]))
+                    webhook = feed[1]["webhook"]
+                    data.append([f"#{channel.name}", mode, webhook])
+            table = box(tabulate(data, headers=["Channel", "Send mode", "Use webhooks"]))
             await ctx.send(f"**Settings for {FEED_FRIENDLY_NAMES[service]}**: {table}")
 
         else:
@@ -520,7 +563,7 @@ class Status(commands.Cog):
         await ctx.send(f"Real update: {real}")
         to_send = await self.get_channels(service)
         for channel in to_send.items():
-            await self.send_updated_feed(feeddict, channel)
+            await self.send_updated_feed(feeddict, channel, service)
 
     @checks.is_owner()
     @commands.command(aliases=["dcf"], hidden=True)
