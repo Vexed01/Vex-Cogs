@@ -75,7 +75,7 @@ AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aw
     "reddit": [ALL, LATEST],
 }
 
-AVATAR_URLS = {
+AVATAR_URLS = {  # TODO: unify these
     "discord": "https://cdn.discordapp.com/attachments/813140082989989918/813140277367144458/discord.png",
     "github": "https://cdn.discordapp.com/attachments/813140082989989918/813140279120232488/github.png",
     "cloudflare": "https://cdn.discordapp.com/attachments/813140082989989918/813140275714195516/cloudflare.png",
@@ -327,18 +327,22 @@ class Status(commands.Cog):
                     )
 
             else:
-                msg = self
                 t = feeddict["title"]
-                d = feeddict["desc"]
-
-                msg = ""
-                msg += f"**{t}**\n{d}\n\n"
+                l = feeddict["link"]
+                n = FEED_FRIENDLY_NAMES[service]
+                msg = f"**{n} Status Update\n{t}**\nIncident link: {l}\n\n"
 
                 if mode == "all":
-                    for i in reversed(feeddict["fields"]):
-                        n = i["name"]
-                        v = i["value"]
-                        msg += f"**{n}**\n{v}\n"
+                    if service in DONT_REVERSE:
+                        for i in feeddict["fields"]:
+                            n = i["name"]
+                            v = i["value"]
+                            msg += f"**{n}**\n{v}\n"
+                    else:
+                        for i in reversed(feeddict["fields"]):
+                            n = i["name"]
+                            v = i["value"]
+                            msg += f"**{n}**\n{v}\n"
 
                     regex = r"(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
                     msg = re.sub(regex, r"<\1>", msg)  # wrap links in <> for no previews
