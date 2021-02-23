@@ -1,0 +1,8 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
+    "author": ["Vexed (Vexed#3211)"],
+    "install_msg": "\\N{WARNING SIGN}\\N{VARIATION SELECTOR-16}\nThis cog directly interacts with the config of the alias cog. **It may result in data loss.** (probably won't, as it's only reading not writing but it's certainly possible)\nIf you load this cog, you accept responsibility for this data loss agree to not contact Vexed or #support in the Red server about it.\n\\N{WARNING SIGN}\\N{VARIATION SELECTOR-16}",
+    "description": "Get all the information you could ever need about a command's aliases.",
+    "short": "Get all the information you could ever need about a command's aliases.",
+    "tags": ["utility", "alias"]
+}
