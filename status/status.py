@@ -110,7 +110,7 @@ log = logging.getLogger("red.vexed.status")
 class Status(commands.Cog):
     """Automatically check for status updates"""
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
