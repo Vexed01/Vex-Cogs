@@ -452,6 +452,7 @@ async def parse_digitalocean(feed: FeedParserDict):
 
 
 async def parse_reddit(feed: FeedParserDict):
+    # statuspage
     strippedcontent = await _strip_html(feed["content"][0]["value"])
 
     sections = strippedcontent.split("=-=SPLIT=-=")
@@ -485,6 +486,34 @@ async def parse_reddit(feed: FeedParserDict):
     return parseddict
 
 
+async def parse_aws(feed: FeedParserDict):
+    # custom
+    parseddict = {"fields": []}
+
+    parseddict["fields"].append({"name": feed["published"], "value": feed["description"]})
+
+    parseddict.update({"time": None})  # TODO: actually parse the time
+    parseddict.update({"title": feed["title"]})
+    parseddict.update({"link": feed["link"]})
+    parseddict.update({"colour": 16750848})
+    return parseddict
+
+
+async def parse_gcp(feed: FeedParserDict):
+    # custom
+    parseddict = {"fields": []}
+
+    parseddict["fields"].append(
+        {"name": parse(feed["updated"]).strftime("%b %d, %H:%M %Z"), "value": feed["description"]}
+    )
+
+    parseddict.update({"time": parse(feed["updated"])})
+    parseddict.update({"title": feed["title"]})
+    parseddict.update({"link": feed["link"]})
+    parseddict.update({"colour": 3450962})
+    return parseddict
+
+
 FEEDS = {
     "discord": parse_discord,
     "github": parse_github,
@@ -498,4 +527,6 @@ FEEDS = {
     "epic_games": parse_epic_games,
     "digitalocean": parse_digitalocean,
     "reddit": parse_reddit,
+    "aws": parse_aws,
+    "gcp": parse_gcp,
 }

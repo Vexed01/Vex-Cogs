@@ -43,6 +43,8 @@ FEED_URLS = {
     "epic_games": "https://status.epicgames.com/history.atom",
     "digitalocean": "https://status.digitalocean.com/history.atom",
     "reddit": "https://www.redditstatus.com/history.atom",
+    "aws": "https://status.aws.amazon.com/rss/all.rss",
+    "gcp": "https://status.cloud.google.com/feed.atom",
 }
 
 FEED_FRIENDLY_NAMES = {
@@ -58,6 +60,8 @@ FEED_FRIENDLY_NAMES = {
     "epic_games": "Epic Games",
     "digitalocean": "DigitalOcean",
     "reddit": "Reddit",
+    "aws": "Amazon Web Services",
+    "gcp": "Google Cloud Platform",
 }
 
 AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aws, google
@@ -73,6 +77,8 @@ AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aw
     "epic_games": [ALL, LATEST],
     "digitalocean": [ALL, LATEST],
     "reddit": [ALL, LATEST],
+    "aws": [LATEST],
+    "gcp": [LATEST],
 }
 
 AVATAR_URLS = {  # TODO: unify these
@@ -88,6 +94,12 @@ AVATAR_URLS = {  # TODO: unify these
     "epic_games": "https://cdn.discordapp.com/attachments/813140082989989918/813454141514317854/unknown.png",
     "digitalocean": "https://cdn.discordapp.com/attachments/813140082989989918/813454051613999124/gnlwek2zwhq369yryrzv.png",
     "reddit": "https://cdn.discordapp.com/attachments/813140082989989918/813466098040176690/reddit-logo-16.png",
+    "aws": "https://cdn.discordapp.com/attachments/813140082989989918/813730858951245854/aws.png",
+    "gcp": "https://cdn.discordapp.com/attachments/813140082989989918/813739309072384030/assets.png",
+}
+
+SPECIAL_INFO = {
+    "aws": "AWS frequently posts status updates in both English and the language local to where the incident affects."
 }
 
 DONT_REVERSE = ["twitter"]
@@ -98,7 +110,7 @@ log = logging.getLogger("red.vexed.status")
 class Status(commands.Cog):
     """Automatically check for status updates"""
 
-    __version__ = "0.2.3"
+    __version__ = "1.0.0"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -190,7 +202,8 @@ class Status(commands.Cog):
                         etags[feed] = response.etag
                 except KeyError:
                     response = feedparser.parse(FEED_URLS[feed])
-                    etags[feed] = response.etag
+                    if feed != "gcp":  # gcp doesn't do etags
+                        etags[feed] = response.etag
                 except (ConnectionRefusedError, URLError):
                     log.warning(f"Unable to connect to {feed}. Will try again at next check.")
 
@@ -225,12 +238,10 @@ class Status(commands.Cog):
             except KeyError:
                 old_fields = "hello"
             new_fields = feeddict["fields"]
-            log.debug(f"Old fields: {old_fields}")
-            log.debug(f"New fields: {new_fields}")
             if old_fields == new_fields:
                 return False
             else:
-                feeddict["time"] = feeddict["time"].timestamp()
+                feeddict["time"] = None
                 feed_store[service] = feeddict
                 return True
 
@@ -274,6 +285,7 @@ class Status(commands.Cog):
                         colour=feeddict["colour"],
                         url=feeddict["link"],
                     )
+
                 if mode == "all":
                     if service in DONT_REVERSE:
                         for field in feeddict["fields"]:
@@ -378,7 +390,9 @@ class Status(commands.Cog):
         """
         Start getting status updates for the choses service!
 
-        There is a list of services you can use in the `[p]statusset list` command.
+        There is a list of services you can use in the **`[p]statusset list`** command.
+
+        You can use the **`[p]statusset preview`** command to see how different options look.
 
         If you don't specify a specific channel, I will use the current channel.
 
@@ -401,31 +415,32 @@ class Status(commands.Cog):
 
         modes = ""
         unsupported = []
-        if ALL in AVALIBLE_MODES[service]:
-            modes += (
-                "**All**: Every time the service posts an update on an incident, I will send a new message "
-                "contaning the previus updates as well as the new update. Best used in a fast-moving "
-                "channel with other users.\n\n"
-            )
-        else:
+        modes += (
+            "**All**: Every time the service posts an update on an incident, I will send a new message "
+            "contaning the previus updates as well as the new update. Best used in a fast-moving "
+            "channel with other users.\n\n"
+            "**Latest**: Every time the service posts an update on an incident, I will send a new message "
+            "contanint only the latest update. Best used in a dedicated status channel.\n\n"
+        )
+        if ALL not in AVALIBLE_MODES[service]:
             unsupported.append(ALL)
-        if LATEST in AVALIBLE_MODES[service]:
-            modes += (
-                "**Latest**: Every time the service posts an update on an incident, I will send a new message "
-                "contanint only the latest update. Best used in a dedicated status channel.\n\n"
-            )
-        else:
+        if LATEST not in AVALIBLE_MODES[service]:
             unsupported.append(LATEST)
+
         if unsupported:
-            unsupported = humanize_list(unsupported)
             if len(unsupported) > 1:
                 extra = "s"
-            modes += f"Due to {friendly} limitations, I can't support the {unsupported} mode{extra}\n\n"
+            else:
+                extra = ""
+            unsupported = humanize_list(unsupported)
+            modes += f"Due to {friendly} limitations, I can't support the `{unsupported}` mode{extra}\n\n"
 
         await ctx.send(
             "This is an interactive configuration. You have 2 minutes to answer each question.\n"
-            f"**What mode do you want to use?**\n\n{modes}"
+            f"If you aren't sure what to choose, just say `cancel` and take a look at the **`{ctx.clean_prefix}"
+            f"statusset preview`** command.\n\n**What mode do you want to use?**\n\n{modes}"
         )
+
         try:
             mode = await self.bot.wait_for("message", check=MessagePredicate.same_context(ctx), timeout=120)
         except TimeoutError:
@@ -439,7 +454,7 @@ class Status(commands.Cog):
             await ctx.send(
                 "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means that the status "
                 f"updates will be sent with the avatar as {friendly}'s logo and the name will be `{friendly} "
-                "Status Update`, instead of my avatar and name."
+                "Status Update`, instead of my avatar and name. If you aren't sure, say `yes`."
             )
 
             pred = MessagePredicate.yes_or_no(ctx)
@@ -465,9 +480,14 @@ class Status(commands.Cog):
         if service not in self.used_feeds_cache:
             self.used_feeds_cache.append(service)
 
-        await ctx.send(
-            f"Done, {channel.mention} will now receive {FEED_FRIENDLY_NAMES[service]} status updates."
-        )
+        if service in SPECIAL_INFO:
+            await ctx.send(
+                f"Note: {SPECIAL_INFO[service]}\n{channel.mention} will now receive {FEED_FRIENDLY_NAMES[service]} status updates."
+            )
+        else:
+            await ctx.send(
+                f"Done, {channel.mention} will now receive {FEED_FRIENDLY_NAMES[service]} status updates."
+            )
 
     @statusset.command(name="remove", aliases=["del", "delete"])
     async def statusset_remove(
@@ -554,7 +574,52 @@ class Status(commands.Cog):
             )
             await ctx.send(msg)
 
-    # TODO: preview command
+    @statusset.command(name="preview")
+    async def statusset_preview(self, ctx: commands.Context, service: str, mode: str, webhook: bool):
+        """
+        Preview what status updates will look like
+
+        __**Service**__
+        The service you want to preview. There's a list of available services in the
+        `[p]statusset list` command.
+
+        __**Mode**__
+        **All**: Every time the service posts an update on an incident, I will send
+        a new messagecontaning the previus updates as well as the new update. Best
+        used in a fast-moving channel with other users.
+        **Latest**: Every time the service posts an update on an incident, I will send
+        a new message contaning only the latest update. Best used in a dedicated status
+        channel.
+
+        __**Webhook**__
+        Using a webhook means that the status updates will be sent with the avatar
+        as the service's logo and the name will be `[service] Status Update`, instead
+        of my avatar and name.
+        """
+        if service not in FEED_URLS.keys():
+            return await ctx.send(f"That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
+        mode = mode.lower()
+        if mode not in [ALL, LATEST, EDIT]:
+            return await ctx.send("That's not a valid mode. Valid ones are `all` and `latest`")
+        if mode not in AVALIBLE_MODES[service]:
+            return await ctx.send(f"That mode isn't avalible for {FEED_FRIENDLY_NAMES[service]}")
+        if webhook and not ctx.channel.permissions_for(ctx.me).manage_webhooks:
+            return await ctx.send(f"I don't have permission to manage webhooks.")
+
+        feed = await self.config.feed_store()
+        try:
+            feed = feed[service]
+        except KeyError:  # will only really happen on first load
+            feed = feedparser.parse(FEED_URLS[service])
+            feed = await self.process_feed(service, feed)
+            await self.check_real_update(service, feed)  # this will add it to the feed_store
+
+        channel = (ctx.channel.id, {"mode": mode, "webhook": webhook})
+
+        try:
+            await self.send_updated_feed(feed, channel, service)
+        except KeyError:
+            await ctx.send("Hmm, I couldn't preview that.")
 
     # STARTING THE DEV COMMANDS
 
@@ -611,14 +676,16 @@ class Status(commands.Cog):
 
         strippedcontent = await _strip_html(feed["description"])
 
-        sections = strippedcontent.split("=-=SPLIT=-=")
         parseddict = {"fields": []}
 
-        parseddict.update({"time": parse(feed["published"])})
-        parseddict.update({"title": "{} - SERVICE Status Update".format(feed["title"])})
-        parseddict.update({"desc": "Incident page: {}".format(feed["link"])})
-        parseddict.update({"rtitle": feed["title"]})
-        parseddict.update({"colour": 27134})
+        parseddict["fields"].append(
+            {"name": parse(feed["updated"]).strftime("%b %d, %H:%M %Z"), "value": feed["description"]}
+        )
+
+        parseddict.update({"time": parse(feed["updated"])})  # TODO: actually parse the time
+        parseddict.update({"title": feed["title"]})
+        parseddict.update({"link": feed["link"]})
+        parseddict.update({"colour": 3765669})
 
         # end standard
 
