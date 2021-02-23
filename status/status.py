@@ -220,6 +220,7 @@ class Status(commands.Cog):
                 log.debug("Done")
             else:
                 log.debug(f"No status update for {feed}")
+            await asyncio.sleep(0.5)
 
     async def process_feed(self, service: str, feedparser: FeedParserDict):
         """Process a FeedParserDict into a nicer dict for embeds."""
@@ -262,6 +263,14 @@ class Status(commands.Cog):
         use_webhook = channel[1]["webhook"]
         channel = self.bot.get_channel(channel[0])
         if channel is None:  # guilds can creep in here, blame core for giving guilds from all_channels() /s
+            return
+        if use_webhook and not channel.permissions_for(channel.guild.me).manage_webhooks:
+            log.debug(
+                f"Unable to send a webhook to {channel.id} in guild {channel.guild.id} - sending normal instead"
+            )
+            use_webhook = False
+        if not use_webhook and not channel.permissions_for(channel.guild.me).send_messages:
+            log.debug(f"Unable to send messages to {channel.id} in guild {channel.guild.id} - skipping")
             return
         if not use_webhook:
             embed = await self.bot.embed_requested(channel, None)
@@ -334,7 +343,7 @@ class Status(commands.Cog):
                 except Exception as e:
                     # TODO: maybe remove the feed from config to stop this happening in future?
                     log.warning(
-                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}. All other updates WILL be sent.",
+                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id} - skipping",
                         exc_info=e,
                     )
 
