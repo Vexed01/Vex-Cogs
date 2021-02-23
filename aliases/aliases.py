@@ -7,6 +7,14 @@ from redbot.core.utils import deduplicate_iterables
 class Aliases(commands.Cog):
     """Get all the alias information you could ever want about a command"""
 
+    __version__ = "1.0.0"
+    __author__ = "Vexed#3211"
+
+    def format_help_for_context(self, ctx: commands.Context):
+        """Thanks Sinbad."""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**"
+
     def __init__(self, bot: Red):
         self.bot = bot
 
