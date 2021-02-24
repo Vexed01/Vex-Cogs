@@ -102,7 +102,11 @@ AVATAR_URLS = {  # TODO: unify these
 }
 
 SPECIAL_INFO = {
-    "aws": "AWS frequently posts status updates in both English and the language local to where the incident affects."
+    "aws": "AWS frequently posts status updates in both English and the language local to where the incident affects.",
+    "oracle_cloud": (
+        "Oracle is frequently very slow to update their status page. Sometimes, they also only update itwhen the "
+        "incident is resolved."
+    ),
 }
 
 DONT_REVERSE = ["twitter"]
