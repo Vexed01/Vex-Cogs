@@ -40,14 +40,14 @@ class AnotherPingCog(commands.Cog):
 
         if embed:
             embed = discord.Embed(title=title)
-            embed.add_field(name="Discord API", value=box(f"{discordlatency} ms", "py"))
+            embed.add_field(name="Discord WS", value=box(f"{discordlatency} ms", "py"))
             embed.set_footer(
-                text="As long as these numbers are below 300, it's nothing to worry about\nScale: Excellent | Good | Bad | Very Bad"
+                text="As long as these numbers are below 300, it's nothing to worry about\nScale: Excellent | Good | Alright | Bad | Very Bad"
             )
             start = monotonic()
             message = await ctx.send(embed=embed)
         else:
-            msg = f"**{title}**\nDiscord API: {discordlatency} ms"
+            msg = f"**{title}**\nDiscord WS: {discordlatency} ms"
             start = monotonic()
             message = await ctx.send(msg)
         end = monotonic()
@@ -86,14 +86,14 @@ class AnotherPingCog(commands.Cog):
 
         if embed:
             extra = box(f"{discordlatency} ms", "py")
-            embed.set_field_at(0, name="Discord API", value=f"{discordlatencym}{extra}")
+            embed.set_field_at(0, name="Discord WS", value=f"{discordlatencym}{extra}")
             extra = box(f"{messagelatency} ms", "py")
-            embed.add_field(name="Message send", value=f"{messagelatencym}{extra}")
+            embed.add_field(name="Message send time", value=f"{messagelatencym}{extra}")
             embed.colour = colour
             await message.edit(embed=embed)
         else:
             data = [
-                ["Discord API", "Message Send"],
+                ["Discord WS", "Message send time"],
                 [discordlatencym, messagelatencym],
                 [f"{discordlatency} ms", f"{messagelatency} ms"],
             ]
