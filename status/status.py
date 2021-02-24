@@ -1,5 +1,8 @@
+# HELLO!
+# This file is formatted with black, line length 120
+# If you are looking for an event your cog can listen to, take a look around lines 170 and 210
+
 import asyncio
-import datetime
 import logging
 import re
 from typing import Optional
@@ -110,7 +113,7 @@ log = logging.getLogger("red.vexed.status")
 class Status(commands.Cog):
     """Automatically check for status updates"""
 
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -160,6 +163,94 @@ class Status(commands.Cog):
     @check_for_updates.before_loop
     async def before_start(self):
         await self.bot.wait_until_red_ready()
+
+    async def update_dispatch(self, feed, feedparser, service, channels, force):
+        """
+        This can be used by anyone. If you wish to test it, run the hidden command
+        `devforcestatus` in discord (alias `dfs`).
+
+        Please note this will NOT trigger if no channels have registered the service
+        you are looking for.
+
+        This event is triggered BEFORE any updates are sent to channels.
+        This event could theoretically trigger up to every 0.5 seconds, though
+        realistically it will generally be at least 1 second.
+
+        Parameters
+        ----------
+        feed : dict
+            A fully parsed dict with individual updates split up
+            NOTE: The time the feed was published may be a datetime object OR
+                  something else. Make sure you can handle this
+            NOTE: Some feeds only supply the latest update. See the file-level
+                  const AVALIBLE_MODES.
+            NOTE: The majority of feeds are in the incorrect order. They need
+                  reversing. See file-level const DONT_REVERSE.
+        feedparser : FeedParserDict
+            The raw dict from feedparser. Unless there's specific data you need,
+            I highly reccomend using the above `feed` where possible.
+        service : str
+            The service name. Guaranteed to be one of the keys in the FEED_URLS
+            file-level const (unless dev commands are used)
+        channels : dict
+            A dict with the keys as channel IDs and the values as another dict contining
+            the settings for that channel.
+        force : bool
+            Whether or not the feed was forced to update with the `devforcestatus`/`dfs`
+            command.
+        """
+        self.bot.dispatch(
+            "vexed_status_update",
+            feed=feed,
+            feedparser=feedparser,
+            service=service,
+            channels=channels,
+            force=force,
+        )
+
+    async def channel_send_dispatch(self, feed, service, channel, webhook, embed):
+        """
+        This can be used by other cogs. For testing, run the hidden comman
+        `devforcestatus` in discord (alias `dfs`).
+
+        This event is triggered AFTER the update has been sent to channel and will
+        NOT be triggered if it failed to send.
+        Due to this, this event will trigger in quick succession, multiple times a
+        second.
+
+        If you need the raw feed data from feedparser, take a look at the above event.
+        Unlike the above event, this does not distinguish between forced and organic
+        triggers
+
+        Parameters
+        ----------
+        feed : dict
+            A fully parsed dict with individual updates split up
+            NOTE: The time the feed was published may be a datetime object OR
+                  something else. Make sure you can handle this
+            NOTE: Some feeds only supply the latest update. See the file-level
+                  const AVALIBLE_MODES
+            NOTE: The majority of feeds that support all updates of the incidents
+                  need reversing. See file-level const DONT_REVERSE
+        service : str
+            The service name. Guaranteed to be one of the keys in the FEED_URLS
+            file-level const (unless dev commands are used)
+        channel : discord.TextChannel
+            The discord.TextChannel object the update was sent to
+        webhook : bool
+            Whether or not the feed was sent as a webhook
+        embed : bool
+            Whether or not the feed was sent as a embed. Will always be True if
+            embed is True
+        """
+        self.bot.dispatch(
+            "vexed_status_channel_send",
+            feed=feed,
+            service=service,
+            channel=channel,
+            webhook=webhook,
+            embed=embed,
+        )
 
     async def make_used_feeds(self):
         feeds = await self.config.all_channels()
@@ -214,6 +305,7 @@ class Status(commands.Cog):
                     continue
                 log.debug(f"Feed dict for {feed}: {feeddict}")
                 channels = await self.get_channels(feed)
+                await self.update_dispatch(feeddict, response, feed, channels, False)
                 log.debug(f"Sending status update for {feed} to {len(channels)} channels...")
                 for channel in channels.items():
                     await self.send_updated_feed(feeddict, channel, feed)
@@ -273,11 +365,11 @@ class Status(commands.Cog):
             log.debug(f"Unable to send messages to {channel.id} in guild {channel.guild.id} - skipping")
             return
         if not use_webhook:
-            embed = await self.bot.embed_requested(channel, None)
-        if use_webhook:
-            embed = True
+            use_embed = await self.bot.embed_requested(channel, None)
+        else:
+            use_embed = True
         if mode == "all" or mode == "latest":
-            if embed:
+            if use_embed:
                 try:
                     embed = discord.Embed(
                         title=feeddict["title"],
@@ -346,6 +438,7 @@ class Status(commands.Cog):
                         f"Unable to send status update to channel {channel.id} in guild {channel.guild.id} - skipping",
                         exc_info=e,
                     )
+                    return
 
             else:
                 t = feeddict["title"]
@@ -385,6 +478,8 @@ class Status(commands.Cog):
                     )
         elif mode == "edit":
             pass  # TODO: this
+
+        await self.channel_send_dispatch(feeddict, service, channel, use_webhook, use_embed)
 
     @guild_only()
     @checks.admin_or_permissions(manage_guild=True)
@@ -672,6 +767,7 @@ class Status(commands.Cog):
         real = await self.check_real_update(service, feeddict)
         await ctx.send(f"Real update: {real}")
         to_send = await self.get_channels(service)
+        await self.update_dispatch(feeddict, feed, service, to_send, True)
         for channel in to_send.items():
             await self.send_updated_feed(feeddict, channel, service)
 
