@@ -1,0 +1,9 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
+    "author": ["Vexed (Vexed#3211"],
+    "install_msg" : "Thanks for installing! This cog will replace the normal `ping` command.",
+    "requirements": ["tabulate>=0.8.9"],
+    "description": "Replace the ping command with a rich embed that shows ping time and message time. It is colour coded: red, orange and gree.",
+    "short": "Replace the ping command with a rich embed showing actual timings.",
+    "tags": ["utility", "ping", "pingtime"]
+}
