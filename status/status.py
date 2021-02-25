@@ -85,20 +85,20 @@ AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aw
 }
 
 AVATAR_URLS = {  # TODO: unify these
-    "discord": "https://cdn.discordapp.com/attachments/813140082989989918/813140277367144458/discord.png",
+    "discord": "https://cdn.discordapp.com/attachments/813140082989989918/814490641283153920/unknown.png",
     "github": "https://cdn.discordapp.com/attachments/813140082989989918/813140279120232488/github.png",
     "cloudflare": "https://cdn.discordapp.com/attachments/813140082989989918/813140275714195516/cloudflare.png",
-    "python": "https://cdn.discordapp.com/attachments/813140082989989918/813140283767783424/python.png",
+    "python": "https://cdn.discordapp.com/attachments/813140082989989918/814490148917608458/unknown.png",
     "twitter_api": "https://cdn.discordapp.com/attachments/813140082989989918/813140272027926528/twitter_api.jpg",
     "statuspage": "https://cdn.discordapp.com/attachments/813140082989989918/813140261987024976/statuspage.png",
     "zoom": "https://cdn.discordapp.com/attachments/813140082989989918/813140273751523359/zoom.png",
-    "oracle_cloud": "https://cdn.discordapp.com/attachments/813140082989989918/813140282538721310/oracle_cloud.png",
+    "oracle_cloud": "https://cdn.discordapp.com/attachments/813140082989989918/814489350283853864/unknown.png",
     "twitter": "https://cdn.discordapp.com/attachments/813140082989989918/813140272027926528/twitter_api.jpg",
     "epic_games": "https://cdn.discordapp.com/attachments/813140082989989918/813454141514317854/unknown.png",
     "digitalocean": "https://cdn.discordapp.com/attachments/813140082989989918/813454051613999124/gnlwek2zwhq369yryrzv.png",
     "reddit": "https://cdn.discordapp.com/attachments/813140082989989918/813466098040176690/reddit-logo-16.png",
     "aws": "https://cdn.discordapp.com/attachments/813140082989989918/813730858951245854/aws.png",
-    "gcp": "https://cdn.discordapp.com/attachments/813140082989989918/813739309072384030/assets.png",
+    "gcp": "https://cdn.discordapp.com/attachments/813140082989989918/814488794585235517/unknown.png",
 }
 
 SPECIAL_INFO = {
