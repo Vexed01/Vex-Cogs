@@ -72,6 +72,7 @@ class AnotherPingCog(commands.Cog):
         else:
             colour = 7909721  # green
 
+        # im sure there's better way to do this, haven't looked properly yet
         if discordlatency < 50:
             discordlatencym = f"{GREEN} Excellent"
         elif discordlatency < 150:

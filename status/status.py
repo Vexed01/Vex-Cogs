@@ -142,7 +142,7 @@ class Status(commands.Cog):
     def cog_unload(self):
         self.check_for_updates.cancel()
 
-    @tasks.loop(minutes=2.5)
+    @tasks.loop(minutes=2.0)
     async def check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
 
@@ -159,11 +159,9 @@ class Status(commands.Cog):
             return
 
         try:
-            await asyncio.wait_for(self.actually_check_updates(), timeout=140.0)  # 2 min 20 sec
+            await asyncio.wait_for(self.actually_check_updates(), timeout=110.0)  # 1 min 50 secs
         except TimeoutError:
-            log.warning(
-                "Loop timed out after 2 minutes and 20 seconds. Multiple updates were likely disrupted, most should be check again"
-            )
+            log.warning("Loop timed out after 1 minute 50 seconds. Will check feeds again shortly.")
 
     @check_for_updates.before_loop
     async def before_start(self):
@@ -294,7 +292,7 @@ class Status(commands.Cog):
                 async with self.config.etags() as etags:
                     try:
                         async with session.get(
-                            FEED_URLS[feed], headers={"If-None-Match": etags[feed]}
+                            FEED_URLS[feed], headers={"If-None-Match": etags[feed]}, timeout=5
                         ) as response:
                             html = await response.text()
                             status = response.status
