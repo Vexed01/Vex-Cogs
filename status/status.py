@@ -1015,5 +1015,4 @@ class Status(commands.Cog):
 
         for page in pages:
             print(page, end="")
-            # await ctx.send(page)
-        print()
+            await ctx.send(page)
