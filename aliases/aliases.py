@@ -1,6 +1,6 @@
 from redbot.core import commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import humanize_list
+from redbot.core.utils.chat_formatting import humanize_list, inline
 from redbot.core.utils import deduplicate_iterables
 
 
@@ -63,11 +63,11 @@ class Aliases(commands.Cog):
 
         com_builtin_aliases = []
         for i in range(len(com_aliases)):
-            com_builtin_aliases.append(f"`{com_parent} {com_aliases[i]}`")
+            com_builtin_aliases.append(inline(f"{com_parent} {com_aliases[i]}"))
         for i in range(len(com_global_aliases)):
-            com_global_aliases[i] = f"`{com_global_aliases[i]}`"
+            com_global_aliases[i] = inline(com_global_aliases[i])
         for i in range(len(com_guild_aliases)):
-            com_guild_aliases[i] = f"`{com_guild_aliases[i]}`"
+            com_guild_aliases[i] = inline(com_guild_aliases[i])
 
         aliases = ""
         none = []
