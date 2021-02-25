@@ -11,7 +11,7 @@ import feedparser
 import discord
 from feedparser import parse
 from dateutil.parser import parse
-from discord.errors import Forbidden
+import datetime
 from discord.ext import tasks
 from discord.ext.commands.core import guild_only
 from feedparser.util import FeedParserDict
@@ -320,6 +320,7 @@ class Status(commands.Cog):
                     log.debug(f"Feed dict for {service}: {feeddict}")
                     channels = await self.get_channels(service)
                     await self.update_dispatch(feeddict, fp_data, service, channels, False)
+                    await self.make_send_cache(feeddict, service)
                     log.debug(f"Sending status update for {service} to {len(channels)} channels...")
                     for channel in channels.items():
                         await self.send_updated_feed(feeddict, channel, service)
@@ -946,16 +947,45 @@ class Status(commands.Cog):
         feed = feedparser.parse(html)
         # standard below:
 
+        strippedcontent = await _strip_html(feed["content"][0]["value"])
+        sections = strippedcontent.split("=-=SPLIT=-=")
         parseddict = {"fields": []}
 
-        parseddict["fields"].append(
-            {"name": parse(feed["updated"]).strftime("%b %d, %H:%M %Z"), "value": feed["description"]}
-        )
+        for data in sections:
+            try:
+                if data != "":
+                    current = data.split(" - ", 1)
+                    content = current[1]
+                    tt = current[0].split("\n")
+                    time = tt[0]
+                    title = tt[1]
+                    parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
+            except IndexError:  # this would be a likely error if something didn't format as expected
+                try:
+                    if data.startswith("THIS IS A SCHEDULED EVENT"):
+                        split = data.split("EVENT", 1)
+                        value = split[1]
+                        parseddict["fields"].append(
+                            {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                        )
+                        continue
+                except IndexError:
+                    pass
+                parseddict["fields"].append(
+                    {
+                        "name": "Something went wrong with this section",
+                        "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
+                    }
+                )
+                log.warning(
+                    "Something went wrong while parsing a status feed. You can report this to Vexed#3211."
+                    f" Timestamp: {datetime.datetime.utcnow()}"
+                )
 
-        parseddict.update({"time": parse(feed["updated"])})  # TODO: actually parse the time
+        parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")})
         parseddict.update({"title": feed["title"]})
         parseddict.update({"link": feed["link"]})
-        parseddict.update({"colour": 3765669})
+        parseddict.update({"colour": 7308754})
 
         # end standard
 
@@ -977,4 +1007,6 @@ class Status(commands.Cog):
         pages = pagify(str(feed))
 
         for page in pages:
-            await ctx.send(page)
+            print(page, end="")
+            # await ctx.send(page)
+        print()
