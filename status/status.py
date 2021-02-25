@@ -7,7 +7,6 @@ import logging
 import re
 import aiohttp
 from typing import Optional
-from urllib.error import URLError
 import feedparser
 import discord
 from feedparser import parse
@@ -179,8 +178,8 @@ class Status(commands.Cog):
         you are looking for.
 
         This event is triggered BEFORE any updates are sent to channels.
-        This event could theoretically trigger up to every 0.5 seconds, though
-        realistically it will generally be at least 1 second.
+        This event can trigger multiple times in short sucession due to how this cog
+        works.
 
         Parameters
         ----------
@@ -221,8 +220,7 @@ class Status(commands.Cog):
 
         This event is triggered AFTER the update has been sent to channel and will
         NOT be triggered if it failed to send.
-        Due to this, this event will trigger in quick succession, multiple times a
-        second.
+        Due to this, this event will trigger in burts, many times a second.
 
         If you need the raw feed data from feedparser, take a look at the above event.
         Unlike the above event, this does not distinguish between forced and organic
@@ -490,7 +488,7 @@ class Status(commands.Cog):
                 except (Forbidden, AttributeError):
                     # TODO: maybe remove the feed from config to stop this happening in future?
                     log.debug(
-                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id}"
+                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id} - skipping"
                     )
         elif mode == "edit":
             pass  # TODO: this
