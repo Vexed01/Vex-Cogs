@@ -5,11 +5,12 @@
 import asyncio
 import logging
 import re
+import aiohttp
 from typing import Optional
 from urllib.error import URLError
-
-import discord
 import feedparser
+import discord
+from feedparser import parse
 from dateutil.parser import parse
 from discord.errors import Forbidden
 from discord.ext import tasks
@@ -117,7 +118,7 @@ log = logging.getLogger("red.vexed.status")
 class Status(commands.Cog):
     """Automatically check for status updates"""
 
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -145,7 +146,6 @@ class Status(commands.Cog):
     @tasks.loop(minutes=2.5)
     async def check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
-        await asyncio.sleep(0.1)  # this stops some weird behaviur on loading the cog
 
         if self.check_for_updates.current_loop == 0:
             await self.make_used_feeds()
@@ -160,9 +160,11 @@ class Status(commands.Cog):
             return
 
         try:
-            await asyncio.wait_for(self.actually_check_updates(), timeout=150.0)  # 2.5 mins
+            await asyncio.wait_for(self.actually_check_updates(), timeout=140.0)  # 2 min 20 sec
         except TimeoutError:
-            log.warning("Loop timed out after 2.5 minutes. Multiple updates were likely disrupted.")
+            log.warning(
+                "Loop timed out after 2 minutes and 20 seconds. Multiple updates were likely disrupted, most should be check again"
+            )
 
     @check_for_updates.before_loop
     async def before_start(self):
@@ -289,34 +291,42 @@ class Status(commands.Cog):
         await self.config.migrated.set(True)
 
     async def actually_check_updates(self):
-        for feed in self.used_feeds_cache:
-            async with self.config.etags() as etags:
-                try:
-                    response = feedparser.parse(FEED_URLS[feed], etag=etags[feed])
-                    if response.status == 200:
-                        etags[feed] = response.etag
-                except KeyError:
-                    response = feedparser.parse(FEED_URLS[feed])
-                    if feed != "gcp":  # gcp doesn't do etags
-                        etags[feed] = response.etag
-                except (ConnectionRefusedError, URLError):
-                    log.warning(f"Unable to connect to {feed}. Will try again at next check.")
+        async with aiohttp.ClientSession() as session:
+            for feed in self.used_feeds_cache:
+                async with self.config.etags() as etags:
+                    try:
+                        async with session.get(
+                            FEED_URLS[feed], headers={"If-None-Match": etags[feed]}
+                        ) as response:
+                            html = await response.text()
+                            status = response.status
+                            if status == 200:
+                                etags[feed] = response.headers.get("ETag")
+                    except KeyError:
+                        async with session.get(FEED_URLS[feed]) as response:
+                            html = await response.text()
+                            status = response.status
+                        if feed != "gcp":  # gcp doesn't do etags
+                            etags[feed] = response.headers.get("ETag")
+                    except Exception as e:
+                        log.warning(f"Unable to check for an update for {feed}", exc_info=e)
 
-            if response.status == 200:
-                feeddict = await self.process_feed(feed, response)
-                if not await self.check_real_update(feed, feeddict):
-                    log.debug(f"Ghost status update for {feed} detected, skipping")
-                    continue
-                log.debug(f"Feed dict for {feed}: {feeddict}")
-                channels = await self.get_channels(feed)
-                await self.update_dispatch(feeddict, response, feed, channels, False)
-                log.debug(f"Sending status update for {feed} to {len(channels)} channels...")
-                for channel in channels.items():
-                    await self.send_updated_feed(feeddict, channel, feed)
-                log.debug("Done")
-            else:
-                log.debug(f"No status update for {feed}")
-            await asyncio.sleep(0.5)
+                if status == 200:
+                    fp_data = feedparser.parse(html)
+                    feeddict = await self.process_feed(feed, fp_data)
+                    if not await self.check_real_update(feed, feeddict):
+                        log.debug(f"Ghost status update for {feed} detected, skipping")
+                        continue
+                    log.debug(f"Feed dict for {feed}: {feeddict}")
+                    channels = await self.get_channels(feed)
+                    await self.update_dispatch(feeddict, fp_data, feed, channels, False)
+                    log.debug(f"Sending status update for {feed} to {len(channels)} channels...")
+                    for channel in channels.items():
+                        await self.send_updated_feed(feeddict, channel, feed)
+                    log.debug("Done")
+                else:
+                    log.debug(f"No status update for {feed}")
+        await session.close()
 
     async def process_feed(self, service: str, feedparser: FeedParserDict):
         """Process a FeedParserDict into a nicer dict for embeds."""
@@ -462,7 +472,8 @@ class Status(commands.Cog):
                             v = i["value"]
                             msg += f"**{n}**\n{v}\n"
 
-                    regex = r"(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+                    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]|\(([^\s()<>]|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+                    # regex from https://stackoverflow.com/a/28187496
                     msg = re.sub(regex, r"<\1>", msg)  # wrap links in <> for no previews
 
                 elif mode == "latest":
@@ -470,7 +481,8 @@ class Status(commands.Cog):
                     v = feeddict["fields"][0]["value"]
                     msg += f"**{n}**\n{v}\n"
 
-                    regex = r"(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+                    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]|\(([^\s()<>]|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+                    # regex from https://stackoverflow.com/a/28187496
                     msg = re.sub(regex, r"<\1>", msg)  # wrap links in <> for no previews
 
                 try:
@@ -718,7 +730,11 @@ class Status(commands.Cog):
         try:
             feed = feed[service]
         except KeyError:  # will only really happen on first load
-            feed = feedparser.parse(FEED_URLS[service])
+            async with aiohttp.ClientSession() as session:
+                async with session.get(FEED_URLS[service]) as response:
+                    html = await response.text()
+                await session.close()
+            feed = feedparser.parse(html)
             feed = await self.process_feed(service, feed)
             await self.check_real_update(service, feed)  # this will add it to the feed_store
 
@@ -729,11 +745,101 @@ class Status(commands.Cog):
         except KeyError:
             await ctx.send("Hmm, I couldn't preview that.")
 
+    @guild_only()
+    @checks.admin_or_permissions(manage_guild=True)
+    @statusset.group(name="edit")
+    async def statusset_edit(self, ctx):
+        """Base command for editing services"""
+
+    @statusset_edit.command(name="mode")
+    async def statusset_edit_mode(
+        self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel], mode: str
+    ):
+        """Change what mode to use for updates
+
+        **All**: Every time the service posts an update on an incident, I will send a new message
+        contaning the previus updates as well as the new update. Best used in a fast-moving
+        channel with other users.
+
+        **Latest**: Every time the service posts an update on an incident, I will send a new message
+        contaning only the latest update. Best used in a dedicated status channel.
+        """
+        channel = channel or ctx.channel
+        service = service.lower()
+        mode = mode.lower()
+
+        if service not in FEED_URLS.keys():
+            return await ctx.send(f"That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
+
+        old_conf = await self.config.channel(channel).feeds()
+        if service not in old_conf.keys():
+            return await ctx.send(
+                f"It looks like I don't send {FEED_FRIENDLY_NAMES[service]} status updates to {channel.mention}"
+            )
+
+        if mode not in [ALL, LATEST, EDIT]:
+            return await ctx.send("That doesn't look like a valid mode. It can be `all` or `latest`")
+        if mode not in AVALIBLE_MODES[service]:
+            return await ctx.send(f"That mode isn't avalible for {FEED_FRIENDLY_NAMES[service]}")
+
+        if old_conf[service]["mode"] == mode:
+            return await ctx.send(
+                f"It looks like I already use that mode for {FEED_FRIENDLY_NAMES[service]} updates in {channel.mention}"
+            )
+
+        old_conf[service]["mode"] = mode
+        await self.config.channel(channel).feeds.set_raw(service, value=old_conf[service])
+
+        await ctx.send(
+            f"{FEED_FRIENDLY_NAMES[service]} status upadtes in {channel.mention} will now use the {mode} mode."
+        )
+
+    @statusset.command(name="webhook")
+    async def statusset_edit_webhook(
+        self, ctx: commands.Context, servie: str, channel: Optional[discord.TextChannel], webhook: bool
+    ):
+        """Set whether or not to use webhooks to send the status update
+
+        Using a webhook means that the status updates will be sent with the avatar as the service's
+        logo and the name will be `[service] Status Update`, instead of my avatar and name.
+        """
+        channel = channel or ctx.channel
+        service = servie.lower()
+
+        if service not in FEED_URLS.keys():
+            return await ctx.send(f"That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
+
+        old_conf = await self.config.channel(channel).feeds()
+        if service not in old_conf.keys():
+            return await ctx.send(
+                f"It looks like I don't send {FEED_FRIENDLY_NAMES[service]} status updates to {channel.mention}"
+            )
+
+        if old_conf[service]["webhook"] == webhook:
+            if webhook:
+                word = "use"
+            else:
+                word = "don't use"
+            return await ctx.send(
+                f"It looks like I already {word} webhooks for {FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention}"
+            )
+
+        old_conf[service]["webhook"] = webhook
+        await self.config.channel(channel).feeds.set_raw(service, value=old_conf[service])
+
+        if webhook:
+            word = "not use"
+        else:
+            word = "use"
+        await ctx.send(
+            f"{FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention} will now {word} webhooks."
+        )
+
     # STARTING THE DEV COMMANDS
 
     async def dev_com(self, ctx: commands.Context):
         """Returns whether to continue or not"""
-        if ctx.author.id != 418078199982063626:  # my id
+        if ctx.author.id != 418078199982063626:  # vexed (my) id
             msg = await ctx.send(
                 warning(
                     "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things are likely to"
@@ -765,7 +871,11 @@ class Status(commands.Cog):
         if service not in FEED_URLS.keys():
             return await ctx.send("Hmm, that doesn't look like a valid service.")
 
-        feed = feedparser.parse(FEED_URLS[service])
+        async with aiohttp.ClientSession() as session:
+            async with session.get(FEED_URLS[service]) as response:
+                html = await response.text()
+            await session.close()
+        feed = feedparser.parse(html)
         feeddict = await self.process_feed(service, feed)
 
         real = await self.check_real_update(service, feeddict)
