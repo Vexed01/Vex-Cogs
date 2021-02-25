@@ -10,6 +10,8 @@ GREEN = "\N{LARGE GREEN CIRCLE}"
 ORANGE = "\N{LARGE ORANGE CIRCLE}"
 RED = "\N{LARGE RED CIRCLE}"
 
+old_ping = None
+
 
 class AnotherPingCog(commands.Cog):
     """A rich embed ping command with timings"""
@@ -23,8 +25,16 @@ class AnotherPingCog(commands.Cog):
         return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**"
 
     def __init__(self, bot: Red):
-        bot.remove_command("ping")
         self.bot = bot
+
+    def cog_unload(self):
+        global old_ping
+        if old_ping:
+            try:
+                self.bot.remove_command("ping")
+            except:
+                pass
+            self.bot.add_command(old_ping)
 
     @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn"])
     async def ping(self, ctx):
@@ -100,3 +110,12 @@ class AnotherPingCog(commands.Cog):
             table = box(tabulate.tabulate(data, tablefmt="plain"), "py")
             msg = f"**{title}**{table}"
             await message.edit(content=msg)
+
+
+def setup(bot):
+    apc = AnotherPingCog(bot)
+    global old_ping
+    old_ping = bot.get_command("ping")
+    if old_ping:
+        bot.remove_command(old_ping.name)
+    bot.add_cog(apc)
