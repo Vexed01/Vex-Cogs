@@ -633,7 +633,7 @@ class Status(commands.Cog):
             feeds.pop(service)
             await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {channel.mention}")
 
-    @statusset.command(name="list", aliases=["show"])
+    @statusset.command(name="list", aliases=["show", "settings"])
     async def statusset_list(self, ctx: commands.Context, service: Optional[str]):
         """
         List that available services and which ones are being used in this server.
@@ -794,7 +794,7 @@ class Status(commands.Cog):
             f"{FEED_FRIENDLY_NAMES[service]} status upadtes in {channel.mention} will now use the {mode} mode."
         )
 
-    @statusset.command(name="webhook")
+    @statusset_edit.command(name="webhook")
     async def statusset_edit_webhook(
         self, ctx: commands.Context, servie: str, channel: Optional[discord.TextChannel], webhook: bool
     ):
