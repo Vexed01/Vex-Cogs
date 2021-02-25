@@ -48,6 +48,7 @@ FEED_URLS = {
     "reddit": "https://www.redditstatus.com/history.atom",
     "aws": "https://status.aws.amazon.com/rss/all.rss",
     "gcp": "https://status.cloud.google.com/feed.atom",
+    "smartthings": "https://status.smartthings.com/history.atom",
 }
 
 FEED_FRIENDLY_NAMES = {
@@ -65,6 +66,7 @@ FEED_FRIENDLY_NAMES = {
     "reddit": "Reddit",
     "aws": "Amazon Web Services",
     "gcp": "Google Cloud Platform",
+    "smartthings": "SmartThings",
 }
 
 AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aws, google
@@ -82,6 +84,7 @@ AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aw
     "reddit": [ALL, LATEST],
     "aws": [LATEST],
     "gcp": [LATEST],
+    "smartthings": [ALL, LATEST],
 }
 
 AVATAR_URLS = {  # TODO: unify these
@@ -92,13 +95,14 @@ AVATAR_URLS = {  # TODO: unify these
     "twitter_api": "https://cdn.discordapp.com/attachments/813140082989989918/814583387176042576/unknown.png",
     "statuspage": "https://cdn.discordapp.com/attachments/813140082989989918/813140261987024976/statuspage.png",
     "zoom": "https://cdn.discordapp.com/attachments/813140082989989918/813140273751523359/zoom.png",
-    "oracle_cloud": "https://cdn.discordapp.com/attachments/813140082989989918/814489350283853864/unknown.png",
+    "oracle_cloud": "https://media.discordapp.net/attachments/813140082989989918/813140282538721310/oracle_cloud.png",
     "twitter": "https://cdn.discordapp.com/attachments/813140082989989918/814583387176042576/unknown.png",
     "epic_games": "https://cdn.discordapp.com/attachments/813140082989989918/813454141514317854/unknown.png",
     "digitalocean": "https://cdn.discordapp.com/attachments/813140082989989918/813454051613999124/gnlwek2zwhq369yryrzv.png",
     "reddit": "https://cdn.discordapp.com/attachments/813140082989989918/813466098040176690/reddit-logo-16.png",
     "aws": "https://cdn.discordapp.com/attachments/813140082989989918/813730858951245854/aws.png",
     "gcp": "https://cdn.discordapp.com/attachments/813140082989989918/814488794585235517/unknown.png",
+    "smartthings": "https://cdn.discordapp.com/attachments/813140082989989918/814600450832859193/zbO2ggF6K2YVII3qOfr0Knj3P0H7OdtTjZAcGBo3kK0vJppGoYsG4TMZINqyPlLa9vI.png",
 }
 
 SPECIAL_INFO = {
@@ -117,7 +121,7 @@ log = logging.getLogger("red.vexed.status")
 class Status(commands.Cog):
     """Automatically check for status updates"""
 
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -945,6 +949,7 @@ class Status(commands.Cog):
                 html = await response.text()
             await session.close()
         feed = feedparser.parse(html)
+        feed = feed["entries"][0]
         # standard below:
 
         strippedcontent = await _strip_html(feed["content"][0]["value"])
@@ -990,6 +995,8 @@ class Status(commands.Cog):
         # end standard
 
         # return await ctx.send("done")
+
+        await self.make_send_cache(parseddict, "discord")
 
         await self.send_updated_feed(
             parseddict, (ctx.channel.id, {"mode": mode, "webhook": False}), "oracle_cloud"

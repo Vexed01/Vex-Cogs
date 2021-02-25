@@ -65,6 +65,16 @@ async def parse_discord(feed: FeedParserDict) -> dict:
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -72,7 +82,7 @@ async def parse_discord(feed: FeedParserDict) -> dict:
                 }
             )
             log.warning(
-                "Something went wrong while parsing the status for Discord. You can report this to Vexed#3211."
+                "Something went wrong while parsing a status feed. You can report this to Vexed#3211."
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
@@ -111,6 +121,16 @@ async def parse_github(feed: FeedParserDict) -> dict:
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -157,6 +177,16 @@ async def parse_cloudflare(feed: FeedParserDict) -> dict:
                 content = tc[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -191,6 +221,16 @@ async def parse_python(feed: FeedParserDict) -> dict:
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -224,6 +264,16 @@ async def parse_twitter_api(feed: FeedParserDict):
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -258,6 +308,16 @@ async def parse_statuspage(feed: FeedParserDict):
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -293,6 +353,16 @@ async def parse_zoom(feed: FeedParserDict):
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -328,6 +398,16 @@ async def parse_oracle_cloud(feed: FeedParserDict):
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -398,6 +478,16 @@ async def parse_epic_games(feed: FeedParserDict):
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -433,6 +523,16 @@ async def parse_digitalocean(feed: FeedParserDict):
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -468,6 +568,16 @@ async def parse_reddit(feed: FeedParserDict):
                 title = tt[1]
                 parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
         except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
             parseddict["fields"].append(
                 {
                     "name": "Something went wrong with this section",
@@ -513,6 +623,49 @@ async def parse_gcp(feed: FeedParserDict):
     parseddict.update({"colour": 3450962})
     return parseddict
 
+async def parse_smartthings(feed: FeedParserDict):
+    # statuspage
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split(" - ", 1)
+                content = current[1]
+                tt = current[0].split("\n")
+                time = tt[0]
+                title = tt[1]
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing a status feed. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+
+    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")})
+    parseddict.update({"title": feed["title"]})
+    parseddict.update({"link": feed["link"]})
+    parseddict.update({"colour": 3447226})
+    return parseddict
+
 
 FEEDS = {
     "discord": parse_discord,
@@ -529,4 +682,5 @@ FEEDS = {
     "reddit": parse_reddit,
     "aws": parse_aws,
     "gcp": parse_gcp,
+    "smartthings": parse_smartthings,
 }
