@@ -161,7 +161,10 @@ class Status(commands.Cog):
         try:
             await asyncio.wait_for(self.actually_check_updates(), timeout=110.0)  # 1 min 50 secs
         except TimeoutError:
-            log.warning("Loop timed out after 1 minute 50 seconds. Will check feeds again shortly.")
+            log.warning(
+                "Loop timed out after 1 minute 50 seconds. Will try again shortly. If this keeps happening "
+                "when there's an update for a specific service, contact Vexed"
+            )
 
     @check_for_updates.before_loop
     async def before_start(self):
@@ -288,40 +291,40 @@ class Status(commands.Cog):
 
     async def actually_check_updates(self):
         async with aiohttp.ClientSession() as session:
-            for feed in self.used_feeds_cache:
+            for service in self.used_feeds_cache:
                 async with self.config.etags() as etags:
                     try:
                         async with session.get(
-                            FEED_URLS[feed], headers={"If-None-Match": etags[feed]}, timeout=5
+                            FEED_URLS[service], headers={"If-None-Match": etags[service]}, timeout=5
                         ) as response:
                             html = await response.text()
                             status = response.status
                             if status == 200:
-                                etags[feed] = response.headers.get("ETag")
+                                etags[service] = response.headers.get("ETag")
                     except KeyError:
-                        async with session.get(FEED_URLS[feed]) as response:
+                        async with session.get(FEED_URLS[service]) as response:
                             html = await response.text()
                             status = response.status
-                        if feed != "gcp":  # gcp doesn't do etags
-                            etags[feed] = response.headers.get("ETag")
+                        if service != "gcp":  # gcp doesn't do etags
+                            etags[service] = response.headers.get("ETag")
                     except Exception as e:
-                        log.warning(f"Unable to check for an update for {feed}", exc_info=e)
+                        log.warning(f"Unable to check for an update for {service}", exc_info=e)
 
                 if status == 200:
                     fp_data = feedparser.parse(html)
-                    feeddict = await self.process_feed(feed, fp_data)
-                    if not await self.check_real_update(feed, feeddict):
-                        log.debug(f"Ghost status update for {feed} detected, skipping")
+                    feeddict = await self.process_feed(service, fp_data)
+                    if not await self.check_real_update(service, feeddict):
+                        log.debug(f"Ghost status update for {service} detected, skipping")
                         continue
-                    log.debug(f"Feed dict for {feed}: {feeddict}")
-                    channels = await self.get_channels(feed)
-                    await self.update_dispatch(feeddict, fp_data, feed, channels, False)
-                    log.debug(f"Sending status update for {feed} to {len(channels)} channels...")
+                    log.debug(f"Feed dict for {service}: {feeddict}")
+                    channels = await self.get_channels(service)
+                    await self.update_dispatch(feeddict, fp_data, service, channels, False)
+                    log.debug(f"Sending status update for {service} to {len(channels)} channels...")
                     for channel in channels.items():
-                        await self.send_updated_feed(feeddict, channel, feed)
+                        await self.send_updated_feed(feeddict, channel, service)
                     log.debug("Done")
                 else:
-                    log.debug(f"No status update for {feed}")
+                    log.debug(f"No status update for {service}")
         await session.close()
 
     async def process_feed(self, service: str, feedparser: FeedParserDict):
@@ -350,7 +353,6 @@ class Status(commands.Cog):
 
     async def get_channels(self, service: str) -> dict:
         """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
-        # TODO: maybe logic more efficient
         feeds = await self.config.all_channels()
         channels = {}
         for feed in feeds.items():
@@ -360,7 +362,6 @@ class Status(commands.Cog):
 
     async def send_updated_feed(self, feeddict: dict, channel: tuple, service: str):
         """Send a feeddict to the specified channel."""
-        # TODO: cache the embed/message
         mode = channel[1]["mode"]
         use_webhook = channel[1]["webhook"]
         channel = self.bot.get_channel(channel[0])
@@ -369,10 +370,11 @@ class Status(commands.Cog):
         if use_webhook and not channel.permissions_for(channel.guild.me).manage_webhooks:
             log.debug(
                 f"Unable to send a webhook to {channel.id} in guild {channel.guild.id} - sending normal instead"
-            )
+            )  # TODO: maybe remove the feed from config to stop this happening in future?
             use_webhook = False
         if not use_webhook and not channel.permissions_for(channel.guild.me).send_messages:
             log.debug(f"Unable to send messages to {channel.id} in guild {channel.guild.id} - skipping")
+            # TODO: maybe remove the feed from config to stop this happening in future?
             return
         if not use_webhook:
             use_embed = await self.bot.embed_requested(channel, None)
@@ -443,7 +445,6 @@ class Status(commands.Cog):
                         )
                         await channel.send(embed=embed)
                 except Exception as e:
-                    # TODO: maybe remove the feed from config to stop this happening in future?
                     log.warning(
                         f"Unable to send status update to channel {channel.id} in guild {channel.guild.id} - skipping",
                         exc_info=e,
@@ -484,7 +485,6 @@ class Status(commands.Cog):
                 try:
                     await channel.send(msg)
                 except (Forbidden, AttributeError):
-                    # TODO: maybe remove the feed from config to stop this happening in future?
                     log.debug(
                         f"Unable to send status update to channel {channel.id} in guild {channel.guild.id} - skipping"
                     )
@@ -886,10 +886,12 @@ class Status(commands.Cog):
     async def devcheckfeed(self, ctx: commands.Context, link: str, mode):
         if not await self.dev_com(ctx):
             return
-        feed = feedparser.parse(link).entries[0]
+        async with aiohttp.ClientSession() as session:
+            async with session.get(link) as response:
+                html = await response.text()
+            await session.close()
+        feed = feedparser.parse(html)
         # standard below:
-
-        strippedcontent = await _strip_html(feed["description"])
 
         parseddict = {"fields": []}
 
@@ -904,9 +906,6 @@ class Status(commands.Cog):
 
         # end standard
 
-        self.feed_embed_cache = {"base": None, "latest": None, "all": None}
-        self.feed_plain_cache = {"latest": None, "all": None}
-
         # return await ctx.send("done")
 
         await self.send_updated_feed(
@@ -916,7 +915,11 @@ class Status(commands.Cog):
     @checks.is_owner()
     @commands.command(aliases=["dcfr"])
     async def devcheckfeedraw(self, ctx: commands.Context, link: str):
-        feed = feedparser.parse(link).entries[0]
+        async with aiohttp.ClientSession() as session:
+            async with session.get(link) as response:
+                html = await response.text()
+            await session.close()
+        feed = feedparser.parse(html)
 
         pages = pagify(str(feed))
 

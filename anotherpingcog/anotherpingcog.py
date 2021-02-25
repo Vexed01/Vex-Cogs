@@ -39,7 +39,7 @@ class AnotherPingCog(commands.Cog):
     @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn"])
     async def ping(self, ctx):
         """A rich embed ping command with timings"""
-        discordlatency = round(self.bot.latency * 1000)
+        ws_latency = round(self.bot.latency * 1000)
 
         if ctx.invoked_with == "ping":
             title = "\N{TABLE TENNIS PADDLE AND BALL}  Pong!"
@@ -50,70 +50,70 @@ class AnotherPingCog(commands.Cog):
 
         if embed:
             embed = discord.Embed(title=title)
-            embed.add_field(name="Discord WS", value=box(f"{discordlatency} ms", "py"))
+            embed.add_field(name="Discord WS", value=box(f"{ws_latency} ms", "py"))
             embed.set_footer(
                 text="As long as these numbers are below 300, it's nothing to worry about\nScale: Excellent | Good | Alright | Bad | Very Bad"
             )
             start = monotonic()
             message = await ctx.send(embed=embed)
         else:
-            msg = f"**{title}**\nDiscord WS: {discordlatency} ms"
+            msg = f"**{title}**\nDiscord WS: {ws_latency} ms"
             start = monotonic()
             message = await ctx.send(msg)
         end = monotonic()
 
-        messagelatency = round((end - start) * 1000)
+        m_latency = round((end - start) * 1000)
 
         # these colours match the emojis
-        if discordlatency > 225 or messagelatency > 300:
+        if ws_latency > 225 or m_latency > 300:
             colour = 14495300  # red
-        elif discordlatency > 150 or messagelatency > 225:
+        elif ws_latency > 150 or m_latency > 225:
             colour = 16027660  # orange
         else:
             colour = 7909721  # green
 
         # im sure there's better way to do this, haven't looked properly yet
-        if discordlatency < 50:
-            discordlatencym = f"{GREEN} Excellent"
-        elif discordlatency < 150:
-            discordlatencym = f"{GREEN} Good"
-        elif discordlatency < 250:
-            discordlatencym = f"{ORANGE} Alright"
-        elif discordlatency < 500:
-            discordlatencym = f"{RED} Bad"
+        if ws_latency < 50:
+            ws_latency_text = f"{GREEN} Excellent"
+        elif ws_latency < 150:
+            ws_latency_text = f"{GREEN} Good"
+        elif ws_latency < 250:
+            ws_latency_text = f"{ORANGE} Alright"
+        elif ws_latency < 500:
+            ws_latency_text = f"{RED} Bad"
         else:
-            discordlatencym = f"{RED} Very Bad"
+            ws_latency_text = f"{RED} Very Bad"
 
-        if messagelatency < 75:
-            messagelatencym = f"{GREEN} Excellent"
-        elif messagelatency < 225:
-            messagelatencym = f"{GREEN} Good"
-        elif messagelatency < 300:
-            messagelatencym = f"{ORANGE} Alright"
-        elif messagelatency < 600:
-            messagelatencym = f"{RED} Bad"
+        if m_latency < 75:
+            m_latency_text = f"{GREEN} Excellent"
+        elif m_latency < 225:
+            m_latency_text = f"{GREEN} Good"
+        elif m_latency < 300:
+            m_latency_text = f"{ORANGE} Alright"
+        elif m_latency < 600:
+            m_latency_text = f"{RED} Bad"
         else:
-            messagelatencym = f"{RED} Very Bad"
+            m_latency_text = f"{RED} Very Bad"
 
         if embed:
-            extra = box(f"{discordlatency} ms", "py")
-            embed.set_field_at(0, name="Discord WS", value=f"{discordlatencym}{extra}")
-            extra = box(f"{messagelatency} ms", "py")
-            embed.add_field(name="Message send time", value=f"{messagelatencym}{extra}")
+            extra = box(f"{ws_latency} ms", "py")
+            embed.set_field_at(0, name="Discord WS", value=f"{ws_latency_text}{extra}")
+            extra = box(f"{m_latency} ms", "py")
+            embed.add_field(name="Message send time", value=f"{m_latency_text}{extra}")
             embed.colour = colour
             await message.edit(embed=embed)
         else:
             data = [
                 ["Discord WS", "Message send time"],
-                [discordlatencym, messagelatencym],
-                [f"{discordlatency} ms", f"{messagelatency} ms"],
+                [ws_latency_text, m_latency_text],
+                [f"{ws_latency} ms", f"{m_latency} ms"],
             ]
             table = box(tabulate.tabulate(data, tablefmt="plain"), "py")
             msg = f"**{title}**{table}"
             await message.edit(content=msg)
 
 
-def setup(bot):
+def setup(bot: Red):
     apc = AnotherPingCog(bot)
     global old_ping
     old_ping = bot.get_command("ping")

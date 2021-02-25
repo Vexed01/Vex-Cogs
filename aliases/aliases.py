@@ -25,49 +25,49 @@ class Aliases(commands.Cog):
         command = self.bot.get_command(strcommand)
 
         # meh, safe enough as only reading, there is a big warning on cog install about this
-        alias = self.bot.get_cog("Alias")
-        guild_aliases = await alias.config.guild(ctx.guild).entries()
-        global_aliases = await alias.config.entries()
+        alias_cog = self.bot.get_cog("Alias")
+        all_guild_aliases = await alias_cog.config.guild(ctx.guild).entries()
+        all_global_aliases = await alias_cog.config.entries()
 
-        com_global_aliases = []
-        com_guild_aliases = []
+        global_aliases = []
+        guild_aliases = []
 
-        for alias in guild_aliases:
-            if alias["name"] == strcommand:
-                command = self.bot.get_command(alias["command"])
-                com_guild_aliases.append(alias["name"])
+        for alias_cog in all_guild_aliases:
+            if alias_cog["name"] == strcommand:
+                command = self.bot.get_command(alias_cog["command"])
+                guild_aliases.append(alias_cog["name"])
 
-        for alias in global_aliases:
-            if alias["name"] == strcommand:
-                command = self.bot.get_command(alias["command"])
-                com_global_aliases.append(alias["name"])
+        for alias_cog in all_global_aliases:
+            if alias_cog["name"] == strcommand:
+                command = self.bot.get_command(alias_cog["command"])
+                global_aliases.append(alias_cog["name"])
 
         if command is None:
             await ctx.send("Hmm, I can't find that command.")
             return
-        com_name = command.qualified_name
-        com_aliases = command.aliases
+        full_com = command.qualified_name
+        builtin_aliases = command.aliases
         com_parent = command.parent
 
         # run again as can miss some in edge cases
-        for alias in guild_aliases:
-            if alias["command"] == com_name:
-                com_guild_aliases.append(alias["name"])
-        for alias in global_aliases:
-            if alias["command"] == com_name:
-                com_global_aliases.append(alias["name"])
+        for alias_cog in all_guild_aliases:
+            if alias_cog["command"] == full_com:
+                guild_aliases.append(alias_cog["name"])
+        for alias_cog in all_global_aliases:
+            if alias_cog["command"] == full_com:
+                global_aliases.append(alias_cog["name"])
 
         # and probs picked up duplicates from second run so:
-        com_guild_aliases = deduplicate_iterables(com_guild_aliases)
-        com_global_aliases = deduplicate_iterables(com_global_aliases)
+        guild_aliases = deduplicate_iterables(guild_aliases)
+        global_aliases = deduplicate_iterables(global_aliases)
 
         com_builtin_aliases = []
-        for i in range(len(com_aliases)):
-            com_builtin_aliases.append(inline(f"{com_parent} {com_aliases[i]}"))
-        for i in range(len(com_global_aliases)):
-            com_global_aliases[i] = inline(com_global_aliases[i])
-        for i in range(len(com_guild_aliases)):
-            com_guild_aliases[i] = inline(com_guild_aliases[i])
+        for i in range(len(builtin_aliases)):
+            com_builtin_aliases.append(inline(f"{com_parent} {builtin_aliases[i]}"))
+        for i in range(len(global_aliases)):
+            global_aliases[i] = inline(global_aliases[i])
+        for i in range(len(guild_aliases)):
+            guild_aliases[i] = inline(guild_aliases[i])
 
         aliases = ""
         none = []
@@ -76,20 +76,20 @@ class Aliases(commands.Cog):
         else:
             list = humanize_list(com_builtin_aliases)
             aliases += f"Built-in aliases: {list}\n"
-        if not com_global_aliases:
+        if not global_aliases:
             none.append("global")
         else:
-            list = humanize_list(com_global_aliases)
+            list = humanize_list(global_aliases)
             aliases += f"Global aliases: {list}\n"
-        if not com_guild_aliases:
+        if not guild_aliases:
             none.append("guild")
         else:
-            list = humanize_list(com_guild_aliases)
+            list = humanize_list(guild_aliases)
             aliases += f"Guild aliases: {list}\n"
 
         none = humanize_list(none, style="or")
 
-        msg = f"Main command: `{com_name}`\n{aliases}"
+        msg = f"Main command: `{full_com}`\n{aliases}"
 
         if none:
             msg += f"This command has no {none} aliases."
