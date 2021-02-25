@@ -792,7 +792,7 @@ class Status(commands.Cog):
 
     @statusset_edit.command(name="webhook")
     async def statusset_edit_webhook(
-        self, ctx: commands.Context, servie: str, channel: Optional[discord.TextChannel], webhook: bool
+        self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel], webhook: bool
     ):
         """Set whether or not to use webhooks to send the status update
 
@@ -800,7 +800,7 @@ class Status(commands.Cog):
         logo and the name will be `[service] Status Update`, instead of my avatar and name.
         """
         channel = channel or ctx.channel
-        service = servie.lower()
+        service = service.lower()
 
         if service not in FEED_URLS.keys():
             return await ctx.send(f"That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
