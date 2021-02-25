@@ -85,15 +85,15 @@ AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aw
 }
 
 AVATAR_URLS = {  # TODO: unify these
-    "discord": "https://cdn.discordapp.com/attachments/813140082989989918/814490641283153920/unknown.png",
+    "discord": "https://cdn.discordapp.com/attachments/813140082989989918/813140277367144458/discord.png",
     "github": "https://cdn.discordapp.com/attachments/813140082989989918/813140279120232488/github.png",
     "cloudflare": "https://cdn.discordapp.com/attachments/813140082989989918/813140275714195516/cloudflare.png",
     "python": "https://cdn.discordapp.com/attachments/813140082989989918/814490148917608458/unknown.png",
-    "twitter_api": "https://cdn.discordapp.com/attachments/813140082989989918/813140272027926528/twitter_api.jpg",
+    "twitter_api": "https://cdn.discordapp.com/attachments/813140082989989918/814583387176042576/unknown.png",
     "statuspage": "https://cdn.discordapp.com/attachments/813140082989989918/813140261987024976/statuspage.png",
     "zoom": "https://cdn.discordapp.com/attachments/813140082989989918/813140273751523359/zoom.png",
     "oracle_cloud": "https://cdn.discordapp.com/attachments/813140082989989918/814489350283853864/unknown.png",
-    "twitter": "https://cdn.discordapp.com/attachments/813140082989989918/813140272027926528/twitter_api.jpg",
+    "twitter": "https://cdn.discordapp.com/attachments/813140082989989918/814583387176042576/unknown.png",
     "epic_games": "https://cdn.discordapp.com/attachments/813140082989989918/813454141514317854/unknown.png",
     "digitalocean": "https://cdn.discordapp.com/attachments/813140082989989918/813454051613999124/gnlwek2zwhq369yryrzv.png",
     "reddit": "https://cdn.discordapp.com/attachments/813140082989989918/813466098040176690/reddit-logo-16.png",
@@ -117,7 +117,7 @@ log = logging.getLogger("red.vexed.status")
 class Status(commands.Cog):
     """Automatically check for status updates"""
 
-    __version__ = "1.0.3"
+    __version__ = "1.1.0"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -136,6 +136,7 @@ class Status(commands.Cog):
         self.config.register_channel(feeds=default)
 
         self.used_feeds_cache = []
+        self.send_cache = {}
 
         self.check_for_updates.start()
 
@@ -322,6 +323,7 @@ class Status(commands.Cog):
                     log.debug(f"Sending status update for {service} to {len(channels)} channels...")
                     for channel in channels.items():
                         await self.send_updated_feed(feeddict, channel, service)
+                    self.send_cache = None
                     log.debug("Done")
                 else:
                     log.debug(f"No status update for {service}")
@@ -360,136 +362,186 @@ class Status(commands.Cog):
                 channels[feed[0]] = feed[1]["feeds"][service]
         return channels
 
+    async def make_send_cache(self, feeddict, service: str):
+        try:
+            base = discord.Embed(
+                title=feeddict["title"],
+                timestamp=feeddict["time"],
+                colour=feeddict["colour"],
+                url=feeddict["link"],
+            )
+        except TypeError:  # can happen with timezone
+            t = feeddict["time"]
+            tt = type(feeddict["time"])
+            log.debug(f"Error with timestamp: {t} and {tt}")
+            base = discord.Embed(
+                title=feeddict["title"],
+                colour=feeddict["colour"],
+                url=feeddict["link"],
+            )
+
+        embed_latest = base.copy()
+        embed_all = base.copy()
+        webhook_latest = base.copy()
+        webhook_all = base.copy()
+
+        if service in DONT_REVERSE:
+            for field in feeddict["fields"]:
+                embed_all.add_field(name=field["name"], value=field["value"], inline=False)
+                webhook_all.add_field(name=field["name"], value=field["value"], inline=False)
+        else:
+            for field in reversed(feeddict["fields"]):
+                embed_all.add_field(name=field["name"], value=field["value"], inline=False)
+                webhook_all.add_field(name=field["name"], value=field["value"], inline=False)
+
+        if service in DONT_REVERSE:
+            embed_latest.add_field(  # TODO: if two are published in quick succession could miss one
+                name=feeddict["fields"][-1]["name"],
+                value=feeddict["fields"][-1]["value"],
+                inline=False,
+            )
+            webhook_latest.add_field(  # TODO: if two are published in)
+                name=feeddict["fields"][-1]["name"],
+                value=feeddict["fields"][-1]["value"],
+                inline=False,
+            )
+        else:
+            embed_latest.add_field(  # TODO: if two are published in quick succession could miss one
+                name=feeddict["fields"][0]["name"],
+                value=feeddict["fields"][0]["value"],
+                inline=False,
+            )
+            webhook_latest.add_field(  # TODO: if two are published in)
+                name=feeddict["fields"][0]["name"],
+                value=feeddict["fields"][0]["value"],
+                inline=False,
+            )
+
+        t = feeddict["title"]
+        l = feeddict["link"]
+        n = FEED_FRIENDLY_NAMES[service]
+        plain_latest = f"**{n} Status Update\n{t}**\nIncident link: {l}\n\n"
+        plain_all = f"**{n} Status Update\n{t}**\nIncident link: {l}\n\n"
+
+        if service in DONT_REVERSE:
+            for i in feeddict["fields"]:
+                n = i["name"]
+                v = i["value"]
+                plain_all += f"**{n}**\n{v}\n"
+        else:
+            for i in reversed(feeddict["fields"]):
+                n = i["name"]
+                v = i["value"]
+                plain_all += f"**{n}**\n{v}\n"
+
+        if service in DONT_REVERSE:
+            n = feeddict["fields"][-1]["name"]
+            v = feeddict["fields"][-1]["value"]
+            plain_latest += f"**{n}**\n{v}\n"
+
+        else:
+            n = feeddict["fields"][0]["name"]
+            v = feeddict["fields"][0]["value"]
+            plain_latest += f"**{n}**\n{v}\n"
+
+        regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]|\(([^\s()<>]|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+        # regex from https://stackoverflow.com/a/28187496
+        plain_all = re.sub(regex, r"<\1>", plain_all)  # wrap links in <> for no previews
+        plain_latest = re.sub(regex, r"<\1>", plain_latest)
+
+        self.send_cache = {
+            "plain_latest": plain_latest,
+            "plain_all": plain_all,
+            "embed_latest": embed_latest,
+            "embed_all": embed_all,
+            "webhook_latest": webhook_latest,
+            "webhook_all": webhook_all,
+        }
+
     async def send_updated_feed(self, feeddict: dict, channel: tuple, service: str):
         """Send a feeddict to the specified channel."""
         mode = channel[1]["mode"]
         use_webhook = channel[1]["webhook"]
-        channel = self.bot.get_channel(channel[0])
-        if channel is None:  # guilds can creep in here, blame core for giving guilds from all_channels() /s
-            return
+        c_id = channel[0]
+        channel = self.bot.get_channel(c_id)
+        if channel is None:
+            try:
+                channel = await self.bot.fetch_channel(c_id)
+            except:
+                log.info(
+                    f"Unable to get channel {c_id} for status update. Removing from config so this won't happen again."
+                )
+                await self.config.channel_from_id(c_id).feeds.clear()
+                return
         if use_webhook and not channel.permissions_for(channel.guild.me).manage_webhooks:
             log.debug(
-                f"Unable to send a webhook to {channel.id} in guild {channel.guild.id} - sending normal instead"
-            )  # TODO: maybe remove the feed from config to stop this happening in future?
+                f"Unable to send a webhook to {c_id} in guild {channel.guild.id} - sending normal instead"
+            )
             use_webhook = False
         if not use_webhook and not channel.permissions_for(channel.guild.me).send_messages:
-            log.debug(f"Unable to send messages to {channel.id} in guild {channel.guild.id} - skipping")
-            # TODO: maybe remove the feed from config to stop this happening in future?
+            log.info(
+                f"Unable to send messages to {c_id} in guild {channel.guild.id}. Removing from config so this won't happen again."
+            )
+            await self.config.channel_from_id(c_id).feeds.clear()
             return
         if not use_webhook:
             use_embed = await self.bot.embed_requested(channel, None)
         else:
             use_embed = True
-        if mode == "all" or mode == "latest":
-            if use_embed:
-                try:
-                    embed = discord.Embed(
-                        title=feeddict["title"],
-                        timestamp=feeddict["time"],
-                        colour=feeddict["colour"],
-                        url=feeddict["link"],
-                    )
-                except TypeError:  # can happen with timezone
-                    t = feeddict["time"]
-                    tt = type(feeddict["time"])
-                    log.debug(f"Error with timestamp: {t} and {tt}")
-                    embed = discord.Embed(
-                        title=feeddict["title"],
-                        colour=feeddict["colour"],
-                        url=feeddict["link"],
-                    )
+        # the efficiecy could probably be improved here
+        if use_embed:
+            if mode == "all" and use_webhook == False:
+                embed = self.send_cache.get("embed_all")
+            elif mode == "latest" and use_webhook == False:
+                embed = self.send_cache.get("embed_latest")
+            elif mode == "all" and use_webhook == True:
+                embed = self.send_cache.get("webhook_all")
+            elif mode == "latest" and use_webhook == True:
+                embed = self.send_cache.get("webhook_latest")
 
-                if mode == "all":
-                    if service in DONT_REVERSE:
-                        for field in feeddict["fields"]:
-                            embed.add_field(name=field["name"], value=field["value"], inline=False)
+            try:
+                # thanks flare for your webhook logic (redditpost) (or trusty?)
+                if use_webhook:
+                    if channel.guild.me.nick:
+                        botname = channel.guild.me.nick
                     else:
-                        for field in reversed(feeddict["fields"]):
-                            embed.add_field(name=field["name"], value=field["value"], inline=False)
-                elif mode == "latest":
-                    if service in DONT_REVERSE:
-                        embed.add_field(  # TODO: if two are published in quick succession could miss one
-                            name=feeddict["fields"][-1]["name"],
-                            value=feeddict["fields"][-1]["value"],
-                            inline=False,
-                        )
-                    else:
-                        embed.add_field(  # TODO: if two are published in quick succession could miss one
-                            name=feeddict["fields"][0]["name"],
-                            value=feeddict["fields"][0]["value"],
-                            inline=False,
-                        )
-                try:
-                    # thanks flare for your webhook logic (redditpost) (or trusty?)
-                    if use_webhook:
-                        if channel.guild.me.nick:
-                            botname = channel.guild.me.nick
-                        else:
-                            botname = channel.guild.me.name
-                        embed.set_footer(text=f"Powered by {botname}")
-                        webhook = None
-                        for hook in await channel.webhooks():
-                            if hook.name == channel.guild.me.name:
-                                webhook = hook
-                        if webhook is None:
-                            webhook = await channel.create_webhook(name=channel.guild.me.name)
-                        await webhook.send(
-                            username=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
-                            avatar_url=AVATAR_URLS[service],
-                            embed=embed,
-                        )
-                    else:
-                        embed.set_author(
-                            name=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
-                            icon_url=AVATAR_URLS[service],
-                        )
-                        await channel.send(embed=embed)
-                except Exception as e:
-                    log.warning(
-                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id} - skipping",
-                        exc_info=e,
+                        botname = channel.guild.me.name
+                    embed.set_footer(text=f"Powered by {botname}")
+                    webhook = None
+                    for hook in await channel.webhooks():
+                        if hook.name == channel.guild.me.name:
+                            webhook = hook
+                    if webhook is None:
+                        webhook = await channel.create_webhook(name=channel.guild.me.name)
+                    await webhook.send(
+                        username=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
+                        avatar_url=AVATAR_URLS[service],
+                        embed=embed,
                     )
-                    return
-
-            else:
-                t = feeddict["title"]
-                l = feeddict["link"]
-                n = FEED_FRIENDLY_NAMES[service]
-                msg = f"**{n} Status Update\n{t}**\nIncident link: {l}\n\n"
-
-                if mode == "all":
-                    if service in DONT_REVERSE:
-                        for i in feeddict["fields"]:
-                            n = i["name"]
-                            v = i["value"]
-                            msg += f"**{n}**\n{v}\n"
-                    else:
-                        for i in reversed(feeddict["fields"]):
-                            n = i["name"]
-                            v = i["value"]
-                            msg += f"**{n}**\n{v}\n"
-
-                    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]|\(([^\s()<>]|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
-                    # regex from https://stackoverflow.com/a/28187496
-                    msg = re.sub(regex, r"<\1>", msg)  # wrap links in <> for no previews
-
-                elif mode == "latest":
-                    n = feeddict["fields"][0]["name"]
-                    v = feeddict["fields"][0]["value"]
-                    msg += f"**{n}**\n{v}\n"
-
-                    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]|\(([^\s()<>]|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
-                    # regex from https://stackoverflow.com/a/28187496
-                    msg = re.sub(regex, r"<\1>", msg)  # wrap links in <> for no previews
-
-                try:
-                    await channel.send(msg)
-                except (Forbidden, AttributeError):
-                    log.debug(
-                        f"Unable to send status update to channel {channel.id} in guild {channel.guild.id} - skipping"
+                else:
+                    embed.set_author(
+                        name=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
+                        icon_url=AVATAR_URLS[service],
                     )
-        elif mode == "edit":
-            pass  # TODO: this
+                    await channel.send(embed=embed)
+            except Exception as e:
+                log.info(  # TODO: remove from config
+                    f"Somehting went wrong with {c_id} in guild {channel.guild.id} - skipping", exc_info=e
+                )
+                return
+
+        else:
+            if mode == "all":
+                msg = self.send_cache.get("plain_all")
+            elif mode == "latest":
+                msg = self.send_cache.get("plain_latest")
+
+            try:
+                await channel.send(msg)
+            except Exception as e:
+                log.info(  # TODO: remove from config
+                    f"Something went wrong with {c_id} in guild {channel.guild.id} - skipping", exc_info=e
+                )
 
         await self.channel_send_dispatch(feeddict, service, channel, use_webhook, use_embed)
 
@@ -878,6 +930,7 @@ class Status(commands.Cog):
         await ctx.send(f"Real update: {real}")
         to_send = await self.get_channels(service)
         await self.update_dispatch(feeddict, feed, service, to_send, True)
+        await self.make_send_cache(feeddict, service)
         for channel in to_send.items():
             await self.send_updated_feed(feeddict, channel, service)
 
