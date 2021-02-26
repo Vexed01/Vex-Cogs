@@ -785,20 +785,21 @@ class Status(commands.Cog):
 
         feed = await self.config.feed_store()
         try:
-            feed = feed[service]
+            feeddict = feed[service]
         except KeyError:  # will only really happen on first load
             async with aiohttp.ClientSession() as session:
                 async with session.get(FEED_URLS[service]) as response:
                     html = await response.text()
                 await session.close()
             feed = feedparser.parse(html)
-            feed = await self._process_feed(service, feed)
-            await self._check_real_update(service, feed)  # this will add it to the feed_store
+            feeddict = await self._process_feed(service, feed)
+            await self._check_real_update(service, feeddict)  # this will add it to the feed_store
 
+        await self._make_send_cache(feeddict, service)
         channel = (ctx.channel.id, {"mode": mode, "webhook": webhook})
 
         try:
-            await self._send_updated_feed(feed, channel, service)
+            await self._send_updated_feed(feeddict, channel, service)
         except KeyError:
             await ctx.send("Hmm, I couldn't preview that.")
 
