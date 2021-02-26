@@ -92,11 +92,11 @@ AVATAR_URLS = {  # TODO: unify these
     "github": "https://cdn.discordapp.com/attachments/813140082989989918/813140279120232488/github.png",
     "cloudflare": "https://cdn.discordapp.com/attachments/813140082989989918/813140275714195516/cloudflare.png",
     "python": "https://cdn.discordapp.com/attachments/813140082989989918/814490148917608458/unknown.png",
-    "twitter_api": "https://cdn.discordapp.com/attachments/813140082989989918/814583387176042576/unknown.png",
+    "twitter_api": "https://cdn.discordapp.com/attachments/813140082989989918/814863181033898084/aaaaaaaaaaaaaa.png",
     "statuspage": "https://cdn.discordapp.com/attachments/813140082989989918/813140261987024976/statuspage.png",
     "zoom": "https://cdn.discordapp.com/attachments/813140082989989918/813140273751523359/zoom.png",
     "oracle_cloud": "https://media.discordapp.net/attachments/813140082989989918/813140282538721310/oracle_cloud.png",
-    "twitter": "https://cdn.discordapp.com/attachments/813140082989989918/814583387176042576/unknown.png",
+    "twitter": "https://cdn.discordapp.com/attachments/813140082989989918/814863181033898084/aaaaaaaaaaaaaa.png",
     "epic_games": "https://cdn.discordapp.com/attachments/813140082989989918/813454141514317854/unknown.png",
     "digitalocean": "https://cdn.discordapp.com/attachments/813140082989989918/813454051613999124/gnlwek2zwhq369yryrzv.png",
     "reddit": "https://cdn.discordapp.com/attachments/813140082989989918/813466098040176690/reddit-logo-16.png",
@@ -136,26 +136,27 @@ class Status(commands.Cog):
         default = {}
         self.config.register_global(etags=default)
         self.config.register_global(feed_store=default)
+        self.config.register_global(latest=default)
         self.config.register_global(migrated=False)
         self.config.register_channel(feeds=default)
 
         self.used_feeds_cache = []
         self.send_cache = {}
 
-        self.check_for_updates.start()
+        self._check_for_updates.start()
 
     def cog_unload(self):
-        self.check_for_updates.cancel()
+        self._check_for_updates.cancel()
 
     @tasks.loop(minutes=2.0)
-    async def check_for_updates(self):
+    async def _check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
 
-        if self.check_for_updates.current_loop == 0:
-            await self.make_used_feeds()
+        if self._check_for_updates.current_loop == 0:
+            await self._make_used_feeds()
             if await self.config.migrated() is False:
                 log.info("Migrating to new config format...")
-                await self.migrate()
+                await self._migrate()
                 await self.config.clear_all_guilds()
                 log.info("Done!")
 
@@ -164,18 +165,18 @@ class Status(commands.Cog):
             return
 
         try:
-            await asyncio.wait_for(self.actually_check_updates(), timeout=110.0)  # 1 min 50 secs
+            await asyncio.wait_for(self._actually_check_updates(), timeout=110.0)  # 1 min 50 secs
         except TimeoutError:
             log.warning(
                 "Loop timed out after 1 minute 50 seconds. Will try again shortly. If this keeps happening "
                 "when there's an update for a specific service, contact Vexed"
             )
 
-    @check_for_updates.before_loop
+    @_check_for_updates.before_loop
     async def before_start(self):
         await self.bot.wait_until_red_ready()
 
-    async def update_dispatch(self, feed, feedparser, service, channels, force):
+    async def _update_dispatch(self, feed, feedparser, service, channels, force):
         """
         This can be used by anyone. If you wish to test it, run the hidden command
         `devforcestatus` in discord (alias `dfs`).
@@ -219,7 +220,7 @@ class Status(commands.Cog):
             force=force,
         )
 
-    async def channel_send_dispatch(self, feed, service, channel, webhook, embed):
+    async def _channel_send_dispatch(self, feed, service, channel, webhook, embed):
         """
         This can be used by other cogs. For testing, run the hidden comman
         `devforcestatus` in discord (alias `dfs`).
@@ -262,7 +263,7 @@ class Status(commands.Cog):
             embed=embed,
         )
 
-    async def make_used_feeds(self):
+    async def _make_used_feeds(self):
         feeds = await self.config.all_channels()
         used_feeds = []
         for channel in feeds.items():
@@ -273,7 +274,7 @@ class Status(commands.Cog):
                 break
         self.used_feeds_cache = used_feeds
 
-    async def migrate(self):
+    async def _migrate(self):
         old_feeds = await self.config.all_guilds()
         for guild in old_feeds.items():
             try:
@@ -294,7 +295,7 @@ class Status(commands.Cog):
                 continue
         await self.config.migrated.set(True)
 
-    async def actually_check_updates(self):
+    async def _actually_check_updates(self):
         async with aiohttp.ClientSession() as session:
             for service in self.used_feeds_cache:
                 async with self.config.etags() as etags:
@@ -317,28 +318,28 @@ class Status(commands.Cog):
 
                 if status == 200:
                     fp_data = feedparser.parse(html)
-                    feeddict = await self.process_feed(service, fp_data)
-                    if not await self.check_real_update(service, feeddict):
+                    feeddict = await self._process_feed(service, fp_data)
+                    if not await self._check_real_update(service, feeddict):
                         log.debug(f"Ghost status update for {service} detected, skipping")
                         continue
                     log.debug(f"Feed dict for {service}: {feeddict}")
-                    channels = await self.get_channels(service)
-                    await self.update_dispatch(feeddict, fp_data, service, channels, False)
-                    await self.make_send_cache(feeddict, service)
+                    channels = await self._get_channels(service)
+                    await self._update_dispatch(feeddict, fp_data, service, channels, False)
+                    await self._make_send_cache(feeddict, service)
                     log.debug(f"Sending status update for {service} to {len(channels)} channels...")
                     for channel in channels.items():
-                        await self.send_updated_feed(feeddict, channel, service)
+                        await self._send_updated_feed(feeddict, channel, service)
                     self.send_cache = None
                     log.debug("Done")
                 else:
                     log.debug(f"No status update for {service}")
         await session.close()
 
-    async def process_feed(self, service: str, feedparser: FeedParserDict):
+    async def _process_feed(self, service: str, feedparser: FeedParserDict):
         """Process a FeedParserDict into a nicer dict for embeds."""
         return await helper_process_feed(service, feedparser)
 
-    async def check_real_update(self, service: str, feeddict: dict) -> bool:
+    async def _check_real_update(self, service: str, feeddict: dict) -> bool:
         """
         Check that there has been an actual update to the status against last known.
         If so, will update the feed store.
@@ -358,7 +359,7 @@ class Status(commands.Cog):
                 feed_store[service] = feeddict
                 return True
 
-    async def get_channels(self, service: str) -> dict:
+    async def _get_channels(self, service: str) -> dict:
         """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
         feeds = await self.config.all_channels()
         channels = {}
@@ -367,7 +368,8 @@ class Status(commands.Cog):
                 channels[feed[0]] = feed[1]["feeds"][service]
         return channels
 
-    async def make_send_cache(self, feeddict, service: str):
+    async def _make_send_cache(self, feeddict, service: str):
+        """Make the cache used in send_updated_feed"""
         try:
             base = discord.Embed(
                 title=feeddict["title"],
@@ -390,6 +392,7 @@ class Status(commands.Cog):
         webhook_latest = base.copy()
         webhook_all = base.copy()
 
+        # ALL
         if service in DONT_REVERSE:
             for field in feeddict["fields"]:
                 embed_all.add_field(name=field["name"], value=field["value"], inline=False)
@@ -399,6 +402,7 @@ class Status(commands.Cog):
                 embed_all.add_field(name=field["name"], value=field["value"], inline=False)
                 webhook_all.add_field(name=field["name"], value=field["value"], inline=False)
 
+        # LATEST
         if service in DONT_REVERSE:
             embed_latest.add_field(  # TODO: if two are published in quick succession could miss one
                 name=feeddict["fields"][-1]["name"],
@@ -463,7 +467,7 @@ class Status(commands.Cog):
             "webhook_all": webhook_all,
         }
 
-    async def send_updated_feed(self, feeddict: dict, channel: tuple, service: str):
+    async def _send_updated_feed(self, feeddict: dict, channel: tuple, service: str):
         """Send a feeddict to the specified channel."""
         mode = channel[1]["mode"]
         use_webhook = channel[1]["webhook"]
@@ -548,7 +552,7 @@ class Status(commands.Cog):
                     f"Something went wrong with {c_id} in guild {channel.guild.id} - skipping", exc_info=e
                 )
 
-        await self.channel_send_dispatch(feeddict, service, channel, use_webhook, use_embed)
+        await self._channel_send_dispatch(feeddict, service, channel, use_webhook, use_embed)
 
     @guild_only()
     @checks.admin_or_permissions(manage_guild=True)
@@ -788,13 +792,13 @@ class Status(commands.Cog):
                     html = await response.text()
                 await session.close()
             feed = feedparser.parse(html)
-            feed = await self.process_feed(service, feed)
-            await self.check_real_update(service, feed)  # this will add it to the feed_store
+            feed = await self._process_feed(service, feed)
+            await self._check_real_update(service, feed)  # this will add it to the feed_store
 
         channel = (ctx.channel.id, {"mode": mode, "webhook": webhook})
 
         try:
-            await self.send_updated_feed(feed, channel, service)
+            await self._send_updated_feed(feed, channel, service)
         except KeyError:
             await ctx.send("Hmm, I couldn't preview that.")
 
@@ -929,15 +933,15 @@ class Status(commands.Cog):
                 html = await response.text()
             await session.close()
         feed = feedparser.parse(html)
-        feeddict = await self.process_feed(service, feed)
+        feeddict = await self._process_feed(service, feed)
 
-        real = await self.check_real_update(service, feeddict)
+        real = await self._check_real_update(service, feeddict)
         await ctx.send(f"Real update: {real}")
-        to_send = await self.get_channels(service)
-        await self.update_dispatch(feeddict, feed, service, to_send, True)
-        await self.make_send_cache(feeddict, service)
+        to_send = await self._get_channels(service)
+        await self._update_dispatch(feeddict, feed, service, to_send, True)
+        await self._make_send_cache(feeddict, service)
         for channel in to_send.items():
-            await self.send_updated_feed(feeddict, channel, service)
+            await self._send_updated_feed(feeddict, channel, service)
 
     @checks.is_owner()
     @commands.command(aliases=["dcf"], hidden=True)
@@ -996,9 +1000,9 @@ class Status(commands.Cog):
 
         # return await ctx.send("done")
 
-        await self.make_send_cache(parseddict, "discord")
+        await self._make_send_cache(parseddict, "discord")
 
-        await self.send_updated_feed(
+        await self._send_updated_feed(
             parseddict, (ctx.channel.id, {"mode": mode, "webhook": False}), "oracle_cloud"
         )  # discord is just a place holder
 
