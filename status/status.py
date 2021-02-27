@@ -152,7 +152,7 @@ class Status(commands.Cog):
         """Nothing to delete"""
         return
 
-    @tasks.loop(minutes=2.5)
+    @tasks.loop(minutes=2.0)
     async def _check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
 
@@ -169,7 +169,7 @@ class Status(commands.Cog):
             return
 
         try:
-            await asyncio.wait_for(self._actually_check_updates(), timeout=140.0)  # 2 min 20 secs
+            await asyncio.wait_for(self._actually_check_updates(), timeout=110.0)  # 1 min 50 secs
         except TimeoutError:
             log.error(
                 "Loop timed out after 2 minutes 20 seconds. Will try again shortly. If this keeps happening "
