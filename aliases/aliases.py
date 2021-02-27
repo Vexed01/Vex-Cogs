@@ -18,6 +18,10 @@ class Aliases(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
 
+    async def red_delete_data_for_user(self, **kwargs):
+        """Nothing to delete"""
+        return
+
     @commands.command()
     async def aliases(self, ctx, *, command: str):
         """Get all the alias information you could ever want about a command"""

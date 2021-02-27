@@ -4,5 +4,6 @@
     "install_msg": "⚠️\nThis cog directly interacts with the config of the alias cog. **It may result in data loss.** (probably won't, as it's only reading not writing but it's certainly possible)\nIf you load this cog, you accept responsibility for this potential data loss.\n⚠️",
     "description": "Get all the information you could ever need about a command's aliases.",
     "short": "Get all the information you could ever need about a command's aliases.",
-    "tags": ["utility", "alias"]
+    "tags": ["utility", "alias"],
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users."
 }

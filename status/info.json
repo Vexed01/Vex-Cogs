@@ -5,5 +5,6 @@
     "requirements": ["feedparser", "tabulate"],
     "description": "This cog can automatically send updates form various services. Primarily supports Statuspage and Status.io.\n\nIf you think I'm missing a service, contact Vexed#3211 in the main Red server or Cog Support, or my DMs.",
     "short": "Get automatic status updates from various services!",
-    "tags": ["utility", "status", "trust", "discord status", "rss"]
+    "tags": ["utility", "status", "trust", "discord status", "rss"],
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users."
 }

@@ -36,6 +36,10 @@ class AnotherPingCog(commands.Cog):
                 pass
             self.bot.add_command(old_ping)
 
+    async def red_delete_data_for_user(self, **kwargs):
+        """Nothing to delete"""
+        return
+
     @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn"])
     async def ping(self, ctx):
         """A rich embed ping command with timings"""

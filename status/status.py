@@ -148,6 +148,10 @@ class Status(commands.Cog):
     def cog_unload(self):
         self._check_for_updates.cancel()
 
+    async def red_delete_data_for_user(self, **kwargs):
+        """Nothing to delete"""
+        return
+
     @tasks.loop(minutes=2.0)
     async def _check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
