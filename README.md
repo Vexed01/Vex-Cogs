@@ -22,7 +22,7 @@ There's a list of cogs below you can use `[p]cog list vex`
 
 ### Contact
 
-I can be found in the [main Red server](https://discord.gg/red) or if you want support for a cog [Cog Support server](https://discord.gg/GET4DVk) is the best place. I'm Vexed#3211.
+I can be found in the [main Red server](https://discord.gg/red) or if you want support for a cog the [Cog Support server](https://discord.gg/GET4DVk) is the best place. I'm Vexed#3211.
 
 ### Contributing
 

@@ -121,7 +121,7 @@ log = logging.getLogger("red.vexed.status")
 class Status(commands.Cog):
     """Automatically check for status updates"""
 
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -152,7 +152,7 @@ class Status(commands.Cog):
         """Nothing to delete"""
         return
 
-    @tasks.loop(minutes=2.0)
+    @tasks.loop(minutes=2.5)
     async def _check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
 
@@ -169,11 +169,17 @@ class Status(commands.Cog):
             return
 
         try:
-            await asyncio.wait_for(self._actually_check_updates(), timeout=110.0)  # 1 min 50 secs
+            await asyncio.wait_for(self._actually_check_updates(), timeout=140.0)  # 2 min 20 secs
         except TimeoutError:
-            log.warning(
-                "Loop timed out after 1 minute 50 seconds. Will try again shortly. If this keeps happening "
+            log.error(
+                "Loop timed out after 2 minutes 20 seconds. Will try again shortly. If this keeps happening "
                 "when there's an update for a specific service, contact Vexed"
+            )
+        except Exception as e:
+            log.error(
+                "Unable to check (and send) updates. Some services were likely skipped. If they had updates, "
+                "they should send on the next loop.",
+                exc_info=e,
             )
 
     @_check_for_updates.before_loop
@@ -486,6 +492,9 @@ class Status(commands.Cog):
                 )
                 await self.config.channel_from_id(c_id).feeds.clear()
                 return
+        if self.bot.cog_disabled_in_guild():
+            log.debug(f"Skipping channel {c_id} as cog is disabled in that guild.")
+            return
         if use_webhook and not channel.permissions_for(channel.guild.me).manage_webhooks:
             log.debug(
                 f"Unable to send a webhook to {c_id} in guild {channel.guild.id} - sending normal instead"
