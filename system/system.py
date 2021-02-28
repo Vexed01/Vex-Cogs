@@ -244,7 +244,7 @@ class System(commands.Cog):
         if not psutil.LINUX:
             return await ctx.send(UNAVAILABLE)
 
-        data = await self._sensors()
+        data = await self._sensors(farenheit)
         await ctx.send(data)
         temp = data["temp"]
         fans = data["fans"]
