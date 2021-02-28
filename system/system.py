@@ -148,14 +148,14 @@ class System(commands.Cog):
         data = {"temp": "", "fans": ""}
 
         t_data = []
-        for group in temp:
-            for item in group:
+        for group in temp.items():
+            for item in group[1]:
                 t_data.append([f"[{item.label}]" or "[Unknown]", item.current])
         data["temp"] = tabulate(t_data, tablefmt="plain") or "No temperature sensors found"
 
         t_data = []
-        for fan in fans:
-            t_data.append([f"{fan.label}" or "[Unknown]", fan.current])
+        for fan in fans.items():
+            t_data.append([f"{fan[1].label}" or "[Unknown]", fan.current])
         data["fans"] = tabulate(t_data, tablefmt="plain") or "No fan sensors found"
 
         return data
