@@ -244,7 +244,7 @@ class System(commands.Cog):
         if not psutil.LINUX:
             return await ctx.send(UNAVAILABLE)
 
-        data = await self._mem()
+        data = await self._sensors()
         await ctx.send(data)
         temp = data["temp"]
         fans = data["fans"]
