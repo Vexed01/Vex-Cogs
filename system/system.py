@@ -85,6 +85,11 @@ class System(commands.Cog):
         mb = bytes / 1048576
         return self._hum(mb)
 
+    def _hum_gb(self, bytes: Union[int, float]):
+        """Convert to GBs, round, then humanize."""
+        mb = bytes / 1073741824
+        return self._hum(mb)
+
     def _secs_to_time(self, secs: Union[int, float]):
         m, s = divmod(secs, 60)
         h, m = divmod(m, 60)
@@ -171,10 +176,7 @@ class System(commands.Cog):
         """Get users connected"""
         users = psutil.users()
 
-        if embed:
-            e = "`"
-        else:
-            e = ""
+        e = "`" if embed else ""
 
         data = {}
 
@@ -184,6 +186,34 @@ class System(commands.Cog):
             data[f"{e}{user.name}{e}"] += f"[Started]   {started}\n"
             if not psutil.WINDOWS:
                 data[f"{e}{user.name}{e}"] += f"[PID]       {user.pid}"
+
+        return data
+
+    async def _disk(self, embed: bool):
+        """Get disk info"""
+        partitions = psutil.disk_partitions()
+        partition_data = {}
+        for partition in partitions:
+            try:
+                partition_data[partition.device] = [partition, psutil.disk_usage(partition.mountpoint)]
+            except:
+                continue
+
+        e = "`" if embed else ""
+
+        data = {}
+        print(partition_data)
+
+        for p in partition_data.items():
+            total = (
+                f"{self._hum_gb(p[1][1].total)} GB"
+                if p[1][1].total > 1073741824
+                else f"{self._hum_mb(p[1][1].total)} MB"
+            )
+            data[f"{e}{p[0]}{e}"] = f"[Usage]       {p[1][1].percent} %\n"
+            data[f"{e}{p[0]}{e}"] += f"[Total]       {total}\n"
+            data[f"{e}{p[0]}{e}"] += f"[Filesystem]  {p[1][0].fstype}\n"
+            data[f"{e}{p[0]}{e}"] += f"[Mount point] {p[1][0].mountpoint}\n"
 
         return data
 
@@ -303,5 +333,33 @@ class System(commands.Cog):
             to_box = ""
             for user in data.items():
                 to_box += f"{user[0]}\n{user[1]}"
+            msg += self._box(to_box)
+            await ctx.send(msg)
+
+    @system.command(name="disk", aliases=["df"])
+    async def system_disk(self, ctx: commands.Context):
+        """
+        Get infomation about disks connected to the system.
+
+        This will show the space used, total space, filesystem and
+        mount point (if you're on Linux make sure it's not potentially
+        sensitive if running the command a public space).
+
+        Platforms: Windows, Linux, Mac OS
+        """
+        embed = await self._use_embed(ctx)
+        data = await self._disk(embed)
+
+        if embed:
+            now = datetime.datetime.utcnow()
+            embed = discord.Embed(title="Disks", colour=await ctx.embed_color(), timestamp=now)
+            for disk in data.items():
+                embed.add_field(name=disk[0], value=self._box(disk[1]))
+            await ctx.send(embed=embed)
+        else:
+            msg = "**Disks**\n"
+            to_box = ""
+            for disk in data.items():
+                to_box += f"{disk[0]}\n{disk[1]}"
             msg += self._box(to_box)
             await ctx.send(msg)

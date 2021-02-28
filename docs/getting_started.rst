@@ -11,19 +11,19 @@ Getting my cogs
 1. First, you need to add the my repository (repo):
     .. code-block:: none
 
-        [p]repo add vex https://github.com/Vexed01/Vex-Cogs
+        [p]repo add vex-cogs https://github.com/Vexed01/Vex-Cogs
 
 2. Now you can install my cogs with this command:
     .. code-block:: none
 
-        [p]cog install vex cogname
+        [p]cog install vex-cogs cogname
 
 
 You can list my cogs with this command:
 
 .. code-block:: none
 
-    [p]cog list vex
+    [p]cog list vex-cogs
 
 .. tip::
 

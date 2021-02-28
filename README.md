@@ -7,11 +7,11 @@ These are for Red V3, an open source Discord bot. See their repo [here](https://
 
 `[p]` is your prefix.
 
-Add the repo: `[p]repo add vex https://github.com/Vexed01/Vex-Cogs`
+Add the repo: `[p]repo add vex-cogs https://github.com/Vexed01/Vex-Cogs`
 
-Then you can install cogs: `[p]cog install vex cogname`
+Then you can install cogs: `[p]cog install vex-cogs cogname`
 
-There's a list of cogs below you can use `[p]cog list vex`
+There's a list of cogs below you can use `[p]cog list vex-cogs`
 
 | Cog name | Description |
 | --- | --- |
