@@ -150,7 +150,8 @@ class System(commands.Cog):
         t_data = []
         for group in temp.items():
             for item in group[1]:
-                t_data.append([f"[{item.label}]" or "[Unknown]", item.current])
+                name = item.label or group[0]
+                t_data.append([f"[{name}]", item.current])
         data["temp"] = tabulate(t_data, tablefmt="plain") or "No temperature sensors found"
 
         t_data = []
