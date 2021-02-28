@@ -52,22 +52,6 @@ Base command for this cog.
 Most commands work on all OSes or omit certian information.
 See the help for individual commands for detailed limitations.
 
-.. _system-command-system-all:
-
-""""""""""
-system all
-""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]system all 
-
-**Description**
-
-All the data! Embed only.
-
 .. _system-command-system-cpu:
 
 """"""""""
@@ -83,6 +67,9 @@ system cpu
 **Description**
 
 Get metrics about the CPU.
+
+This will show the CPU usage as a percent for each core, and frequency depending on platform.
+It will also show the time spent idle, user and system as well as uptime.
 
 Platforms: Windows, Linux, Mac OS
 .. Note:: CPU frequency is nominal and overall on Windows and Mac OS,
@@ -107,7 +94,7 @@ system embedtoggle
 
 Toggle embeds on and off for this cog.
 
-Note if embeds are set to False using the ``embedset`` command that will oberride this.
+.. note:: If embeds are set to False using the ``embedset`` command that will override this.
 
 .. _system-command-system-memory:
 
@@ -126,6 +113,9 @@ system memory
 **Description**
 
 Get infomation about memory usage.
+
+This will show memory available as a percent, memory used and avalibe as well
+as the total amount. Data is provided for both phsyical and SWAP RAM.
 
 Platforms: Windows, Linux, Mac OS
 
@@ -147,6 +137,10 @@ system sensors
 
 Get sensor metrics.
 
+This will return any data about temperature and fan sensors it can find.
+If there is no name for an individual sensor, it will use the name of the
+group instead.
+
 Platforms: Linux
 
 .. _system-command-system-users:
@@ -165,7 +159,9 @@ system users
 
 View logged in users.
 
+This will show the user name, what terminal it's logged in at, and when they logged in.
+
 Platforms: Windows, Linux, Mac OS
 
-.. note:: PID is not available on Windows, and terminal ususally will show ``Unknown``.
+.. note:: PID is not available on Windows. Terminal is ususally ``Unknown`` Windows.
 

@@ -51,3 +51,7 @@ html_theme = "sphinx_rtd_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+# Substitutions to make this compatible with Fox-V3's cogguide generator cog
+# (on brance cogguide_develop), add as needed.
+rst_prolog = ".. |owner-lock| replace:: This command is locked to the bot owner."

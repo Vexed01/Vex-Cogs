@@ -60,7 +60,7 @@ class System(commands.Cog):
         """
         Toggle embeds on and off for this cog.
 
-        Note if embeds are set to False using the `embedset` command that will oberride this.
+        Note: If embeds are set to False using the `embedset` command that will override this.
         """
         old = (await self.config.settings())["embed"]
         new = not old
@@ -190,6 +190,9 @@ class System(commands.Cog):
         """
         Get metrics about the CPU.
 
+        This will show the CPU usage as a percent for each core, and frequency depending on platform.
+        It will also show the time spent idle, user and system as well as uptime.
+
         Platforms: Windows, Linux, Mac OS
         Note: CPU frequency is nominal and overall on Windows and Mac OS,
         on Linux it's current and per-core.
@@ -220,6 +223,9 @@ class System(commands.Cog):
     async def system_mem(self, ctx: commands.Context):
         """
         Get infomation about memory usage.
+
+        This will show memory available as a percent, memory used and avalibe as well
+        as the total amount. Data is provided for both phsyical and SWAP RAM.
 
         Platforms: Windows, Linux, Mac OS
         """
@@ -272,10 +278,13 @@ class System(commands.Cog):
     @system.command(name="users")
     async def system_users(self, ctx: commands.Context):
         """
-        View logged in users.
+        Get information about logged in users.
+
+        This will show the user name, what terminal they're logged in at,
+        and when they logged in.
 
         Platforms: Windows, Linux, Mac OS
-        Note: PID is not available on Windows.
+        Note: PID is not available on Windows. Terinal is usually `Unknown`
         """
         embed = await self._use_embed(ctx)
         data = await self._users(embed)
