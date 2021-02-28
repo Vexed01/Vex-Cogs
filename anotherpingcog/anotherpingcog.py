@@ -42,7 +42,13 @@ class AnotherPingCog(commands.Cog):
 
     @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn"])
     async def ping(self, ctx):
-        """A rich embed ping command with timings"""
+        """
+        A rich embed ping command with timings.
+
+        This will show the time to send a message, and the WS latency to Discord.
+        If I can't send embeds or they are disabled, I will send a message instead.
+        The embed has more detail and is preferred.
+        """
         ws_latency = round(self.bot.latency * 1000)
 
         if ctx.invoked_with == "ping":

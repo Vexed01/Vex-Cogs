@@ -119,7 +119,15 @@ log = logging.getLogger("red.vexed.status")
 
 
 class Status(commands.Cog):
-    """Automatically check for status updates"""
+    """
+    Automatically check for status updates.
+
+    When there is one, it will send the update to all channels that
+    have registered to revieve updates from that service.
+
+    If there's a service that you want added, contact Vexed#3211 or
+    make an issue on the GitHub repo (or even better a PR!).
+    """
 
     __version__ = "1.1.2"
     __author__ = "Vexed#3211"
@@ -580,9 +588,9 @@ class Status(commands.Cog):
         """
         Start getting status updates for the choses service!
 
-        There is a list of services you can use in the **`[p]statusset list`** command.
+        There is a list of services you can use in the `[p]statusset list` command.
 
-        You can use the **`[p]statusset preview`** command to see how different options look.
+        You can use the `[p]statusset preview` command to see how different options look.
 
         If you don't specify a specific channel, I will use the current channel.
 
@@ -817,7 +825,6 @@ class Status(commands.Cog):
             await ctx.send("Hmm, I couldn't preview that.")
 
     @guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
     @statusset.group(name="edit")
     async def statusset_edit(self, ctx):
         """Base command for editing services"""
@@ -1021,7 +1028,7 @@ class Status(commands.Cog):
         )  # discord is just a place holder
 
     @checks.is_owner()
-    @commands.command(aliases=["dcfr"])
+    @commands.command(aliases=["dcfr"], hidden=True)
     async def devcheckfeedraw(self, ctx: commands.Context, link: str):
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:

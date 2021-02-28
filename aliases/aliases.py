@@ -5,7 +5,7 @@ from redbot.core.utils import deduplicate_iterables
 
 
 class Aliases(commands.Cog):
-    """Get all the alias information you could ever want about a command"""
+    """Get all the alias information you could ever want about a command."""
 
     __version__ = "1.0.1"
     __author__ = "Vexed#3211"
