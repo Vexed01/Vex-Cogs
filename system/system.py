@@ -199,14 +199,14 @@ class System(commands.Cog):
                 embed = discord.Embed(title="CPU Metrics", colour=await ctx.embed_colour(), timestamp=now)
                 embed.add_field(name="CPU Usage", value=self._box(percent))
                 embed.add_field(name=f"CPU Times", value=self._box(time))
-                extra = data["freq_note"] or None
+                extra = data["freq_note"]
                 embed.add_field(name=f"CPU Frequency{extra}", value=self._box(freq), inline=False)
                 await ctx.send(embed=embed)
             else:
                 msg = "**CPU Metrics**\n"
                 to_box = f"CPU Usage\n{percent}\n"
                 to_box += f"CPU Times\n{time}\n"
-                extra = data["freq_note"] or None
+                extra = data["freq_note"]
                 to_box += f"CPU Frequency{extra}\n{freq}\n"
                 msg += self._box(to_box)
                 await ctx.send(msg)
@@ -245,7 +245,7 @@ class System(commands.Cog):
             return await ctx.send(UNAVAILABLE)
 
         data = await self._mem()
-        temp = data["temperature"] or "No temperature sensors found"
+        temp = data["temp"] or "No temperature sensors found"
         fans = data["fans"] or "No fans found"
         if await self._use_embed(ctx):
             now = datetime.datetime.utcnow()
