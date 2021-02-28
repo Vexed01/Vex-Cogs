@@ -55,3 +55,4 @@ html_static_path = ["_static"]
 # Substitutions to make this compatible with Fox-V3's cogguide generator cog
 # (on brance cogguide_develop), add as needed.
 rst_prolog = ".. |owner-lock| replace:: This command is locked to the bot owner."
+rst_prolog += ".. |admin-lock| replace:: This command is locked to server admins."

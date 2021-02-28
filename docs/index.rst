@@ -10,6 +10,9 @@ Welcome to Vex-Cogs's documentation!
    :maxdepth: 2
    :caption: Cogs:
 
+   anotherpingcog
+   aliases
+   status
    system
 
 
