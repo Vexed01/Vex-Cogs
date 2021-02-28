@@ -14,7 +14,7 @@ old_ping = None
 
 
 class AnotherPingCog(commands.Cog):
-    """A rich embed ping command with timings"""
+    """A rich embed ping command with latency timings."""
 
     __version__ = "1.0.0"
     __author__ = "Vexed#3211"

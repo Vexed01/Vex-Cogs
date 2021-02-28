@@ -7,6 +7,12 @@ Welcome to Vex-Cogs's documentation!
 ====================================
 
 .. toctree::
+   :maxdepth: 1
+   :caption: Getting started:
+
+   getting_started
+
+.. toctree::
    :maxdepth: 2
    :caption: Cogs:
 
