@@ -21,7 +21,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -246,7 +246,6 @@ class System(commands.Cog):
             return await ctx.send(UNAVAILABLE)
 
         data = await self._sensors(farenheit)
-        await ctx.send(data)
         temp = data["temp"]
         fans = data["fans"]
         if await self._use_embed(ctx):
