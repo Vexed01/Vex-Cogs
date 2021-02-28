@@ -147,16 +147,20 @@ class System(commands.Cog):
 
         data = {"temp": "", "fans": ""}
 
+        unit = "°F" if farenheit else "°C"
+
         t_data = []
         for group in temp.items():
             for item in group[1]:
                 name = item.label or group[0]
-                t_data.append([f"[{name}]", item.current])
+                t_data.append([f"[{name}]", f"{item.current} {unit}"])
         data["temp"] = tabulate(t_data, tablefmt="plain") or "No temperature sensors found"
 
         t_data = []
         for fan in fans.items():
-            t_data.append([f"{fan[1].label}" or "[Unknown]", fan.current])
+            for item in fan[1]:
+                name = item.label or fan[0]
+                t_data.append([f"[{name}]", f"{fan.current} RPM"])
         data["fans"] = tabulate(t_data, tablefmt="plain") or "No fan sensors found"
 
         return data
@@ -239,6 +243,10 @@ class System(commands.Cog):
     async def system_sesnsors(self, ctx: commands.Context, farenheit: bool = False):
         """
         Get sensor metrics.
+
+        This will return any data about temperature and fan sensors it can find.
+        If there is no name for an individual sensor, it will use the name of the
+        group instead.
 
         Platforms: Linux
         """
