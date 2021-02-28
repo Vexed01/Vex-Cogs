@@ -18,6 +18,10 @@ There's a list of cogs below you can use `[p]cog list vex`
 | `aliases` | Get all the information you could ever need about a command's aliases. |
 | `anotherpingcog` | Just another ping cog... But this one has fancy colours in an embed! |
 | `status` | Recieve automatic status updates from various services, including Discord. |
+| `system` | Get system metrics of the host device, such as RAM or CPU.
+
+All these cogs have docs! Check them out at <https://vex-cogs.readthedocs.io/en/latest>
+
 ---
 
 ### Contact
