@@ -316,7 +316,7 @@ class System(commands.Cog):
         and when they logged in.
 
         Platforms: Windows, Linux, Mac OS
-        Note: PID is not available on Windows. Terinal is usually `Unknown`
+        Note: PID is not available on Windows. Terminal is usually `Unknown`
         """
         embed = await self._use_embed(ctx)
         data = await self._users(embed)
@@ -346,6 +346,8 @@ class System(commands.Cog):
         sensitive if running the command a public space).
 
         Platforms: Windows, Linux, Mac OS
+        Note: Mount point is basically useless on Windows as it's the
+        same as the drive name, though it's still shown.
         """
         embed = await self._use_embed(ctx)
         data = await self._disk(embed)

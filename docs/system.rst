@@ -76,6 +76,34 @@ Platforms: Windows, Linux, Mac OS
 
 on Linux it's current and per-core.
 
+.. _system-command-system-disk:
+
+"""""""""""
+system disk
+"""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]system disk 
+
+.. tip:: Alias: ``system df``
+
+**Description**
+
+Get infomation about disks connected to the system.
+
+This will show the space used, total space, filesystem and
+mount point (if you're on Linux make sure it's not potentially
+sensitive if running the command a public space).
+
+Platforms: Windows, Linux, Mac OS
+
+.. note::
+    Mount point is basically useless on Windows as it's the
+    same as the drive name, though it's still shown.
+
 .. _system-command-system-embedtoggle:
 
 """"""""""""""""""
@@ -157,9 +185,10 @@ system users
 
 **Description**
 
-View logged in users.
+Get information about logged in users.
 
-This will show the user name, what terminal it's logged in at, and when they logged in.
+This will show the user name, what terminal they're logged in at,
+and when they logged in.
 
 Platforms: Windows, Linux, Mac OS
 
