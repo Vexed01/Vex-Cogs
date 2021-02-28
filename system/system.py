@@ -102,7 +102,7 @@ class System(commands.Cog):
         cores = psutil.cpu_count()
 
         if psutil.LINUX:
-            data = {"percent": "", "freq": "", "time": ""}
+            data = {"percent": "", "freq": "", "freq_note": "", "time": ""}
             for i in range(cores):
                 data["percent"] += f"[Core {i}] {percent[i]} %\n"
                 ghz = round((freq[i].current / 1000), 2)
