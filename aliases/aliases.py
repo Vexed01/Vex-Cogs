@@ -24,6 +24,9 @@ class Aliases(commands.Cog):
         """Nothing to delete"""
         return
 
+    def _inline(self, text: str):
+        return inline(text.lstrip())
+
     @commands.command()
     async def aliases(self, ctx, *, command: str):
         """
@@ -36,8 +39,24 @@ class Aliases(commands.Cog):
         command = self.bot.get_command(strcommand)
 
         # meh, safe enough as only reading, there is a big warning on cog install about this
-        alias_cog = self.bot.get_cog("Alias")
-        all_global_aliases = await alias_cog.config.entries()
+        try:
+            alias_cog = self.bot.get_cog("Alias")
+            all_global_aliases = await alias_cog.config.entries()
+        except Exception:
+            if command is None:
+                return await ctx.send("Hmm, I can't find that command.")
+            full_com = command.qualified_name
+            builtin_aliases = command.aliases
+            com_parent = command.parent or ""
+
+            com_builtin_aliases = []
+            for i in range(len(builtin_aliases)):
+                com_builtin_aliases.append(self._inline(f"{com_parent} {builtin_aliases[i]}"))
+
+            msg = "I was unable to get information from the alias cog. It's probably not loaded.\n"
+            msg += f"Main command: `{full_com}`\nBuilt in aliases: "
+            msg += humanize_list(com_builtin_aliases)
+            return await ctx.send(msg)
 
         global_aliases = []
         guild_aliases = []
@@ -60,7 +79,7 @@ class Aliases(commands.Cog):
 
         full_com = command.qualified_name
         builtin_aliases = command.aliases
-        com_parent = command.parent
+        com_parent = command.parent or ""
 
         if ctx.guild:
             for alias_cog in all_guild_aliases:
@@ -76,11 +95,11 @@ class Aliases(commands.Cog):
 
         com_builtin_aliases = []
         for i in range(len(builtin_aliases)):
-            com_builtin_aliases.append(inline(f"{com_parent} {builtin_aliases[i]}"))
+            com_builtin_aliases.append(self._inline(f"{com_parent} {builtin_aliases[i]}"))
         for i in range(len(global_aliases)):
-            global_aliases[i] = inline(global_aliases[i])
+            global_aliases[i] = self._inline(global_aliases[i])
         for i in range(len(guild_aliases)):
-            guild_aliases[i] = inline(guild_aliases[i])
+            guild_aliases[i] = self._inline(guild_aliases[i])
 
         aliases = ""
         none = []
