@@ -145,7 +145,7 @@ class System(commands.Cog):
         temp = psutil.sensors_temperatures(farenheit)
         fans = psutil.sensors_fans()
 
-        data = {"temp": "", "fans": "", "battery": ""}
+        data = {"temp": "", "fans": ""}
 
         t_data = []
         for group in temp:
@@ -245,6 +245,7 @@ class System(commands.Cog):
             return await ctx.send(UNAVAILABLE)
 
         data = await self._mem()
+        await ctx.send(data)
         temp = data["temp"]
         fans = data["fans"]
         if await self._use_embed(ctx):
