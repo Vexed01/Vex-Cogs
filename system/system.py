@@ -151,12 +151,12 @@ class System(commands.Cog):
         for group in temp:
             for item in group:
                 t_data.append([f"[{item.label}]" or "[Unknown]", item.current])
-        data["temp"] = tabulate(t_data, tablefmt="plain")
+        data["temp"] = tabulate(t_data, tablefmt="plain") or "No temperature sensors found"
 
         t_data = []
         for fan in fans:
             t_data.append([f"{fan.label}" or "[Unknown]", fan.current])
-        data["fans"] = tabulate(t_data, tablefmt="plain")
+        data["fans"] = tabulate(t_data, tablefmt="plain") or "No fan sensors found"
 
         return data
 
@@ -245,8 +245,8 @@ class System(commands.Cog):
             return await ctx.send(UNAVAILABLE)
 
         data = await self._mem()
-        temp = data["temp"] or "No temperature sensors found"
-        fans = data["fans"] or "No fans found"
+        temp = data["temp"]
+        fans = data["fans"]
         if await self._use_embed(ctx):
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Sensors", colour=await ctx.embed_color(), timestamp=now)
