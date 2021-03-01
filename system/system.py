@@ -21,7 +21,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -223,7 +223,10 @@ class System(commands.Cog):
         status = {"sleeping": 0, "idle": 0, "running": 0, "stopped": 0}
 
         for process in processes:
-            status[process.info["status"]] += 1
+            try:
+                status[process.info["status"]] += 1
+            except KeyError:
+                continue
 
         sleeping = status["sleeping"]
         idle = status["idle"]
@@ -438,3 +441,12 @@ class System(commands.Cog):
             to_box += f"Processes\n{procs}\n"
             msg += self._box(to_box)
             await ctx.send(msg)
+
+    # @system.command(name="processes",aliases=["proc"])
+    # async def system_processes(self, ctx):
+    #     proc = await self._proc()
+
+    #     if await self._use_embed(ctx):
+    #         now = datetime.datetime.utcnow()
+    #         embed = await discord.Embed(title="Processes", colour=await ctx.embed_color, timestamp=now)
+    #         embed.add_field(name="Status")
