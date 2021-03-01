@@ -335,6 +335,7 @@ class Status(commands.Cog):
                             etags[service] = response.headers.get("ETag")
                     except Exception as e:
                         log.warning(f"Unable to check for an update for {service}", exc_info=e)
+                        continue
 
                 if status == 200:
                     fp_data = feedparser.parse(html)
