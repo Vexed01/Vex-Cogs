@@ -783,18 +783,19 @@ class Status(commands.Cog):
         The service you want to preview. There's a list of available services in the
         `[p]statusset list` command.
 
-        __**Mode**__
-        **All**: Every time the service posts an update on an incident, I will send
-        a new messagecontaning the previus updates as well as the new update. Best
-        used in a fast-moving channel with other users.
-        **Latest**: Every time the service posts an update on an incident, I will send
-        a new message contaning only the latest update. Best used in a dedicated status
-        channel.
+        **`<mode>`**
+            **All**: Every time the service posts an update on an incident, I will send
+            a new message contaning the previus updates as well as the new update. Best
+            used in a fast-moving channel with other users.
 
-        __**Webhook**__
-        Using a webhook means that the status updates will be sent with the avatar
-        as the service's logo and the name will be `[service] Status Update`, instead
-        of my avatar and name.
+            **Latest**: Every time the service posts an update on an incident, I will send
+            a new message contaning only the latest update. Best used in a dedicated status
+            channel.
+
+        **`<webhook>`**
+            Using a webhook means that the status updates will be sent with the avatar
+            as the service's logo and the name will be `[service] Status Update`, instead
+            of my avatar and name.
         """
         if service not in FEED_URLS.keys():
             return await ctx.send(f"That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
