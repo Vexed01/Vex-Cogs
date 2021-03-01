@@ -217,6 +217,31 @@ class System(commands.Cog):
 
         return data
 
+    async def _proc(self):
+        """Get process info"""
+        processes = psutil.process_iter(["status", "username"])
+        status = {"sleeping": 0, "idle": 0, "running": 0, "stopped": 0}
+
+        for process in processes:
+            status[process.info["status"]] += 1
+
+        sleeping = status["sleeping"]
+        idle = status["idle"]
+        running = status["running"]
+        stopped = status["stopped"]
+        total = sleeping + idle + running + stopped
+
+        data = {}
+        data["statuses"] = f"[Running]  {running}\n"
+        data["statuses"] += f"[Idle]     {idle}\n"
+        data["statuses"] += f"[Sleeping] {sleeping}\n"
+        if status["stopped"]:  # want to keep it at 4 rows
+            data["statuses"] += f"[Stopped]  {stopped}\n"
+        else:
+            data["statuses"] += f"[Total]    {total}\n"
+
+        return data
+
     @system.command(name="cpu")
     async def system_cpu(self, ctx: commands.Context):
         """
@@ -365,3 +390,34 @@ class System(commands.Cog):
                 to_box += f"{disk[0]}\n{disk[1]}"
             msg += self._box(to_box)
             await ctx.send(msg)
+
+    @system.command(name="top", aliases=["overview", "all"])
+    async def system_all(self, ctx: commands.Context):
+        """
+        Get an overview of the current system metrics, similar to `top`.
+
+        This will show CPU utilisation, RAM usage and uptime as well as
+        active processes.
+
+        Platforms: Windows, Linux, Mac OS
+        Note: Process data on Windows can be 0 for some fields.
+        """
+        with ctx.typing():
+            cpu = await self._cpu()
+            mem = await self._mem()
+            proc = await self._proc()
+
+            special_cpu = ""
+            data = [[cpu["percent"], cpu["time"]]]
+            cpu = tabulate(data, tablefmt="plain")
+            cpu = cpu.replace("% ", "%  ")
+            cpu = cpu.replace("nds", "nds ")
+
+        if await self._use_embed(ctx):
+            now = datetime.datetime.utcnow()
+            embed = discord.Embed(title="Overview", colour=await ctx.embed_color(), timestamp=now)
+            embed.add_field(name="CPU", value=self._box(cpu), inline=False)
+            embed.add_field(name="Physical Memory", value=self._box(mem["physical"]))
+            embed.add_field(name="SWAP Memory", value=self._box(mem["swap"]))
+            embed.add_field(name="Processes", value=self._box(proc["statuses"]), inline=False)
+            await ctx.send(embed=embed)
