@@ -407,10 +407,10 @@ class System(commands.Cog):
             mem = await self._mem()
             proc = await self._proc()
 
-            data = [[cpu["percent"], cpu["time"]]]
+            data = [[cpu["time"], cpu["percent"]]]
             cpu = tabulate(data, tablefmt="plain")
-            cpu = cpu.replace("% ", "%  ")
-            cpu = cpu.replace("nds", "nds ")
+            cpu = cpu.replace("%", "% ")
+            cpu = cpu.replace("nds", "nds  ")
 
             physical = mem["physical"]
             swap = mem["swap"]
