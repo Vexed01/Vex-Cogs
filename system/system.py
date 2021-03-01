@@ -21,7 +21,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -407,17 +407,28 @@ class System(commands.Cog):
             mem = await self._mem()
             proc = await self._proc()
 
-            special_cpu = ""
             data = [[cpu["percent"], cpu["time"]]]
             cpu = tabulate(data, tablefmt="plain")
             cpu = cpu.replace("% ", "%  ")
             cpu = cpu.replace("nds", "nds ")
 
+            physical = mem["physical"]
+            swap = mem["swap"]
+            procs = proc["statuses"]
+
         if await self._use_embed(ctx):
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Overview", colour=await ctx.embed_color(), timestamp=now)
             embed.add_field(name="CPU", value=self._box(cpu), inline=False)
-            embed.add_field(name="Physical Memory", value=self._box(mem["physical"]))
-            embed.add_field(name="SWAP Memory", value=self._box(mem["swap"]))
-            embed.add_field(name="Processes", value=self._box(proc["statuses"]), inline=False)
+            embed.add_field(name="Physical Memory", value=self._box(physical))
+            embed.add_field(name="SWAP Memory", value=self._box(swap))
+            embed.add_field(name="Processes", value=self._box(procs), inline=False)
             await ctx.send(embed=embed)
+        else:
+            msg = "**Overview**\n"
+            to_box = f"CPU\n{cpu}\n"
+            to_box += f"Physical Memory\n{physical}\n"
+            to_box += f"SWAP Memory\n{swap}\n"
+            to_box += f"Processes\n{procs}\n"
+            msg += self._box(to_box)
+            await ctx.send(msg)
