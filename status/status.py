@@ -129,7 +129,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.1.2"
+    __version__ = "1.1.3"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -502,7 +502,7 @@ class Status(commands.Cog):
                 )
                 await self.config.channel_from_id(c_id).feeds.clear()
                 return
-        if self.bot.cog_disabled_in_guild():
+        if await self.bot.cog_disabled_in_guild(self, channel.guild):
             log.debug(f"Skipping channel {c_id} as cog is disabled in that guild.")
             return
         if use_webhook and not channel.permissions_for(channel.guild.me).manage_webhooks:
