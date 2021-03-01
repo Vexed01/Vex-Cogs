@@ -407,10 +407,16 @@ class System(commands.Cog):
             mem = await self._mem()
             proc = await self._proc()
 
-            data = [[cpu["time"], cpu["percent"]]]
-            cpu = tabulate(data, tablefmt="plain")
-            cpu = cpu.replace("%", "% ")
-            cpu = cpu.replace("nds", "nds  ")
+            if psutil.cpu_count() <= 4:
+                data = [[cpu["percent"], cpu["time"]]]
+                cpu = tabulate(data, tablefmt="plain")
+                cpu = cpu.replace("%", "% ")
+                cpu = cpu.replace("nds ", "nds  ")
+            else:
+                data = [[cpu["time"], cpu["percent"]]]
+                cpu = tabulate(data, tablefmt="plain")
+                cpu = cpu.replace("% ", "%  ")
+                cpu = cpu.replace("nds", "nds ")
 
             physical = mem["physical"]
             swap = mem["swap"]
@@ -426,7 +432,7 @@ class System(commands.Cog):
             await ctx.send(embed=embed)
         else:
             msg = "**Overview**\n"
-            to_box = f"CPU\n{cpu}\n"
+            to_box = f"CPU\n{cpu}\n\n"
             to_box += f"Physical Memory\n{physical}\n"
             to_box += f"SWAP Memory\n{swap}\n"
             to_box += f"Processes\n{procs}\n"
