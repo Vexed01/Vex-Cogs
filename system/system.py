@@ -410,7 +410,7 @@ class System(commands.Cog):
             mem = await self._mem()
             proc = await self._proc()
 
-            if psutil.cpu_count() <= 4:
+            if psutil.cpu_count() > 4:
                 data = [[cpu["percent"], cpu["time"]]]
                 cpu = tabulate(data, tablefmt="plain")
                 cpu = cpu.replace("%", "% ")
