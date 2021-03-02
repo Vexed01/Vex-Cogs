@@ -3,7 +3,9 @@ import datetime
 from typing import Union
 
 import discord
+import datetime
 import psutil
+from cProfile import run, runctx
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_number
@@ -236,13 +238,18 @@ class System(commands.Cog):
         total = sleeping + idle + running + stopped
 
         data = {}
-        data["statuses"] = f"[Running]  {running}\n"
-        data["statuses"] += f"[Idle]     {idle}\n"
-        data["statuses"] += f"[Sleeping] {sleeping}\n"
-        if status["stopped"]:  # want to keep it at 4 rows
+        if psutil.WINDOWS:
+            data["statuses"] = f"[Running]  {running}\n"
             data["statuses"] += f"[Stopped]  {stopped}\n"
-        else:
             data["statuses"] += f"[Total]    {total}\n"
+        else:
+            data["statuses"] = f"[Running]  {running}\n"
+            data["statuses"] += f"[Idle]     {idle}\n"
+            data["statuses"] += f"[Sleeping] {sleeping}\n"
+            if status["stopped"]:  # want to keep it at 4 rows
+                data["statuses"] += f"[Stopped]  {stopped}\n"
+            else:
+                data["statuses"] += f"[Total]    {total}\n"
 
         return data
 
@@ -404,7 +411,7 @@ class System(commands.Cog):
         active processes.
 
         Platforms: Windows, Linux, Mac OS
-        Note: Process data on Windows can be 0 for some fields.
+        Note: This command appears to be very slow in Windows.
         """
         with ctx.typing():
             cpu = await self._cpu()
