@@ -373,8 +373,9 @@ class Status(commands.Cog):
             elif service not in DONT_REVERSE and old_fields[0]["name"] == new_fields[0]["name"]:
                 return False
             else:
-                feeddict["time"] = None
-                feed_store[service] = feeddict
+                to_store = feeddict.copy()
+                to_store["time"] = to_store["time"].timestamp()
+                feed_store[service] = to_store
                 return True
 
     async def _get_channels(self, service: str) -> dict:
@@ -395,10 +396,12 @@ class Status(commands.Cog):
                 colour=feeddict["colour"],
                 url=feeddict["link"],
             )
-        except TypeError:  # can happen with timezone
-            t = feeddict["time"]
-            tt = type(feeddict["time"])
-            log.debug(f"Error with timestamp: {t} and {tt}")
+        except TypeError:  # can happen with timestamps, should be fixed
+            log.error(
+                "Failed with timestamp {} on {}. Updates were still sent. Please report this to Vexed.".format(
+                    feeddict["time"], service
+                )
+            )
             base = discord.Embed(
                 title=feeddict["title"],
                 colour=feeddict["colour"],
@@ -806,9 +809,8 @@ class Status(commands.Cog):
             return await ctx.send(f"I don't have permission to manage webhooks.")
 
         feed = await self.config.feed_store()
-        try:
-            feeddict = feed[service]
-        except KeyError:  # will only really happen on first load
+        feeddict = feed[service]
+        if feeddict.get("link") is None or feeddict.get("time") is None:
             async with aiohttp.ClientSession() as session:
                 async with session.get(FEED_URLS[service]) as response:
                     html = await response.text()
@@ -816,6 +818,8 @@ class Status(commands.Cog):
             feed = feedparser.parse(html)
             feeddict = await self._process_feed(service, feed)
             await self._check_real_update(service, feeddict)  # this will add it to the feed_store
+        else:
+            feeddict["time"] = datetime.datetime.fromtimestamp(feeddict["time"])
 
         await self._make_send_cache(feeddict, service)
         channel = (ctx.channel.id, {"mode": mode, "webhook": webhook})

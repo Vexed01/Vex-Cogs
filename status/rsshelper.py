@@ -88,9 +88,7 @@ async def _parse_discord(feed: FeedParserDict) -> dict:
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 7308754})
@@ -146,9 +144,7 @@ async def _parse_github(feed: FeedParserDict) -> dict:
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 1448738})
@@ -204,7 +200,7 @@ async def _parse_cloudflare(feed: FeedParserDict) -> dict:
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")})
+    parseddict.update({"time": parse(feed["published"])})
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 16494144})
@@ -248,9 +244,7 @@ async def _parse_python(feed: FeedParserDict) -> dict:
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 3765669})
@@ -292,9 +286,7 @@ async def _parse_twitter_api(feed: FeedParserDict):
                 "Unable to parse feed properly. It was still send to all channels. See below debugs:"
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 41715})
@@ -339,9 +331,7 @@ async def _parse_statuspage(feed: FeedParserDict):
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 2524415})
@@ -386,9 +376,7 @@ async def _parse_zoom(feed: FeedParserDict):
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 2985215})
@@ -433,9 +421,7 @@ async def _parse_oracle_cloud(feed: FeedParserDict):
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 13059636})
@@ -470,9 +456,7 @@ async def _parse_twitter(feed: FeedParserDict):
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 2985215})
@@ -517,9 +501,7 @@ async def _parse_epic_games(feed: FeedParserDict):
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 949999})
@@ -564,9 +546,7 @@ async def _parse_digitalocean(feed: FeedParserDict):
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 27134})
@@ -611,9 +591,7 @@ async def _parse_reddit(feed: FeedParserDict):
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 16734234})
@@ -626,7 +604,7 @@ async def _parse_aws(feed: FeedParserDict):
 
     parseddict["fields"].append({"name": feed["published"], "value": feed["description"]})
 
-    parseddict.update({"time": None})  # TODO: actually parse the time
+    parseddict.update({"time": parse(feed["updated"], tzinfos={"PST": -28800})})
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 16750848})
@@ -641,9 +619,7 @@ async def _parse_gcp(feed: FeedParserDict):
         {"name": parse(feed["updated"]).strftime("%b %d, %H:%M %Z"), "value": feed["description"]}
     )
 
-    log.debug("Raw time: {}".format(feed["updated"]))
     parseddict.update({"time": parse(feed["updated"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 3450962})
@@ -687,9 +663,7 @@ async def _parse_smartthings(feed: FeedParserDict):
                 f" Timestamp: {datetime.datetime.utcnow()}"
             )
 
-    log.debug("Raw time: {}".format(feed["published"]))
     parseddict.update({"time": parse(feed["published"])})
-    log.debug("Helper parsed: {}".format(parseddict["time"]))
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 3447226})
