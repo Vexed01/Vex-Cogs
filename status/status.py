@@ -183,7 +183,7 @@ class Status(commands.Cog):
         except TimeoutError:
             log.error(
                 "Loop timed out after 2 minutes 20 seconds. Will try again shortly. If this keeps happening "
-                "when there's an update for a specific service, contact Vexed"
+                "when there's an update for a specific service, contact Vexed."
             )
         except Exception as e:
             log.error(
