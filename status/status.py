@@ -129,7 +129,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.1.3"
+    __version__ = "1.1.4"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -373,7 +373,9 @@ class Status(commands.Cog):
             except KeyError:
                 old_fields = "hello"
             new_fields = feeddict["fields"]
-            if old_fields == new_fields:
+            if service in DONT_REVERSE and old_fields[-1]["name"] == new_fields[-1]["name"]:
+                return False
+            elif service not in DONT_REVERSE and old_fields[0]["name"] == new_fields[0]["name"]:
                 return False
             else:
                 feeddict["time"] = None
@@ -1042,6 +1044,4 @@ class Status(commands.Cog):
 
         pages = pagify(str(feed))
 
-        for page in pages:
-            print(page, end="")
-            await ctx.send(page)
+        await ctx.send_interactive(pages, box_lang="")
