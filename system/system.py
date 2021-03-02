@@ -117,7 +117,9 @@ class System(commands.Cog):
         else:
             data = {"percent": "", "freq": "", "freq_note": " (nominal)", "time": ""}
             for i in range(cores):
-                data["percent"] += f"[Core {i}] {percent[i]} %\n"
+                data[
+                    "percent"
+                ] += f"[Core {i}] {percent[i]} % \n"  # keep extra space here, for special case, tabulate removes it
             ghz = round((freq[0].current / 1000), 2)
             data["freq"] = f"{ghz} GHz\n"  # blame windows
 
@@ -202,7 +204,6 @@ class System(commands.Cog):
         e = "`" if embed else ""
 
         data = {}
-        print(partition_data)
 
         for p in partition_data.items():
             total = (
@@ -410,16 +411,11 @@ class System(commands.Cog):
             mem = await self._mem()
             proc = await self._proc()
 
-            if psutil.cpu_count() > 4:
-                data = [[cpu["percent"], cpu["time"]]]
-                cpu = tabulate(data, tablefmt="plain")
-                cpu = cpu.replace("%", "% ")
-                cpu = cpu.replace("nds ", "nds  ")
-            else:
-                data = [[cpu["time"], cpu["percent"]]]
-                cpu = tabulate(data, tablefmt="plain")
-                cpu = cpu.replace("% ", "%  ")
-                cpu = cpu.replace("nds", "nds ")
+            data = [[cpu["percent"], cpu["time"]]]
+
+            tabulate.PRESERVE_WHITESPACE = True
+            cpu = tabulate(data, tablefmt="plain")
+            tabulate.PRESERVE_WHITESPACE = False
 
             physical = mem["physical"]
             swap = mem["swap"]
