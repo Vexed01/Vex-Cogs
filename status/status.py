@@ -3,15 +3,14 @@
 # If you are looking for an event your cog can listen to, take a look around lines 170 and 210
 
 import asyncio
+import datetime
 import logging
 import re
-import aiohttp
 from typing import Optional
-import feedparser
+
+import aiohttp
 import discord
-from feedparser import parse
-from dateutil.parser import parse
-import datetime
+import feedparser
 from discord.ext import tasks
 from discord.ext.commands.core import guild_only
 from feedparser.util import FeedParserDict
@@ -24,7 +23,7 @@ from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
 from tabulate import tabulate
 
 from .rsshelper import _strip_html
-from .rsshelper import process_feed as helper_process_feed
+from .rsshelper import process_feed as _helper_process_feed
 
 ALL = "all"
 LATEST = "latest"
@@ -340,10 +339,11 @@ class Status(commands.Cog):
                 if status == 200:
                     fp_data = feedparser.parse(html)
                     feeddict = await self._process_feed(service, fp_data)
+                    log.debug("Initial timestamp: {}".format(feeddict["time"]))
                     if not await self._check_real_update(service, feeddict):
                         log.debug(f"Ghost status update for {service} detected, skipping")
                         continue
-                    log.debug(f"Feed dict for {service}: {feeddict}")
+                    # log.debug(f"Feed dict for {service}: {feeddict}")
                     channels = await self._get_channels(service)
                     await self._update_dispatch(feeddict, fp_data, service, channels, False)
                     await self._make_send_cache(feeddict, service)
@@ -356,9 +356,9 @@ class Status(commands.Cog):
                     log.debug(f"No status update for {service}")
         await session.close()
 
-    async def _process_feed(self, service: str, feedparser: FeedParserDict):
+    async def _process_feed(self, service: str, feedparser: FeedParserDict) -> dict:
         """Process a FeedParserDict into a nicer dict for embeds."""
-        return await helper_process_feed(service, feedparser)
+        return await _helper_process_feed(service, feedparser)
 
     async def _check_real_update(self, service: str, feeddict: dict) -> bool:
         """
@@ -366,12 +366,7 @@ class Status(commands.Cog):
         If so, will update the feed store.
         """
         async with self.config.feed_store() as feed_store:
-            try:
-                old_fields = feed_store[service][
-                    "fields"
-                ]  # not comparing whole feed as time is in feeddict and that could ghost update
-            except KeyError:
-                old_fields = "hello"
+            old_fields = feed_store[service].get("fields")
             new_fields = feeddict["fields"]
             if service in DONT_REVERSE and old_fields[-1]["name"] == new_fields[-1]["name"]:
                 return False
@@ -941,14 +936,6 @@ class Status(commands.Cog):
     @checks.is_owner()
     @commands.command(hidden=True, aliases=["dfs"])
     async def devforcestatus(self, ctx: commands.Context, service):
-        """
-        THIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.
-
-        It will send the current status of the service to **all channels in all servers**
-        that haver registered for alerts.
-
-        Repeat: THIS COMMAND IS NOT SUPPORTED.
-        """
         if not await self.dev_com(ctx):
             return
 
@@ -959,15 +946,14 @@ class Status(commands.Cog):
             async with session.get(FEED_URLS[service]) as response:
                 html = await response.text()
             await session.close()
-        feed = feedparser.parse(html)
-        feeddict = await self._process_feed(service, feed)
-
+        fp_data = feedparser.parse(html)
+        feeddict = await self._process_feed(service, fp_data)
         real = await self._check_real_update(service, feeddict)
         await ctx.send(f"Real update: {real}")
-        to_send = await self._get_channels(service)
-        await self._update_dispatch(feeddict, feed, service, to_send, True)
+        channels = await self._get_channels(service)
+        await self._update_dispatch(feeddict, fp_data, service, channels, True)
         await self._make_send_cache(feeddict, service)
-        for channel in to_send.items():
+        for channel in channels.items():
             await self._send_updated_feed(feeddict, channel, service)
 
     @checks.is_owner()
