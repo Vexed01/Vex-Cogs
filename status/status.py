@@ -310,7 +310,7 @@ class Status(commands.Cog):
         If so, will update the feed store.
         """
         async with self.config.feed_store() as feed_store:
-            old_fields = feed_store["discord"].get("fields")
+            old_fields = feed_store[service].get("fields")
             prev_titles = []
             for field in old_fields:
                 prev_titles.append(field.get("name"))
@@ -763,7 +763,6 @@ class Status(commands.Cog):
                 await session.close()
             feed = feedparser.parse(html)
             feeddict = await self._process_feed(service, feed)
-            await self._check_real_update(service, feeddict)  # this will add it to the feed_store
         else:
             feeddict["time"] = datetime.datetime.fromtimestamp(feeddict["time"])
 
