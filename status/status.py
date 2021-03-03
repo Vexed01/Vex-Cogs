@@ -339,7 +339,6 @@ class Status(commands.Cog):
                 if status == 200:
                     fp_data = feedparser.parse(html)
                     feeddict = await self._process_feed(service, fp_data)
-                    log.debug("Initial timestamp: {}".format(feeddict["time"]))
                     if not await self._check_real_update(service, feeddict):
                         log.debug(f"Ghost status update for {service} detected, skipping")
                         continue
