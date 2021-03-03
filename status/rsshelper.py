@@ -604,7 +604,7 @@ async def _parse_aws(feed: FeedParserDict):
 
     parseddict["fields"].append({"name": feed["published"], "value": feed["description"]})
 
-    parseddict.update({"time": parse(feed["updated"], tzinfos={"PST": -28800})})
+    parseddict.update({"time": parse(feed["published"], tzinfos={"PST": -28800})})
     parseddict.update({"title": feed["title"]})
     parseddict.update({"link": feed["link"]})
     parseddict.update({"colour": 16750848})
