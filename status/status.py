@@ -129,7 +129,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.1.4"
+    __version__ = "1.1.5"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -753,8 +753,8 @@ class Status(commands.Cog):
             return await ctx.send(f"I don't have permission to manage webhooks.")
 
         feed = await self.config.feed_store()
-        feeddict = feed[service]
-        if feeddict.get("link") is None or feeddict.get("time") is None:
+        feeddict = feed.get(service)
+        if feeddict is None or feeddict.get("link") is None or feeddict.get("time") is None:
             async with aiohttp.ClientSession() as session:
                 async with session.get(FEED_URLS[service]) as response:
                     html = await response.text()
