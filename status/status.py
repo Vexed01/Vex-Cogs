@@ -310,7 +310,11 @@ class Status(commands.Cog):
         If so, will update the feed store.
         """
         async with self.config.feed_store() as feed_store:
-            old_fields = feed_store[service].get("fields")
+            try:
+                old_fields = feed_store[service]["fields"]
+            except KeyError:
+                feed_store[service] = feeddict.copy()
+                old_fields = feeddict.copy()
             prev_titles = []
             for field in old_fields:
                 prev_titles.append(field.get("name"))
@@ -865,7 +869,7 @@ class Status(commands.Cog):
 
     # STARTING THE DEV COMMANDS
 
-    async def dev_com(self, ctx: commands.Context):
+    async def _dev_com(self, ctx: commands.Context):
         """Returns whether to continue or not"""
         if ctx.author.id != 418078199982063626:  # vexed (my) id
             msg = await ctx.send(
@@ -876,7 +880,7 @@ class Status(commands.Cog):
             )
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-            await ctx.bot.wait_for("reaction_add", check=pred)
+            await ctx.bot.wait_for("reaction_add", check=pred, timeout=120)
             if pred.result is not True:
                 await ctx.send("Aborting.")
                 return False
@@ -885,7 +889,7 @@ class Status(commands.Cog):
     @checks.is_owner()
     @commands.command(hidden=True, aliases=["dfs"])
     async def devforcestatus(self, ctx: commands.Context, service):
-        if not await self.dev_com(ctx):
+        if not await self._dev_com(ctx):
             return
 
         if service not in FEED_URLS.keys():
@@ -908,7 +912,7 @@ class Status(commands.Cog):
     @checks.is_owner()
     @commands.command(aliases=["dcf"], hidden=True)
     async def devcheckfeed(self, ctx: commands.Context, link: str, mode):
-        if not await self.dev_com(ctx):
+        if not await self._dev_com(ctx):
             return
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:
