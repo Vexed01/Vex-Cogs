@@ -875,7 +875,7 @@ class Status(commands.Cog):
             msg = await ctx.send(
                 warning(
                     "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things are likely to"
-                    "happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
+                    " happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
                 )
             )
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
