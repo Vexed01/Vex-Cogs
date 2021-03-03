@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": ["Vexed (Vexed#3211)"],
     "name": "Status",
-    "install_msg": "Thanks for installing! The commands are all in `statusset`, make sure to load the cog first first.\n\nFor feedback or requests, it's Vexed#3211 on Discord or on the GH repo. This is a new cog, I would certainly appreciate suggestions.\n\nThis cog has docs! Check them out at https://vex-cogs.readthedocs.io/en/latest/status.html",
+    "install_msg": "Thanks for installing! The commands are all in `statusset`, make sure to load the cog first first.\n\nFor feedback or requests, it's Vexed#3211 on Discord or on the GH repo. This is a new cog, I would certainly appreciate suggestions.\n\nThis cog has docs! Check them out at https://vex-cogs.readthedocs.io/en/latest/cogs/status.html",
     "requirements": ["feedparser", "tabulate"],
     "description": "This cog can automatically send updates form various services. Primarily supports Statuspage and Status.io.\n\nIf you think I'm missing a service, contact Vexed#3211 in the main Red server or Cog Support, or my DMs.",
     "short": "Get automatic status updates from various services!",

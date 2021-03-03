@@ -21,9 +21,11 @@ Welcome to Vex-Cogs's documentation!
    cogs/status
    cogs/system
 
-If you're a developer, there are custom events you can listen to for :ref:`status_dev`.
+.. toctree::
+   :maxdepth: 1
+   :caption: Event docs for developers:
 
-
+   statusdev
 
 
 Indices and tables

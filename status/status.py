@@ -1,7 +1,7 @@
 # HELLO!
 # This file is formatted with black, line length 120
 # If you are looking for an event your cog can listen to, take a look here:
-# [link here]
+# https://vex-cogs.readthedocs.io/en/latest/statusdev.html
 
 import asyncio
 import datetime
@@ -134,7 +134,9 @@ class Status(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/status.html"
+        docs = (
+            "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/cogs/status.html"
+        )
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
         # adding docs link here so doesn't show up in auto generated docs
@@ -199,7 +201,7 @@ class Status(commands.Cog):
     async def _update_dispatch(self, feed, feedparser, service, channels, force):
         """
         For more information on this event, take a look at the docs:
-        [link here]
+        https://vex-cogs.readthedocs.io/en/latest/statusdev.html
         """
         self.bot.dispatch(
             "vexed_status_update",
@@ -213,7 +215,7 @@ class Status(commands.Cog):
     async def _channel_send_dispatch(self, feed, service, channel, webhook, embed):
         """
         For more information on this event, take a look at the docs:
-        [link here]
+        https://vex-cogs.readthedocs.io/en/latest/statusdev.html
         """
         self.bot.dispatch(
             "vexed_status_channel_send",

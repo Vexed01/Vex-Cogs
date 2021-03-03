@@ -1,4 +1,4 @@
-.. _status_dev:
+.. _statusdev:
 
 ======
 Status
@@ -20,16 +20,20 @@ from config) and then cache the result for the when ``status_channel_send`` desp
 for each channel so you get the timing correct and you can guarantee it was sent.
 
 Though this is incredibly unlikely, the cog will cancel sending updates (and the subsequent
-``status_channel_send`` if it lasts longer than 1 minute and 50 seconds after
+``status_channel_send``) if it lasts longer than 1 minute and 50 seconds after
 ``status_update`` the update was detected.
 
 Note that ``status_update`` will not trigger if no channels are subscribed to service -
 the cog only checks feeds that have channels subscribed to it.
 
-In terms of testing, the ``devforcestatus`` (alias ``dfs`` command can be used for this.
+In terms of testing, the ``devforcestatus`` (alias ``dfs``) command can be used for this.
 It simulates an actual/organic update as closely as possible so sends to all registered
 channels. The ``force`` parameter will be ``True`` in such cases.
 
+
+***************
+Event Reference
+***************
 
 .. function:: on_vexed_status_update(feed, fp_data, service, channels, force)
 
@@ -65,7 +69,7 @@ channels. The ``force`` parameter will be ``True`` in such cases.
 
 .. function:: on_vexed_status_channel_send(feed, service, channel, webhook, embed)
 
-    This is has similarties and differnces to the above feed, mainly that it has less
+    This is has similarties and differnces to the above event, mainly that it has less
     data and dispatches after an update was successfully sent to a specific channel.
     See above info at the top of this page for details.
 

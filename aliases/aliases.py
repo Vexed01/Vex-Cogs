@@ -12,7 +12,7 @@ class Aliases(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/aliases.html"
+        docs = "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/cogs/aliases.html"
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
         # adding docs link here so doesn't show up in auto generated docs
