@@ -42,7 +42,7 @@ class AnotherPingCog(commands.Cog):
         """Nothing to delete"""
         return
 
-    @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn"])
+    @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])
     async def ping(self, ctx):
         """
         A rich embed ping command with timings.
