@@ -16,10 +16,13 @@ Welcome to Vex-Cogs's documentation!
    :maxdepth: 2
    :caption: Cogs:
 
-   anotherpingcog
-   aliases
-   status
-   system
+   cogs/anotherpingcog
+   cogs/aliases
+   cogs/status
+   cogs/system
+
+If you're a developer, there are custom events you can listen to for :ref:`status_dev`.
+
 
 
 

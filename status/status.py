@@ -1,6 +1,7 @@
 # HELLO!
 # This file is formatted with black, line length 120
-# If you are looking for an event your cog can listen to, take a look around lines 170 and 210
+# If you are looking for an event your cog can listen to, take a look here:
+# [link here]
 
 import asyncio
 import datetime
@@ -181,7 +182,7 @@ class Status(commands.Cog):
             await asyncio.wait_for(self._actually_check_updates(), timeout=110.0)  # 1 min 50 secs
         except TimeoutError:
             log.error(
-                "Loop timed out after 2 minutes 20 seconds. Will try again shortly. If this keeps happening "
+                "Loop timed out after 1 minute 50 seconds. Will try again shortly. If this keeps happening "
                 "when there's an update for a specific service, contact Vexed."
             )
         except Exception as e:
@@ -197,38 +198,8 @@ class Status(commands.Cog):
 
     async def _update_dispatch(self, feed, feedparser, service, channels, force):
         """
-        This can be used by anyone. If you wish to test it, run the hidden command
-        `devforcestatus` in discord (alias `dfs`).
-
-        Please note this will NOT trigger if no channels have registered the service
-        you are looking for.
-
-        This event is triggered BEFORE any updates are sent to channels.
-        This event can trigger multiple times in short sucession due to how this cog
-        works.
-
-        Parameters
-        ----------
-        feed : dict
-            A fully parsed dict with individual updates split up
-            NOTE: The time the feed was published may be a datetime object OR
-                  something else. Make sure you can handle this
-            NOTE: Some feeds only supply the latest update. See the file-level
-                  const AVALIBLE_MODES.
-            NOTE: The majority of feeds are in the incorrect order. They need
-                  reversing. See file-level const DONT_REVERSE.
-        feedparser : FeedParserDict
-            The raw dict from feedparser. Unless there's specific data you need,
-            I highly reccomend using the above `feed` where possible.
-        service : str
-            The service name. Guaranteed to be one of the keys in the FEED_URLS
-            file-level const (unless dev commands are used)
-        channels : dict
-            A dict with the keys as channel IDs and the values as another dict contining
-            the settings for that channel.
-        force : bool
-            Whether or not the feed was forced to update with the `devforcestatus`/`dfs`
-            command.
+        For more information on this event, take a look at the docs:
+        [link here]
         """
         self.bot.dispatch(
             "vexed_status_update",
@@ -241,37 +212,8 @@ class Status(commands.Cog):
 
     async def _channel_send_dispatch(self, feed, service, channel, webhook, embed):
         """
-        This can be used by other cogs. For testing, run the hidden comman
-        `devforcestatus` in discord (alias `dfs`).
-
-        This event is triggered AFTER the update has been sent to channel and will
-        NOT be triggered if it failed to send.
-        Due to this, this event will trigger in burts, many times a second.
-
-        If you need the raw feed data from feedparser, take a look at the above event.
-        Unlike the above event, this does not distinguish between forced and organic
-        triggers
-
-        Parameters
-        ----------
-        feed : dict
-            A fully parsed dict with individual updates split up
-            NOTE: The time the feed was published may be a datetime object OR
-                  something else. Make sure you can handle this
-            NOTE: Some feeds only supply the latest update. See the file-level
-                  const AVALIBLE_MODES
-            NOTE: The majority of feeds that support all updates of the incidents
-                  need reversing. See file-level const DONT_REVERSE
-        service : str
-            The service name. Guaranteed to be one of the keys in the FEED_URLS
-            file-level const (unless dev commands are used)
-        channel : discord.TextChannel
-            The discord.TextChannel object the update was sent to
-        webhook : bool
-            Whether or not the feed was sent as a webhook
-        embed : bool
-            Whether or not the feed was sent as a embed. Will always be True if
-            embed is True
+        For more information on this event, take a look at the docs:
+        [link here]
         """
         self.bot.dispatch(
             "vexed_status_channel_send",
@@ -344,8 +286,9 @@ class Status(commands.Cog):
                         continue
                     # log.debug(f"Feed dict for {service}: {feeddict}")
                     channels = await self._get_channels(service)
-                    await self._update_dispatch(feeddict, fp_data, service, channels, False)
                     await self._make_send_cache(feeddict, service)
+                    await self._update_dispatch(feeddict, fp_data, service, channels, False)
+                    await asyncio.sleep(1)  # guaranteed wait for other CCs
                     log.debug(f"Sending status update for {service} to {len(channels)} channels...")
                     for channel in channels.items():
                         await self._send_updated_feed(feeddict, channel, service)
