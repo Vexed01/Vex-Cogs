@@ -13,6 +13,7 @@ from tabulate import tabulate
 
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
+ZERO_WIDTH = "\u200b"
 
 
 class System(commands.Cog):
@@ -418,12 +419,8 @@ class System(commands.Cog):
             mem = await self._mem()
             proc = await self._proc()
 
-            data = [[cpu["percent"], cpu["time"]]]
-
-            tabulate.PRESERVE_WHITESPACE = True
-            cpu = tabulate(data, tablefmt="plain")
-            tabulate.PRESERVE_WHITESPACE = False
-
+            percent = cpu["percent"]
+            times = cpu["time"]
             physical = mem["physical"]
             swap = mem["swap"]
             procs = proc["statuses"]
@@ -431,10 +428,13 @@ class System(commands.Cog):
         if await self._use_embed(ctx):
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Overview", colour=await ctx.embed_color(), timestamp=now)
-            embed.add_field(name="CPU", value=self._box(cpu), inline=False)
+            embed.add_field(name="CPU Usage", value=self._box(percent))
+            embed.add_field(name="CPU Times", value=self._box(times))
+            embed.add_field(name=ZERO_WIDTH, value=ZERO_WIDTH)
             embed.add_field(name="Physical Memory", value=self._box(physical))
             embed.add_field(name="SWAP Memory", value=self._box(swap))
-            embed.add_field(name="Processes", value=self._box(procs), inline=False)
+            embed.add_field(name=ZERO_WIDTH, value=ZERO_WIDTH)
+            embed.add_field(name="Processes", value=self._box(procs))
             await ctx.send(embed=embed)
         else:
             msg = "**Overview**\n"
