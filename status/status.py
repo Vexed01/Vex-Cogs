@@ -312,9 +312,8 @@ class Status(commands.Cog):
         async with self.config.feed_store() as feed_store:
             old_fields = feed_store["discord"].get("fields")
             prev_titles = []
-            for title in old_fields:
-                prev_titles.append(title.get("name"))
-            new_fields = feeddict["fields"]
+            for field in old_fields:
+                prev_titles.append(field.get("name"))
             if service in DONT_REVERSE and old_fields[-1]["name"] in prev_titles:
                 return False
             elif service not in DONT_REVERSE and old_fields[0]["name"] in prev_titles:
