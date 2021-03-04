@@ -167,7 +167,6 @@ class Status(commands.Cog):
     @tasks.loop(minutes=2.0)
     async def _check_for_updates(self):
         """Loop that checks for updates and if needed triggers other functions to send them."""
-
         if self._check_for_updates.current_loop == 0:
             await self._make_used_feeds()
             if await self.config.migrated() is False:
@@ -200,7 +199,7 @@ class Status(commands.Cog):
 
     async def _update_dispatch(self, feed, feedparser, service, channels, force):
         """
-        For more information on this event, take a look at the docs:
+        For more information on this event, take a look at the event reference in the docs:
         https://vex-cogs.readthedocs.io/en/latest/statusdev.html
         """
         self.bot.dispatch(
@@ -214,7 +213,7 @@ class Status(commands.Cog):
 
     async def _channel_send_dispatch(self, feed, service, channel, webhook, embed):
         """
-        For more information on this event, take a look at the docs:
+        For more information on this event, take a look at the event reference in the docs:
         https://vex-cogs.readthedocs.io/en/latest/statusdev.html
         """
         self.bot.dispatch(
@@ -227,6 +226,7 @@ class Status(commands.Cog):
         )
 
     async def _make_used_feeds(self):
+        """Make the list of used feeds on cog load"""
         feeds = await self.config.all_channels()
         used_feeds = []
         for channel in feeds.items():
@@ -238,6 +238,7 @@ class Status(commands.Cog):
         self.used_feeds_cache = used_feeds
 
     async def _migrate(self):
+        """Migrate config format"""
         old_feeds = await self.config.all_guilds()
         for guild in old_feeds.items():
             try:
@@ -259,6 +260,7 @@ class Status(commands.Cog):
         await self.config.migrated.set(True)
 
     async def _actually_check_updates(self):
+        """The actual update logic"""
         async with aiohttp.ClientSession() as session:
             for service in self.used_feeds_cache:
                 async with self.config.etags() as etags:
@@ -291,11 +293,11 @@ class Status(commands.Cog):
                     await self._make_send_cache(feeddict, service)
                     await self._update_dispatch(feeddict, fp_data, service, channels, False)
                     await asyncio.sleep(1)  # guaranteed wait for other CCs
-                    log.debug(f"Sending status update for {service} to {len(channels)} channels...")
+                    log.info(f"Sending status update for {service} to {len(channels)} channels...")
                     for channel in channels.items():
                         await self._send_updated_feed(feeddict, channel, service)
                     self.send_cache = None
-                    log.debug("Done")
+                    log.info("Done")
                 else:
                     log.debug(f"No status update for {service}")
         await session.close()
@@ -346,7 +348,7 @@ class Status(commands.Cog):
                 colour=feeddict["colour"],
                 url=feeddict["link"],
             )
-        except TypeError:  # can happen with timestamps, should be fixed
+        except TypeError:  # can happen with timestamps, should now be fixed
             log.error(
                 "Failed with timestamp {} on {}. Updates were still sent. Please report this to Vexed.".format(
                     feeddict["time"], service
