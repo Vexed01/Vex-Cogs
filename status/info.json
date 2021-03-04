@@ -4,7 +4,7 @@
     "name": "Status",
     "install_msg": "Thanks for installing! The commands are all in `statusset`, make sure to load the cog first first.\n\nFor feedback or requests, it's Vexed#3211 on Discord or on the GH repo. This is a new cog, I would certainly appreciate suggestions.\n\nThis cog has docs! Check them out at https://vex-cogs.readthedocs.io/en/latest/cogs/status.html",
     "requirements": ["feedparser", "tabulate"],
-    "description": "This cog can automatically send updates form various services. Primarily supports Statuspage and Status.io.\n\nIf you think I'm missing a service, contact Vexed#3211 in the main Red server or Cog Support, or my DMs.",
+    "description": "This cog can automatically send updates form various services including Discord, Cloudflare and GitHub. Primarily supports Statuspage and Status.io pages but has exceptions for AWS and GCP.\n\nIf you think I'm missing a service, contact Vexed#3211 in the main Red server or Cog Support, or my DMs.",
     "short": "Get automatic status updates from various services!",
     "tags": ["utility", "status", "trust", "discord status", "rss"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users."
