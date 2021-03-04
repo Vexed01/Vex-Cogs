@@ -290,7 +290,7 @@ class System(commands.Cog):
                 msg += self._box(to_box)
                 await ctx.send(msg)
 
-    @system.command(name="memory", aliases=["mem"])
+    @system.command(name="mem", aliases=["memory", "ram"])
     async def system_mem(self, ctx: commands.Context):
         """
         Get infomation about memory usage.
