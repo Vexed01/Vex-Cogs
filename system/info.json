@@ -3,9 +3,9 @@
     "author": ["Vexed (Vexed#3211)"],
     "name": "System",
     "install_msg": "Thanks for installing! Most commands should work on all OSes but some might not. It should error gracefully. Info about avalible platforms is in the help menu.\n\nThis cog supports **both embeds and non-embeds**. Embeds are enabled by default, you can disable them with **`[p]system toggleembed`**. If embeds are set to be off with the core command `embedset`, that will override the setting for this cog.\nThis DOES NOT try to be similar to standard console commands.\n\nThis cog has docs! Check them out at https://vex-cogs.readthedocs.io/en/latest/cogs/system.html",
-    "description": "Check system metrics on the host device, such as CPU, RAM or network",
+    "description": "Check system metrics on the host device, such as CPU or  RAM usage",
     "short": "Check system metrics on the host device.",
-    "tags": ["utility", "system", "metrics"],
+    "tags": ["utility", "system", "metrics", "top"],
     "requirements": ["psutil>=5.8.0"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users."
 }
