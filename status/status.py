@@ -382,7 +382,7 @@ class Status(commands.Cog):
                 value=feeddict["fields"][-1]["value"],
                 inline=False,
             )
-            webhook_latest.add_field(  # TODO: if two are published in)
+            webhook_latest.add_field(  # TODO: if two are published in quick succession could miss one
                 name=feeddict["fields"][-1]["name"],
                 value=feeddict["fields"][-1]["value"],
                 inline=False,
@@ -393,7 +393,7 @@ class Status(commands.Cog):
                 value=feeddict["fields"][0]["value"],
                 inline=False,
             )
-            webhook_latest.add_field(  # TODO: if two are published in)
+            webhook_latest.add_field(  # TODO: if two are published in quick succession could miss one
                 name=feeddict["fields"][0]["name"],
                 value=feeddict["fields"][0]["value"],
                 inline=False,
@@ -653,7 +653,6 @@ class Status(commands.Cog):
         """
         channel = channel or ctx.channel
 
-        # TODO: multiple services in one command
         if service not in FEED_URLS.keys():
             return await ctx.send(f"That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
 
