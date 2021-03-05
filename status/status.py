@@ -30,6 +30,8 @@ ALL = "all"
 LATEST = "latest"
 EDIT = "edit"
 
+WEBHOOK_REASON = "Created for {} status updates"
+
 OLD_DEFAULTS = {"mode": ALL, "webhook": False}
 
 
@@ -497,7 +499,9 @@ class Status(commands.Cog):
                         if hook.name == channel.guild.me.name:
                             webhook = hook
                     if webhook is None:
-                        webhook = await channel.create_webhook(name=channel.guild.me.name)
+                        webhook = await channel.create_webhook(
+                            name=channel.guild.me.name, reason=WEBHOOK_REASON.format(service)
+                        )
                     await webhook.send(
                         username=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
                         avatar_url=AVATAR_URLS[service],
@@ -618,6 +622,17 @@ class Status(commands.Cog):
 
             if pred.result is True:
                 webhook = True
+
+                # already checked for perms to create
+                # thanks flare for your webhook logic (redditpost) (or trusty?)
+                existing_webhook = False
+                for hook in await channel.webhooks():
+                    if hook.name == channel.guild.me.name:
+                        existing_webhook = True
+                if not existing_webhook:
+                    await channel.create_webhook(
+                        name=channel.guild.me.name, reason=WEBHOOK_REASON.format(service)
+                    )
             else:
                 webhook = False
         else:
