@@ -15,20 +15,55 @@ is dispatched after a successful channel send.
 an update has been confirmed as a non-ghost update.
 
 There is a guaranteed delay of 1 second between ``status_update`` and the first
-``status_channel_send`` to allow you to perform an expensive process (eg get data
-from config) and then cache the result for the when ``status_channel_send`` despatches
-for each channel so you get the timing correct and you can guarantee it was sent.
+``status_channel_send`` to allow you to perform an expensive process (or avoid repeated
+config calls for each dispatch)
+and then cache the result for the when ``status_channel_send`` dispatches
+for each channel so you get the timing correct and you can guarantee it was sent. The
+limiting factor for the speed of ``status_channel_send`` is Discord rate limits: it just
+gets the channel then sends the cached message.
 
 Though this is incredibly unlikely, the cog will cancel sending updates (and the subsequent
 ``status_channel_send``) if it lasts longer than 1 minute and 50 seconds after
-``status_update`` the update was detected.
+it started that check for updates. Note multiple services' updates may be included in this
+time, though it is linear so it will finish one service, send ``status_update``, then start
+the next service with its ``status_channel_send``.
 
-Note that ``status_update`` will not trigger if no channels are subscribed to service -
-the cog only checks feeds that have channels subscribed to it.
+.. note::
+    If you are using this cog/event to get a parsed update to send yourself, note that
+    ``status_update`` will not trigger if no channels are subscribed to the service -
+    the cog only checks feeds that have channels subscribed to it.
 
-In terms of testing, the ``devforcestatus`` (alias ``dfs``) command can be used for this.
-It simulates an actual/organic update as closely as possible so sends to all registered
-channels. The ``force`` parameter will be ``True`` in such cases.
+.. tip::
+    For testing, the ``devforcestatus`` (alias ``dfs``) command can be used for this.
+    It simulates an actual/organic update as closely as possible so sends to all registered
+    channels. The ``force`` parameter will be ``True`` in such cases.
+
+*******
+Example
+*******
+
+.. code-block:: python
+
+    @commands.Cog.listener()
+    async def on_vexed_status_update(self, **_kwargs):
+        data = await self.config.all_channels()  # get you data from config here
+        self.data_cache = data
+
+    @commands.Cog.listener()
+    async def on_vexed_status_channel_send(self, *, service, channel, **_kwargs):
+        data = self.data_cache.get(channel.id)
+        # then get it back here for each channel send to reduce config calls,
+        # esp on larger bots
+
+        if data is None:
+            return
+        mention_ids = data["user_mentions"].get(service)
+        # if you registered in config as user_mentions
+        if mention_ids is None:
+            return
+
+        mention_ids = [f"<@{id}>" for id in mention_ids]
+        await channel.send(humanize_list(mention_ids))
 
 
 ***************

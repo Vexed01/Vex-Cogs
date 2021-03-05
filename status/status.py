@@ -905,8 +905,9 @@ class Status(commands.Cog):
         real = await self._check_real_update(service, feeddict)
         await ctx.send(f"Real update: {real}")
         channels = await self._get_channels(service)
-        await self._update_dispatch(feeddict, fp_data, service, channels, True)
         await self._make_send_cache(feeddict, service)
+        await self._update_dispatch(feeddict, fp_data, service, channels, True)
+        await asyncio.sleep(1)
         for channel in channels.items():
             await self._send_updated_feed(feeddict, channel, service)
 
