@@ -131,7 +131,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.1.5"
+    __version__ = "1.1.6"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -347,7 +347,7 @@ class Status(commands.Cog):
             base = discord.Embed(
                 title=feeddict["title"],
                 timestamp=feeddict["time"],
-                colour=feeddict["colour"],
+                colour=self._get_colour(feeddict, service),
                 url=feeddict["link"],
             )
         except TypeError:  # can happen with timestamps, should now be fixed
@@ -358,7 +358,7 @@ class Status(commands.Cog):
             )
             base = discord.Embed(
                 title=feeddict["title"],
-                colour=feeddict["colour"],
+                colour=self._get_colour(feeddict, service),
                 url=feeddict["link"],
             )
 
@@ -441,6 +441,24 @@ class Status(commands.Cog):
             "webhook_latest": webhook_latest,
             "webhook_all": webhook_all,
         }
+
+    def _get_colour(self, feeddict: dict, service: str):
+        if service in DONT_REVERSE:
+            return feeddict.get("colour")
+
+        try:
+            last_title = feeddict["fields"][0]["name"]
+            status = last_title.split(" ")[0].lower()
+            if status == "investigating":
+                return discord.Color.red()
+            elif status == ("update" or "identified" or "monitoring"):
+                return discord.Color.orange()
+            elif status == "resolved":
+                return discord.Color.green()
+            else:
+                return feeddict.get("colour")
+        except Exception:
+            return feeddict.get("colour")
 
     async def _send_updated_feed(self, feeddict: dict, channel: tuple, service: str):
         """Send a feeddict to the specified channel."""
