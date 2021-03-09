@@ -857,7 +857,7 @@ class Status(commands.Cog):
         await self.config.channel(channel).feeds.set_raw(service, value=old_conf[service])
 
         await ctx.send(
-            f"{FEED_FRIENDLY_NAMES[service]} status upadtes in {channel.mention} will now use the {mode} mode."
+            f"{FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention} will now use the {mode} mode."
         )
 
     @statusset_edit.command(name="webhook")
@@ -890,13 +890,16 @@ class Status(commands.Cog):
                 f"It looks like I already {word} webhooks for {FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention}"
             )
 
+        if webhook and not ctx.channel.permissions_for(ctx.me).manage_webhooks:
+            return await ctx.send("I don't have manage webhook permissions so I can't do that.")
+
         old_conf[service]["webhook"] = webhook
         await self.config.channel(channel).feeds.set_raw(service, value=old_conf[service])
 
         if webhook:
-            word = "not use"
-        else:
             word = "use"
+        else:
+            word = "not use"
         await ctx.send(
             f"{FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention} will now {word} webhooks."
         )
