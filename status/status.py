@@ -6,6 +6,7 @@
 import asyncio
 import datetime
 import logging
+from dateutil.parser import parse
 import re
 from typing import Optional
 
@@ -51,6 +52,7 @@ FEED_URLS = {
     "aws": "https://status.aws.amazon.com/rss/all.rss",
     "gcp": "https://status.cloud.google.com/feed.atom",
     "smartthings": "https://status.smartthings.com/history.atom",
+    "sentry": "https://status.sentry.io/history.atom",
 }
 
 FEED_FRIENDLY_NAMES = {
@@ -69,9 +71,10 @@ FEED_FRIENDLY_NAMES = {
     "aws": "Amazon Web Services",
     "gcp": "Google Cloud Platform",
     "smartthings": "SmartThings",
+    "sentry": "Sentry",
 }
 
-AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aws, google
+AVALIBLE_MODES = {
     "discord": [ALL, LATEST],
     "github": [ALL, LATEST],
     "cloudflare": [ALL, LATEST],
@@ -87,6 +90,7 @@ AVALIBLE_MODES = {  # not rly needed atm but will be later with feeds such as aw
     "aws": [LATEST],
     "gcp": [LATEST],
     "smartthings": [ALL, LATEST],
+    "sentry": [ALL, LATEST],
 }
 
 AVATAR_URLS = {  # TODO: unify these
@@ -105,12 +109,13 @@ AVATAR_URLS = {  # TODO: unify these
     "aws": "https://cdn.discordapp.com/attachments/813140082989989918/813730858951245854/aws.png",
     "gcp": "https://cdn.discordapp.com/attachments/813140082989989918/814488794585235517/unknown.png",
     "smartthings": "https://cdn.discordapp.com/attachments/813140082989989918/814600450832859193/zbO2ggF6K2YVII3qOfr0Knj3P0H7OdtTjZAcGBo3kK0vJppGoYsG4TMZINqyPlLa9vI.png",
+    "sentry": "https://cdn.discordapp.com/attachments/813140082989989918/819641924788682782/1595357387344.png",
 }
 
 SPECIAL_INFO = {
     "aws": "AWS frequently posts status updates in both English and the language local to where the incident affects.",
     "oracle_cloud": (
-        "Oracle is frequently very slow to update their status page. Sometimes, they also only update itwhen the "
+        "Oracle is frequently very slow to update their status page. Sometimes, they only update it when the "
         "incident is resolved."
     ),
 }
@@ -317,7 +322,9 @@ class Status(commands.Cog):
             try:
                 old_fields = feed_store[service]["fields"]
             except KeyError:
-                feed_store[service] = feeddict.copy()
+                to_store = feeddict.copy()
+                to_store["time"] = to_store["time"].timestamp()
+                feed_store[service] = to_store
                 return True  # ovy a new one as not in config
             prev_titles = []
             for field in old_fields:
@@ -999,10 +1006,10 @@ class Status(commands.Cog):
                     f" Timestamp: {datetime.datetime.utcnow()}"
                 )
 
-        parseddict.update({"time": datetime.datetime.strptime(feed["published"], "%Y-%m-%dT%H:%M:%S%z")})
+        parseddict.update({"time": parse(feed["published"])})
         parseddict.update({"title": feed["title"]})
         parseddict.update({"link": feed["link"]})
-        parseddict.update({"colour": 7308754})
+        parseddict.update({"colour": 3447226})
 
         # end standard
 

@@ -670,6 +670,49 @@ async def _parse_smartthings(feed: FeedParserDict):
     return parseddict
 
 
+async def _parse_sentry(feed: FeedParserDict):
+    strippedcontent = await _strip_html(feed["content"][0]["value"])
+    sections = strippedcontent.split("=-=SPLIT=-=")
+    parseddict = {"fields": []}
+
+    for data in sections:
+        try:
+            if data != "":
+                current = data.split(" - ", 1)
+                content = current[1]
+                tt = current[0].split("\n")
+                time = tt[0]
+                title = tt[1]
+                parseddict["fields"].append({"name": "{} - {}".format(title, time), "value": content})
+        except IndexError:  # this would be a likely error if something didn't format as expected
+            try:
+                if data.startswith("THIS IS A SCHEDULED EVENT"):
+                    split = data.split("EVENT", 1)
+                    value = split[1]
+                    parseddict["fields"].append(
+                        {"name": "THIS IS A SCHEDULED EVENT", "value": f"It is scheduled for {value}"}
+                    )
+                    continue
+            except IndexError:
+                pass
+            parseddict["fields"].append(
+                {
+                    "name": "Something went wrong with this section",
+                    "value": f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
+                }
+            )
+            log.warning(
+                "Something went wrong while parsing a status feed. You can report this to Vexed#3211."
+                f" Timestamp: {datetime.datetime.utcnow()}"
+            )
+
+    parseddict.update({"time": parse(feed["published"])})
+    parseddict.update({"title": feed["title"]})
+    parseddict.update({"link": feed["link"]})
+    parseddict.update({"colour": 3447226})
+    return parseddict
+
+
 FEEDS = {
     "discord": _parse_discord,
     "github": _parse_github,
@@ -686,4 +729,5 @@ FEEDS = {
     "aws": _parse_aws,
     "gcp": _parse_gcp,
     "smartthings": _parse_smartthings,
+    "sentry": _parse_sentry,
 }
