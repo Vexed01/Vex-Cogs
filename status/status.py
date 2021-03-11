@@ -131,7 +131,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.1.7"
+    __version__ = "1.1.8"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -318,13 +318,13 @@ class Status(commands.Cog):
                 old_fields = feed_store[service]["fields"]
             except KeyError:
                 feed_store[service] = feeddict.copy()
-                old_fields = feeddict.copy()
+                return True  # ovy a new one as not in config
             prev_titles = []
             for field in old_fields:
                 prev_titles.append(field.get("name"))
-            if service in DONT_REVERSE and old_fields[0]["name"] in prev_titles:
+            if service in DONT_REVERSE and feeddict["fields"][-1]["name"] in prev_titles:
                 return False
-            elif service not in DONT_REVERSE and old_fields[-1]["name"] in prev_titles:
+            elif service not in DONT_REVERSE and feeddict["fields"][0]["name"] in prev_titles:
                 return False
             else:
                 to_store = feeddict.copy()
@@ -1018,7 +1018,8 @@ class Status(commands.Cog):
                 html = await response.text()
             await session.close()
         feed = feedparser.parse(html)
-        feed = await self._process_feed("discord", feed)
+        print(feed.entries)
+        feed = await self._process_feed("cloudflare", feed)
 
         pages = pagify(str(feed))
 
