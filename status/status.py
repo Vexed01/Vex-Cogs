@@ -323,8 +323,12 @@ class Status(commands.Cog):
             for field in old_fields:
                 prev_titles.append(field.get("name"))
             if service in DONT_REVERSE and feeddict["fields"][-1]["name"] in prev_titles:
+                if feeddict["fields"][-1]["name"] == "THIS IS A SCHEDULED EVENT":  # aaaaaaa
+                    return True
                 return False
             elif service not in DONT_REVERSE and feeddict["fields"][0]["name"] in prev_titles:
+                if feeddict["fields"][0]["name"] == "THIS IS A SCHEDULED EVENT":  # aaaaaaa
+                    return True
                 return False
             else:
                 to_store = feeddict.copy()
