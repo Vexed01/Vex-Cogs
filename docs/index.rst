@@ -18,6 +18,7 @@ Welcome to Vex-Cogs's documentation!
 
    cogs/anotherpingcog
    cogs/aliases
+   cogs/github
    cogs/status
    cogs/system
 
