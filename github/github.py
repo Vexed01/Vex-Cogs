@@ -1,17 +1,13 @@
-import logging
 from asyncio import TimeoutError
-from discord.ext.commands.errors import MissingRequiredArgument
-import aiohttp
-import gidgethub.aiohttp
+
 from gidgethub import HTTPException
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_list, inline
 from redbot.core.utils.predicates import MessagePredicate
 
-from .errors import CustomError
-
 from .api import GitHubAPI
+from .errors import CustomError
 
 GET_ISSUE = "get_issue"
 GET_REPO_LABELS = "get_repo_labels"
@@ -26,9 +22,6 @@ CLOSE = "close"
 CHECK_REAL = "check_real"
 
 EXCEPTIONS = (HTTPException, CustomError)
-
-
-log = logging.getLogger("red.vexed.github")
 
 
 class GitHub(commands.Cog):
