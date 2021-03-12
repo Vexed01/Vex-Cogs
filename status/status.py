@@ -454,7 +454,7 @@ class Status(commands.Cog):
         }
 
     def _get_colour(self, feeddict: dict, service: str):
-        if service in DONT_REVERSE:
+        if service in DONT_REVERSE or service in ["aws", "gcp"]:  # only do this for statuspage ones
             return feeddict.get("colour")
 
         try:
@@ -462,13 +462,14 @@ class Status(commands.Cog):
             status = last_title.split(" ")[0].lower()
             if status == "investigating":
                 return discord.Color.red()
-            elif status == ("update" or "identified" or "monitoring"):
+            elif status in ["update", "identified", "monitoring"]:
                 return discord.Color.orange()
             elif status == "resolved":
                 return discord.Color.green()
             else:
                 return feeddict.get("colour")
-        except Exception:
+        except Exception as e:  # hopefully never happens but will keep this for a while
+            log.error(f"Error with getting correct colour for {service}:", exc_info=e)
             return feeddict.get("colour")
 
     async def _send_updated_feed(self, feeddict: dict, channel: tuple, service: str):
