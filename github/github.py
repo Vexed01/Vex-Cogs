@@ -353,7 +353,7 @@ class GitHub(commands.Cog):
             avalible_labels = self._inline_list(rl_names)
             await ctx.send(
                 "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
-                " This is case sensitive. Say `exit` to abort creating the issue.\n\n"
+                " This is case sensitive. Say `exit` to abort creating the issue, or **`create` to make the issue**.\n\n"
                 f"Avalible labels: {avalible_labels}"
             )
 
@@ -369,7 +369,7 @@ class GitHub(commands.Cog):
                 try:
                     answer = await self.bot.wait_for("message", check=check, timeout=30.0)
                 except TimeoutError:
-                    await ctx.send("Timeout. No issue was created.")
+                    await ctx.send("Timeout on this label.")
                     break
                 if answer.content.casefold() == "exit":
                     await ctx.send("Exiting. No changes were saved.")
