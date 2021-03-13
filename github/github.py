@@ -1,4 +1,5 @@
 from asyncio import TimeoutError
+from typing import Mapping
 
 from gidgethub import HTTPException
 from redbot.core import Config, checks, commands
@@ -65,6 +66,9 @@ class GitHub(commands.Cog):
         self.config = Config.get_conf(self, identifier=418078199982063626, force_registration=True)
         self.config.register_global(repo=None)
 
+        self.repo = None
+        self.token = None
+
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete"""
         return
@@ -87,19 +91,32 @@ class GitHub(commands.Cog):
 
     async def _get_repo(self, ctx: commands.Context):
         """Get the repo. Return immediately on CustomError."""
+        if self.repo:
+            return self.repo
         repo = await self.config.repo()
         if not repo:
             await ctx.send("The bot owner must decide what repo to use (`gh setrepo`).")
             raise CustomError
+        self.repo = repo
         return repo
 
     async def _get_token(self, ctx: commands.Context):
         """Get the token. Return immediately on CustomError."""
+        if self.token:
+            return self.token
         token = (await self.bot.get_shared_api_tokens("github")).get("token")
         if not token:
             await ctx.send("The bot owner must set the token (`gh howtoken`).")
             raise CustomError
+        self.token = token
         return token
+
+    @commands.Cog.listener()
+    async def on_red_api_tokens_update(self, service_name: str, api_tokens: Mapping[str, str]):
+        if service_name != "github":
+            return
+
+        self.token = api_tokens.get("api_key")
 
     @commands.group(aliases=["github"])
     @checks.is_owner()
@@ -134,6 +151,8 @@ class GitHub(commands.Cog):
             )
         except CustomError:
             return
+
+        self.repo = slug
         await self.config.repo.set(slug)
         await ctx.send(f"Set the repo to use as `{slug}`")
 
