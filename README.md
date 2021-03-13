@@ -17,8 +17,9 @@ There's a list of cogs below you can use `[p]cog list vex-cogs`
 | --- | --- |
 | [aliases](https://vex-cogs.readthedocs.io/en/latest/aliases.html) | Get all the information you could ever need about a command's aliases. |
 | [anotherpingcog](https://vex-cogs.readthedocs.io/en/latest/anotherpingcog.html) | Just another ping cog... But this one has fancy colours in an embed! |
+| [github](https://vex-cogs.readthedocs.io/en/latest/github.html) | Create, comment, labelify and close GitHub issues, with partial PR support. |
 | [status](https://vex-cogs.readthedocs.io/en/latest/status.html) | Recieve automatic status updates from various services, including Discord. |
-| [system](https://vex-cogs.readthedocs.io/en/latest/system.html) | Get system metrics of the host device, such as RAM or CPU.
+| [system](https://vex-cogs.readthedocs.io/en/latest/system.html) | Get system metrics of the host device, such as RAM or CPU. |
 
 All these cogs have docs! Check them out at <https://vex-cogs.readthedocs.io/en/latest> or click on the cog name to go directly to that cog's docs page.
 

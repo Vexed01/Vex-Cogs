@@ -40,11 +40,12 @@ Cogs
 
 Click a cog name to see detailed documentation.
 
-===================================== ==================================================================
+===================================== ===========================================================================
 Cog name                              Summary
-===================================== ==================================================================
-:ref:`aliases<aliases>`               Get all the alias information you could ever want about a command.
-:ref:`anotherpingcog<anotherpingcog>` A rich embed ping command with latency timings.
-:ref:`status<status>`                 Automatically check for status updates for various services.
-:ref:`system<system>`                 Get system metrics, such as RAM or CPU usage.
-===================================== ==================================================================
+===================================== ===========================================================================
+:ref:`aliases<aliases>`               Get all the information you could ever need about a command's aliases.
+:ref:`anotherpingcog<anotherpingcog>` Just another ping cog... But this one has fancy colours in an embed!
+:ref:`github<github>`                 Create, comment, labelify and close GitHub issues, with partial PR support.
+:ref:`status<status>`                 Recieve automatic status updates from various services, including Discord.
+:ref:`system<system>`                 Get system metrics of the host device, such as RAM or CPU.
+===================================== ===========================================================================
