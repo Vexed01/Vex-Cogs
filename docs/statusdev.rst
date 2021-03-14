@@ -28,6 +28,9 @@ it started that check for updates. Note multiple services' updates may be includ
 time, though it is linear so it will finish one service, send ``status_update``, then start
 the next service with its ``status_channel_send``.
 
+``FeedDict`` and ``UpdateField`` are custom objects that you can find in ``rsshelper.py``.
+See `Custom Objects`_.
+
 .. note::
     If you are using this cog/event to get a parsed update to send yourself, note that
     ``status_update`` will not trigger if no channels are subscribed to the service -
@@ -57,6 +60,7 @@ Example
 
         if data is None:
             return
+
         mention_ids = data["user_mentions"].get(service)
         # if you registered in config as user_mentions
         if mention_ids is None:
@@ -74,9 +78,9 @@ Event Reference
 
     This event triggers before updates are sent to channels. See above for details.
 
-    :type feed: :class:`dict`
-    :param feed: A fully parsed dictionary with individual updates in the incident
-        split up.
+    :type feed: :class:`FeedDict`
+    :param feed: A fully parsed object with individual updates in the incident
+        split up. See `Custom Objects`_.
 
         .. note::
             The time the ``time`` key should be a datetime object but it could
@@ -108,7 +112,7 @@ Event Reference
     data and dispatches after an update was successfully sent to a specific channel.
     See above info at the top of this page for details.
 
-    :type feed: :class:`dict`
+    :type feed: :class:`FeedDict`
     :param feed: A fully parsed dictionary with individual updates in the incident
         split up.
 
@@ -133,4 +137,37 @@ Event Reference
     :type embed: :class:`bool`
     :param embed: Whether or not the update was sent as an embed. Will always be ``True``
         if ``webhook`` is ``True``.
+    :type mode: :class:`str`
+    :param mode: The mode the update was sent as.
 
+
+**************
+Custom Objects
+**************
+
+These are the two custom objects used, defined in ``rsshelper.py``
+
+--------
+FeedDict
+--------
+
+**Attributes**
+
+| **fields** (``list``) – A list contaning UpdateField objects
+| **title** (``str``) – The title of the incident
+| **link** (``str``) – The incident link.
+| **time**: A datetime object, or if it was unable to parse it then ``discord.Embed.Empty``
+
+**Methods**
+
+| **to_dict()** – Get a dict of the data held in the object.
+| **from_dict(dict)** – Returns a new object from a dict.
+
+-----------
+UpdateField
+-----------
+
+**Attributes**
+
+| **name** (``str``) – The name of the field
+| **values** (``str``) – The value of the field
