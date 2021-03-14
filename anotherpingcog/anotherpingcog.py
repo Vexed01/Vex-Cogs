@@ -48,7 +48,7 @@ class AnotherPingCog(commands.Cog):
         A rich embed ping command with timings.
 
         This will show the time to send a message, and the WS latency to Discord.
-        If I can't send embeds or they are disabled, I will send a message instead.
+        If I can't send embeds or they are disabled here, I will send a normal message instead.
         The embed has more detail and is preferred.
         """
         ws_latency = round(self.bot.latency * 1000)
@@ -64,7 +64,7 @@ class AnotherPingCog(commands.Cog):
             embed = discord.Embed(title=title)
             embed.add_field(name="Discord WS", value=box(f"{ws_latency} ms", "py"))
             embed.set_footer(
-                text="As long as these numbers are below 300, it's nothing to worry about\nScale: Excellent | Good | Alright | Bad | Very Bad"
+                text="If the bot feels fast, don't worry about high numbers\nScale: Excellent | Good | Alright | Bad | Very Bad"
             )
             start = monotonic()
             message: discord.Message = await ctx.send(embed=embed)
