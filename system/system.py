@@ -214,7 +214,6 @@ class System(commands.Cog):
         data = {}
 
         for p in partition_data.items():
-            p[1][0].
             total = (
                 f"{self._hum_gb(p[1][1].total)} GB"
                 if p[1][1].total > 1073741824
