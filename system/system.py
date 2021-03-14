@@ -1,11 +1,10 @@
 import asyncio
 import datetime
-from typing import Union
+from typing import List, Union, Dict
 
 import discord
 import datetime
 import psutil
-from cProfile import run, runctx
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_number
@@ -39,7 +38,7 @@ class System(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
 
-        self.config = Config.get_conf(self, identifier="418078199982063626")
+        self.config: Config = Config.get_conf(self, identifier="418078199982063626")
         default = {"embed": True}
         self.config.register_global(settings=default)
         # this is a global setting... sorry bots with co-owners
@@ -166,6 +165,7 @@ class System(commands.Cog):
         t_data = []
         for group in temp.items():
             for item in group[1]:
+                item: psutil._common.shwtemp
                 name = item.label or group[0]
                 t_data.append([f"[{name}]", f"{item.current} {unit}"])
         data["temp"] = tabulate(t_data, tablefmt="plain") or "No temperature sensors found"
@@ -173,15 +173,16 @@ class System(commands.Cog):
         t_data = []
         for fan in fans.items():
             for item in fan[1]:
+                item: psutil._common.sfan
                 name = item.label or fan[0]
-                t_data.append([f"[{name}]", f"{fan.current} RPM"])
+                t_data.append([f"[{name}]", f"{item.current} RPM"])
         data["fans"] = tabulate(t_data, tablefmt="plain") or "No fan sensors found"
 
         return data
 
     async def _users(self, embed: bool):
         """Get users connected"""
-        users = psutil.users()
+        users: List[psutil._common.suser] = psutil.users()
 
         e = "`" if embed else ""
 
@@ -199,7 +200,9 @@ class System(commands.Cog):
     async def _disk(self, embed: bool):
         """Get disk info"""
         partitions = psutil.disk_partitions()
-        partition_data = {}
+        partition_data: Dict[str, List[Union[psutil._common.sdiskpart, psutil._common.sdiskusage]]] = {}
+        # that type hint was a waste of time...
+
         for partition in partitions:
             try:
                 partition_data[partition.device] = [partition, psutil.disk_usage(partition.mountpoint)]
@@ -211,6 +214,7 @@ class System(commands.Cog):
         data = {}
 
         for p in partition_data.items():
+            p[1][0].
             total = (
                 f"{self._hum_gb(p[1][1].total)} GB"
                 if p[1][1].total > 1073741824

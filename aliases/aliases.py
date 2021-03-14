@@ -1,3 +1,4 @@
+from typing import List
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_list, inline
@@ -28,7 +29,7 @@ class Aliases(commands.Cog):
         return inline(text.lstrip())
 
     @commands.command()
-    async def aliases(self, ctx, *, command: str):
+    async def aliases(self, ctx: commands.Context, *, command: str):
         """
         Get all the alias information you could ever want about a command.
 
@@ -36,7 +37,7 @@ class Aliases(commands.Cog):
         server aliases.
         """
         strcommand = command
-        command = self.bot.get_command(strcommand)
+        command: commands.Command = self.bot.get_command(strcommand)
 
         # meh, safe enough as only reading, there is a big warning on cog install about this
         try:
@@ -62,7 +63,7 @@ class Aliases(commands.Cog):
         guild_aliases = []
 
         if ctx.guild:
-            all_guild_aliases = await alias_cog.config.guild(ctx.guild).entries()
+            all_guild_aliases: List[dict] = await alias_cog.config.guild(ctx.guild).entries()
             for alias_cog in all_guild_aliases:
                 if alias_cog["name"] == strcommand:
                     command = self.bot.get_command(alias_cog["command"])

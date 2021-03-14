@@ -1,5 +1,6 @@
 from asyncio import TimeoutError
 from typing import Mapping
+import discord
 
 from gidgethub import HTTPException
 from redbot.core import Config, checks, commands
@@ -63,7 +64,7 @@ class GitHub(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
 
-        self.config = Config.get_conf(self, identifier=418078199982063626, force_registration=True)
+        self.config: Config = Config.get_conf(self, identifier=418078199982063626, force_registration=True)
         self.config.register_global(repo=None)
 
         self.repo = None
@@ -241,7 +242,7 @@ class GitHub(commands.Cog):
         to_add = []
         while True:
             try:
-                answer = await self.bot.wait_for("message", check=check, timeout=30.0)
+                answer: discord.Message = await self.bot.wait_for("message", check=check, timeout=30.0)
             except TimeoutError:
                 return await ctx.send("Timeout. No changes were saved.")
             if answer.content.casefold() == "save":
@@ -298,7 +299,7 @@ class GitHub(commands.Cog):
             f"Labels currently on issue: {used_labels}"
         )
 
-        def check(msg):
+        def check(msg: discord.Message):
             return (
                 msg.author == ctx.author
                 and msg.channel == ctx.channel
@@ -307,7 +308,7 @@ class GitHub(commands.Cog):
 
         while True:
             try:
-                answer = await self.bot.wait_for("message", check=check, timeout=30.0)
+                answer: discord.Message = await self.bot.wait_for("message", check=check, timeout=30.0)
             except TimeoutError:
                 return await ctx.send("Timeout.")
             if answer.content.casefold() == "exit":
@@ -339,7 +340,7 @@ class GitHub(commands.Cog):
             " issue. You've got 5 minutes, remember the 2000 Discord character limit!"
         )
         try:
-            answer = await self.bot.wait_for(
+            answer: discord.Message = await self.bot.wait_for(
                 "message", check=MessagePredicate.same_context(ctx), timeout=300.0
             )
         except TimeoutError:
@@ -369,7 +370,7 @@ class GitHub(commands.Cog):
                 f"Avalible labels: {avalible_labels}"
             )
 
-            def check(msg):
+            def check(msg: discord.Message):
                 return (
                     msg.author == ctx.author
                     and msg.channel == ctx.channel
@@ -379,7 +380,7 @@ class GitHub(commands.Cog):
             to_add = []
             while True:
                 try:
-                    answer = await self.bot.wait_for("message", check=check, timeout=30.0)
+                    answer: discord.Message = await self.bot.wait_for("message", check=check, timeout=30.0)
                 except TimeoutError:
                     await ctx.send("Timeout on this label.")
                     break

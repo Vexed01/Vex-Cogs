@@ -43,7 +43,7 @@ class AnotherPingCog(commands.Cog):
         return
 
     @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])
-    async def ping(self, ctx):
+    async def ping(self, ctx: commands.Context):
         """
         A rich embed ping command with timings.
 
@@ -67,11 +67,11 @@ class AnotherPingCog(commands.Cog):
                 text="As long as these numbers are below 300, it's nothing to worry about\nScale: Excellent | Good | Alright | Bad | Very Bad"
             )
             start = monotonic()
-            message = await ctx.send(embed=embed)
+            message: discord.Message = await ctx.send(embed=embed)
         else:
             msg = f"**{title}**\nDiscord WS: {ws_latency} ms"
             start = monotonic()
-            message = await ctx.send(msg)
+            message: discord.Message = await ctx.send(msg)
         end = monotonic()
 
         m_latency = round((end - start) * 1000)
