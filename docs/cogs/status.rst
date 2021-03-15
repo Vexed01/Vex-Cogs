@@ -119,6 +119,8 @@ contaning only the latest update. Best used in a dedicated status channel.
 updated, I will then add the update to the original message. Best used in a dedicated
 status channel.
 
+If you don't specify a channel, I will use the current channel.
+
 .. _status-command-statusset-edit-webhook:
 
 """"""""""""""""""""""
@@ -137,6 +139,8 @@ Set whether or not to use webhooks to send the status update
 
 Using a webhook means that the status updates will be sent with the avatar as the service's
 logo and the name will be ``[service] Status Update``, instead of my avatar and name.
+
+If you don't specify a channel, I will use the current channel.
 
 .. _status-command-statusset-list:
 
@@ -220,4 +224,4 @@ statusset remove
 
 Stop status updates for a specific service in this server.
 
-If you don't specify a channel, I will use the current channel
+If you don't specify a channel, I will use the current channel.

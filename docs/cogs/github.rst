@@ -37,7 +37,7 @@ but not merge them or create them.
 
 Get started with the ``gh howtoken`` command to set your GitHub token.
 You don't have to do this if you have already set it for a different
-cog, eg ``ghcards``. Then set up with ``gh setrepo``.
+cog, eg ``githubcards``. Then set up with ``gh setrepo``.
 
 
 .. _github-commands:

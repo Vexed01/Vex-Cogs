@@ -763,7 +763,7 @@ class Status(commands.Cog):
         """
         Stop status updates for a specific service in this server.
 
-        If you don't specify a channel, I will use the current channel
+        If you don't specify a channel, I will use the current channel.
         """
         channel = channel or ctx.channel
 
@@ -926,6 +926,8 @@ class Status(commands.Cog):
         **Edit**: When a new incident is created, I will sent a new message. When this incident is
         updated, I will then add the update to the original message. Best used in a dedicated
         status channel.
+
+        If you don't specify a channel, I will use the current channel.
         """
         channel = channel or ctx.channel
         service = service.lower()
@@ -965,6 +967,8 @@ class Status(commands.Cog):
 
         Using a webhook means that the status updates will be sent with the avatar as the service's
         logo and the name will be `[service] Status Update`, instead of my avatar and name.
+
+        If you don't specify a channel, I will use the current channel.
         """
         channel = channel or ctx.channel
         service = service.lower()
