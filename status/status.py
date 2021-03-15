@@ -263,9 +263,9 @@ class Status(commands.Cog):
         """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
         feeds = await self.config.all_channels()
         channels = {}
-        for feed in feeds.items():
-            if service in feed[1]["feeds"].keys():
-                channels[feed[0]] = feed[1]["feeds"][service]
+        for name, data in feeds.items():
+            if service in data["feeds"].keys():
+                channels[name] = data["feeds"][service]
         return channels
 
     async def _make_send_cache(self, feeddict: FeedDict, service: str):
@@ -702,11 +702,11 @@ class Status(commands.Cog):
             data = []
             for channel in ctx.guild.channels:
                 feeds = await self.config.channel(channel).feeds()
-                for feed in feeds.items():
-                    if feed[0] != service:
+                for name, data in feeds.items():
+                    if name != service:
                         continue
-                    mode = feed[1]["mode"]
-                    webhook = feed[1]["webhook"]
+                    mode = data["mode"]
+                    webhook = data["webhook"]
                     data.append([f"#{channel.name}", mode, webhook])
             table = box(tabulate(data, headers=["Channel", "Send mode", "Use webhooks"]))
             await ctx.send(f"**Settings for {FEED_FRIENDLY_NAMES[service]}**: {table}")
@@ -726,12 +726,12 @@ class Status(commands.Cog):
             else:
                 msg = ""
                 data = []
-                for feed in guild_feeds.items():
-                    if not feed[1]:
+                for name, settings in guild_feeds.items():
+                    if not settings:
                         continue
-                    data.append([feed[0], humanize_list(feed[1])])
+                    data.append([name, humanize_list(settings)])
                     try:
-                        unused_feeds.remove(feed[0])
+                        unused_feeds.remove(name)
                     except Exception:
                         pass
                 if data:
@@ -994,7 +994,7 @@ class Status(commands.Cog):
         await ctx.send_interactive(pages, box_lang="")
 
     @checks.is_owner()
-    @commands.command(aliases=["cufc"], hidden=True)
+    @commands.command(aliases=["cfc"], hidden=True)
     async def checkusedfeedcache(self, ctx: commands.Context):
         if not await self._dev_com(ctx):
             return
