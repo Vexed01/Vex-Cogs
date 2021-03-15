@@ -25,7 +25,8 @@ from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
 from tabulate import tabulate
 
 from .rsshelper import process_feed as _helper_process_feed
-from .objects import FeedDict, SendCache
+from .objects import FeedDict, SendCache, UsedFeeds
+from .feedconsts import *
 
 ALL = "all"
 LATEST = "latest"
@@ -35,96 +36,6 @@ WEBHOOK_REASON = "Created for {} status updates"
 
 OLD_DEFAULTS = {"mode": ALL, "webhook": False}
 
-
-FEED_URLS = {
-    "discord": "https://discordstatus.com/history.atom",
-    "github": "https://www.githubstatus.com/history.atom",
-    "cloudflare": "https://www.cloudflarestatus.com/history.atom",
-    "python": "https://status.python.org/history.atom",
-    "twitter_api": "https://api.twitterstat.us/history.atom",
-    "statuspage": "https://metastatuspage.com/history.atom",
-    "zoom": "https://status.zoom.us/history.atom",
-    "oracle_cloud": "https://ocistatus.oraclecloud.com/history.atom",
-    "twitter": "https://status.twitterstat.us/pages/564314ae3309c22c3b0002fa/rss",
-    "epic_games": "https://status.epicgames.com/history.atom",
-    "digitalocean": "https://status.digitalocean.com/history.atom",
-    "reddit": "https://www.redditstatus.com/history.atom",
-    "aws": "https://status.aws.amazon.com/rss/all.rss",
-    "gcp": "https://status.cloud.google.com/feed.atom",
-    "smartthings": "https://status.smartthings.com/history.atom",
-    "sentry": "https://status.sentry.io/history.atom",
-    "status.io": "https://status.status.io/pages/51f6f2088643809b7200000d/rss",
-}
-
-FEED_FRIENDLY_NAMES = {
-    "discord": "Discord",
-    "github": "GitHub",
-    "cloudflare": "Cloudflare",
-    "python": "Python",
-    "twitter_api": "Twitter API",
-    "statuspage": "Statuspage",
-    "zoom": "Zoom",
-    "oracle_cloud": "Oracle Cloud",
-    "twitter": "Twitter",
-    "epic_games": "Epic Games",
-    "digitalocean": "DigitalOcean",
-    "reddit": "Reddit",
-    "aws": "Amazon Web Services",
-    "gcp": "Google Cloud Platform",
-    "smartthings": "SmartThings",
-    "sentry": "Sentry",
-    "status.io": "Status.io",
-}
-
-AVALIBLE_MODES = {
-    "discord": [ALL, LATEST, EDIT],
-    "github": [ALL, LATEST, EDIT],
-    "cloudflare": [ALL, LATEST, EDIT],
-    "python": [ALL, LATEST, EDIT],
-    "twitter_api": [ALL, LATEST, EDIT],
-    "statuspage": [ALL, LATEST, EDIT],
-    "zoom": [ALL, LATEST, EDIT],
-    "oracle_cloud": [ALL, LATEST, EDIT],
-    "twitter": [ALL, LATEST, EDIT],
-    "epic_games": [ALL, LATEST, EDIT],
-    "digitalocean": [ALL, LATEST, EDIT],
-    "reddit": [ALL, LATEST, EDIT],
-    "aws": [LATEST],
-    "gcp": [LATEST],
-    "smartthings": [ALL, LATEST, EDIT],
-    "sentry": [ALL, LATEST, EDIT],
-    "status.io": [ALL, LATEST, EDIT],
-}
-
-AVATAR_URLS = {
-    "discord": "https://cdn.discordapp.com/attachments/813140082989989918/813140277367144458/discord.png",
-    "github": "https://cdn.discordapp.com/attachments/813140082989989918/813140279120232488/github.png",
-    "cloudflare": "https://cdn.discordapp.com/attachments/813140082989989918/813140275714195516/cloudflare.png",
-    "python": "https://cdn.discordapp.com/attachments/813140082989989918/814490148917608458/unknown.png",
-    "twitter_api": "https://cdn.discordapp.com/attachments/813140082989989918/814863181033898084/aaaaaaaaaaaaaa.png",
-    "statuspage": "https://cdn.discordapp.com/attachments/813140082989989918/813140261987024976/statuspage.png",
-    "zoom": "https://cdn.discordapp.com/attachments/813140082989989918/813140273751523359/zoom.png",
-    "oracle_cloud": "https://media.discordapp.net/attachments/813140082989989918/813140282538721310/oracle_cloud.png",
-    "twitter": "https://cdn.discordapp.com/attachments/813140082989989918/814863181033898084/aaaaaaaaaaaaaa.png",
-    "epic_games": "https://cdn.discordapp.com/attachments/813140082989989918/813454141514317854/unknown.png",
-    "digitalocean": "https://cdn.discordapp.com/attachments/813140082989989918/813454051613999124/gnlwek2zwhq369yryrzv.png",
-    "reddit": "https://cdn.discordapp.com/attachments/813140082989989918/813466098040176690/reddit-logo-16.png",
-    "aws": "https://cdn.discordapp.com/attachments/813140082989989918/813730858951245854/aws.png",
-    "gcp": "https://cdn.discordapp.com/attachments/813140082989989918/820648558679556116/unknown.png",
-    "smartthings": "https://cdn.discordapp.com/attachments/813140082989989918/814600450832859193/zbO2ggF6K2YVII3qOfr0Knj3P0H7OdtTjZAcGBo3kK0vJppGoYsG4TMZINqyPlLa9vI.png",
-    "sentry": "https://cdn.discordapp.com/attachments/813140082989989918/819641924788682782/1595357387344.png",
-    "status.io": "https://cdn.discordapp.com/attachments/813140082989989918/820621599987728394/4xJxuEM9.png",
-}
-
-SPECIAL_INFO = {
-    "aws": "AWS frequently posts status updates in both English and the language local to where the incident affects.",
-    "oracle_cloud": (
-        "Oracle is frequently very slow to update their status page. Sometimes, they only update it when the "
-        "incident is resolved."
-    ),
-}
-
-DONT_REVERSE = ["twitter", "status.io"]
 
 log = logging.getLogger("red.vexed.status")
 
@@ -140,7 +51,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.1.8"
+    __version__ = "1.2.0"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -163,8 +74,8 @@ class Status(commands.Cog):
         self.config.register_global(migrated=False)
         self.config.register_channel(feeds=default)
 
-        self.used_feeds_cache = []
-        self.send_cache = SendCache.empty()
+        self.used_feeds_cache: UsedFeeds = UsedFeeds({})
+        self.send_cache: SendCache = SendCache.empty()
 
         self._check_for_updates.start()
 
@@ -186,8 +97,8 @@ class Status(commands.Cog):
                 await self.config.clear_all_guilds()
                 log.info("Done!")
 
-        if not self.used_feeds_cache:
-            log.debug("No channels have registered a feed!")
+        if not self.used_feeds_cache.get_list():
+            log.debug("Nothing to do, no channels have registered a feed.")
             return
 
         try:
@@ -240,14 +151,7 @@ class Status(commands.Cog):
     async def _make_used_feeds(self):
         """Make the list of used feeds on cog load"""
         feeds = await self.config.all_channels()
-        used_feeds = []
-        for channel in feeds.items():
-            used_feeds.extend(channel[1]["feeds"].keys())
-
-            used_feeds = deduplicate_iterables(used_feeds)
-            if len(used_feeds) == len(FEED_URLS):  # no point checking more channels now
-                break
-        self.used_feeds_cache = used_feeds
+        self.used_feeds_cache = UsedFeeds(feeds)
 
     async def _migrate(self):
         """Migrate config format"""
@@ -274,7 +178,7 @@ class Status(commands.Cog):
     async def _actually_check_updates(self):
         """The actual update logic"""
         async with aiohttp.ClientSession() as session:
-            for service in self.used_feeds_cache:
+            for service in self.used_feeds_cache.get_list():
                 async with self.config.etags() as etags:
                     try:
                         async with session.get(
@@ -743,9 +647,7 @@ class Status(commands.Cog):
 
         settings = {"mode": mode, "webhook": webhook, "edit_id": {}}
         await self.config.channel(channel).feeds.set_raw(service, value=settings)
-
-        if service not in self.used_feeds_cache:
-            self.used_feeds_cache.append(service)
+        self.used_feeds_cache.add_feed(service)
 
         if service in SPECIAL_INFO:
             await ctx.send(
@@ -777,7 +679,10 @@ class Status(commands.Cog):
                     f"It looks like I don't send {FEED_FRIENDLY_NAMES[service]} status updates to {channel.mention}"
                 )
             feeds.pop(service)
-            await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {channel.mention}")
+
+        self.used_feeds_cache.remove_feed(service)
+
+        await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {channel.mention}")
 
     @statusset.command(name="list", aliases=["show", "settings"])
     async def statusset_list(self, ctx: commands.Context, service: Optional[str]):
@@ -1013,8 +918,8 @@ class Status(commands.Cog):
         if ctx.author.id != 418078199982063626:  # vexed (my) id
             msg = await ctx.send(
                 warning(
-                    "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things are likely to"
-                    " happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
+                    "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things can "
+                    "happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
                 )
             )
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
@@ -1055,6 +960,7 @@ class Status(commands.Cog):
     async def devcheckfeed(self, ctx: commands.Context, link, mode, service):
         if not await self._dev_com(ctx):
             return
+
         link = FEED_URLS.get(link, link)
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:
@@ -1071,6 +977,9 @@ class Status(commands.Cog):
     @checks.is_owner()
     @commands.command(aliases=["dcfr"], hidden=True)
     async def devcheckfeedraw(self, ctx: commands.Context, link: str):
+        if not await self._dev_com(ctx):
+            return
+
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as response:
                 html = await response.text()
@@ -1083,3 +992,13 @@ class Status(commands.Cog):
         pages = pagify(str(feed.entries[0]))
 
         await ctx.send_interactive(pages, box_lang="")
+
+    @checks.is_owner()
+    @commands.command(aliases=["cufc"], hidden=True)
+    async def checkusedfeedcache(self, ctx: commands.Context):
+        if not await self._dev_com(ctx):
+            return
+
+        raw = box(self.used_feeds_cache.raw, lang="py")
+        actual = box(self.used_feeds_cache.get_list(), lang="py")
+        await ctx.send(f"**Raw data:**\n{raw}\n**Active:**\n{actual}")

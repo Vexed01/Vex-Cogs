@@ -1,6 +1,11 @@
+# Yes, it's simpler to use a dict for these, but I've used this as an
+# opportunity to learn about making and working with objects. Objects are fun!
+
 import datetime
 from discord import Embed
-from typing import List
+from typing import Dict, List
+
+from .feedconsts import FEED_URLS
 
 
 class UpdateField(object):
@@ -58,3 +63,26 @@ class SendCache(object):
 
     def empty():
         """Get an empty SendCache object."""
+
+
+class UsedFeeds(object):
+    """Hold counts of feeds that are used."""
+
+    def __init__(self, all_channels: Dict[str, Dict[str, dict]]):
+        used_feeds = dict.fromkeys(FEED_URLS.keys(), 0)
+
+        for id, data in all_channels.items():
+            feeds = data.get("feeds").keys()
+            for feed in feeds:
+                used_feeds[feed] = used_feeds.get(feed, 0) + 1
+
+        self.raw = used_feeds
+
+    def add_feed(self, feedname: str):
+        self.raw[feedname] = self.raw.get(feedname, 0) + 1
+
+    def remove_feed(self, feedname: str):
+        self.raw[feedname] = self.raw.get(feedname, 1) - 1
+
+    def get_list(self) -> List[str]:
+        return [k for k, v in self.raw.items() if v]
