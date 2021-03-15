@@ -193,7 +193,7 @@ The service you want to preview. There's a list of available services in the
     a new message contaning only the latest update. Best used in a dedicated status
     channel.
 
-    **Edit**: Natually, edit mode can't have a preview so _won't work with this command_.
+    **Edit**: Natually, edit mode can't have a preview so won't work with this command.
     The message content is the same as the ``all`` mode.
     When a new incident is created, I will sent a new message. When this
     incident is updated, I will then add the update to the original message. Best
