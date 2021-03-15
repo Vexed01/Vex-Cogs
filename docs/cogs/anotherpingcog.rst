@@ -19,7 +19,7 @@ find detailed docs about usage and commands.
 Usage
 -----
 
-A rich embed ping command with timings
+A rich embed ping command with latency timings.
 
 
 .. _anotherpingcog-commands:
@@ -39,8 +39,6 @@ ping
 .. code-block:: none
 
     [p]ping 
-
-.. tip:: Aliases: ``pinf``, ``pig``, ``png``, ``pign``, ``pjgn``, ``ipng``, ``pgn``
 
 **Description**
 

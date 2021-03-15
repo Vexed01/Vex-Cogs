@@ -32,7 +32,7 @@ https://github.com/Kowlin/Sentinel)
 
 At present, this cannot support multiple repos.
 
-PRs are mostly supported. You can comment on them, manage labels or close them
+PRs are mostly supported. You can comment on them or close them
 but not merge them or create them.
 
 Get started with the ``gh howtoken`` command to set your GitHub token.

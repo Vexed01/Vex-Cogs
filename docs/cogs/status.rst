@@ -46,7 +46,7 @@ statusset
 
 .. code-block:: none
 
-    [p]statusset
+    [p]statusset 
 
 **Description**
 
@@ -86,7 +86,7 @@ statusset edit
 
 .. code-block:: none
 
-    [p]statusset edit
+    [p]statusset edit 
 
 **Description**
 
@@ -114,6 +114,10 @@ channel with other users.
 
 **Latest**: Every time the service posts an update on an incident, I will send a new message
 contaning only the latest update. Best used in a dedicated status channel.
+
+**Edit**: When a new incident is created, I will sent a new message. When this incident is
+updated, I will then add the update to the original message. Best used in a dedicated
+status channel.
 
 .. _status-command-statusset-edit-webhook:
 
@@ -184,6 +188,13 @@ The service you want to preview. There's a list of available services in the
     **Latest**: Every time the service posts an update on an incident, I will send
     a new message contaning only the latest update. Best used in a dedicated status
     channel.
+
+    **Edit**: Natually, edit mode can't have a preview so _won't work with this command_.
+    The message content is the same as the ``all`` mode.
+    When a new incident is created, I will sent a new message. When this
+    incident is updated, I will then add the update to the original message. Best
+    used in a dedicated status channel.
+
 
 **<webhook>**
 

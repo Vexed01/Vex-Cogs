@@ -124,19 +124,20 @@ Toggle embeds on and off for this cog.
 
 .. note:: If embeds are set to False using the ``embedset`` command that will override this.
 
-.. _system-command-system-memory:
 
-"""""""""""""
-system memory
-"""""""""""""
+.. _system-command-system-mem:
+
+""""""""""
+system mem
+""""""""""
 
 **Syntax**
 
 .. code-block:: none
 
-    [p]system memory 
+    [p]system mem 
 
-.. tip:: Alias: ``system mem``
+.. tip:: Aliases: ``system memory``, ``system ram``
 
 **Description**
 
@@ -171,6 +172,31 @@ group instead.
 
 Platforms: Linux
 
+.. _system-command-system-top:
+
+""""""""""
+system top
+""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]system top 
+
+.. tip:: Aliases: ``system overview``, ``system all``
+
+**Description**
+
+Get an overview of the current system metrics, similar to ``top``.
+
+This will show CPU utilisation, RAM usage and uptime as well as
+active processes.
+
+Platforms: Windows, Linux, Mac OS
+.. Note:: This command appears to be very slow in Windows.
+
+
 .. _system-command-system-users:
 
 """"""""""""
@@ -191,6 +217,5 @@ This will show the user name, what terminal they're logged in at,
 and when they logged in.
 
 Platforms: Windows, Linux, Mac OS
-
-.. note:: PID is not available on Windows. Terminal is ususally ``Unknown`` Windows.
+.. note:: PID is not available on Windows. Terminal is usually ``Unknown``
 
