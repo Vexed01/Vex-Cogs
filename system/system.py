@@ -21,7 +21,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.0.4"
+    __version__ = "1.0.5"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
