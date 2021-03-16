@@ -6,7 +6,6 @@
 import asyncio
 import datetime
 import logging
-from dateutil.parser import parse
 import re
 from typing import Optional
 
@@ -18,23 +17,14 @@ from discord.ext.commands.core import guild_only
 from feedparser.util import FeedParserDict
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
-from redbot.core.utils import deduplicate_iterables
 from redbot.core.utils.chat_formatting import box, humanize_list, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
 from tabulate import tabulate
 
-from .rsshelper import process_feed as _helper_process_feed
+from .consts import *
 from .objects import FeedDict, SendCache, UsedFeeds
-from .feedconsts import *
-
-ALL = "all"
-LATEST = "latest"
-EDIT = "edit"
-
-WEBHOOK_REASON = "Created for {} status updates"
-
-OLD_DEFAULTS = {"mode": ALL, "webhook": False}
+from .rsshelper import process_feed as _helper_process_feed
 
 
 log = logging.getLogger("red.vexed.status")
@@ -312,14 +302,16 @@ class Status(commands.Cog):
             )
 
         # LATEST
+        # TODO: if two are published in quick succession could miss one
+        # Note to self for above, iterate through fields and compare against feed store
         if service in DONT_REVERSE:
-            embed_latest.add_field(  # TODO: if two are published in quick succession could miss one
+            embed_latest.add_field(
                 name=feeddict.fields[-1].name,
                 value=feeddict.fields[-1].name,
                 inline=False,
             )
         else:
-            embed_latest.add_field(  # TODO: if two are published in quick succession could miss one
+            embed_latest.add_field(
                 name=feeddict.fields[0].name,
                 value=feeddict.fields[0].value,
                 inline=False,
@@ -382,7 +374,7 @@ class Status(commands.Cog):
                 "identified",
                 "monitoring",
                 "scheduled",  # decided to put this in orange as is in future, not now
-                "in",  # in progress
+                "in",  # scheduled - full is "in progress"
             ]:
                 return discord.Color.orange()
             elif status in ["resolved", "completed"]:
