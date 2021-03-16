@@ -91,7 +91,7 @@ class Aliases(commands.Cog):
             if alias_cog["command"] == full_com:
                 global_aliases.append(alias_cog["name"])
 
-        # and probs picked up duplicates on secod run so:
+        # and probs picked up duplicates on second run so:
         guild_aliases = deduplicate_iterables(guild_aliases)
         global_aliases = deduplicate_iterables(global_aliases)
 
@@ -120,7 +120,7 @@ class Aliases(commands.Cog):
             if ctx.guild:
                 none.append("guild")
             else:
-                aliases += "Your're in DMs, so ther aren't any server aliases."
+                aliases += "You're in DMs, so there aren't any server aliases."
         else:
             list = humanize_list(guild_aliases)
             aliases += f"Server aliases: {list}\n"

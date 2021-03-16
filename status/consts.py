@@ -47,7 +47,7 @@ FEED_FRIENDLY_NAMES = {
     "status.io": "Status.io",
 }
 
-AVALIBLE_MODES = {
+AVAILABLE_MODES = {
     "discord": [ALL, LATEST, EDIT],
     "github": [ALL, LATEST, EDIT],
     "cloudflare": [ALL, LATEST, EDIT],
@@ -95,4 +95,4 @@ SPECIAL_INFO = {
     ),
 }
 
-DONT_REVERSE = ["twitter", "status.io"]
+DONT_REVERSE = ["twitter", "status.io"]  # cspell:disable-line

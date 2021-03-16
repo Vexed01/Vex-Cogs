@@ -30,18 +30,21 @@ from .rsshelper import process_feed as _helper_process_feed
 log = logging.getLogger("red.vexed.status")
 
 
+# cspell:ignore DONT
+
+
 class Status(commands.Cog):
     """
     Automatically check for status updates.
 
     When there is one, it will send the update to all channels that
-    have registered to revieve updates from that service.
+    have registered to recieve updates from that service.
 
     If there's a service that you want added, contact Vexed#3211 or
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -145,6 +148,11 @@ class Status(commands.Cog):
 
     async def _migrate(self):
         """Migrate config format"""
+        # why didn't i start with using a good config layout...
+        # oh, i know why: i'd never used config before!
+        # note to self - this was implemented on 20 feb only 3 days after release
+        # -> remove
+
         old_feeds = await self.config.all_guilds()
         for guild in old_feeds.items():
             try:
@@ -297,7 +305,7 @@ class Status(commands.Cog):
             embed_all = discord.Embed.from_dict(dict_embed)
             embed_all.set_field_at(
                 0,
-                name="{} earlier updates were ommited.".format(before_fields - 24),
+                name="{} earlier updates were omitted.".format(before_fields - 24),
                 value="This is because embeds are limited to 25 fields.",
             )
 
@@ -368,7 +376,7 @@ class Status(commands.Cog):
                 last_title = feeddict.fields[0].name
                 status = last_title.split(" ")[0].lower()
             if status == "investigating":
-                return discord.Color.red()
+                return discord.Colour.red()
             elif status in [
                 "update",
                 "identified",
@@ -376,9 +384,9 @@ class Status(commands.Cog):
                 "scheduled",  # decided to put this in orange as is in future, not now
                 "in",  # scheduled - full is "in progress"
             ]:
-                return discord.Color.orange()
+                return discord.Colour.orange()
             elif status in ["resolved", "completed"]:
-                return discord.Color.green()
+                return discord.Colour.green()
             else:
                 return 1812720
         except Exception as e:  # hopefully never happens but will keep this for a while
@@ -420,7 +428,7 @@ class Status(commands.Cog):
         else:
             use_embed = True
 
-        # the efficiecy could probably be improved here
+        # the efficiency could probably be improved here
         if use_embed:
             if mode in ["all", "edit"]:
                 embed = self.send_cache.embed_all
@@ -493,7 +501,7 @@ class Status(commands.Cog):
                         await channel.send(embed=embed)
             except Exception as e:
                 log.info(  # TODO: remove from config
-                    f"Somehting went wrong with {c_id} in guild {channel.guild.id} - skipping", exc_info=e
+                    f"Something went wrong with {c_id} in guild {channel.guild.id} - skipping", exc_info=e
                 )
                 return
 
@@ -535,7 +543,7 @@ class Status(commands.Cog):
         self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel]
     ):
         """
-        Start getting status updates for the choses service!
+        Start getting status updates for the chosen service!
 
         There is a list of services you can use in the `[p]statusset list` command.
 
@@ -564,19 +572,19 @@ class Status(commands.Cog):
         unsupported = []
         modes += (
             "**All**: Every time the service posts an update on an incident, I will send a new message "
-            "contaning the previus updates as well as the new update. Best used in a fast-moving "
+            "containing the previous updates as well as the new update. Best used in a fast-moving "
             "channel with other users.\n\n"
             "**Latest**: Every time the service posts an update on an incident, I will send a new message "
-            "contanint only the latest update. Best used in a dedicated status channel.\n\n"
+            "containing only the latest update. Best used in a dedicated status channel.\n\n"
             "**Edit**: When a new incident is created, I will sent a new message. When this incident is "
             "updated, I will then add the update to the original message. Best used in a dedicated status "
             "channel.\n\n"
         )
-        if ALL not in AVALIBLE_MODES[service]:
+        if ALL not in AVAILABLE_MODES[service]:
             unsupported.append(ALL)
-        if LATEST not in AVALIBLE_MODES[service]:
+        if LATEST not in AVAILABLE_MODES[service]:
             unsupported.append(LATEST)
-        if EDIT not in AVALIBLE_MODES[service]:
+        if EDIT not in AVAILABLE_MODES[service]:
             unsupported.append(EDIT)
 
         if unsupported:
@@ -596,11 +604,11 @@ class Status(commands.Cog):
         try:
             mode = await self.bot.wait_for("message", check=MessagePredicate.same_context(ctx), timeout=120)
         except TimeoutError:
-            return await ctx.send("Timed out. Canceling.")
+            return await ctx.send("Timed out. Cancelling.")
 
         mode = mode.content.lower()
         if mode not in [ALL, LATEST, EDIT]:
-            return await ctx.send("Hmm, that doesn't look like a valid mode. Canceling.")
+            return await ctx.send("Hmm, that doesn't look like a valid mode. Cancelling.")
 
         if ctx.channel.permissions_for(ctx.me).manage_webhooks:
             await ctx.send(
@@ -613,7 +621,7 @@ class Status(commands.Cog):
             try:
                 await self.bot.wait_for("message", check=pred, timeout=120)
             except TimeoutError:
-                return await ctx.send("Timed out. Canceling.")
+                return await ctx.send("Timed out. Cancelling.")
 
             if pred.result is True:
                 webhook = True
@@ -728,7 +736,7 @@ class Status(commands.Cog):
                         pass
                 if data:
                     msg += "**Services used in this server:**"
-                    msg += box(tabulate(data, tablefmt="plain"), lang="arduino")
+                    msg += box(tabulate(data, tablefmt="plain"), lang="arduino")  # cspell:disable-line
             if unused_feeds:
                 msg += "**Other available services:** "
                 msg += humanize_list(unused_feeds)
@@ -748,14 +756,14 @@ class Status(commands.Cog):
 
         **`<mode>`**
             **All**: Every time the service posts an update on an incident, I will send
-            a new message contaning the previus updates as well as the new update. Best
+            a new message containing the previous updates as well as the new update. Best
             used in a fast-moving channel with other users.
 
             **Latest**: Every time the service posts an update on an incident, I will send
-            a new message contaning only the latest update. Best used in a dedicated status
+            a new message containing only the latest update. Best used in a dedicated status
             channel.
 
-            **Edit**: Natually, edit mode can't have a preview so won't work with this command.
+            **Edit**: Naturally, edit mode can't have a preview so won't work with this command.
             The message content is the same as the `all` mode.
             When a new incident is created, I will sent a new message. When this
             incident is updated, I will then add the update to the original message. Best
@@ -775,8 +783,8 @@ class Status(commands.Cog):
             return await ctx.send(
                 f"That's not a valid mode. Valid ones are listed in `{ctx.clean_prefix}help statusset preview`"
             )
-        if mode not in AVALIBLE_MODES[service]:
-            return await ctx.send(f"That mode isn't avalible for {FEED_FRIENDLY_NAMES[service]}")
+        if mode not in AVAILABLE_MODES[service]:
+            return await ctx.send(f"That mode isn't available for {FEED_FRIENDLY_NAMES[service]}")
 
         if webhook and not ctx.channel.permissions_for(ctx.me).manage_webhooks:
             return await ctx.send(f"I don't have permission to manage webhooks.")
@@ -814,11 +822,11 @@ class Status(commands.Cog):
         """Change what mode to use for updates
 
         **All**: Every time the service posts an update on an incident, I will send a new message
-        contaning the previus updates as well as the new update. Best used in a fast-moving
+        containing the previous updates as well as the new update. Best used in a fast-moving
         channel with other users.
 
         **Latest**: Every time the service posts an update on an incident, I will send a new message
-        contaning only the latest update. Best used in a dedicated status channel.
+        containing only the latest update. Best used in a dedicated status channel.
 
         **Edit**: When a new incident is created, I will sent a new message. When this incident is
         updated, I will then add the update to the original message. Best used in a dedicated
@@ -841,8 +849,8 @@ class Status(commands.Cog):
 
         if mode not in [ALL, LATEST, EDIT]:
             return await ctx.send("That doesn't look like a valid mode. It can be `all` or `latest`")
-        if mode not in AVALIBLE_MODES[service]:
-            return await ctx.send(f"That mode isn't avalible for {FEED_FRIENDLY_NAMES[service]}")
+        if mode not in AVAILABLE_MODES[service]:
+            return await ctx.send(f"That mode isn't available for {FEED_FRIENDLY_NAMES[service]}")
 
         if old_conf[service]["mode"] == mode:
             return await ctx.send(
@@ -912,7 +920,7 @@ class Status(commands.Cog):
         if ctx.author.id != 418078199982063626:  # vexed (my) id
             msg = await ctx.send(
                 warning(
-                    "\nTHIS COMMNAD IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things can "
+                    "\nTHIS COMMAND IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things can "
                     "happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
                 )
             )

@@ -21,7 +21,7 @@ Usage
 
 Get system metrics.
 
-Most commands work on all OSes or omit certian information.
+Most commands work on all OSes or omit certain information.
 See the help for individual commands for detailed limitations.
 
 
@@ -143,8 +143,28 @@ system mem
 
 Get infomation about memory usage.
 
-This will show memory available as a percent, memory used and avalibe as well
-as the total amount. Data is provided for both phsyical and SWAP RAM.
+This will show memory available as a percent, memory used and available as well
+as the total amount. Data is provided for both physical and SWAP RAM.
+
+Platforms: Windows, Linux, Mac OS
+
+.. _system-command-system-processes:
+
+""""""""""""""""
+system processes
+""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]system processes 
+
+.. tip:: Alias: ``system proc``
+
+**Description**
+
+Get an overview of the status of currently running processes.
 
 Platforms: Windows, Linux, Mac OS
 
@@ -158,7 +178,7 @@ system sensors
 
 .. code-block:: none
 
-    [p]system sensors [farenheit=False]
+    [p]system sensors [fahrenheit=False]
 
 .. tip:: Aliases: ``system temp``, ``system temperature``, ``system fan``, ``system fans``
 
@@ -194,7 +214,8 @@ This will show CPU utilisation, RAM usage and uptime as well as
 active processes.
 
 Platforms: Windows, Linux, Mac OS
-.. Note:: This command appears to be very slow in Windows.
+
+.. note:: This command appears to be very slow in Windows.
 
 
 .. _system-command-system-users:
@@ -217,5 +238,6 @@ This will show the user name, what terminal they're logged in at,
 and when they logged in.
 
 Platforms: Windows, Linux, Mac OS
+
 .. note:: PID is not available on Windows. Terminal is usually ``Unknown``
 

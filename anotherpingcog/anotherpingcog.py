@@ -42,6 +42,7 @@ class AnotherPingCog(commands.Cog):
         """Nothing to delete"""
         return
 
+    # cspell:disable-next-line
     @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])
     async def ping(self, ctx: commands.Context):
         """
@@ -120,7 +121,7 @@ class AnotherPingCog(commands.Cog):
                 [ws_latency_text, m_latency_text],
                 [f"{ws_latency} ms", f"{m_latency} ms"],
             ]
-            table = box(tabulate.tabulate(data, tablefmt="plain"), "py")
+            table = box(tabulate.tabulate(data, tablefmt="plain"), "py")  # cspell: disable-line
             msg = f"**{title}**{table}"
             await message.edit(content=msg)
 

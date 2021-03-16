@@ -45,5 +45,5 @@ ping
 A rich embed ping command with timings.
 
 This will show the time to send a message, and the WS latency to Discord.
-If I can't send embeds or they are disabled, I will send a message instead.
+If I can't send embeds or they are disabled here, I will send a normal message instead.
 The embed has more detail and is preferred.

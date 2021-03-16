@@ -22,7 +22,7 @@ Usage
 Automatically check for status updates.
 
 When there is one, it will send the update to all channels that
-have registered to revieve updates from that service.
+have registered to recieve updates from that service.
 
 If there's a service that you want added, contact Vexed#3211 or
 make an issue on the GitHub repo (or even better a PR!).
@@ -66,7 +66,7 @@ statusset add
 
 **Description**
 
-Start getting status updates for the choses service!
+Start getting status updates for the chosen service!
 
 There is a list of services you can use in the ``[p]statusset list`` command.
 
@@ -109,11 +109,11 @@ statusset edit mode
 Change what mode to use for updates
 
 **All**: Every time the service posts an update on an incident, I will send a new message
-contaning the previus updates as well as the new update. Best used in a fast-moving
+containing the previous updates as well as the new update. Best used in a fast-moving
 channel with other users.
 
 **Latest**: Every time the service posts an update on an incident, I will send a new message
-contaning only the latest update. Best used in a dedicated status channel.
+containing only the latest update. Best used in a dedicated status channel.
 
 **Edit**: When a new incident is created, I will sent a new message. When this incident is
 updated, I will then add the update to the original message. Best used in a dedicated
@@ -186,14 +186,14 @@ The service you want to preview. There's a list of available services in the
 **<mode>**
 
     **All**: Every time the service posts an update on an incident, I will send
-    a new message contaning the previus updates as well as the new update. Best
+    a new message containing the previous updates as well as the new update. Best
     used in a fast-moving channel with other users.
 
     **Latest**: Every time the service posts an update on an incident, I will send
-    a new message contaning only the latest update. Best used in a dedicated status
+    a new message containing only the latest update. Best used in a dedicated status
     channel.
 
-    **Edit**: Natually, edit mode can't have a preview so won't work with this command.
+    **Edit**: Naturally, edit mode can't have a preview so won't work with this command.
     The message content is the same as the ``all`` mode.
     When a new incident is created, I will sent a new message. When this
     incident is updated, I will then add the update to the original message. Best

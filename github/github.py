@@ -25,6 +25,7 @@ CHECK_REAL = "check_real"
 
 EXCEPTIONS = (HTTPException, CustomError)
 
+# cspell:ignore labelify kowlin's resp
 
 class GitHub(commands.Cog):
     """
@@ -35,7 +36,7 @@ class GitHub(commands.Cog):
     but it certainly could be used for other situations where you want
     to manage GitHub issues from Discord.
 
-    If you would like a way to search or view issues, I highly reccomend
+    If you would like a way to search or view issues, I highly recommend
     Kowlin's approved `githubcards` cog (on the repo
     https://github.com/Kowlin/Sentinel)
 
@@ -79,7 +80,7 @@ class GitHub(commands.Cog):
             if error.status_code == 404:
                 await ctx.send("It looks like that isn't a valid issue or PR number.")
             else:
-                await ctx.send(f"HTTP error occured: `{error.status_code}`")
+                await ctx.send(f"HTTP error occurred: `{error.status_code}`")
 
         elif not isinstance(error, CustomError):
             raise error
@@ -133,7 +134,7 @@ class GitHub(commands.Cog):
         """Instructions on how to set up a token."""
         p = ctx.clean_prefix
         await ctx.send(
-            "Note: if you have already set up a GH API token with your bot (eg for `ghcards`) then this cog will "
+            "Note: if you have already set up a GH API token with your bot (eg for `githubcards`) then this cog will "
             "already work.\n\n"
             "1. Create a new token at <https://github.com/settings/tokens> and tick the `repo` option at the top.\n"
             "2. Copy the token and, in my DMs, run this command: "
@@ -224,12 +225,12 @@ class GitHub(commands.Cog):
         for label in issue_labels:
             il_names.append(label["name"])
 
-        avalible_labels = self._inline_list([l for l in rl_names if l not in il_names])
+        avaliable_labels = self._inline_list([l for l in rl_names if l not in il_names])
         used_labels = self._inline_list(il_names)
         await ctx.send(
             "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
             " This is case sensitive.\n\n"
-            f"Avalible labels: {avalible_labels}\nLabels currently on issue: {used_labels}"
+            f"Available labels: {avaliable_labels}\nLabels currently on issue: {used_labels}"
         )
 
         def check(msg):
@@ -257,12 +258,12 @@ class GitHub(commands.Cog):
             il_names.append(answer.content)
             rl_names.remove(answer.content)
 
-            avalible_labels = self._inline_list([l for l in rl_names if l not in il_names])
+            avaliable_labels = self._inline_list([l for l in rl_names if l not in il_names])
             used_labels = self._inline_list(il_names)
             await ctx.send(
                 "Label added. Again, 30 seconds. Say another label name if you want to add more, **`save` to save your "
                 "changes** or **`exit` to exit without saving.**\n\n"
-                f"Avalible labels: {avalible_labels}\nLabels currently on issue: {used_labels}"
+                f"Available labels: {avaliable_labels}\nLabels currently on issue: {used_labels}"
             )
         if to_add:
             try:
@@ -363,11 +364,11 @@ class GitHub(commands.Cog):
             for label in repo_labels:
                 rl_names.append(label["name"])
 
-            avalible_labels = self._inline_list(rl_names)
+            avaliable_labels = self._inline_list(rl_names)
             await ctx.send(
                 "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
                 " This is case sensitive. Say `exit` to abort creating the issue, or **`create` to make the issue**.\n\n"
-                f"Avalible labels: {avalible_labels}"
+                f"Avaliable labels: {avaliable_labels}"
             )
 
             def check(msg: discord.Message):
@@ -397,12 +398,12 @@ class GitHub(commands.Cog):
                 to_add.append(answer.content)
                 rl_names.remove(answer.content)
 
-                avalible_labels = self._inline_list(rl_names)
+                avaliable_labels = self._inline_list(rl_names)
                 used_labels = self._inline_list(to_add)
                 await ctx.send(
                     "Label added. Again, 30 seconds. Say another label name if you want to add more, `create` to create "
                     "the issue or `exit` to exit without saving.\n\n"
-                    f"Avalible labels: {avalible_labels}\nLabels currently on issue: {used_labels}"
+                    f"Avaliable labels: {avaliable_labels}\nLabels currently on issue: {used_labels}"
                 )
         try:
             resp = await GitHubAPI.create_issue(token, repo, title, description, to_add)

@@ -3,6 +3,8 @@ from typing import Union
 import aiohttp
 import gidgethub.aiohttp
 
+# cspell:ignore resp
+
 
 class GitHubAPI:
     async def repo_info(token: str, slug: str) -> Union[dict, bool]:

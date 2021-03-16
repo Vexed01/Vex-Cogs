@@ -10,6 +10,8 @@ from .objects import FeedDict, UpdateField
 
 log = logging.getLogger("red.vexed.status.rsshelper")
 
+# cspell:ignore tzinfos statusio
+
 
 async def process_feed(service: str, feed: FeedParserDict) -> FeedDict:
     return await FEEDS[service](feed.entries[0])
@@ -19,14 +21,14 @@ async def _strip_html(thing_to_strip) -> str:
     """Strip dat HTML!
 
     This removes anything between (and including) `<>` (be careful with this!).
-    It will NOT strip `<>` if there is nothing inbeteween.
+    It will NOT strip `<>` if there is nothing in-between.
 
-    `<br />` will be relaced with `\\n`.
+    `<br />` will be replaced with `\\n`.
     `<small>` will be replaced with `=-=SPLIT=-=`
     `</small>` wil also be reaplaced with `\\n`.
     Any other tags in format <> will be removed.
 
-    Please don't use this elsewhere, it is very funky and tempremental.
+    Please don't use this elsewhere, it is very funky and temperamental.
     """
     tostrip = str(thing_to_strip)
     raw = tostrip.replace("<br />", "\n")

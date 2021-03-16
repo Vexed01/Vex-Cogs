@@ -1,5 +1,7 @@
 .. _statusdev:
 
+.. cspell:ignore statusdev forcestatus kwargs
+
 ======
 Status
 ======
@@ -7,7 +9,7 @@ Status
 The status cog has two events you can listen to, ``on_vexed_status_update`` and
 ``on_vexed_status_channel_send``.
 
-``status_channel_send`` is fired in quick succession, espscially on larger bots with
+``status_channel_send`` is fired in quick succession, especially on larger bots with
 lots of channels added, so you shouldn't do anything expensive. ``status_channel_send``
 is dispatched after a successful channel send.
 
@@ -37,7 +39,7 @@ See `Custom Objects`_.
     the cog only checks feeds that have channels subscribed to it.
 
 .. tip::
-    For testing, the ``devforcestatus`` (alias ``dfs``) command can be used for this.
+    For testing, the ``statusdev forcestatus`` (alias ``statusdev fs``) command can be used for this.
     It simulates an actual/organic update as closely as possible so sends to all registered
     channels. The ``force`` parameter will be ``True`` in such cases.
 
@@ -87,13 +89,13 @@ Event Reference
             be something else. Make sure you handle this.
         .. note::
             Some feeds only supply the latest update. See the file-level const
-            ``AVALIBLE_MODES`` in ``status.py``.
+            ``AVAILABLE_MODES`` in ``status.py``.
         .. note::
             The majority of updates are in the incorrect order in the ``field`` key.
             They will need reversing if you are using this key. See file-level const
             ``DONT_REVERSE`` in ``status.py`` for ones that don't need it.
     :type fp_data: :class:`FeedParserDict`
-    :param fp_data: The raw data from feedparser. The above ``feed`` is reccomended
+    :param fp_data: The raw data from feedparser. The above ``feed`` is recommended
         where possible.
     :type service: :class:`str`
     :param service: The name of the service, in lower case. Guaranteed to be on of
@@ -101,14 +103,14 @@ Event Reference
         being added over time so don't copy-paste and expect it to be one of them.
     :type channels: :class:`dict`
     :param channels: A dict with the keys as channel IDs and the values as a nested
-        dict contaning the settings for that channel.
+        dict containing the settings for that channel.
     :type force: :class`bool`
     :param force: Whether or not the update was forced to update with
-        ``devforcestatus``/``dfs``
+        ``statusdev forcestatus``/``statusdev fs``
 
 .. function:: on_vexed_status_channel_send(feed, service, channel, webhook, embed)
 
-    This is has similarties and differnces to the above event, mainly that it has less
+    This is has similarities and differences to the above event, mainly that it has less
     data and dispatches after an update was successfully sent to a specific channel.
     See above info at the top of this page for details.
 
@@ -121,7 +123,7 @@ Event Reference
             be something else. Make sure you handle this.
         .. note::
             Some feeds only supply the latest update. See the file-level const
-            ``AVALIBLE_MODES`` in ``status.py``.
+            ``AVAILABLE_MODES`` in ``status.py``.
         .. note::
             The majority of updates are in the incorrect order in the ``field`` key.
             They will need reversing if you are using this key. See file-level const
@@ -153,7 +155,7 @@ FeedDict
 
 **Attributes**
 
-| **fields** (``list``) – A list contaning UpdateField objects
+| **fields** (``list``) – A list containing UpdateField objects
 | **title** (``str``) – The title of the incident
 | **link** (``str``) – The incident link.
 | **time**: A datetime object, or if it was unable to parse it then ``discord.Embed.Empty``
@@ -170,4 +172,4 @@ UpdateField
 **Attributes**
 
 | **name** (``str``) – The name of the field
-| **values** (``str``) – The value of the field
+| **value** (``str``) – The value of the field

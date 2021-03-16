@@ -26,7 +26,7 @@ I made it for managing issues on my cog repo as a small project,
 but it certainly could be used for other situations where you want
 to manage GitHub issues from Discord.
 
-If you would like a way to search or view issues, I highly reccomend
+If you would like a way to search or view issues, I highly recommend
 Kowlin's approved ``githubcards`` cog (on the repo
 https://github.com/Kowlin/Sentinel)
 
