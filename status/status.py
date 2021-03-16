@@ -903,7 +903,9 @@ class Status(commands.Cog):
             f"{FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention} will now {word} webhooks."
         )
 
+    # -------------------------
     # STARTING THE DEV COMMANDS
+    # -------------------------
 
     async def _dev_com(self, ctx: commands.Context):
         """Returns whether to continue or not"""
@@ -923,8 +925,12 @@ class Status(commands.Cog):
         return True
 
     @checks.is_owner()
-    @commands.command(hidden=True, aliases=["dfs"])
-    async def devforcestatus(self, ctx: commands.Context, service):
+    @commands.group(hidden=True)
+    async def statusdev(self, ctx: commands.Context):
+        """hey dont use this, it's all hidden for a reason"""
+
+    @statusdev.command(hidden=True, aliases=["fs"])
+    async def forcestatus(self, ctx: commands.Context, service):
         if not await self._dev_com(ctx):
             return
 
@@ -947,9 +953,9 @@ class Status(commands.Cog):
         for channel in channels.items():
             await self._send_updated_feed(feeddict, channel, service)
 
-    @checks.is_owner()
-    @commands.command(aliases=["dcf"], hidden=True)
-    async def devcheckfeed(self, ctx: commands.Context, link, mode, service):
+    @guild_only()
+    @statusdev.command(aliases=["cf"], hidden=True)
+    async def checkfeed(self, ctx: commands.Context, link, mode, service):
         if not await self._dev_com(ctx):
             return
 
@@ -966,9 +972,8 @@ class Status(commands.Cog):
             feeddict, (ctx.channel.id, {"mode": mode, "webhook": False}), service
         )
 
-    @checks.is_owner()
-    @commands.command(aliases=["dcfr"], hidden=True)
-    async def devcheckfeedraw(self, ctx: commands.Context, link: str):
+    @statusdev.command(aliases=["cfr"], hidden=True)
+    async def checkfeedraw(self, ctx: commands.Context, link: str):
         if not await self._dev_com(ctx):
             return
 
@@ -985,8 +990,7 @@ class Status(commands.Cog):
 
         await ctx.send_interactive(pages, box_lang="")
 
-    @checks.is_owner()
-    @commands.command(aliases=["cfc"], hidden=True)
+    @statusdev.command(aliases=["cfc"], hidden=True)
     async def checkusedfeedcache(self, ctx: commands.Context):
         if not await self._dev_com(ctx):
             return
