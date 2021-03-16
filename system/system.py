@@ -406,6 +406,22 @@ class System(commands.Cog):
             msg += self._box(to_box)
             await ctx.send(msg)
 
+    @system.command(name="processes", aliases=["proc"])
+    async def system_processes(self, ctx: commands.Context):
+        async with ctx.typing():
+            proc = await self._proc()
+            proc = proc["statuses"]
+
+        if await self._use_embed(ctx):
+            now = datetime.datetime.utcnow()
+            embed = discord.Embed(title="Processes", colour=await ctx.embed_colour(), timestamp=now)
+            embed.add_field(name="Status", value=self._box(proc))
+            await ctx.send(embed=embed)
+        else:
+            msg = "**Processes**\n"
+            msg += self._box(f"CPU\n{proc}\n")
+            await ctx.send(msg)
+
     @system.command(name="top", aliases=["overview", "all"])
     async def system_all(self, ctx: commands.Context):
         """
