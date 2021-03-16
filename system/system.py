@@ -12,6 +12,8 @@ from tabulate import tabulate
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"
 
+# cspell:ignore psutil shwtemp tablefmt sfan suser sdiskpart sdiskusage fstype proc procs
+
 
 class System(commands.Cog):
     """
@@ -139,26 +141,26 @@ class System(commands.Cog):
 
         data = {"physical": "", "swap": ""}
 
-        data["physical"] += f"[Percent]  {physical.percent} %\n"
-        data["physical"] += f"[Used]     {self._hum_mb(physical.used)} MB\n"
-        data["physical"] += f"[Avalible] {self._hum_mb(physical.available)} MB\n"
-        data["physical"] += f"[Total]    {self._hum_mb(physical.total)} MB\n"
+        data["physical"] += f"[Percent]   {physical.percent} %\n"
+        data["physical"] += f"[Used]      {self._hum_mb(physical.used)} MB\n"
+        data["physical"] += f"[Available] {self._hum_mb(physical.available)} MB\n"
+        data["physical"] += f"[Total]     {self._hum_mb(physical.total)} MB\n"
 
-        data["swap"] += f"[Percent]  {swap.percent} %\n"
-        data["swap"] += f"[Used]     {self._hum_mb(swap.used)} MB\n"
-        data["swap"] += f"[Avalible] {self._hum_mb(swap.free)} MB\n"
-        data["swap"] += f"[Total]    {self._hum_mb(swap.total)} MB\n"
+        data["swap"] += f"[Percent]   {swap.percent} %\n"
+        data["swap"] += f"[Used]      {self._hum_mb(swap.used)} MB\n"
+        data["swap"] += f"[Available] {self._hum_mb(swap.free)} MB\n"
+        data["swap"] += f"[Total]     {self._hum_mb(swap.total)} MB\n"
 
         return data
 
-    async def _sensors(self, farenheit: bool):
+    async def _sensors(self, fahrenheit: bool):
         """Get metrics from sensors"""
-        temp = psutil.sensors_temperatures(farenheit)
+        temp = psutil.sensors_temperatures(fahrenheit)
         fans = psutil.sensors_fans()
 
         data = {"temp": "", "fans": ""}
 
-        unit = "°F" if farenheit else "°C"
+        unit = "°F" if fahrenheit else "°C"
 
         t_data = []
         for k, v in temp.items():
@@ -269,7 +271,7 @@ class System(commands.Cog):
         Note: CPU frequency is nominal and overall on Windows and Mac OS,
         on Linux it's current and per-core.
         """
-        with ctx.typing():
+        async with ctx.typing():
             data = await self._cpu()
             percent = data["percent"]
             time = data["time"]
@@ -296,8 +298,8 @@ class System(commands.Cog):
         """
         Get infomation about memory usage.
 
-        This will show memory available as a percent, memory used and avalibe as well
-        as the total amount. Data is provided for both phsyical and SWAP RAM.
+        This will show memory available as a percent, memory used and available as well
+        as the total amount. Data is provided for both physical and SWAP RAM.
 
         Platforms: Windows, Linux, Mac OS
         """
@@ -318,7 +320,7 @@ class System(commands.Cog):
             await ctx.send(msg)
 
     @system.command(name="sensors", aliases=["temp", "temperature", "fan", "fans"])
-    async def system_sesnsors(self, ctx: commands.Context, farenheit: bool = False):
+    async def system_sensors(self, ctx: commands.Context, fahrenheit: bool = False):
         """
         Get sensor metrics.
 
@@ -331,12 +333,12 @@ class System(commands.Cog):
         if not psutil.LINUX:
             return await ctx.send(UNAVAILABLE)
 
-        data = await self._sensors(farenheit)
+        data = await self._sensors(fahrenheit)
         temp = data["temp"]
         fans = data["fans"]
         if await self._use_embed(ctx):
             now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Sensors", colour=await ctx.embed_color(), timestamp=now)
+            embed = discord.Embed(title="Sensors", colour=await ctx.embed_colour(), timestamp=now)
             embed.add_field(name="Temperatures", value=self._box(temp))
             embed.add_field(name="Fans", value=self._box(fans))
             await ctx.send(embed=embed)
@@ -364,7 +366,7 @@ class System(commands.Cog):
             return await ctx.send("It looks like no one is logged in.")
         if embed:
             now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Users", colour=await ctx.embed_color(), timestamp=now)
+            embed = discord.Embed(title="Users", colour=await ctx.embed_colour(), timestamp=now)
             for name, userdata in data.items():
                 embed.add_field(name=name, value=self._box(userdata))
             await ctx.send(embed=embed)
@@ -394,7 +396,7 @@ class System(commands.Cog):
 
         if embed:
             now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Disks", colour=await ctx.embed_color(), timestamp=now)
+            embed = discord.Embed(title="Disks", colour=await ctx.embed_colour(), timestamp=now)
             for name, diskdata in data.items():
                 embed.add_field(name=name, value=self._box(diskdata))
             await ctx.send(embed=embed)
@@ -408,6 +410,11 @@ class System(commands.Cog):
 
     @system.command(name="processes", aliases=["proc"])
     async def system_processes(self, ctx: commands.Context):
+        """
+        Get an overview of the status of currently running processes.
+
+        Platforms: Windows, Linux, Mac OS
+        """
         async with ctx.typing():
             proc = await self._proc()
             proc = proc["statuses"]
@@ -433,7 +440,7 @@ class System(commands.Cog):
         Platforms: Windows, Linux, Mac OS
         Note: This command appears to be very slow in Windows.
         """
-        with ctx.typing():
+        async with ctx.typing():
             cpu = await self._cpu()
             mem = await self._mem()
             proc = await self._proc()
@@ -446,7 +453,7 @@ class System(commands.Cog):
 
         if await self._use_embed(ctx):
             now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Overview", colour=await ctx.embed_color(), timestamp=now)
+            embed = discord.Embed(title="Overview", colour=await ctx.embed_colour(), timestamp=now)
             embed.add_field(name="CPU Usage", value=self._box(percent))
             embed.add_field(name="CPU Times", value=self._box(times))
             embed.add_field(name=ZERO_WIDTH, value=ZERO_WIDTH)
@@ -463,12 +470,3 @@ class System(commands.Cog):
             to_box += f"Processes\n{procs}\n"
             msg += self._box(to_box)
             await ctx.send(msg)
-
-    # @system.command(name="processes",aliases=["proc"])
-    # async def system_processes(self, ctx):
-    #     proc = await self._proc()
-
-    #     if await self._use_embed(ctx):
-    #         now = datetime.datetime.utcnow()
-    #         embed = await discord.Embed(title="Processes", colour=await ctx.embed_color, timestamp=now)
-    #         embed.add_field(name="Status")
