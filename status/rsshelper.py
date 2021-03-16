@@ -2,11 +2,11 @@ import datetime
 import logging
 import re
 
-from dateutil.parser import parse
 import discord
+from dateutil.parser import parse
 from feedparser.util import FeedParserDict
-from .objects import FeedDict, UpdateField
 
+from .objects import FeedDict, UpdateField
 
 log = logging.getLogger("red.vexed.status.rsshelper")
 

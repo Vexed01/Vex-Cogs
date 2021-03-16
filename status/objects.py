@@ -2,10 +2,11 @@
 # opportunity to learn about making and working with objects. Objects are fun!
 
 import datetime
-from discord import Embed
 from typing import Dict, List
 
-from .feedconsts import FEED_URLS
+from discord import Embed
+
+from .consts import FEED_URLS
 
 
 class UpdateField(object):

@@ -1,8 +1,9 @@
 from typing import List
+
 from redbot.core import commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import humanize_list, inline
 from redbot.core.utils import deduplicate_iterables
+from redbot.core.utils.chat_formatting import humanize_list, inline
 
 
 class Aliases(commands.Cog):
@@ -94,6 +95,7 @@ class Aliases(commands.Cog):
         guild_aliases = deduplicate_iterables(guild_aliases)
         global_aliases = deduplicate_iterables(global_aliases)
 
+        # make everything inline + make built in aliases
         com_builtin_aliases = []
         for i in range(len(builtin_aliases)):
             com_builtin_aliases.append(self._inline(f"{com_parent} {builtin_aliases[i]}"))

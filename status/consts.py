@@ -2,6 +2,11 @@ ALL = "all"
 LATEST = "latest"
 EDIT = "edit"
 
+WEBHOOK_REASON = "Created for {} status updates"
+
+OLD_DEFAULTS = {"mode": ALL, "webhook": False}
+
+
 FEED_URLS = {
     "discord": "https://discordstatus.com/history.atom",
     "github": "https://www.githubstatus.com/history.atom",

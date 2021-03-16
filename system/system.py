@@ -1,15 +1,13 @@
 import asyncio
 import datetime
-from typing import List, Union, Dict
+from typing import Dict, List, Union
 
 import discord
-import datetime
 import psutil
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_number
 from tabulate import tabulate
-
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"
@@ -163,18 +161,18 @@ class System(commands.Cog):
         unit = "°F" if farenheit else "°C"
 
         t_data = []
-        for group in temp.items():
-            for item in group[1]:
+        for k, v in temp.items():
+            for item in v:
                 item: psutil._common.shwtemp
-                name = item.label or group[0]
+                name = item.label or k
                 t_data.append([f"[{name}]", f"{item.current} {unit}"])
         data["temp"] = tabulate(t_data, tablefmt="plain") or "No temperature sensors found"
 
         t_data = []
-        for fan in fans.items():
-            for item in fan[1]:
+        for k, v in fans.items():
+            for item in v:
                 item: psutil._common.sfan
-                name = item.label or fan[0]
+                name = item.label or k
                 t_data.append([f"[{name}]", f"{item.current} RPM"])
         data["fans"] = tabulate(t_data, tablefmt="plain") or "No fan sensors found"
 
@@ -213,16 +211,16 @@ class System(commands.Cog):
 
         data = {}
 
-        for p in partition_data.items():
+        for k, v in partition_data.items():
             total = (
-                f"{self._hum_gb(p[1][1].total)} GB"
-                if p[1][1].total > 1073741824
-                else f"{self._hum_mb(p[1][1].total)} MB"
+                f"{self._hum_gb(v[1].total)} GB"
+                if v[1].total > 1073741824
+                else f"{self._hum_mb(v[1].total)} MB"
             )
-            data[f"{e}{p[0]}{e}"] = f"[Usage]       {p[1][1].percent} %\n"
-            data[f"{e}{p[0]}{e}"] += f"[Total]       {total}\n"
-            data[f"{e}{p[0]}{e}"] += f"[Filesystem]  {p[1][0].fstype}\n"
-            data[f"{e}{p[0]}{e}"] += f"[Mount point] {p[1][0].mountpoint}\n"
+            data[f"{e}{k}{e}"] = f"[Usage]       {v[1].percent} %\n"
+            data[f"{e}{k}{e}"] += f"[Total]       {total}\n"
+            data[f"{e}{k}{e}"] += f"[Filesystem]  {v[0].fstype}\n"
+            data[f"{e}{k}{e}"] += f"[Mount point] {v[0].mountpoint}\n"
 
         return data
 
@@ -367,14 +365,14 @@ class System(commands.Cog):
         if embed:
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Users", colour=await ctx.embed_color(), timestamp=now)
-            for user in data.items():
-                embed.add_field(name=user[0], value=self._box(user[1]))
+            for name, userdata in data.items():
+                embed.add_field(name=name, value=self._box(userdata))
             await ctx.send(embed=embed)
         else:
             msg = "**Users**\n"
             to_box = ""
-            for user in data.items():
-                to_box += f"{user[0]}\n{user[1]}"
+            for name, userdata in data.items():
+                to_box += f"{name}\n{userdata}"
             msg += self._box(to_box)
             await ctx.send(msg)
 
@@ -397,14 +395,14 @@ class System(commands.Cog):
         if embed:
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Disks", colour=await ctx.embed_color(), timestamp=now)
-            for disk in data.items():
-                embed.add_field(name=disk[0], value=self._box(disk[1]))
+            for name, diskdata in data.items():
+                embed.add_field(name=name, value=self._box(diskdata))
             await ctx.send(embed=embed)
         else:
             msg = "**Disks**\n"
             to_box = ""
-            for disk in data.items():
-                to_box += f"{disk[0]}\n{disk[1]}"
+            for name, diskdata in data.items():
+                to_box += f"{name}\n{diskdata}"
             msg += self._box(to_box)
             await ctx.send(msg)
 
