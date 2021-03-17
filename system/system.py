@@ -53,7 +53,8 @@ class System(commands.Cog):
     @checks.is_owner()
     @commands.group()
     async def system(self, ctx: commands.Context):
-        """Base command for this cog.
+        """
+        Get information about your system metrics.
 
         Most commands work on all OSes or omit certian information.
         See the help for individual commands for detailed limitations.

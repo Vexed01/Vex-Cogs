@@ -123,7 +123,7 @@ class GitHub(commands.Cog):
     @checks.is_owner()
     async def gh(self, ctx):
         """
-        Base command for interacting with this cog.
+        Command to interact with this cog.
 
         All commands are owner only.
         """
