@@ -1,7 +1,8 @@
 # Vex-Cogs
 
 These are a few cogs I made for myself that may be useful to others. Mostly utility-based.
-These are for Red V3, an open source Discord bot. See their repo [here](https://github.com/Cog-Creators/Red-DiscordBot/).
+These are for [Red V3](https://github.com/Cog-Creators/Red-DiscordBot/), an open source self-hosted Discord bot. If this is your first time with Red,
+take a look at the [docs](https://docs.discord.red/en/stable/).
 
 ## Getting my cogs
 
