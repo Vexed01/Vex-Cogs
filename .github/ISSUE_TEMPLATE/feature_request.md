@@ -8,4 +8,5 @@ assignees: ''
 ---
 
 # Feature request
-<!-- Please describe what you want me to add, what it should do and why it would be useful. -->
+
+<!-- Please describe what you want me to add, what cog it is for, and what it should do and why it would be useful. -->
