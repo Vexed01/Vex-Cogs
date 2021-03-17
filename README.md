@@ -37,7 +37,7 @@ PRs are welcome! This repo is formatted with Black, line length 120. Don't worry
 
 The [Red server](https://discord.gg/red) for being such a welcoming community.
 
-[MAX](https://github.com/maxbooiii) for taking a leap of faith in my first public cog, status, and eagerly updaing to find it broken a few times
+[MAX](https://github.com/maxbooiii) for taking a leap of faith in my first public cog, status, and eagerly updating to find it broken a few times
 <img src="https://media.discordapp.net/attachments/133251234164375552/813322657185136650/aha.png" alt="aha" width="18" height="18">
 
 And finally, most importantly, the Cog Creators who made the wonderful Red framework.
