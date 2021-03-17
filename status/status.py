@@ -188,6 +188,8 @@ class Status(commands.Cog):
                             status = response.status
                         if service != "gcp":  # gcp doesn't do etags
                             etags[service] = response.headers.get("ETag")
+                    except asyncio.TimeoutError:
+                        log.warning(f"Timeout checking for {service} update")
                     except Exception as e:
                         log.warning(f"Unable to check for an update for {service}", exc_info=e)
                         continue
@@ -221,8 +223,19 @@ class Status(commands.Cog):
                             "be skipped.\nPlease contact Vexed for ways to mitigate this."
                         )
                     self.send_cache = SendCache.empty()
+
+                elif status == 304:  # not modified
+                    log.debug(f"No new status update for {service}")
+                elif status == 429:
+                    log.warning(
+                        f"Unable to get an update for {service}. It looks like we're being rate limited (429). This "
+                        "should never happen; therefore this cog does not handle rate limits. Please tell Vexed about "
+                        "this and for ways to mitigate this."
+                    )
+                elif str(status)[0] == "5":  # 500 status code
+                    log.info(f"Unable to get an update for {service} - internal server error (HTTP Error {status})")
                 else:
-                    log.debug(f"No status update for {service}")
+                    log.info(f"Abnormal status code received from {service}: {status}\nPlease report this to Vexed.")
 
         await session.close()
 
@@ -544,7 +557,17 @@ class Status(commands.Cog):
     @checks.admin_or_permissions(manage_guild=True)
     @commands.group()
     async def statusset(self, ctx: commands.Context):
-        """Base command for managing the Status cog."""
+        """
+        Get automatic status updates in a channel, eg Discord.
+
+        Get started with `[p]statusset preview` to see what they look like,
+        then `[p]statusset add` to set up automatic updates.
+
+        **Available services:**
+        **`discord`**, `github`, `cloudflare`, `python`, `twitter_api`, `statuspage`,
+        **`zoom`**, `oracle_cloud`, `twitter`, **`epic_games`**, `digitalocean`, **`reddit`**,
+        `aws`,`gcp`, `smartthings`, `sentry`, `status.io`
+        """
 
     @statusset.command(name="add")
     async def statusset_add(self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel]):
@@ -685,7 +708,7 @@ class Status(commands.Cog):
     @statusset.command(name="list", aliases=["show", "settings"])
     async def statusset_list(self, ctx: commands.Context, service: Optional[str]):
         """
-        List that available services and which ones are being used in this server.
+        List that available services and ones are used in this server.
 
         Optionally add a service at the end of the command to view detailed settings for that service.
         """
@@ -744,7 +767,7 @@ class Status(commands.Cog):
     @statusset.command(name="preview")
     async def statusset_preview(self, ctx: commands.Context, service: str, mode: str, webhook: bool):
         """
-        Preview what status updates will look like
+        Preview what status updates will look like.
 
         __**Service**__
         The service you want to preview. There's a list of available services in the
@@ -809,7 +832,7 @@ class Status(commands.Cog):
     @guild_only()
     @statusset.group(name="edit")
     async def statusset_edit(self, ctx):
-        """Base command for editing services"""
+        """Edit services you've already set up."""
 
     @statusset_edit.command(name="mode")
     async def statusset_edit_mode(
