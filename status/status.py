@@ -7,6 +7,7 @@ import asyncio
 import datetime
 import logging
 import re
+from time import monotonic
 from typing import Optional
 
 import aiohttp
@@ -25,7 +26,6 @@ from tabulate import tabulate
 from .consts import *
 from .objects import FeedDict, SendCache, UsedFeeds
 from .rsshelper import process_feed as _helper_process_feed
-
 
 log = logging.getLogger("red.vexed.status")
 
@@ -49,9 +49,7 @@ class Status(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = (
-            "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/cogs/status.html"
-        )
+        docs = "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/cogs/status.html"
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
         # adding docs link here so doesn't show up in auto generated docs
@@ -151,7 +149,7 @@ class Status(commands.Cog):
         # why didn't i start with using a good config layout...
         # oh, i know why: i'd never used config before!
         # note to self - this was implemented on 20 feb only 3 days after release
-        # -> remove
+        # -> remove around 20 may
 
         old_feeds = await self.config.all_guilds()
         for guild in old_feeds.items():
@@ -166,9 +164,7 @@ class Status(commands.Cog):
                         for c in channels:
                             await self.config.channel_from_id(c).feeds.set_raw(feed_name, value=OLD_DEFAULTS)
                     else:
-                        await self.config.channel_from_id(channels).feeds.set_raw(
-                            feed_name, value=OLD_DEFAULTS
-                        )
+                        await self.config.channel_from_id(channels).feeds.set_raw(feed_name, value=OLD_DEFAULTS)
             except KeyError:
                 continue
         await self.config.migrated.set(True)
@@ -208,12 +204,26 @@ class Status(commands.Cog):
                     await self._update_dispatch(feeddict, fp_data, service, channels, False)
                     await asyncio.sleep(1)  # guaranteed wait for other CCs
                     log.info(f"Sending status update for {service} to {len(channels)} channels...")
+                    start = monotonic()
                     for channel in channels.items():
                         await self._send_updated_feed(feeddict, channel, service)
+                    end = monotonic()
+                    raw = end - start
+                    time = round(raw) or "under a"
+                    if raw <= 15:
+                        log.info(f"Done, took {time} second(s).")
+                    elif raw <= 60:
+                        log.info(f"Sending status update for {service} took a long time ({time} seconds).")
+                    else:
+                        log.warning(
+                            f"Sending status update for {service} took too long ({time} seconds). All updates were "
+                            "sent.\nThere is a real risk that, if multiple services post updates at once, some will "
+                            "be skipped.\nPlease contact Vexed for ways to mitigate this."
+                        )
                     self.send_cache = SendCache.empty()
-                    log.info("Done")
                 else:
                     log.debug(f"No status update for {service}")
+
         await session.close()
 
     async def _process_feed(self, service: str, feedparser: FeedParserDict):
@@ -413,9 +423,7 @@ class Status(commands.Cog):
             log.debug(f"Skipping channel {c_id} as cog is disabled in that guild.")
             return
         if use_webhook and not channel.permissions_for(channel.guild.me).manage_webhooks:
-            log.debug(
-                f"Unable to send a webhook to {c_id} in guild {channel.guild.id} - sending normal instead"
-            )
+            log.debug(f"Unable to send a webhook to {c_id} in guild {channel.guild.id} - sending normal instead")
             use_webhook = False
         if not use_webhook and not channel.permissions_for(channel.guild.me).send_messages:
             log.info(
@@ -539,9 +547,7 @@ class Status(commands.Cog):
         """Base command for managing the Status cog."""
 
     @statusset.command(name="add")
-    async def statusset_add(
-        self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel]
-    ):
+    async def statusset_add(self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel]):
         """
         Start getting status updates for the chosen service!
 
@@ -562,9 +568,7 @@ class Status(commands.Cog):
             return await ctx.send(f"I don't have permission to send messages in {channel.mention}")
         feeds = await self.config.channel(channel).feeds()
         if service in feeds.keys():
-            return await ctx.send(
-                f"{channel.mention} already receives {FEED_FRIENDLY_NAMES[service]} status updates!"
-            )
+            return await ctx.send(f"{channel.mention} already receives {FEED_FRIENDLY_NAMES[service]} status updates!")
 
         friendly = FEED_FRIENDLY_NAMES[service]
 
@@ -633,9 +637,7 @@ class Status(commands.Cog):
                     if hook.name == channel.guild.me.name:
                         existing_webhook = True
                 if not existing_webhook:
-                    await channel.create_webhook(
-                        name=channel.guild.me.name, reason=WEBHOOK_REASON.format(service)
-                    )
+                    await channel.create_webhook(name=channel.guild.me.name, reason=WEBHOOK_REASON.format(service))
             else:
                 webhook = False
         else:
@@ -654,14 +656,10 @@ class Status(commands.Cog):
                 f"Note: {SPECIAL_INFO[service]}\n{channel.mention} will now receive {FEED_FRIENDLY_NAMES[service]} status updates."
             )
         else:
-            await ctx.send(
-                f"Done, {channel.mention} will now receive {FEED_FRIENDLY_NAMES[service]} status updates."
-            )
+            await ctx.send(f"Done, {channel.mention} will now receive {FEED_FRIENDLY_NAMES[service]} status updates.")
 
     @statusset.command(name="remove", aliases=["del", "delete"])
-    async def statusset_remove(
-        self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel]
-    ):
+    async def statusset_remove(self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel]):
         """
         Stop status updates for a specific service in this server.
 
@@ -740,9 +738,7 @@ class Status(commands.Cog):
             if unused_feeds:
                 msg += "**Other available services:** "
                 msg += humanize_list(unused_feeds)
-            msg += (
-                f"\nTo see settings for a specific service, run `{ctx.clean_prefix}statusset list <service>`"
-            )
+            msg += f"\nTo see settings for a specific service, run `{ctx.clean_prefix}statusset list <service>`"
             await ctx.send(msg)
 
     @statusset.command(name="preview")
@@ -907,9 +903,7 @@ class Status(commands.Cog):
             word = "use"
         else:
             word = "not use"
-        await ctx.send(
-            f"{FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention} will now {word} webhooks."
-        )
+        await ctx.send(f"{FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention} will now {word} webhooks.")
 
     # -------------------------
     # STARTING THE DEV COMMANDS
@@ -976,9 +970,7 @@ class Status(commands.Cog):
 
         feeddict = await _helper_process_feed(service, feed)
         # await self._make_send_cache(feeddict, service)
-        return await self._send_updated_feed(
-            feeddict, (ctx.channel.id, {"mode": mode, "webhook": False}), service
-        )
+        return await self._send_updated_feed(feeddict, (ctx.channel.id, {"mode": mode, "webhook": False}), service)
 
     @statusdev.command(aliases=["cfr"], hidden=True)
     async def checkfeedraw(self, ctx: commands.Context, link: str):

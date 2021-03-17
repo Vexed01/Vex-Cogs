@@ -28,9 +28,7 @@ class System(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = (
-            "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/cogs/system.html"
-        )
+        docs = "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/cogs/system.html"
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
         # adding docs link here so doesn't show up in auto generated docs
@@ -214,13 +212,11 @@ class System(commands.Cog):
         data = {}
 
         for k, v in partition_data.items():
-            total = (
-                f"{self._hum_gb(v[1].total)} GB"
-                if v[1].total > 1073741824
-                else f"{self._hum_mb(v[1].total)} MB"
+            total_avaliable = (
+                f"{self._hum_gb(v[1].total)} GB" if v[1].total > 1073741824 else f"{self._hum_mb(v[1].total)} MB"
             )
             data[f"{e}{k}{e}"] = f"[Usage]       {v[1].percent} %\n"
-            data[f"{e}{k}{e}"] += f"[Total]       {total}\n"
+            data[f"{e}{k}{e}"] += f"[Total]       {total_avaliable}\n"
             data[f"{e}{k}{e}"] += f"[Filesystem]  {v[0].fstype}\n"
             data[f"{e}{k}{e}"] += f"[Mount point] {v[0].mountpoint}\n"
 

@@ -44,9 +44,7 @@ class GitHubAPI:
     async def create_issue(token: str, repo: str, title: str, body: str, labels: list) -> dict:
         async with aiohttp.ClientSession() as session:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=token)
-            return await gh.post(
-                f"/repos/{repo}/issues", data={"title": title, "body": body, "labels": labels}
-            )
+            return await gh.post(f"/repos/{repo}/issues", data={"title": title, "body": body, "labels": labels})
 
     async def comment(token: str, repo: str, issue: int, body: str) -> dict:
         async with aiohttp.ClientSession() as session:

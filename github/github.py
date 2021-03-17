@@ -1,7 +1,7 @@
 from asyncio import TimeoutError
 from typing import Mapping
-import discord
 
+import discord
 from gidgethub import HTTPException
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
@@ -26,6 +26,7 @@ CHECK_REAL = "check_real"
 EXCEPTIONS = (HTTPException, CustomError)
 
 # cspell:ignore labelify kowlin's resp
+
 
 class GitHub(commands.Cog):
     """
@@ -55,9 +56,7 @@ class GitHub(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = (
-            "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/cogs/github.html"
-        )
+        docs = "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/cogs/github.html"
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
         # adding docs link here so doesn't show up in auto generated docs
@@ -148,9 +147,7 @@ class GitHub(commands.Cog):
         try:
             await GitHubAPI.repo_info(await self._get_token(ctx), slug)
         except HTTPException:
-            return await ctx.send(
-                "That looks like a invalid slug or a private repo my token doesn't let me view."
-            )
+            return await ctx.send("That looks like a invalid slug or a private repo my token doesn't let me view.")
         except CustomError:
             return
 
@@ -185,9 +182,7 @@ class GitHub(commands.Cog):
             issue_info = await GitHubAPI.get_issue(token, repo, issue)
         except EXCEPTIONS as e:
             return await self._handle_error(ctx, e)
-        await ctx.send(
-            "Closed `{}` by `{}`".format(issue_info.get("title"), issue_info.get("user", {}).get("login"))
-        )
+        await ctx.send("Closed `{}` by `{}`".format(issue_info.get("title"), issue_info.get("user", {}).get("login")))
 
     @gh.command()
     async def commentclose(self, ctx: commands.Context, issue: int, *, text: str):
@@ -391,9 +386,7 @@ class GitHub(commands.Cog):
                 if answer.content.casefold() == "create":
                     break
                 elif answer.content in to_add:
-                    await ctx.send(
-                        "It looks like that label's already on the issue. Choose another, 30 seconds."
-                    )
+                    await ctx.send("It looks like that label's already on the issue. Choose another, 30 seconds.")
                     continue
                 to_add.append(answer.content)
                 rl_names.remove(answer.content)

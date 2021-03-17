@@ -66,9 +66,7 @@ async def _parse_statuspage(feed: FeedParserDict):
                 if data.startswith("THIS IS A SCHEDULED EVENT"):
                     split = data.split("EVENT", 1)
                     value = split[1]
-                    fields.append(
-                        UpdateField(name="THIS IS A SCHEDULED EVENT", value=f"It is scheduled for {value}")
-                    )
+                    fields.append(UpdateField(name="THIS IS A SCHEDULED EVENT", value=f"It is scheduled for {value}"))
                     continue
             except IndexError:
                 pass
