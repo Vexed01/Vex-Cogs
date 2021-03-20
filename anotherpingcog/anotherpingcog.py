@@ -227,7 +227,8 @@ class AnotherPingCog(commands.Cog):
             self.cache.red.emoji = None
             await self.config.custom_settings.set_raw("red", "emoji", value=None)
         else:
-            emoji = self.bot.get_emoji(int(re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji)).group(2)))
+            match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
+            emoji = self.bot.get_emoji(int(match.group(2))) if match else None
             if not emoji:
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
@@ -282,9 +283,8 @@ class AnotherPingCog(commands.Cog):
             self.cache.orange.emoji = None
             await self.config.custom_settings.set_raw("orange", "emoji", value=None)
         else:
-            print(emoji)
-            emoji = self.bot.get_emoji(int(re.match(r"(<.*:)([0-9]{17,20})(>)", emoji).group(2)))
-            print(emoji)
+            match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
+            emoji = self.bot.get_emoji(int(match.group(2))) if match else None
             if not emoji:
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
@@ -339,9 +339,8 @@ class AnotherPingCog(commands.Cog):
             self.cache.green.emoji = None
             await self.config.custom_settings.set_raw("green", "emoji", value=None)
         else:
-            print(emoji)
-            emoji = self.bot.get_emoji(int(re.match(r"(<.*:)([0-9]{17,20})(>)", emoji).group(2)))
-            print(emoji)
+            match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
+            emoji = self.bot.get_emoji(int(match.group(2))) if match else None
             if not emoji:
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
