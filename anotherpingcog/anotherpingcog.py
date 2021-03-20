@@ -202,6 +202,8 @@ class AnotherPingCog(commands.Cog):
                 "The `embedset` command will now decide whether or not to send an embed, which is by default True."
             )
 
+    # DRY's gone out the window here...
+
     @pingset.command()
     async def red(self, ctx: commands.Context, emoji: str, hex_colour: str):
         """
@@ -225,7 +227,7 @@ class AnotherPingCog(commands.Cog):
             self.cache.red.emoji = None
             await self.config.custom_settings.set_raw("red", "emoji", value=None)
         else:
-            print(emoji)
+            await ctx.send(emoji)
             emoji = self.bot.get_emoji(int(re.match(r"(<.*:)([0-9]{17,20})(>)", emoji).group(2)))
             print(emoji)
             if not emoji:
