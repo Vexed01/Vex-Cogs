@@ -188,7 +188,7 @@ class AnotherPingCog(commands.Cog):
         By default, this is True because the embed is richer and has more information.
         And it looks looks better.
 
-        This will be removed when a global per-command settings is available in Core Red,
+        This will be removed when a global per-command settings is available in Core Red.
         """
         new_setting = not (await self.config.force_embed())
         await self.config.force_embed.set(new_setting)

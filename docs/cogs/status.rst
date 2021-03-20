@@ -50,7 +50,15 @@ statusset
 
 **Description**
 
-Base command for managing the Status cog.
+Get automatic status updates in a channel, eg Discord.
+
+Get started with ``[p]statusset preview`` to see what they look like,
+then ``[p]statusset add`` to set up automatic updates.
+
+**Available services:**
+**``discord``**, ``github``, ``cloudflare``, ``python``, ``twitter_api``, ``statuspage``,
+**``zoom``**, ``oracle_cloud``, ``twitter``, **``epic_games``**, ``digitalocean``, **``reddit``**,
+``aws``,``gcp``, ``smartthings``, ``sentry``, ``status.io``
 
 .. _status-command-statusset-add:
 
@@ -74,7 +82,9 @@ You can use the ``[p]statusset preview`` command to see how different options lo
 
 If you don't specify a specific channel, I will use the current channel.
 
-This is an interactive command.
+This is an interactive command. It will ask what mode you want to use and if you
+want to use a webhook. There's more information about these options in the
+command.
 
 .. _status-command-statusset-edit:
 
@@ -90,7 +100,7 @@ statusset edit
 
 **Description**
 
-Base command for editing services
+Edit services you've already set up.
 
 .. _status-command-statusset-edit-mode:
 
@@ -158,7 +168,7 @@ statusset list
 
 **Description**
 
-List that available services and which ones are being used in this server.
+List that available services and ones are used in this server.
 
 Optionally add a service at the end of the command to view detailed settings for that service.
 
@@ -176,7 +186,7 @@ statusset preview
 
 **Description**
 
-Preview what status updates will look like
+Preview what status updates will look like.
 
 **Service**
 

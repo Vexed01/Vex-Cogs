@@ -21,7 +21,7 @@ Usage
 
 Get system metrics.
 
-Most commands work on all OSes or omit certain information.
+Most commands work on all OSes or omit certian information.
 See the help for individual commands for detailed limitations.
 
 
@@ -47,7 +47,7 @@ system
 
 **Description**
 
-Base command for this cog.
+Get information about your system metrics.
 
 Most commands work on all OSes or omit certian information.
 See the help for individual commands for detailed limitations.
