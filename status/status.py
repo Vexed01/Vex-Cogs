@@ -6,16 +6,13 @@
 import asyncio
 import datetime
 import logging
-import re
-from time import monotonic
-from typing import Optional
+from typing import List, Optional
 
 import aiohttp
 import discord
 import feedparser
 from discord.ext import tasks
 from discord.ext.commands.core import guild_only
-from feedparser.util import FeedParserDict
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, pagify, warning
@@ -24,13 +21,14 @@ from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
 from tabulate import tabulate
 
 from .consts import *
-from .objects import FeedDict, SendCache, UsedFeeds
-from .rsshelper import process_feed as _helper_process_feed
+from .objects import FeedDict, UsedFeeds
+from .rsshelper import process_feed as helper_process_feed
+from .sendupdate import SendUpdate
 
 log = logging.getLogger("red.vexed.status")
 
 
-# cspell:ignore DONT
+# cspell:ignore DONT sourcery
 
 
 class Status(commands.Cog):
@@ -44,7 +42,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.2.1"
+    __version__ = "1.3.0"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -57,21 +55,27 @@ class Status(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
 
-        self.config: Config = Config.get_conf(self, identifier="Vexed-status")
+        # config
         default = {}
+        self.config: Config = Config.get_conf(self, identifier="Vexed-status")
         self.config.register_global(etags=default)
         self.config.register_global(feed_store=default)
-        self.config.register_global(latest=default)
+        self.config.register_global(latest=default)  # this is unused? i think? remove soonish
         self.config.register_global(migrated=False)
+        self.config.register_global(live_incidents=default)
+        self.config.register_global(resolved_incidents=[])
         self.config.register_channel(feeds=default)
 
-        self.used_feeds_cache: UsedFeeds = UsedFeeds({})
-        self.send_cache: SendCache = SendCache.empty()
+        # objects
+        self.sendupdate = SendUpdate(config=self.config, bot=self.bot)
+        self.session = aiohttp.ClientSession()
 
+        # the loop!
         self._check_for_updates.start()
 
     def cog_unload(self):
         self._check_for_updates.cancel()
+        asyncio.create_task(self.session.close())
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete"""
@@ -79,9 +83,9 @@ class Status(commands.Cog):
 
     @tasks.loop(minutes=2.0)
     async def _check_for_updates(self):
-        """Loop that checks for updates and if needed triggers other functions to send them."""
+        """Loop dealing with automatic updates."""
         if self._check_for_updates.current_loop == 0:
-            await self._make_used_feeds()
+            self.used_feeds_cache = UsedFeeds(await self.config.all_channels())
             if await self.config.migrated() is False:
                 log.info("Migrating to new config format...")
                 await self._migrate()
@@ -110,39 +114,45 @@ class Status(commands.Cog):
     async def before_start(self):
         await self.bot.wait_until_red_ready()
 
-    async def _update_dispatch(self, feed, feedparser, service, channels, force):
-        """
-        For more information on this event, take a look at the event reference in the docs:
-        https://vex-cogs.readthedocs.io/en/latest/statusdev.html
-        """
-        self.bot.dispatch(
-            "vexed_status_update",
-            feed=feed,
-            feedparser=feedparser,
-            service=service,
-            channels=channels,
-            force=force,
-        )
+    async def _actually_check_updates(self):
+        """The actual update logic"""
+        for service in self.used_feeds_cache.get_list():
+            async with self.config.etags() as etags:
+                try:
+                    async with self.session.get(
+                        FEED_URLS[service], headers={"If-None-Match": etags[service]}, timeout=10
+                    ) as response:
+                        html = await response.text()
+                        status = response.status
+                        if status == 200:
+                            etags[service] = response.headers.get("ETag")
+                except KeyError:
+                    async with self.session.get(FEED_URLS[service], timeout=10) as response:
+                        html = await response.text()
+                        status = response.status
+                    if service != "gcp":  # gcp doesn't do etags
+                        etags[service] = response.headers.get("ETag")
+                except asyncio.TimeoutError:
+                    log.warning(f"Timeout checking for {service} update")
+                    continue
+                except Exception as e:
+                    log.warning(f"Unable to check for an update for {service}", exc_info=e)
+                    continue
 
-    async def _channel_send_dispatch(self, feed, service, channel, webhook, embed, mode):
-        """
-        For more information on this event, take a look at the event reference in the docs:
-        https://vex-cogs.readthedocs.io/en/latest/statusdev.html
-        """
-        self.bot.dispatch(
-            "vexed_status_channel_send",
-            feed=feed,
-            service=service,
-            channel=channel,
-            webhook=webhook,
-            embed=embed,
-            mode=mode,
-        )
-
-    async def _make_used_feeds(self):
-        """Make the list of used feeds on cog load"""
-        feeds = await self.config.all_channels()
-        self.used_feeds_cache = UsedFeeds(feeds)
+            if status == 200:
+                await self.sendupdate._maybe_send_update(html, service)
+            elif status == 304:  # not modified
+                log.debug(f"No new status update for {service}")
+            elif status == 429:
+                log.warning(
+                    f"Unable to get an update for {service}. It looks like we're being rate limited (429). This "
+                    "should never happen; therefore this cog does not handle rate limits. Please tell Vexed about "
+                    "this and for ways to mitigate this."
+                )
+            elif str(status)[0] == "5":  # 500 status code
+                log.info(f"Unable to get an update for {service} - internal server error (HTTP Error {status})")
+            else:
+                log.info(f"Abnormal status code received from {service}: {status}\nPlease report this to Vexed.")
 
     async def _migrate(self):
         """Migrate config format"""
@@ -168,390 +178,6 @@ class Status(commands.Cog):
             except KeyError:
                 continue
         await self.config.migrated.set(True)
-
-    async def _actually_check_updates(self):
-        """The actual update logic"""
-        async with aiohttp.ClientSession() as session:
-            for service in self.used_feeds_cache.get_list():
-                async with self.config.etags() as etags:
-                    try:
-                        async with session.get(
-                            FEED_URLS[service], headers={"If-None-Match": etags[service]}, timeout=5
-                        ) as response:
-                            html = await response.text()
-                            status = response.status
-                            if status == 200:
-                                etags[service] = response.headers.get("ETag")
-                    except KeyError:
-                        async with session.get(FEED_URLS[service]) as response:
-                            html = await response.text()
-                            status = response.status
-                        if service != "gcp":  # gcp doesn't do etags
-                            etags[service] = response.headers.get("ETag")
-                    except asyncio.TimeoutError:
-                        log.warning(f"Timeout checking for {service} update")
-                    except Exception as e:
-                        log.warning(f"Unable to check for an update for {service}", exc_info=e)
-                        continue
-
-                if status == 200:
-                    fp_data = feedparser.parse(html)
-                    feeddict = await self._process_feed(service, fp_data)
-                    if not await self._check_real_update(service, feeddict):
-                        log.debug(f"Ghost status update for {service} detected, skipping")
-                        continue
-                    # log.debug(f"Feed dict for {service}: {feeddict}")
-                    channels = await self._get_channels(service)
-                    await self._make_send_cache(feeddict, service)
-                    await self._update_dispatch(feeddict, fp_data, service, channels, False)
-                    await asyncio.sleep(1)  # guaranteed wait for other CCs
-                    log.info(f"Sending status update for {service} to {len(channels)} channels...")
-                    start = monotonic()
-                    for channel in channels.items():
-                        await self._send_updated_feed(feeddict, channel, service)
-                    end = monotonic()
-                    raw = end - start
-                    time = round(raw) or "under a"
-                    if raw <= 15:
-                        log.info(f"Done, took {time} second(s).")
-                    elif raw <= 60:
-                        log.info(f"Sending status update for {service} took a long time ({time} seconds).")
-                    else:
-                        log.warning(
-                            f"Sending status update for {service} took too long ({time} seconds). All updates were "
-                            "sent.\nThere is a real risk that, if multiple services post updates at once, some will "
-                            "be skipped.\nPlease contact Vexed for ways to mitigate this."
-                        )
-                    self.send_cache = SendCache.empty()
-
-                elif status == 304:  # not modified
-                    log.debug(f"No new status update for {service}")
-                elif status == 429:
-                    log.warning(
-                        f"Unable to get an update for {service}. It looks like we're being rate limited (429). This "
-                        "should never happen; therefore this cog does not handle rate limits. Please tell Vexed about "
-                        "this and for ways to mitigate this."
-                    )
-                elif str(status)[0] == "5":  # 500 status code
-                    log.info(f"Unable to get an update for {service} - internal server error (HTTP Error {status})")
-                else:
-                    log.info(f"Abnormal status code received from {service}: {status}\nPlease report this to Vexed.")
-
-        await session.close()
-
-    async def _process_feed(self, service: str, feedparser: FeedParserDict):
-        """Process a FeedParserDict into a nicer dict for embeds."""
-        return await _helper_process_feed(service, feedparser)
-
-    async def _check_real_update(self, service: str, feeddict: FeedDict) -> bool:
-        """
-        Check that there has been an actual update to the status against last known.
-        If so, will update the feed store.
-        """
-        async with self.config.feed_store() as feed_store:
-            try:
-                old_fields = feed_store[service]["fields"]
-            except KeyError:
-                to_store = feeddict.to_dict()
-                to_store["time"] = to_store["time"].timestamp()
-                feed_store[service] = to_store
-                return True  # ovy a new one as not in config
-            prev_titles = []
-            for field in old_fields:
-                prev_titles.append(field.get("name"))
-            if service in DONT_REVERSE and feeddict.fields[-1].name in prev_titles:
-                if feeddict.fields[-1].name == "THIS IS A SCHEDULED EVENT":  # aaaaaaa
-                    if feeddict.fields[-1].value == old_fields[-1]["value"]:
-                        return False
-                    return True
-                return False
-            elif service not in DONT_REVERSE and feeddict.fields[0].name in prev_titles:
-                if feeddict.fields[0].name == "THIS IS A SCHEDULED EVENT":  # aaaaaaa
-                    if feeddict.fields[0].value == old_fields[0]["value"]:
-                        return False
-                    return True
-                return False
-            else:
-                to_store = feeddict.to_dict()
-                if isinstance(to_store["time"], datetime.datetime):
-                    to_store["time"] = to_store["time"].timestamp()
-                else:
-                    to_store["time"] = ""
-                feed_store[service] = to_store
-                return True
-
-    async def _get_channels(self, service: str) -> dict:
-        """Get the channels for a feed. The list is channel IDs from config, they may be invalid."""
-        feeds = await self.config.all_channels()
-        channels = {}
-        for name, data in feeds.items():
-            if service in data["feeds"].keys():
-                channels[name] = data["feeds"][service]
-        return channels
-
-    async def _make_send_cache(self, feeddict: FeedDict, service: str):
-        """Make the cache used in send_updated_feed"""
-        try:
-            base = discord.Embed(
-                title=feeddict.title,
-                timestamp=feeddict.time,
-                colour=self._get_colour(feeddict, service),
-                url=feeddict.link,
-            )
-        except Exception as e:  # can happen with timestamps, should now be fixed
-            log.error(
-                "Failed turning a feed into an embed. Updates will not be sent. PLEASE REPORT THIS AND THE INFO BELOW TO VEXED.\n"
-                f"{feeddict.to_dict()}",
-                exc_info=e,
-            )
-            base = discord.Embed(
-                title=feeddict.title,
-                colour=self._get_colour(feeddict, service),
-                url=feeddict.link,
-            )
-
-        embed_latest: discord.Embed = base.copy()
-        embed_all: discord.Embed = base.copy()
-
-        # ALL
-        if service in DONT_REVERSE:
-            for field in feeddict.fields:
-                embed_all.add_field(name=field.name, value=field.value, inline=False)
-        else:
-            for field in reversed(feeddict.fields):
-                embed_all.add_field(name=field.name, value=field.value, inline=False)
-
-        before_fields = len(embed_all.fields)
-        if before_fields > 25:
-            dict_embed = embed_all.to_dict()
-            dict_embed["fields"] = dict_embed["fields"][-25:]
-            embed_all = discord.Embed.from_dict(dict_embed)
-            embed_all.set_field_at(
-                0,
-                name="{} earlier updates were omitted.".format(before_fields - 24),
-                value="This is because embeds are limited to 25 fields.",
-            )
-
-        # LATEST
-        # TODO: if two are published in quick succession could miss one
-        # Note to self for above, iterate through fields and compare against feed store
-        if service in DONT_REVERSE:
-            embed_latest.add_field(
-                name=feeddict.fields[-1].name,
-                value=feeddict.fields[-1].name,
-                inline=False,
-            )
-        else:
-            embed_latest.add_field(
-                name=feeddict.fields[0].name,
-                value=feeddict.fields[0].value,
-                inline=False,
-            )
-
-        t = feeddict.title
-        l = feeddict.link
-        n = FEED_FRIENDLY_NAMES[service]
-        plain_latest = f"**{n} Status Update\n{t}**\nIncident link: {l}\n\n"
-        plain_all = f"**{n} Status Update\n{t}**\nIncident link: {l}\n\n"
-
-        if service in DONT_REVERSE:
-            for i in feeddict.fields:
-                n = i.name
-                v = i.value
-                plain_all += f"**{n}**\n{v}\n"
-        else:
-            for i in reversed(feeddict.fields):
-                n = i.name
-                v = i.value
-                plain_all += f"**{n}**\n{v}\n"
-
-        if service in DONT_REVERSE:
-            n = feeddict.fields[-1].name
-            v = feeddict.fields[-1].name
-            plain_latest += f"**{n}**\n{v}\n"
-
-        else:
-            n = feeddict.fields[0].name
-            v = feeddict.fields[0].name
-            plain_latest += f"**{n}**\n{v}\n"
-
-        regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]|\(([^\s()<>]|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
-        # regex from https://stackoverflow.com/a/28187496
-        plain_all = re.sub(regex, r"<\1>", plain_all)  # wrap links in <> for no previews
-        plain_latest = re.sub(regex, r"<\1>", plain_latest)
-
-        self.send_cache = SendCache(
-            embed_all=embed_all,
-            embed_latest=embed_latest,
-            plain_latest=plain_latest,
-            plain_all=plain_all,
-        )
-
-    def _get_colour(self, feeddict: FeedDict, service: str):
-        if service in ["aws", "gcp"]:  # only do this for statuspage ones
-            return 1812720
-
-        try:
-            if service in DONT_REVERSE:
-                last_title = feeddict.fields[-1].name
-                status = last_title.split(" ")[0].lower()
-            else:
-                last_title = feeddict.fields[0].name
-                status = last_title.split(" ")[0].lower()
-            if status == "investigating":
-                return discord.Colour.red()
-            elif status in [
-                "update",
-                "identified",
-                "monitoring",
-                "scheduled",  # decided to put this in orange as is in future, not now
-                "in",  # scheduled - full is "in progress"
-            ]:
-                return discord.Colour.orange()
-            elif status in ["resolved", "completed"]:
-                return discord.Colour.green()
-            else:
-                return 1812720
-        except Exception as e:  # hopefully never happens but will keep this for a while
-            log.error(f"Error with getting correct colour for {service}:", exc_info=e)
-            return 1812720
-
-    async def _send_updated_feed(self, feeddict: FeedDict, channel: tuple, service: str):
-        """Send a feeddict to the specified channel."""
-        mode = channel[1]["mode"]
-        use_webhook = channel[1]["webhook"]
-        id = channel[1].get("edit_id", {}).get(feeddict.link)
-        c_id = channel[0]
-        channel: discord.TextChannel = self.bot.get_channel(c_id)
-        if channel is None:
-            try:
-                channel = await self.bot.fetch_channel(c_id)
-            except:
-                log.info(
-                    f"Unable to get channel {c_id} for status update. Removing from config so this won't happen again."
-                )
-                await self.config.channel_from_id(c_id).feeds.clear()
-                return
-        if await self.bot.cog_disabled_in_guild(self, channel.guild):
-            log.debug(f"Skipping channel {c_id} as cog is disabled in that guild.")
-            return
-        if use_webhook and not channel.permissions_for(channel.guild.me).manage_webhooks:
-            log.debug(f"Unable to send a webhook to {c_id} in guild {channel.guild.id} - sending normal instead")
-            use_webhook = False
-        if not use_webhook and not channel.permissions_for(channel.guild.me).send_messages:
-            log.info(
-                f"Unable to send messages to {c_id} in guild {channel.guild.id}. Removing from config so this won't happen again."
-            )
-            await self.config.channel_from_id(c_id).feeds.clear()
-            return
-        if not use_webhook:
-            use_embed = await self.bot.embed_requested(channel, None)
-        else:
-            use_embed = True
-
-        # the efficiency could probably be improved here
-        if use_embed:
-            if mode in ["all", "edit"]:
-                embed = self.send_cache.embed_all
-            elif mode == "latest":
-                embed = self.send_cache.embed_latest
-            else:
-                return
-
-            try:
-                # thanks flare for your webhook logic (redditpost) (or trusty?)
-                if use_webhook:
-                    if channel.guild.me.nick:
-                        botname = channel.guild.me.nick
-                    else:
-                        botname = channel.guild.me.name
-                    embed.set_footer(text=f"Powered by {botname}")
-                    webhook = None
-                    for hook in await channel.webhooks():
-                        if hook.name == channel.guild.me.name:
-                            webhook = hook
-                    if webhook is None:
-                        webhook = await channel.create_webhook(
-                            name=channel.guild.me.name, reason=WEBHOOK_REASON.format(service)
-                        )
-                    if mode == "edit":
-                        if id is not None:
-                            try:
-                                await webhook.edit_message(id, embed=embed, content=None)
-                            except discord.NotFound:
-                                id = None
-                            # im sure there's a better way to do this
-                        if id is None:
-                            sent_webhook = await webhook.send(
-                                username=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
-                                avatar_url=AVATAR_URLS[service],
-                                embed=embed,
-                                wait=True,
-                            )
-                            async with self.config.channel(channel).feeds() as conf:
-                                if conf[service].get("edit_id") is None:
-                                    conf[service]["edit_id"] = {feeddict.link: sent_webhook.id}
-                                else:
-                                    conf[service]["edit_id"][feeddict.link] = sent_webhook.id
-                    else:
-                        await webhook.send(
-                            username=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
-                            avatar_url=AVATAR_URLS[service],
-                            embed=embed,
-                        )
-                else:
-                    embed.set_author(
-                        name=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
-                        icon_url=AVATAR_URLS[service],
-                    )
-                    if mode == "edit":
-                        if id is not None:
-                            try:
-                                msg: discord.Message = await channel.fetch_message(id)
-                                await msg.edit(embed=embed, content=None)
-                            except discord.NotFound:
-                                id = None
-                        if id is None:
-                            sent_message: discord.Message = await channel.send(embed=embed)
-                            async with self.config.channel(channel).feeds() as conf:
-                                if conf[service].get("edit_id") is None:
-                                    conf[service]["edit_id"] = {feeddict.link: sent_message.id}
-                                else:
-                                    conf[service]["edit_id"][feeddict.link] = sent_message.id
-                    else:
-                        await channel.send(embed=embed)
-            except Exception as e:
-                log.info(  # TODO: remove from config
-                    f"Something went wrong with {c_id} in guild {channel.guild.id} - skipping", exc_info=e
-                )
-                return
-
-        else:
-            if mode in ["all", "edit"]:
-                msg = self.send_cache.plain_all
-            elif mode == "latest":
-                msg = self.send_cache.plain_latest
-
-            try:
-                if mode == "edit":
-                    if id is not None:
-                        old_msg = await channel.fetch_message(id)
-                        await old_msg.edit(content=msg, embed=None)
-                    else:
-                        sent_message = await channel.send(msg)
-                        async with self.config.channel(channel).feeds() as conf:
-                            if conf[service].get("edit_id") is None:
-                                conf[service]["edit_id"] = {feeddict.get(feeddict.link): sent_message.id}
-                            else:
-                                conf[service]["edit_id"][feeddict.get(feeddict.link)] = sent_message.id
-                else:
-                    await channel.send(msg)
-            except Exception as e:
-                log.info(  # TODO: remove from config
-                    f"Something went wrong with {c_id} in guild {channel.guild.id} - skipping", exc_info=e
-                )
-
-        await self._channel_send_dispatch(feeddict, service, channel, use_webhook, use_embed, mode)
 
     @guild_only()
     @checks.admin_or_permissions(manage_guild=True)
@@ -580,7 +206,9 @@ class Status(commands.Cog):
 
         If you don't specify a specific channel, I will use the current channel.
 
-        This is an interactive command.
+        This is an interactive command. It will ask what mode you want to use and if you
+        want to use a webhook. There's more information about these options in the
+        command.
         """
         channel = channel or ctx.channel
         service = service.lower()
@@ -630,12 +258,14 @@ class Status(commands.Cog):
 
         try:
             mode = await self.bot.wait_for("message", check=MessagePredicate.same_context(ctx), timeout=120)
-        except TimeoutError:
+        except asyncio.TimeoutError:
             return await ctx.send("Timed out. Cancelling.")
 
         mode = mode.content.lower()
         if mode not in [ALL, LATEST, EDIT]:
             return await ctx.send("Hmm, that doesn't look like a valid mode. Cancelling.")
+        if mode in unsupported:
+            return await ctx.send("That mode is not supported for this service.")
 
         if ctx.channel.permissions_for(ctx.me).manage_webhooks:
             await ctx.send(
@@ -647,7 +277,7 @@ class Status(commands.Cog):
             pred = MessagePredicate.yes_or_no(ctx)
             try:
                 await self.bot.wait_for("message", check=pred, timeout=120)
-            except TimeoutError:
+            except asyncio.TimeoutError:
                 return await ctx.send("Timed out. Cancelling.")
 
             if pred.result is True:
@@ -707,6 +337,7 @@ class Status(commands.Cog):
 
     @statusset.command(name="list", aliases=["show", "settings"])
     async def statusset_list(self, ctx: commands.Context, service: Optional[str]):
+        # sourcery no-metrics
         """
         List that available services and ones are used in this server.
 
@@ -723,11 +354,11 @@ class Status(commands.Cog):
             data = []
             for channel in ctx.guild.channels:
                 feeds = await self.config.channel(channel).feeds()
-                for name, data in feeds.items():
+                for name, settings in feeds.items():
                     if name != service:
                         continue
-                    mode = data["mode"]
-                    webhook = data["webhook"]
+                    mode = settings["mode"]
+                    webhook = settings["webhook"]
                     data.append([f"#{channel.name}", mode, webhook])
             table = box(tabulate(data, headers=["Channel", "Send mode", "Use webhooks"]))
             await ctx.send(f"**Settings for {FEED_FRIENDLY_NAMES[service]}**: {table}")
@@ -811,21 +442,19 @@ class Status(commands.Cog):
         feed = await self.config.feed_store()
         feeddict = feed.get(service)
         if feeddict is None or feeddict.get("link") is None or feeddict.get("time") is None:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(FEED_URLS[service]) as response:
-                    html = await response.text()
-                await session.close()
+            async with self.session.get(FEED_URLS[service]) as response:
+                html = await response.text()
             feed = feedparser.parse(html)
-            feeddict = await self._process_feed(service, feed)
+            feeddict = await self.sendupdate._process_feed(service, feed)
         else:
             feeddict["time"] = datetime.datetime.fromtimestamp(feeddict["time"])
-            feeddict = FeedDict.from_dict(feeddict)
+            feeddict = FeedDict.from_dict(None, feeddict)
 
-        await self._make_send_cache(feeddict, service)
+        await self.sendupdate._make_send_cache(feeddict, service)
+
         channel = (ctx.channel.id, {"mode": mode, "webhook": webhook})
-
         try:
-            await self._send_updated_feed(feeddict, channel, service)
+            await self.sendupdate._channel_send_updated_feed(feeddict, channel, service, False)
         except KeyError:
             await ctx.send("Hmm, I couldn't preview that.")
 
@@ -907,10 +536,7 @@ class Status(commands.Cog):
             )
 
         if old_conf[service]["webhook"] == webhook:
-            if webhook:
-                word = "use"
-            else:
-                word = "don't use"
+            word = "use" if webhook else "don't use"
             return await ctx.send(
                 f"It looks like I already {word} webhooks for {FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention}"
             )
@@ -922,10 +548,7 @@ class Status(commands.Cog):
         old_conf[service]["webhook"] = webhook
         await self.config.channel(channel).feeds.set_raw(service, value=old_conf[service])
 
-        if webhook:
-            word = "use"
-        else:
-            word = "not use"
+        word = "use" if webhook else "not use"
         await ctx.send(f"{FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention} will now {word} webhooks.")
 
     # -------------------------
@@ -962,21 +585,22 @@ class Status(commands.Cog):
         if service not in FEED_URLS.keys():
             return await ctx.send("Hmm, that doesn't look like a valid service.")
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(FEED_URLS[service]) as response:
-                html = await response.text()
-            await session.close()
+        async with self.session.get(FEED_URLS[service]) as response:
+            html = await response.text()
         fp_data = feedparser.parse(html)
-        feeddict = await self._process_feed(service, fp_data)
-        real = await self._check_real_update(service, feeddict)
-        await ctx.send(f"Real update: {real}")
-        channels = await self._get_channels(service)
-        await self._make_send_cache(feeddict, service)
-        await self._update_dispatch(feeddict, fp_data, service, channels, True)
-        await asyncio.sleep(1)
-        log.debug(f"Sending to {len(channels)}")
-        for channel in channels.items():
-            await self._send_updated_feed(feeddict, channel, service)
+        feeddict = self.sendupdate._process_feed(service, fp_data)
+        real = await self.sendupdate._check_real_update(service, feeddict)
+        await ctx.send(f"Real update: {len(real)}")
+        for feeddict in real:
+            if feeddict is None:
+                continue
+            channels = await self._get_channels(service)
+            await self.sendupdate._make_send_cache(feeddict, service)
+            await self.sendupdate._update_dispatch(feeddict, fp_data, service, channels, True)
+            await asyncio.sleep(1)
+            log.debug(f"Sending to {len(channels)}")
+            for channel in channels.items():
+                await self.sendupdate._channel_send_updated_feed(feeddict, channel, service)
 
     @guild_only()
     @statusdev.command(aliases=["cf"], hidden=True)
@@ -985,28 +609,26 @@ class Status(commands.Cog):
             return
 
         link = FEED_URLS.get(link, link)
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as response:
-                html = await response.text()
-            await session.close()
+        async with self.session.get(link) as response:
+            html = await response.text()
         feed = feedparser.parse(html)
 
-        feeddict = await _helper_process_feed(service, feed)
-        # await self._make_send_cache(feeddict, service)
-        return await self._send_updated_feed(feeddict, (ctx.channel.id, {"mode": mode, "webhook": False}), service)
+        feeddict = helper_process_feed(service, feed)[0]
+        await self.sendupdate._make_send_cache(feeddict, service)
+        await self.sendupdate._channel_send_updated_feed(
+            feeddict, (ctx.channel.id, {"mode": mode, "webhook": False}), service
+        )
 
     @statusdev.command(aliases=["cfr"], hidden=True)
     async def checkfeedraw(self, ctx: commands.Context, link: str):
         if not await self._dev_com(ctx):
             return
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as response:
-                html = await response.text()
-            await session.close()
+        async with self.session.get(link) as response:
+            html = await response.text()
         feed = feedparser.parse(html)
 
-        # feed = await _helper_process_feed("twitter", feed)
+        # feed = helper_process_feed("twitter", feed)
         # feed = feed.to_dict()
 
         pages = pagify(str(feed.entries[0]))

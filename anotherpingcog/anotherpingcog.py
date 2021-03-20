@@ -56,10 +56,9 @@ class AnotherPingCog(commands.Cog):
         """
         ws_latency = round(self.bot.latency * 1000)
 
-        if ctx.invoked_with == "ping":
-            title = "\N{TABLE TENNIS PADDLE AND BALL}  Pong!"
-        else:
-            title = "\N{SMIRKING FACE}  Nice typo!"
+        title = (
+            "\N{TABLE TENNIS PADDLE AND BALL}  Pong!" if ctx.invoked_with == "ping" else "\N{SMIRKING FACE}  Nice typo!"
+        )
 
         embed = await ctx.embed_requested()
 

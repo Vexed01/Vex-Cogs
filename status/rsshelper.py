@@ -1,10 +1,12 @@
 import datetime
 import logging
 import re
+from typing import Any, List
 
 import discord
 from dateutil.parser import parse
 from feedparser.util import FeedParserDict
+from redbot.core.utils.chat_formatting import pagify
 
 from .objects import FeedDict, UpdateField
 
@@ -13,11 +15,11 @@ log = logging.getLogger("red.vexed.status.rsshelper")
 # cspell:ignore tzinfos statusio
 
 
-async def process_feed(service: str, feed: FeedParserDict) -> FeedDict:
-    return await FEEDS[service](feed.entries[0])
+def process_feed(service: str, feed: FeedParserDict) -> List[FeedDict]:
+    return [FEEDS[service](entry) for entry in feed.entries if entry]
 
 
-async def _strip_html(thing_to_strip) -> str:
+def _strip_html(thing_to_strip) -> str:
     """Strip dat HTML!
 
     This removes anything between (and including) `<>` (be careful with this!).
@@ -28,29 +30,46 @@ async def _strip_html(thing_to_strip) -> str:
     `</small>` wil also be reaplaced with `\\n`.
     Any other tags in format <> will be removed.
 
-    Please don't use this elsewhere, it is very funky and temperamental.
+    Please don't use this elsewhere, it is designed for this special purpose.
     """
     tostrip = str(thing_to_strip)
     raw = tostrip.replace("<br />", "\n")
     raw = raw.replace("<small>", "=-=SPLIT=-=")
     raw = raw.replace("</p>", "\n")
     regex = re.compile("<.*?>")
-    stripped = re.sub(regex, "", raw)
-    return stripped
+    return re.sub(regex, "", raw)
 
 
-def _parse_time(time: str, tzinfos=None):
+def _parse_time(time: str):
     try:
-        return parse(time, tzinfos=tzinfos)
+        return parse(time, tzinfos={"PST": -28800, "PDT": -25200})
+        #                                  - 8 h          - 7 h
     except ValueError:
         return discord.Embed.Empty
 
 
-async def _parse_statuspage(feed: FeedParserDict):
-    strippedcontent = await _strip_html(feed["content"][0]["value"])
+def _split_long_fields(old_fields: List[UpdateField]) -> List[UpdateField]:  # using updatefield because idk really
+    """Split long fields (over 1024 chars) into multiple, retaining order."""
+    new_fields = []
+    for field in old_fields:
+        field.value = re.sub(r"(\n\n\n)(\n)*", "\n\n", field.value)
+        if len(field.value) <= 1024:
+            new_fields.append(field)
+        else:
+            paged = list(pagify(field.value, page_length=1024))
+            new_fields.append(UpdateField(field.name, paged[0], field.name))
+            for page in paged[1:]:
+                new_fields.append(UpdateField("Above continued (hit field limits)", page, field.name))
+
+    return new_fields
+
+
+def _parse_statuspage(feed: FeedParserDict):
+    strippedcontent = _strip_html(feed["content"][0]["value"])
 
     sections = strippedcontent.split("=-=SPLIT=-=")
-    fields = []
+    fields: List[UpdateField] = []
+    desc = None
 
     for data in sections:
         try:
@@ -60,13 +79,13 @@ async def _parse_statuspage(feed: FeedParserDict):
                 tt = current[0].split("\n")
                 time = tt[0].lstrip()
                 title = tt[1].rstrip()
-                fields.append(UpdateField(name="{} - {}".format(title, time), value=content))
+                fields.append(UpdateField("{} - {}".format(title, time), content, _parse_time(time)))
         except IndexError:  # this would be a likely error if something didn't format as expected
             try:
                 if data.startswith("THIS IS A SCHEDULED EVENT"):
                     split = data.split("EVENT", 1)
-                    value = split[1]
-                    fields.append(UpdateField(name="THIS IS A SCHEDULED EVENT", value=f"It is scheduled for {value}"))
+                    value = split[1].lstrip()
+                    desc = f"Scheduled for **{value}**"
                     continue
             except IndexError:
                 pass
@@ -76,21 +95,30 @@ async def _parse_statuspage(feed: FeedParserDict):
                     value=f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 )
             )
-            log.debug(
-                "Unable to parse feed properly. It was still send to all channels. See below debugs:"
-                f" Timestamp: {datetime.datetime.utcnow()}"
+            log.warning(
+                "Unable to parse a section of a feed properly. It was still send to all channels. See below debugs:"
+                f"\nTimestamp: {datetime.datetime.utcnow()}"
+                f"\nSection data: {data}"
             )
+
+    actual_update_time = _parse_time(fields[-1].name.split("-")[1])
+
+    # statuspage why do you give everything in the wrong order...
+    fields.reverse()
+    fields = _split_long_fields(fields)
 
     return FeedDict(
         fields=fields,
         time=_parse_time(feed["published"]),
         title=feed["title"],
         link=feed["link"],
+        actual_time=actual_update_time,
+        description=desc,
     )
 
 
-async def _parse_statusio(feed: FeedParserDict):
-    strippedcontent = await _strip_html(feed["summary_detail"]["value"])
+def _parse_statusio(feed: FeedParserDict):
+    strippedcontent = _strip_html(feed["summary_detail"]["value"])
 
     sections = strippedcontent.split("=-=SPLIT=-=")
     fields = []
@@ -103,7 +131,7 @@ async def _parse_statusio(feed: FeedParserDict):
                 tt = current[0].split("\n")
                 time = tt[0]
                 title = tt[1]
-                fields.append(UpdateField(name="{} - {}".format(title, time), value=content))
+                fields.append(UpdateField("{} - {}".format(title, time), content, _parse_time(time)))
         except IndexError:  # this would be a likely error if something didn't format as expected
             fields.append(
                 UpdateField(
@@ -112,39 +140,48 @@ async def _parse_statusio(feed: FeedParserDict):
                 )
             )
             log.warning(
-                "Something went wrong while parsing the status for Discord. You can report this to Vexed#3211."
-                f" Timestamp: {datetime.datetime.utcnow()}"
+                "Unable to parse a section of a feed properly. It was still send to all channels. See below debugs:"
+                f"\nTimestamp: {datetime.datetime.utcnow()}"
+                f"\nSection data: {data}"
             )
+
+    fields = _split_long_fields(fields)
+
+    actual_update_time = _parse_time(fields[0].name.split(" - ")[1])
 
     return FeedDict(
         fields=fields,
         time=_parse_time(feed["published"]),
         title=feed["title"],
         link=feed["link"],
+        actual_time=actual_update_time,
     )
 
 
-async def _parse_aws(feed: FeedParserDict):
-    fields = [UpdateField(name=feed["published"], value=feed["description"])]
-
-    return FeedDict(
-        fields=fields,
-        time=_parse_time(feed["published"], tzinfos={"PST": -28800}),
-        title=feed["title"],
-        link=feed["link"],
-    )
-
-
-async def _parse_gcp(feed: FeedParserDict):
-    updated = _parse_time(feed["updated"])
-    name = updated.strftime("%b %d, %H:%M %Z") if isinstance(updated, datetime.datetime) else "Details"
-    fields = [UpdateField(name=name, value=feed["description"])]
+def _parse_aws(feed: FeedParserDict):
+    updated = _parse_time(feed["published"])
+    fields = _split_long_fields([UpdateField(feed["published"], feed["description"], updated)])
 
     return FeedDict(
         fields=fields,
         time=updated,
         title=feed["title"],
         link=feed["link"],
+        actual_time=updated,
+    )
+
+
+def _parse_gcp(feed: FeedParserDict):
+    updated = _parse_time(feed["updated"])
+    name = updated.strftime("%b %d, %H:%M %Z") if isinstance(updated, datetime.datetime) else "Details"
+    fields = _split_long_fields([UpdateField(name, feed["description"], updated)])
+
+    return FeedDict(
+        fields=fields,
+        time=updated,
+        title=feed["title"],
+        link=feed["link"],
+        actual_time=updated,
     )
 
 

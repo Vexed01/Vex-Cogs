@@ -30,7 +30,7 @@ it started that check for updates. Note multiple services' updates may be includ
 time, though it is linear so it will finish one service, send ``status_update``, then start
 the next service with its ``status_channel_send``.
 
-``FeedDict`` and ``UpdateField`` are custom objects that you can find in ``rsshelper.py``.
+``FeedDict`` and ``UpdateField`` are custom objects that you can find in ``objects.py``.
 See `Custom Objects`_.
 
 .. note::
@@ -76,6 +76,11 @@ Example
 Event Reference
 ***************
 
+.. note::
+    Some feeds only supply the latest update. See the file-level const
+    ``AVAILABLE_MODES`` in ``status.py`` for an up to date list but as of
+    writing it's GCP and AWS.
+
 .. function:: on_vexed_status_update(feed, fp_data, service, channels, force)
 
     This event triggers before updates are sent to channels. See above for details.
@@ -83,17 +88,6 @@ Event Reference
     :type feed: :class:`FeedDict`
     :param feed: A fully parsed object with individual updates in the incident
         split up. See `Custom Objects`_.
-
-        .. note::
-            The time the ``time`` key should be a datetime object but it could
-            be something else. Make sure you handle this.
-        .. note::
-            Some feeds only supply the latest update. See the file-level const
-            ``AVAILABLE_MODES`` in ``status.py``.
-        .. note::
-            The majority of updates are in the incorrect order in the ``field`` key.
-            They will need reversing if you are using this key. See file-level const
-            ``DONT_REVERSE`` in ``status.py`` for ones that don't need it.
     :type fp_data: :class:`FeedParserDict`
     :param fp_data: The raw data from feedparser. The above ``feed`` is recommended
         where possible.
@@ -115,19 +109,8 @@ Event Reference
     See above info at the top of this page for details.
 
     :type feed: :class:`FeedDict`
-    :param feed: A fully parsed dictionary with individual updates in the incident
+    :param feed: A fully parsed object with individual updates in the incident
         split up.
-
-        .. note::
-            The time the ``time`` key should be a datetime object but it could
-            be something else. Make sure you handle this.
-        .. note::
-            Some feeds only supply the latest update. See the file-level const
-            ``AVAILABLE_MODES`` in ``status.py``.
-        .. note::
-            The majority of updates are in the incorrect order in the ``field`` key.
-            They will need reversing if you are using this key. See file-level const
-            ``DONT_REVERSE`` in ``status.py`` for ones that don't need it.
     :type service: :class:`str`
     :param service: The name of the service, in lower case. Guaranteed to be on of
         the keys in the file-level consts of ``status.py``, though new services are
@@ -147,7 +130,7 @@ Event Reference
 Custom Objects
 **************
 
-These are the two custom objects used, defined in ``rsshelper.py``
+These are the two custom objects used, defined in ``objects.py``
 
 --------
 FeedDict
@@ -155,15 +138,16 @@ FeedDict
 
 **Attributes**
 
-| **fields** (``list``) – A list containing UpdateField objects
+| **fields** (``List[UpdateField]``) – A list containing UpdateField objects
 | **title** (``str``) – The title of the incident
 | **link** (``str``) – The incident link.
 | **time**: A datetime object, or if it was unable to parse it then ``discord.Embed.Empty``
 
 **Methods**
 
-| **to_dict()** – Get a dict of the data held in the object.
-| **from_dict(dict)** – Returns a new object from a dict.
+| **to_dict()** – Get a dict of the data held in the object
+| **from_dict(dict)** – Returns a new object from a dict
+| **get_group_ids()** – Get the group IDs. These are unique and represent each update. See UpdateField for more information
 
 -----------
 UpdateField
@@ -173,3 +157,5 @@ UpdateField
 
 | **name** (``str``) – The name of the field
 | **value** (``str``) – The value of the field
+| **time** (``datetime.datetime | None`` – The time of the field
+| **group_id** (``str``) – The group ID of the field. These are unique unless the field was split up to accommodate embed limits

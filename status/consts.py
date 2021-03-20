@@ -60,8 +60,8 @@ AVAILABLE_MODES = {
     "epic_games": [ALL, LATEST, EDIT],
     "digitalocean": [ALL, LATEST, EDIT],
     "reddit": [ALL, LATEST, EDIT],
-    "aws": [LATEST],
-    "gcp": [LATEST],
+    "aws": [ALL, LATEST],
+    "gcp": [ALL, LATEST],
     "smartthings": [ALL, LATEST, EDIT],
     "sentry": [ALL, LATEST, EDIT],
     "status.io": [ALL, LATEST, EDIT],
@@ -95,4 +95,6 @@ SPECIAL_INFO = {
     ),
 }
 
-DONT_REVERSE = ["twitter", "status.io"]  # cspell:disable-line
+DONT_REVERSE = ["twitter", "status.io"]
+
+CUSTOM_SERVICES = ["aws", "gcp"]

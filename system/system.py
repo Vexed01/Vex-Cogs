@@ -240,13 +240,11 @@ class System(commands.Cog):
         stopped = status["stopped"]
         total = sleeping + idle + running + stopped
 
-        data = {}
+        data = {"statuses": f"[Running]  {running}\n"}
         if psutil.WINDOWS:
-            data["statuses"] = f"[Running]  {running}\n"
             data["statuses"] += f"[Stopped]  {stopped}\n"
             data["statuses"] += f"[Total]    {total}\n"
         else:
-            data["statuses"] = f"[Running]  {running}\n"
             data["statuses"] += f"[Idle]     {idle}\n"
             data["statuses"] += f"[Sleeping] {sleeping}\n"
             if status["stopped"]:  # want to keep it at 4 rows
@@ -369,9 +367,7 @@ class System(commands.Cog):
             await ctx.send(embed=embed)
         else:
             msg = "**Users**\n"
-            to_box = ""
-            for name, userdata in data.items():
-                to_box += f"{name}\n{userdata}"
+            to_box = "".join(f"{name}\n{userdata}" for name, userdata in data.items())
             msg += self._box(to_box)
             await ctx.send(msg)
 
@@ -399,9 +395,7 @@ class System(commands.Cog):
             await ctx.send(embed=embed)
         else:
             msg = "**Disks**\n"
-            to_box = ""
-            for name, diskdata in data.items():
-                to_box += f"{name}\n{diskdata}"
+            to_box = "".join(f"{name}\n{diskdata}" for name, diskdata in data.items())
             msg += self._box(to_box)
             await ctx.send(msg)
 

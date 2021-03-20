@@ -40,7 +40,6 @@ class Aliases(commands.Cog):
         strcommand = command
         command: commands.Command = self.bot.get_command(strcommand)
 
-        # meh, safe enough as only reading, there is a big warning on cog install about this
         try:
             alias_cog = self.bot.get_cog("Alias")
             all_global_aliases = await alias_cog.config.entries()
@@ -51,9 +50,9 @@ class Aliases(commands.Cog):
             builtin_aliases = command.aliases
             com_parent = command.parent or ""
 
-            com_builtin_aliases = []
-            for i in range(len(builtin_aliases)):
-                com_builtin_aliases.append(self._inline(f"{com_parent} {builtin_aliases[i]}"))
+            com_builtin_aliases = [
+                self._inline(f"{com_parent} {builtin_aliases[i]}") for i in range(len(builtin_aliases))
+            ]
 
             msg = "I was unable to get information from the alias cog. It's probably not loaded.\n"
             msg += f"Main command: `{full_com}`\nBuilt in aliases: "
@@ -63,6 +62,7 @@ class Aliases(commands.Cog):
         global_aliases = []
         guild_aliases = []
 
+        # check if command is actually from alias cog
         if ctx.guild:
             all_guild_aliases: List[dict] = await alias_cog.config.guild(ctx.guild).entries()
             for alias_cog in all_guild_aliases:
@@ -83,6 +83,7 @@ class Aliases(commands.Cog):
         builtin_aliases = command.aliases
         com_parent = command.parent or ""
 
+        # and now pick up opposite
         if ctx.guild:
             for alias_cog in all_guild_aliases:
                 if alias_cog["command"] == full_com:
@@ -96,35 +97,32 @@ class Aliases(commands.Cog):
         global_aliases = deduplicate_iterables(global_aliases)
 
         # make everything inline + make built in aliases
-        com_builtin_aliases = []
-        for i in range(len(builtin_aliases)):
-            com_builtin_aliases.append(self._inline(f"{com_parent} {builtin_aliases[i]}"))
-        for i in range(len(global_aliases)):
-            global_aliases[i] = self._inline(global_aliases[i])
-        for i in range(len(guild_aliases)):
-            guild_aliases[i] = self._inline(guild_aliases[i])
+        inline_builtin_aliases = [self._inline(f"{com_parent} {i}") for i in builtin_aliases]
+        inline_global_aliases = [self._inline(i) for i in global_aliases]
+        inline_guild_aliases = [self._inline(i) for i in guild_aliases]
 
         aliases = ""
         none = []
-        if not com_builtin_aliases:
-            none.append("built-in")
-        else:
-            list = humanize_list(com_builtin_aliases)
+        if inline_builtin_aliases:
+            list = humanize_list(inline_builtin_aliases)
             aliases += f"Built-in aliases: {list}\n"
-        if not global_aliases:
+        else:
+            none.append("built-in")
+
+        if not inline_global_aliases:
             none.append("global")
         else:
-            list = humanize_list(global_aliases)
+            list = humanize_list(inline_global_aliases)
             aliases += f"Global aliases: {list}\n"
-        if not guild_aliases:
+
+        if inline_guild_aliases:
+            list = humanize_list(inline_guild_aliases)
+            aliases += f"Server aliases: {list}\n"
+        else:
             if ctx.guild:
                 none.append("guild")
             else:
                 aliases += "You're in DMs, so there aren't any server aliases."
-        else:
-            list = humanize_list(guild_aliases)
-            aliases += f"Server aliases: {list}\n"
-
         none = humanize_list(none, style="or")
 
         msg = f"Main command: `{full_com}`\n{aliases}"

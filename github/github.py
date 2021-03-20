@@ -85,9 +85,7 @@ class GitHub(commands.Cog):
             raise error
 
     def _inline_list(self, list: list):
-        inline_list = []
-        for i in list:
-            inline_list.append(inline(i))
+        inline_list = [inline(i) for i in list]
         return humanize_list(inline_list)
 
     async def _get_repo(self, ctx: commands.Context):
