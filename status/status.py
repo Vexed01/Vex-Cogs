@@ -62,8 +62,6 @@ class Status(commands.Cog):
         self.config.register_global(feed_store=default)
         self.config.register_global(latest=default)  # this is unused? i think? remove soonish
         self.config.register_global(migrated=False)
-        self.config.register_global(live_incidents=default)
-        self.config.register_global(resolved_incidents=[])
         self.config.register_channel(feeds=default)
 
         # objects
@@ -640,6 +638,6 @@ class Status(commands.Cog):
         if not await self._dev_com(ctx):
             return
 
-        raw = box(self.used_feeds_cache.raw, lang="py")
+        raw = box(self.used_feeds_cache.__data, lang="py")
         actual = box(self.used_feeds_cache.get_list(), lang="py")
         await ctx.send(f"**Raw data:**\n{raw}\n**Active:**\n{actual}")

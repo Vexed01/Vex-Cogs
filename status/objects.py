@@ -19,6 +19,9 @@ class UpdateField:
         self.time = time
         self.group_id = group_id or name
 
+    def __repr__(self):
+        return f"UpdateField({self.name}, {self.value}, {self.time}, {self.group_id})"
+
 
 class FeedDict:
     """An object representing a fully parsed service status."""
@@ -38,6 +41,11 @@ class FeedDict:
         self.link = link
         self.actual_time = actual_time
         self.description = description
+
+    def __repr__(self):
+        return (
+            f"FeedDict({self.fields}, {self.time}, {self.title}, {self.link}, {self.actual_time}, {self.description})"
+        )
 
     def to_dict(self):
         """Get a dict of the data held in the object."""
@@ -86,6 +94,9 @@ class SendCache:
         self.plain_all = plain_all
         self.plain_latest = plain_latest
 
+    def __repr__(self):
+        return f"SendCache({self.embed_latest}, {self.embed_all}, {self.plain_all}, {self.plain_latest})"
+
     def empty():
         pass
 
@@ -101,13 +112,17 @@ class UsedFeeds:
             for feed in feeds:
                 used_feeds[feed] = used_feeds.get(feed, 0) + 1
 
-        self.raw = used_feeds
+        self.__data = used_feeds
+
+    def __repr__(self):
+        data = " ".join(f"{name}={count}" for name, count in self.__data)
+        return f"<{data}>"
 
     def add_feed(self, feedname: str):
-        self.raw[feedname] = self.raw.get(feedname, 0) + 1
+        self.__data[feedname] = self.__data.get(feedname, 0) + 1
 
     def remove_feed(self, feedname: str):
-        self.raw[feedname] = self.raw.get(feedname, 1) - 1
+        self.__data[feedname] = self.__data.get(feedname, 1) - 1
 
     def get_list(self) -> List[str]:
-        return [k for k, v in self.raw.items() if v]
+        return [k for k, v in self.__data.items() if v]
