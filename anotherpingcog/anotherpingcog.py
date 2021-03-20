@@ -227,9 +227,7 @@ class AnotherPingCog(commands.Cog):
             self.cache.red.emoji = None
             await self.config.custom_settings.set_raw("red", "emoji", value=None)
         else:
-            await ctx.send(emoji)
-            emoji = self.bot.get_emoji(int(re.match(r"(<.*:)([0-9]{17,20})(>)", emoji).group(2)))
-            print(emoji)
+            emoji = self.bot.get_emoji(int(re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji)).group(2)))
             if not emoji:
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
