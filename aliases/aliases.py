@@ -72,18 +72,22 @@ class Aliases(commands.Cog):
             for alias_cog in all_guild_aliases:
                 if alias_cog["name"] == strcommand:
                     command = self.bot.get_command(alias_cog["command"])
+                    full_com = alias_cog["command"]
 
             for alias_cog in all_global_aliases:
                 if alias_cog["name"] == strcommand:
                     command = self.bot.get_command(alias_cog["command"])
+                    full_com = alias_cog["command"]
+
+        else:
+            full_com = command.qualified_name
+
+        builtin_aliases = command.aliases
+        com_parent = command.parent or ""
 
         if command is None:
             await ctx.send("Hmm, I can't find that command.")
             return
-
-        full_com = command.qualified_name
-        builtin_aliases = command.aliases
-        com_parent = command.parent or ""
 
         for alias_cog in all_guild_aliases:
             if full_com in [alias_cog["command"], alias_cog["name"]]:
