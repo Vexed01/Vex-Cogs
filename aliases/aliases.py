@@ -3,13 +3,15 @@ from typing import List
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils import deduplicate_iterables
-from redbot.core.utils.chat_formatting import humanize_list, inline
+from redbot.core.utils.chat_formatting import humanize_list, inline, pagify
+
+# cspell:ignore delims
 
 
 class Aliases(commands.Cog):
     """Get all the alias information you could ever want about a command."""
 
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -29,15 +31,14 @@ class Aliases(commands.Cog):
     def _inline(self, text: str):
         return inline(text.lstrip())
 
-    @commands.command()
-    async def aliases(self, ctx: commands.Context, *, command: str):
+    @commands.command(usage="<command>")
+    async def aliases(self, ctx: commands.Context, *, strcommand: str):
         """
         Get all the alias information you could ever want about a command.
 
         This will show the main command, built-in aliases, global aliases and
         server aliases.
         """
-        strcommand = command
         command: commands.Command = self.bot.get_command(strcommand)
 
         try:
@@ -61,19 +62,20 @@ class Aliases(commands.Cog):
 
         global_aliases = []
         guild_aliases = []
-
-        # check if command is actually from alias cog
         if ctx.guild:
             all_guild_aliases: List[dict] = await alias_cog.config.guild(ctx.guild).entries()
+        else:
+            all_guild_aliases = []
+
+        # check if command is actually from alias cog
+        if command is None:
             for alias_cog in all_guild_aliases:
                 if alias_cog["name"] == strcommand:
                     command = self.bot.get_command(alias_cog["command"])
-                    guild_aliases.append(alias_cog["name"])
 
-        for alias_cog in all_global_aliases:
-            if alias_cog["name"] == strcommand:
-                command = self.bot.get_command(alias_cog["command"])
-                global_aliases.append(alias_cog["name"])
+            for alias_cog in all_global_aliases:
+                if alias_cog["name"] == strcommand:
+                    command = self.bot.get_command(alias_cog["command"])
 
         if command is None:
             await ctx.send("Hmm, I can't find that command.")
@@ -83,13 +85,11 @@ class Aliases(commands.Cog):
         builtin_aliases = command.aliases
         com_parent = command.parent or ""
 
-        # and now pick up opposite
-        if ctx.guild:
-            for alias_cog in all_guild_aliases:
-                if alias_cog["command"] == full_com:
-                    guild_aliases.append(alias_cog["name"])
+        for alias_cog in all_guild_aliases:
+            if full_com in [alias_cog["command"], alias_cog["name"]]:
+                guild_aliases.append(alias_cog["name"])
         for alias_cog in all_global_aliases:
-            if alias_cog["command"] == full_com:
+            if full_com in [alias_cog["command"], alias_cog["name"]]:
                 global_aliases.append(alias_cog["name"])
 
         # and probs picked up duplicates on second run so:
@@ -104,20 +104,20 @@ class Aliases(commands.Cog):
         aliases = ""
         none = []
         if inline_builtin_aliases:
-            list = humanize_list(inline_builtin_aliases)
-            aliases += f"Built-in aliases: {list}\n"
+            hum_list = humanize_list(inline_builtin_aliases)
+            aliases += f"Built-in aliases: {hum_list}\n"
         else:
             none.append("built-in")
 
         if not inline_global_aliases:
             none.append("global")
         else:
-            list = humanize_list(inline_global_aliases)
-            aliases += f"Global aliases: {list}\n"
+            hum_list = humanize_list(inline_global_aliases)
+            aliases += f"Global aliases: {hum_list}\n"
 
         if inline_guild_aliases:
-            list = humanize_list(inline_guild_aliases)
-            aliases += f"Server aliases: {list}\n"
+            hum_list = humanize_list(inline_guild_aliases)
+            aliases += f"Server aliases: {hum_list}\n"
         else:
             if ctx.guild:
                 none.append("guild")
@@ -129,4 +129,7 @@ class Aliases(commands.Cog):
 
         if none:
             msg += f"This command has no {none} aliases."
-        await ctx.send(msg)
+
+        pages = pagify(msg, delims=["\n", ", "])
+        for page in pages:
+            await ctx.send(page)
