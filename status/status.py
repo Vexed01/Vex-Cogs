@@ -6,7 +6,7 @@
 import asyncio
 import datetime
 import logging
-from typing import List, Optional
+from typing import Optional
 
 import aiohttp
 import discord
@@ -42,7 +42,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.3.0"
+    __version__ = "1.3.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -613,6 +613,7 @@ class Status(commands.Cog):
 
         feeddict = helper_process_feed(service, feed)[0]
         await self.sendupdate._make_send_cache(feeddict, service)
+        await ctx.send(f"Timestamp: {feeddict.actual_time}")
         await self.sendupdate._channel_send_updated_feed(
             feeddict, (ctx.channel.id, {"mode": mode, "webhook": False}), service
         )

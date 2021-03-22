@@ -101,7 +101,7 @@ def _parse_statuspage(feed: FeedParserDict):
                 f"\nSection data: {data}"
             )
 
-    actual_update_time = _parse_time(fields[-1].name.split("-")[1])
+    actual_update_time = _parse_time(fields[0].name.split("-")[1])
 
     # statuspage why do you give everything in the wrong order...
     fields.reverse()
@@ -145,9 +145,9 @@ def _parse_statusio(feed: FeedParserDict):
                 f"\nSection data: {data}"
             )
 
-    fields = _split_long_fields(fields)
+    actual_update_time = _parse_time(fields[-1].name.split("-")[1])
 
-    actual_update_time = _parse_time(fields[0].name.split(" - ")[1])
+    fields = _split_long_fields(fields)
 
     return FeedDict(
         fields=fields,

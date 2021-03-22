@@ -101,24 +101,6 @@ class SendUpdate:
         """
         to_return = []
         for entry in feeddict:
-            # if service in CUSTOM_SERVICES:
-            #     async with self.config.feed_store() as feed_store:
-            #         # these are aws and gcp which only parse to one field
-            #         old_fields = feed_store.get(service, {}).get("fields", [])
-            #         if not old_fields:
-            #             to_store = entry.to_dict()
-            #             to_store["time"] = to_store["time"].timestamp()
-            #             to_store["actual_time"] = to_store["actual_time"].timestamp()
-            #             feed_store[service] = to_store
-            #             return [entry]
-            #         if entry.fields[0].name != old_fields[0]["name"]:
-            #             return []
-            #         to_store = entry.to_dict()
-            #         to_store["time"] = to_store["time"].timestamp()
-            #         to_store["actual_time"] = to_store["actual_time"].timestamp()
-            #         feed_store[service] = to_store
-            #         return [entry]
-
             if abs(entry.actual_time.timestamp() - time()) < 330:
                 # 5 and a half mins to allow for 2 update runs
                 to_return.append(entry)
@@ -257,7 +239,9 @@ class SendUpdate:
             log.error(f"Error with getting correct colour for {service}:", exc_info=e)
             return 1812720
 
-    async def _channel_send_updated_feed(self, feeddict: FeedDict, channel_data: tuple, service: str, dispatch: bool = True):
+    async def _channel_send_updated_feed(
+        self, feeddict: FeedDict, channel_data: tuple, service: str, dispatch: bool = True
+    ):
         """Send a feeddict to the specified channel."""
         mode = channel_data[1].get("mode")
         m_id = channel_data[1].get("edit_id", {}).get(feeddict.link)
