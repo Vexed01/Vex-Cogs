@@ -302,9 +302,9 @@ class SendUpdate:
             if m_id:
                 try:
                     await webhook.edit_message(m_id, embed=embed, content=None)
-                except discord.NotFound:
-                    id = None
-            if not id:
+                except Exception:
+                    m_id = None
+            if not m_id:
                 sent_webhook = await webhook.send(
                     username=f"{FEED_FRIENDLY_NAMES[service]} Status Update",
                     avatar_url=AVATAR_URLS[service],
@@ -321,7 +321,6 @@ class SendUpdate:
                 avatar_url=AVATAR_URLS[service],
                 embed=embed,
             )
-        return id
 
     async def _send_embed(
         self, channel: discord.TextChannel, embed: discord.Embed, service: str, mode, feeddict_link: str, m_id: str
@@ -331,11 +330,11 @@ class SendUpdate:
             icon_url=AVATAR_URLS[service],
         )
         if mode == "edit":
-            if m_id is not None:
+            if m_id:
                 try:
                     msg: discord.Message = await channel.fetch_message(m_id)
                     await msg.edit(embed=embed, content=None)
-                except discord.NotFound:
+                except Exception:
                     m_id = None
             if m_id is None:
                 sent_message: discord.Message = await channel.send(embed=embed)
@@ -350,10 +349,13 @@ class SendUpdate:
         self, channel: discord.TextChannel, msg: str, service: str, mode: str, feeddict_link: str, m_id: str
     ):
         if mode == "edit":
-            if m_id is not None:
-                old_msg = await channel.fetch_message(m_id)
-                await old_msg.edit(content=msg, embed=None)
-            else:
+            if m_id:
+                try:
+                    old_msg = await channel.fetch_message(m_id)
+                    await old_msg.edit(content=msg, embed=None)
+                except Exception:
+                    m_id = None
+            if not m_id:
                 sent_message = await channel.send(msg)
                 async with self.config.channel(channel).feeds() as conf:
                     if conf[service].get("edit_id") is None:
