@@ -125,7 +125,7 @@ class SendUpdate:
             else:
                 to_store["actual_time"] = ""
 
-            await self.config.feed_store.set_raw("discord", value=to_store)
+            await self.config.feed_store.set_raw(service, value=to_store)
 
         return to_return
 
