@@ -26,6 +26,7 @@ from .rsshelper import process_feed as helper_process_feed
 from .sendupdate import SendUpdate
 
 log = logging.getLogger("red.vexed.status")
+update_checker_log = logging.getLogger("red.vexed.status.updatechecker")
 
 
 # cspell:ignore DONT sourcery
@@ -91,18 +92,18 @@ class Status(commands.Cog):
                 log.info("Done!")
 
         if not self.used_feeds_cache.get_list():
-            log.debug("Nothing to do, no channels have registered a feed.")
+            update_checker_log.debug("Nothing to do, no channels have registered a feed.")
             return
 
         try:
             await asyncio.wait_for(self._actually_check_updates(), timeout=110.0)  # 1 min 50 secs
         except TimeoutError:
-            log.error(
+            update_checker_log.error(
                 "Loop timed out after 1 minute 50 seconds. Will try again shortly. If this keeps happening "
                 "when there's an update for a specific service, contact Vexed."
             )
         except Exception as e:
-            log.error(
+            update_checker_log.error(
                 "Unable to check (and send) updates. Some services were likely skipped. If they had updates, "
                 "they should send on the next loop.",
                 exc_info=e,
@@ -131,26 +132,30 @@ class Status(commands.Cog):
                     if service != "gcp":  # gcp doesn't do etags
                         etags[service] = response.headers.get("ETag")
                 except asyncio.TimeoutError:
-                    log.warning(f"Timeout checking for {service} update")
+                    update_checker_log.warning(f"Timeout checking for {service} update")
                     continue
                 except Exception as e:
-                    log.warning(f"Unable to check for an update for {service}", exc_info=e)
+                    update_checker_log.warning(f"Unable to check for an update for {service}", exc_info=e)
                     continue
 
             if status == 200:
                 await self.sendupdate._maybe_send_update(html, service)
             elif status == 304:  # not modified
-                log.debug(f"No new status update for {service}")
+                update_checker_log.debug(f"No new status update for {service}")
             elif status == 429:
-                log.warning(
+                update_checker_log.warning(
                     f"Unable to get an update for {service}. It looks like we're being rate limited (429). This "
                     "should never happen; therefore this cog does not handle rate limits. Please tell Vexed about "
                     "this and for ways to mitigate this."
                 )
             elif str(status)[0] == "5":  # 500 status code
-                log.info(f"Unable to get an update for {service} - internal server error (HTTP Error {status})")
+                update_checker_log.info(
+                    f"Unable to get an update for {service} - internal server error (HTTP Error {status})"
+                )
             else:
-                log.info(f"Abnormal status code received from {service}: {status}\nPlease report this to Vexed.")
+                update_checker_log.info(
+                    f"Unexpected status code received from {service}: {status}\nPlease report this to Vexed."
+                )
 
     async def _migrate(self):
         """Migrate config format"""
@@ -639,6 +644,6 @@ class Status(commands.Cog):
         if not await self._dev_com(ctx):
             return
 
-        raw = box(self.used_feeds_cache.__data, lang="py")
+        raw = box(self.used_feeds_cache, lang="py")
         actual = box(self.used_feeds_cache.get_list(), lang="py")
         await ctx.send(f"**Raw data:**\n{raw}\n**Active:**\n{actual}")

@@ -44,7 +44,8 @@ def _parse_time(time: str):
     try:
         return parse(time, tzinfos={"PST": -28800, "PDT": -25200})
         #                                  - 8 h          - 7 h
-    except ValueError:
+    except ValueError as e:
+        log.warning("Unable to parse timestamp '{time}'. Please report this to Vexed.", exc_info=e)
         return discord.Embed.Empty
 
 

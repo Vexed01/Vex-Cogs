@@ -15,7 +15,8 @@ from .consts import AVATAR_URLS, CUSTOM_SERVICES, FEED_FRIENDLY_NAMES, WEBHOOK_R
 from .objects import FeedDict, SendCache
 from .rsshelper import process_feed as helper_process_feed
 
-log = logging.getLogger("red.vexed.status.updatechecker")
+log = logging.getLogger("red.vexed.status.sendupdate")
+update_checker_log = logging.getLogger("red.vexed.status.updatechecker")
 
 
 class SendUpdate:
@@ -58,12 +59,12 @@ class SendUpdate:
         feeddict = self._process_feed(service, fp_data)
         real_updates = await self._check_real_update(service, feeddict)
         if not real_updates:
-            log.debug(f"Ghost status update for {service} detected, skipping")
+            update_checker_log.debug(f"Ghost status update for {service} detected, skipping")
             return
         for feeddict in real_updates:
+            # this will nearly always only iterate once
             if feeddict is None:
                 continue
-            # this will nearly always only iterate once
             # log.debug(f"Feed dict for {service}: {feeddict}")
             channels = await self._get_channels(service)
             await self._make_send_cache(feeddict, service)
@@ -72,7 +73,13 @@ class SendUpdate:
             log.info(f"Sending status update for {service} to {len(channels)} channels...")
             start = monotonic()
             for channel in channels.items():
-                await self._channel_send_updated_feed(feeddict, channel, service)
+                try:
+                    await self._channel_send_updated_feed(feeddict, channel, service)
+                except Exception as e:
+                    return log.warning(  # TODO: maybe from config
+                        f"Something went wrong sending to {channel.id} in guild {channel.guild.id} - skipping",
+                        exc_info=e,
+                    )
             end = monotonic()
             raw = end - start
             time = round(raw) or "under a"
@@ -169,8 +176,6 @@ class SendUpdate:
             )
 
         # LATEST
-        # TODO: implement usage of group_id for longer updates
-        # TODO: implement field time so don't miss an update if in quick succession
         id = feeddict.get_group_ids()[-1]
         for field in feeddict.fields:
             if field.group_id == id or abs(field.time.timestamp() - time()) < 150:
@@ -246,9 +251,14 @@ class SendUpdate:
         mode = channel_data[1].get("mode")
         m_id = channel_data[1].get("edit_id", {}).get(feeddict.link)
         channel: discord.TextChannel = self.bot.get_channel(channel_data[0])
-        use_webhook = await self._validate(channel, channel_data[1].get("webhook"))
+        if channel is None:
+            return log.info(f"I can't find the channel {channel_data[0]} - skipping")
+            # TODO: remove from config
+
+        use_webhook = await self._check_perms(channel, channel_data[1].get("webhook"))
         if use_webhook == "exit":
-            return
+            return log.info(f"I don't have proper permissions in {channel.id} in guild {channel.guild.id} - skipping")
+            # TODO: remove from config
 
         if not use_webhook:
             use_embed = await self.bot.embed_requested(channel, None)
@@ -264,16 +274,10 @@ class SendUpdate:
             else:
                 return
 
-            try:
-                if use_webhook:
-                    await self._send_webhook(channel, embed, service, mode, feeddict.link, m_id)
-                else:
-                    await self._send_embed(channel, embed, service, mode, feeddict.link, m_id)
-            except Exception as e:
-                log.info(  # TODO: remove from config
-                    f"Something went wrong with {channel.id} in guild {channel.guild.id} - skipping", exc_info=e
-                )
-                return
+            if use_webhook:
+                await self._send_webhook(channel, embed, service, mode, feeddict.link, m_id)
+            else:
+                await self._send_embed(channel, embed, service, mode, feeddict.link, m_id)
 
         else:
             if mode in ["all", "edit"]:
@@ -281,13 +285,7 @@ class SendUpdate:
             elif mode == "latest":
                 msg = self.send_cache.plain_latest
 
-            try:
-                await self._send_plain(channel, msg, service, mode, feeddict.link, m_id)
-            except Exception as e:
-                log.info(  # TODO: remove from config
-                    f"Something went wrong with {channel.id} in guild {channel.guild.id} - skipping", exc_info=e
-                )
-                return
+            await self._send_plain(channel, msg, service, mode, feeddict.link, m_id)
 
         if dispatch:
             await self._channel_send_dispatch(feeddict, service, channel, use_webhook, use_embed, mode)
@@ -374,7 +372,7 @@ class SendUpdate:
             webhook = await channel.create_webhook(name=channel.guild.me.name, reason=WEBHOOK_REASON.format(service))
         return webhook
 
-    async def _validate(self, channel: discord.TextChannel, webhook: bool):
+    async def _check_perms(self, channel: discord.TextChannel, webhook: bool):
         use_webhook = webhook
         c_id = channel.id
 

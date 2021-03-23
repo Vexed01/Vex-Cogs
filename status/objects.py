@@ -115,7 +115,7 @@ class UsedFeeds:
         self.__data = used_feeds
 
     def __repr__(self):
-        data = " ".join(f"{name}={count}" for name, count in self.__data)
+        data = " ".join(f"{i[0]}={i[1]}" for i in self.__data.items())
         return f"<{data}>"
 
     def add_feed(self, feedname: str):
