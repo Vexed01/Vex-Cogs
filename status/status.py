@@ -25,8 +25,8 @@ from .objects import FeedDict, UsedFeeds
 from .rsshelper import process_feed as helper_process_feed
 from .sendupdate import SendUpdate
 
-log = logging.getLogger("red.vexed.status")
-update_checker_log = logging.getLogger("red.vexed.status.updatechecker")
+_log = logging.getLogger("red.vexed.status")
+_update_checker_log = logging.getLogger("red.vexed.status.updatechecker")
 
 
 # cspell:ignore DONT sourcery
@@ -86,24 +86,24 @@ class Status(commands.Cog):
         if self._check_for_updates.current_loop == 0:
             self.used_feeds_cache = UsedFeeds(await self.config.all_channels())
             if await self.config.migrated() is False:
-                log.info("Migrating to new config format...")
+                _log.info("Migrating to new config format...")
                 await self._migrate()
                 await self.config.clear_all_guilds()
-                log.info("Done!")
+                _log.info("Done!")
 
         if not self.used_feeds_cache.get_list():
-            update_checker_log.debug("Nothing to do, no channels have registered a feed.")
+            _update_checker_log.debug("Nothing to do, no channels have registered a feed.")
             return
 
         try:
             await asyncio.wait_for(self._actually_check_updates(), timeout=110.0)  # 1 min 50 secs
         except TimeoutError:
-            update_checker_log.error(
+            _update_checker_log.error(
                 "Loop timed out after 1 minute 50 seconds. Will try again shortly. If this keeps happening "
                 "when there's an update for a specific service, contact Vexed."
             )
         except Exception as e:
-            update_checker_log.error(
+            _update_checker_log.error(
                 "Unable to check (and send) updates. Some services were likely skipped. If they had updates, "
                 "they should send on the next loop.",
                 exc_info=e,
@@ -132,28 +132,28 @@ class Status(commands.Cog):
                     if service != "gcp":  # gcp doesn't do etags
                         etags[service] = response.headers.get("ETag")
                 except asyncio.TimeoutError:
-                    update_checker_log.warning(f"Timeout checking for {service} update")
+                    _update_checker_log.warning(f"Timeout checking for {service} update")
                     continue
                 except Exception as e:
-                    update_checker_log.warning(f"Unable to check for an update for {service}", exc_info=e)
+                    _update_checker_log.warning(f"Unable to check for an update for {service}", exc_info=e)
                     continue
 
             if status == 200:
                 await self.sendupdate._maybe_send_update(html, service)
             elif status == 304:  # not modified
-                update_checker_log.debug(f"No new status update for {service}")
+                _update_checker_log.debug(f"No new status update for {service}")
             elif status == 429:
-                update_checker_log.warning(
+                _update_checker_log.warning(
                     f"Unable to get an update for {service}. It looks like we're being rate limited (429). This "
                     "should never happen; therefore this cog does not handle rate limits. Please tell Vexed about "
                     "this and for ways to mitigate this."
                 )
             elif str(status)[0] == "5":  # 500 status code
-                update_checker_log.info(
+                _update_checker_log.info(
                     f"Unable to get an update for {service} - internal server error (HTTP Error {status})"
                 )
             else:
-                update_checker_log.info(
+                _update_checker_log.info(
                     f"Unexpected status code received from {service}: {status}\nPlease report this to Vexed."
                 )
 
@@ -601,7 +601,7 @@ class Status(commands.Cog):
             await self.sendupdate._make_send_cache(feeddict, service)
             await self.sendupdate._update_dispatch(feeddict, fp_data, service, channels, True)
             await asyncio.sleep(1)
-            log.debug(f"Sending to {len(channels)}")
+            _log.debug(f"Sending to {len(channels)}")
             for channel in channels.items():
                 await self.sendupdate._channel_send_updated_feed(feeddict, channel, service)
 

@@ -15,8 +15,8 @@ from .consts import AVATAR_URLS, CUSTOM_SERVICES, FEED_FRIENDLY_NAMES, WEBHOOK_R
 from .objects import FeedDict, SendCache
 from .rsshelper import process_feed as helper_process_feed
 
-log = logging.getLogger("red.vexed.status.sendupdate")
-update_checker_log = logging.getLogger("red.vexed.status.updatechecker")
+_log = logging.getLogger("red.vexed.status.sendupdate")
+_update_checker_log = logging.getLogger("red.vexed.status.updatechecker")
 
 
 class SendUpdate:
@@ -59,7 +59,7 @@ class SendUpdate:
         feeddict = self._process_feed(service, fp_data)
         real_updates = await self._check_real_update(service, feeddict)
         if not real_updates:
-            update_checker_log.debug(f"Ghost status update for {service} detected, skipping")
+            _update_checker_log.debug(f"Ghost status update for {service} detected, skipping")
             return
         for feeddict in real_updates:
             # this will nearly always only iterate once
@@ -70,13 +70,13 @@ class SendUpdate:
             await self._make_send_cache(feeddict, service)
             await self._update_dispatch(feeddict, fp_data, service, channels, False)
             await asyncio.sleep(1)  # guaranteed wait for other CCs
-            log.info(f"Sending status update for {service} to {len(channels)} channels...")
+            _log.info(f"Sending status update for {service} to {len(channels)} channels...")
             start = monotonic()
             for channel in channels.items():
                 try:
                     await self._channel_send_updated_feed(feeddict, channel, service)
                 except Exception as e:
-                    return log.warning(  # TODO: maybe from config
+                    return _log.warning(  # TODO: maybe from config
                         f"Something went wrong sending to {channel.id} in guild {channel.guild.id} - skipping",
                         exc_info=e,
                     )
@@ -84,11 +84,11 @@ class SendUpdate:
             raw = end - start
             time = round(raw) or "under a"
             if raw <= 15:
-                log.info(f"Done, took {time} second(s).")
+                _log.info(f"Done, took {time} second(s).")
             elif raw <= 60:
-                log.info(f"Sending status update for {service} took a long time ({time} seconds).")
+                _log.info(f"Sending status update for {service} took a long time ({time} seconds).")
             else:
-                log.warning(
+                _log.warning(
                     f"Sending status update for {service} took too long ({time} seconds). All updates were "
                     "sent.\nThere is a real risk that, if multiple services post updates at once, some will "
                     "be skipped.\nPlease contact Vexed for ways to mitigate this."
@@ -145,7 +145,7 @@ class SendUpdate:
                 url=feeddict.link,
             )
         except Exception as e:  # can happen with timestamps, should now be fixed
-            log.error(
+            _log.error(
                 "Failed turning a feed into an embed. Updates will not be sent. PLEASE REPORT THIS AND THE INFO BELOW TO VEXED.\n"
                 f"{feeddict.to_dict()}",
                 exc_info=e,
@@ -241,7 +241,7 @@ class SendUpdate:
             else:
                 return 1812720
         except Exception as e:  # hopefully never happens but will keep this for a while
-            log.error(f"Error with getting correct colour for {service}:", exc_info=e)
+            _log.error(f"Error with getting correct colour for {service}:", exc_info=e)
             return 1812720
 
     async def _channel_send_updated_feed(
@@ -252,12 +252,12 @@ class SendUpdate:
         m_id = channel_data[1].get("edit_id", {}).get(feeddict.link)
         channel: discord.TextChannel = self.bot.get_channel(channel_data[0])
         if channel is None:
-            return log.info(f"I can't find the channel {channel_data[0]} - skipping")
+            return _log.info(f"I can't find the channel {channel_data[0]} - skipping")
             # TODO: remove from config
 
         use_webhook = await self._check_perms(channel, channel_data[1].get("webhook"))
         if use_webhook == "exit":
-            return log.info(f"I don't have proper permissions in {channel.id} in guild {channel.guild.id} - skipping")
+            return _log.info(f"I don't have proper permissions in {channel.id} in guild {channel.guild.id} - skipping")
             # TODO: remove from config
 
         if not use_webhook:
@@ -380,22 +380,22 @@ class SendUpdate:
             try:
                 channel = await self.bot.fetch_channel(c_id)
             except:
-                log.info(
+                _log.info(
                     f"Unable to get channel {c_id} for status update. Removing from config so this won't happen again."
                 )
                 await self.config.channel_from_id(c_id).feeds.clear()
                 return "exit"
 
         if await self.bot.cog_disabled_in_guild_raw("Status", channel.guild):
-            log.debug(f"Skipping channel {c_id} as cog is disabled in that guild.")
+            _log.debug(f"Skipping channel {c_id} as cog is disabled in that guild.")
             return "exit"
 
         if use_webhook and not channel.permissions_for(channel.guild.me).manage_webhooks:
-            log.debug(f"Unable to send a webhook to {c_id} in guild {channel.guild.id} - sending normal instead")
+            _log.debug(f"Unable to send a webhook to {c_id} in guild {channel.guild.id} - sending normal instead")
             use_webhook = False
 
         if not use_webhook and not channel.permissions_for(channel.guild.me).send_messages:
-            log.info(
+            _log.info(
                 f"Unable to send messages to {c_id} in guild {channel.guild.id}. Removing from config so this won't happen again."
             )
             await self.config.channel_from_id(c_id).feeds.clear()

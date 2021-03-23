@@ -10,7 +10,7 @@ from redbot.core.utils.chat_formatting import pagify
 
 from .objects import FeedDict, UpdateField
 
-log = logging.getLogger("red.vexed.status.rsshelper")
+_log = logging.getLogger("red.vexed.status.rsshelper")
 
 # cspell:ignore tzinfos statusio
 
@@ -45,7 +45,7 @@ def _parse_time(time: str):
         return parse(time, tzinfos={"PST": -28800, "PDT": -25200})
         #                                  - 8 h          - 7 h
     except ValueError as e:
-        log.warning("Unable to parse timestamp '{time}'. Please report this to Vexed.", exc_info=e)
+        _log.warning("Unable to parse timestamp '{time}'. Please report this to Vexed.", exc_info=e)
         return discord.Embed.Empty
 
 
@@ -96,7 +96,7 @@ def _parse_statuspage(feed: FeedParserDict):
                     value=f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 )
             )
-            log.warning(
+            _log.warning(
                 "Unable to parse a section of a feed properly. It was still send to all channels. See below debugs:"
                 f"\nTimestamp: {datetime.datetime.utcnow()}"
                 f"\nSection data: {data}"
@@ -140,7 +140,7 @@ def _parse_statusio(feed: FeedParserDict):
                     value=f"I couldn't turn it into the embed properly. Here's the raw data:\n```{data}```",
                 )
             )
-            log.warning(
+            _log.warning(
                 "Unable to parse a section of a feed properly. It was still send to all channels. See below debugs:"
                 f"\nTimestamp: {datetime.datetime.utcnow()}"
                 f"\nSection data: {data}"
