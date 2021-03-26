@@ -3,9 +3,18 @@
 # If you are looking for an event your cog can listen to, take a look here:
 # https://vex-cogs.readthedocs.io/en/latest/statusdev.html
 
+# ======== PLEASE READ ======================================================
+# Status is currently a bit of a mess. For this reason, I'll be undertaking a
+# rewrite in the near future: https://github.com/Vexed01/Vex-Cogs/issues/13
+#
+# For this reason, unless it's minor, PLEASE DO NOT OPEN A PR.
+# ===========================================================================
+
 import asyncio
 import datetime
 import logging
+from math import floor
+from time import time
 from typing import Optional
 
 import aiohttp
@@ -15,21 +24,22 @@ from discord.ext import tasks
 from discord.ext.commands.core import guild_only
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box, humanize_list, pagify, warning
+from redbot.core.utils.chat_formatting import box, humanize_list, humanize_timedelta, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
 from tabulate import tabulate
 
 from .consts import *
-from .objects import FeedDict, UsedFeeds
+from .objects import FeedDict, ServiceRestrictionsCache, UsedFeeds
 from .rsshelper import process_feed as helper_process_feed
 from .sendupdate import SendUpdate
+from .utils import deserialize, serialize
 
-_log = logging.getLogger("red.vexed.status")
+_base_log = logging.getLogger("red.vexed.status")
 _update_checker_log = logging.getLogger("red.vexed.status.updatechecker")
 
 
-# cspell:ignore DONT sourcery
+# cspell:ignore DONT
 
 
 class Status(commands.Cog):
@@ -43,7 +53,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.3.2"
+    __version__ = "1.4.0"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -58,19 +68,22 @@ class Status(commands.Cog):
 
         # config
         default = {}
-        self.config: Config = Config.get_conf(self, identifier="Vexed-status")
+        self.config: Config = Config.get_conf(self, identifier="Vexed-status")  # shit idntfr. bit late to change it...
+        self.config.register_global(version=1)
         self.config.register_global(etags=default)
-        self.config.register_global(feed_store=default)
+        self.config.register_global(incidents=default)
         self.config.register_global(latest=default)  # this is unused? i think? remove soonish
-        self.config.register_global(migrated=False)
         self.config.register_channel(feeds=default)
+        self.config.register_guild(service_restrictions=default)
 
         # objects
+        self.used_feeds_cache = None
+        self.service_restrictions_cache = None
         self.sendupdate = SendUpdate(config=self.config, bot=self.bot)
         self.session = aiohttp.ClientSession()
 
-        # the loop!
-        self._check_for_updates.start()
+        # async stuff
+        asyncio.create_task(self._async_init())
 
     def cog_unload(self):
         self._check_for_updates.cancel()
@@ -80,24 +93,31 @@ class Status(commands.Cog):
         """Nothing to delete"""
         return
 
+    async def _async_init(self):
+        await self.bot.wait_until_red_ready()
+
+        self.used_feeds_cache = UsedFeeds(await self.config.all_channels())
+        self.service_restrictions_cache = ServiceRestrictionsCache(await self.config.all_guilds())
+
+        if await self.config.version() != 2:
+            _base_log.info("Getting initial data from services...")
+            await self._migrate()
+            _base_log.info("Done!")
+
+        self._check_for_updates.start()
+
+        _base_log.info("Status cog has been successfully initialized.")
+
     @tasks.loop(minutes=2.0)
     async def _check_for_updates(self):
         """Loop dealing with automatic updates."""
-        if self._check_for_updates.current_loop == 0:
-            self.used_feeds_cache = UsedFeeds(await self.config.all_channels())
-            if await self.config.migrated() is False:
-                _log.info("Migrating to new config format...")
-                await self._migrate()
-                await self.config.clear_all_guilds()
-                _log.info("Done!")
-
         if not self.used_feeds_cache.get_list():
             _update_checker_log.debug("Nothing to do, no channels have registered a feed.")
             return
 
         try:
             await asyncio.wait_for(self._actually_check_updates(), timeout=110.0)  # 1 min 50 secs
-        except TimeoutError:
+        except asyncio.TimeoutError:
             _update_checker_log.error(
                 "Loop timed out after 1 minute 50 seconds. Will try again shortly. If this keeps happening "
                 "when there's an update for a specific service, contact Vexed."
@@ -108,10 +128,6 @@ class Status(commands.Cog):
                 "they should send on the next loop.",
                 exc_info=e,
             )
-
-    @_check_for_updates.before_loop
-    async def before_start(self):
-        await self.bot.wait_until_red_ready()
 
     async def _actually_check_updates(self):
         """The actual update logic"""
@@ -150,37 +166,168 @@ class Status(commands.Cog):
                 )
             elif str(status)[0] == "5":  # 500 status code
                 _update_checker_log.info(
-                    f"Unable to get an update for {service} - internal server error (HTTP Error {status})"
+                    f"Unable to get an update for {service} - internal server error on the status page "
+                    f"(HTTP Error {status})"
                 )
             else:
                 _update_checker_log.info(
                     f"Unexpected status code received from {service}: {status}\nPlease report this to Vexed."
                 )
 
+        async with self.config.incidents() as incidents:
+            for service in self.used_feeds_cache.get_list():
+                incidents["checked"][service] = time()
+
     async def _migrate(self):
         """Migrate config format"""
-        # why didn't i start with using a good config layout...
-        # oh, i know why: i'd never used config before!
-        # note to self - this was implemented on 20 feb only 3 days after release
-        # -> remove around 20 may
-
-        old_feeds = await self.config.all_guilds()
-        for guild in old_feeds.items():
+        incidents = dict.fromkeys(FEED_URLS.keys(), {})
+        incidents["latest"] = {}
+        incidents["checked"] = {}
+        for service, url in FEED_URLS.items():
+            json_ready = {}
+            _base_log.debug(f"Starting {service}.")
             try:
-                feeds_in_guild = guild[1]["feeds"]
-                for feed in feeds_in_guild.items():
-                    if not feed[1]:  # could just be []
-                        continue
-                    feed_name = feed[0]
-                    channels = feed[1]
-                    if isinstance(channels, list):
-                        for c in channels:
-                            await self.config.channel_from_id(c).feeds.set_raw(feed_name, value=OLD_DEFAULTS)
-                    else:
-                        await self.config.channel_from_id(channels).feeds.set_raw(feed_name, value=OLD_DEFAULTS)
-            except KeyError:
+                async with self.session.get(url, timeout=10) as response:
+                    html = await response.text()
+            except Exception:
+                _base_log.warning(f"Unable to migrate {service} properly. This won't affect the automatic updates.")
                 continue
-        await self.config.migrated.set(True)
+            if response.status == 200:
+                fp_data = feedparser.parse(html)
+                feeds = self.sendupdate._process_feed(service, fp_data)
+                for feed in feeds:  # do latest last for stuff just after loop
+                    feed = feed.to_dict()
+                    json_ready[feed["link"]] = serialize(feed)
+
+            incidents["latest"][service] = feeds[0].link
+            incidents["checked"][service] = time()
+            incidents[service] = json_ready
+
+        await self.config.incidents.set(incidents)
+        await self.config.feed_store.clear()
+        await self.config.version.set(2)
+
+    # TODO: support DMs
+    @guild_only()
+    @commands.command()
+    async def status(self, ctx: commands.Context, service: str):
+        """
+        Check for incidents for a variety of services, eg Discord.
+
+        discord, github, zoom, reddit, epic_games, cloudflare, statuspage,
+        python, twitter_api, oracle_cloud, twitter, digitalocean, aws, gcp,
+        smartthings, sentry, status.io
+        """
+        service = service.lower()
+        if service not in FEED_URLS.keys():
+            return await ctx.send(
+                f"It looks like that isn't a valid service. Run the command `{ctx.clean_prefix}status` on its own to "
+                "see available services."
+            )
+
+        restrictions = self.service_restrictions_cache.get_guild(ctx.guild.id, service)
+        if restrictions:
+            channels = [self.bot.get_channel(channel) for channel in restrictions]
+            channels = [channel.mention for channel in channels if channel]
+            if channels:
+                rest_list = humanize_list(channels, style="or")
+                return await ctx.send(f"You can check updates for {FEED_FRIENDLY_NAMES[service]} in {rest_list}")
+
+        incidents = await self.config.incidents()
+
+        if service in CUSTOM_SERVICES:
+            if abs(time() - incidents["checked"][service]) > 300:  # TODO: implement same logic as below to get feed
+                return ctx.send("Sorry, I can't show status updates for that service at the moment.")
+            feeddict = deserialize(incidents[service][incidents["latest"][service]])
+            cache = await self.sendupdate._make_send_cache(feeddict, service, set_global=False)
+            await self.sendupdate._channel_send_updated_feed(
+                feeddict, (ctx.channel.id, {"mode": "all", "webhook": False}), service, dispatch=False, cache=cache
+            )
+            cache_time = humanize_timedelta(seconds=5 * floor(abs(time() - incidents["checked"][service]) / 5))
+            cached_at = f"{cache_time} ago" if cache_time else "now"
+            return await ctx.send(f"_This was cached {cached_at}._")
+
+        if abs(time() - incidents["checked"][service]) > 180:  # 3 mins
+            _base_log.debug(f"Unscheduled check of {service} triggered.")
+            await ctx.trigger_typing()
+            try:
+                async with self.session.get(FEED_URLS[service], timeout=10) as response:
+                    html = await response.text()
+                if response.status != 200:
+                    raise Exception
+            except Exception:
+                return await ctx.send("Hmm, I couldn't connect to their status page.")
+            fp_data = feedparser.parse(html)
+            feeds = self.sendupdate._process_feed(service, fp_data)
+
+            json_ready = {}
+            for feed in feeds:
+                feed = feed.to_dict()
+                json_ready[feed["link"]] = serialize(feed)
+
+            async with self.config.incidents() as conf_incidents:
+                conf_incidents["latest"][service] = feeds[0].link
+                conf_incidents["checked"][service] = time()
+                conf_incidents[service] = json_ready
+
+            cached_at = "now"
+            incidents = json_ready
+        else:
+            # this rounds down to nearest 5 then humanizes
+            cache_time = humanize_timedelta(seconds=5 * floor(abs(time() - incidents["checked"][service]) / 5))
+            cached_at = f"{cache_time} ago" if cache_time else "now"
+            incidents = {i["link"]: serialize(i) for i in incidents[service].values()}
+
+        # improve this
+        # links = []
+        # incidents = []
+        # for link, incident in old_incidents:
+        #     if link not in links:
+        #         incidents.append(incident)
+        #         links.append(link)
+
+        live = []
+        recent_finished = []
+        for _, incident in incidents.items():
+            if not incident["actual_time"]:  # could be ""
+                _base_log.debug("Unknown time")
+                continue
+            elif abs(time() - incident["actual_time"]) > (60 * 60 * 24):  # 1 day
+                continue
+            elif incident["fields"][-1]["name"].startswith(("Resolved", "Completed", "Scheduled")):
+                recent_finished.append(incident)
+            else:
+                live.append(incident)
+
+        if not live:
+            msg = "\N{WHITE HEAVY CHECK MARK} There are currently no live incidents."
+            if recent_finished:
+                msg += f"\n\n{len(recent_finished)} incident(s) were resolved in the last 24 hours:"
+                for incident in recent_finished:
+                    msg += "\n{}: {}".format(incident["link"], incident["title"])
+            return await ctx.send(f"{msg}\n_This was cached {cached_at}._")
+
+        feeddict = deserialize(live[0])
+        cache = await self.sendupdate._make_send_cache(feeddict, service, False)
+        await self.sendupdate._channel_send_updated_feed(
+            feeddict, (ctx.channel.id, {"mode": "all", "webhook": False}), service, dispatch=False, cache=cache
+        )
+
+        msg = ""
+        others = len(live) - 1
+        num_recent_finished = len(recent_finished)
+        if others:
+            msg += f"{others} other incident(s) are live at the moment:"
+            for incident in live[1:]:
+                msg += "\n{} (<{}>)".format(incident["title"], incident["link"])
+            msg += "\n\n"
+        if num_recent_finished:
+            msg += f"{num_recent_finished} other incident(s) were resolved in the last 24 hours:"
+            for incident in recent_finished:
+                resolved_at = humanize_timedelta(seconds=abs(time() - incident["actual_time"]))
+                msg += "\nResolved at {} - {} (<{}>)".format(resolved_at, incident["link"], incident["title"])
+
+        await ctx.send(f"{msg}\n_This was cached {cached_at}._")
 
     @guild_only()
     @checks.admin_or_permissions(manage_guild=True)
@@ -303,6 +450,26 @@ class Status(commands.Cog):
             )
             webhook = False
 
+        await ctx.send(
+            f"**Would you like to restrict access to {friendly} in the `{ctx.clean_prefix}status` command?** "
+            "(yes or no answer)\nThis will reduce spam. If there's an incident, members will instead be redirected "
+            f"to {channel.mention} and any other channels that you've set to receive {friendly} status updates. They "
+            "will be redirected to all channels that have restrict - not all channels with the status update."
+        )
+
+        pred = MessagePredicate.yes_or_no(ctx)
+        try:
+            await self.bot.wait_for("message", check=pred, timeout=120)
+        except asyncio.TimeoutError:
+            return await ctx.send("Timed out. Cancelling.")
+
+        if pred.result == True:
+            async with self.config.guild(ctx.guild).service_restrictions() as sr:
+                try:
+                    sr[service].append(channel.id)
+                except ValueError:
+                    sr[service] = [channel.id]
+
         settings = {"mode": mode, "webhook": webhook, "edit_id": {}}
         await self.config.channel(channel).feeds.set_raw(service, value=settings)
         self.used_feeds_cache.add_feed(service)
@@ -336,11 +503,16 @@ class Status(commands.Cog):
 
         self.used_feeds_cache.remove_feed(service)
 
+        async with self.config.guild(ctx.guild).service_restrictions() as sr:
+            try:
+                sr[service].remove(channel.id)
+            except ValueError:
+                sr[service] = [channel.id]
+
         await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {channel.mention}")
 
     @statusset.command(name="list", aliases=["show", "settings"])
     async def statusset_list(self, ctx: commands.Context, service: Optional[str]):
-        # sourcery no-metrics
         """
         List that available services and ones are used in this server.
 
@@ -357,14 +529,28 @@ class Status(commands.Cog):
             data = []
             for channel in ctx.guild.channels:
                 feeds = await self.config.channel(channel).feeds()
+                restrictions = await self.config.guild(ctx.guild).service_restrictions()
                 for name, settings in feeds.items():
                     if name != service:
                         continue
                     mode = settings["mode"]
                     webhook = settings["webhook"]
-                    data.append([f"#{channel.name}", mode, webhook])
-            table = box(tabulate(data, headers=["Channel", "Send mode", "Use webhooks"]))
-            await ctx.send(f"**Settings for {FEED_FRIENDLY_NAMES[service]}**: {table}")
+                    # TODO: improve this bit below
+                    try:
+                        if channel.id in restrictions[service]:
+                            restrict = True
+                        else:
+                            restrict = False
+                    except KeyError:
+                        restrict = False
+                    data.append([f"#{channel.name}", mode, webhook, restrict])
+            table = box(tabulate(data, headers=["Channel", "Send mode", "Use webhooks", "Restrict"]))
+            friendly = FEED_FRIENDLY_NAMES[service]
+            await ctx.send(
+                f"**Settings for {friendly}**: {table}\n`Restrict` is whether or not to restrict access for "
+                f"{friendly} server-wide in the `status` command. Users are redirected to an appropriate "
+                "channel when there's an incident."
+            )
 
         else:
             guild_feeds = {}
@@ -453,11 +639,11 @@ class Status(commands.Cog):
             feeddict["time"] = datetime.datetime.fromtimestamp(feeddict["time"])
             feeddict = FeedDict.from_dict(None, feeddict)
 
-        await self.sendupdate._make_send_cache(feeddict, service)
+        cache = await self.sendupdate._make_send_cache(feeddict, service, set_global=False)
 
         channel = (ctx.channel.id, {"mode": mode, "webhook": webhook})
         try:
-            await self.sendupdate._channel_send_updated_feed(feeddict, channel, service, False)
+            await self.sendupdate._channel_send_updated_feed(feeddict, channel, service, False, cache=cache)
         except KeyError:
             await ctx.send("Hmm, I couldn't preview that.")
 
@@ -470,7 +656,7 @@ class Status(commands.Cog):
     async def statusset_edit_mode(
         self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel], mode: str
     ):
-        """Change what mode to use for updates
+        """Change what mode to use for status updates.
 
         **All**: Every time the service posts an update on an incident, I will send a new message
         containing the previous updates as well as the new update. Best used in a fast-moving
@@ -519,7 +705,7 @@ class Status(commands.Cog):
     async def statusset_edit_webhook(
         self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel], webhook: bool
     ):
-        """Set whether or not to use webhooks to send the status update
+        """Set whether or not to use webhooks for status updates.
 
         Using a webhook means that the status updates will be sent with the avatar as the service's
         logo and the name will be `[service] Status Update`, instead of my avatar and name.
@@ -553,6 +739,53 @@ class Status(commands.Cog):
 
         word = "use" if webhook else "not use"
         await ctx.send(f"{FEED_FRIENDLY_NAMES[service]} status updates in {channel.mention} will now {word} webhooks.")
+
+    @statusset_edit.command(name="restrict")
+    async def statusset_edit_restrict(
+        self, ctx: commands.Context, service: str, channel: Optional[discord.TextChannel], restrict: bool
+    ):
+        """Restrict access to the service in the `status` command.
+
+        Enabling this will reduce spam. Instead of sending the whole update
+        (if there's an incident) members will instead be redirected to channels
+        that automatically receive the status updates, that they have permission to to view.
+
+        Note if there is no ongoing incident they will not redirected.
+        """
+        channel = channel or ctx.channel
+        service = service.lower()
+
+        if service not in FEED_URLS.keys():
+            return await ctx.send(f"That's not a valid service. See `{ctx.clean_prefix}statusset list`.")
+
+        feed_settings = await self.config.channel(channel).feeds()
+        if service not in feed_settings.keys():
+            return await ctx.send(
+                f"It looks like I don't send {FEED_FRIENDLY_NAMES[service]} status updates to {channel.mention}"
+            )
+
+        old_conf = (await self.config.guild(ctx.guild).service_restrictions()).get(service, [])
+        old_bool = channel.id in old_conf
+        if old_bool == restrict:
+            word = "" if restrict else "don't "
+            return await ctx.send(
+                f"It looks like I already {word}restrict {FEED_FRIENDLY_NAMES[service]} status updates for the "
+                "`status` command."
+            )
+
+        async with self.config.guild(ctx.guild).service_restrictions() as sr:
+            if restrict:
+                try:
+                    sr[service].append(channel.id)
+                except KeyError:
+                    sr[service] = [channel.id]
+                self.service_restrictions_cache.add_restriction(ctx.guild.id, service, channel.id)
+            else:
+                sr[service].remove(channel.id)
+                self.service_restrictions_cache.remove_restriction(ctx.guild.id, service, channel.id)
+
+        word = "" if restrict else "not "
+        await ctx.send(f"{FEED_FRIENDLY_NAMES[service]} will now {word}be restricted in the `status` command.")
 
     # -------------------------
     # STARTING THE DEV COMMANDS
@@ -601,7 +834,7 @@ class Status(commands.Cog):
             await self.sendupdate._make_send_cache(feeddict, service)
             await self.sendupdate._update_dispatch(feeddict, fp_data, service, channels, True)
             await asyncio.sleep(1)
-            _log.debug(f"Sending to {len(channels)}")
+            _base_log.debug(f"Sending to {len(channels)}")
             for channel in channels.items():
                 await self.sendupdate._channel_send_updated_feed(feeddict, channel, service)
 
@@ -632,10 +865,10 @@ class Status(commands.Cog):
             html = await response.text()
         feed = feedparser.parse(html)
 
-        # feed = helper_process_feed("twitter", feed)
-        # feed = feed.to_dict()
+        feeds = helper_process_feed("zoom", feed)
+        links = [feed.link for feed in feeds]
 
-        pages = pagify(str(feed.entries[0]))
+        pages = pagify(str(links))
 
         await ctx.send_interactive(pages, box_lang="")
 
@@ -647,3 +880,18 @@ class Status(commands.Cog):
         raw = box(self.used_feeds_cache, lang="py")
         actual = box(self.used_feeds_cache.get_list(), lang="py")
         await ctx.send(f"**Raw data:**\n{raw}\n**Active:**\n{actual}")
+
+    @statusdev.command(aliases=["cgr"], hidden=True)
+    async def checkguildrestrictions(self, ctx: commands.Context):
+        if not await self._dev_com(ctx):
+            return
+
+        await ctx.send(box(self.service_restrictions_cache.get_guild(ctx.guild.id)))
+
+    @statusdev.command(aliases=["ri"], hidden=True)
+    async def resetincidents(self, ctx: commands.Context):
+        if not await self._dev_com(ctx):
+            return
+        await ctx.send("Starting")
+        await self._migrate()
+        await ctx.send("Done")

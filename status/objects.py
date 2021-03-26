@@ -1,5 +1,10 @@
-# Yes, it's simpler to use a dict for these, but I've used this as an
-# opportunity to learn about making and working with objects. Objects are fun!
+# ======== PLEASE READ ======================================================
+# Status is currently a bit of a mess. For this reason, I'll be undertaking a
+# rewrite in the near future: https://github.com/Vexed01/Vex-Cogs/issues/13
+#
+# For this reason, unless it's minor, PLEASE DO NOT OPEN A PR.
+# ===========================================================================
+
 
 import datetime
 from typing import Dict, List, Union
@@ -29,10 +34,10 @@ class FeedDict:
     def __init__(
         self,
         fields: List[UpdateField] = None,
-        time: datetime.datetime = None,
+        time: datetime.datetime = Embed.Empty,
         title: str = None,
         link: str = None,
-        actual_time: datetime.datetime = None,
+        actual_time: datetime.datetime = Embed.Empty,
         description: Union[str, None] = None,
     ):
         self.fields = fields
@@ -65,7 +70,7 @@ class FeedDict:
             UpdateField(
                 name=field.get("name"),
                 value=field.get("value"),
-                time=field.get("time"),
+                time=field.get("time", Embed.Empty),
                 group_id=field.get("group_id"),
             )
             for field in dict.get("fields")
@@ -73,10 +78,10 @@ class FeedDict:
 
         return FeedDict(
             fields=fields,
-            time=dict.get("time"),
+            time=dict.get("time", Embed.Empty),
             title=dict.get("title"),
             link=dict.get("link"),
-            actual_time=dict.get("actual_time"),
+            actual_time=dict.get("actual_time", Embed.Empty),
             description=dict.get("description"),
         )
 
@@ -108,8 +113,7 @@ class UsedFeeds:
         used_feeds = dict.fromkeys(FEED_URLS.keys(), 0)
 
         for _, data in all_channels.items():
-            feeds = data.get("feeds").keys()
-            for feed in feeds:
+            for feed in data.get("feeds").keys():
                 used_feeds[feed] = used_feeds.get(feed, 0) + 1
 
         self.__data = used_feeds
@@ -126,3 +130,37 @@ class UsedFeeds:
 
     def get_list(self) -> List[str]:
         return [k for k, v in self.__data.items() if v]
+
+
+class ServiceRestrictionsCache:
+    """Holds channel restrictions (for members) for when automatic updates are configured."""
+
+    def __init__(self, all_guilds: Dict[int, Dict[str, list]]):
+        __data = {}
+
+        for g_id, data in all_guilds.items():
+            __data[g_id] = data["service_restrictions"]
+
+        self.__data = __data
+
+    def add_restriction(self, guild_id: int, service: str, channel_id: int):
+        """Add a channel to the restriction cache."""
+        try:
+            self.__data[guild_id]
+        except KeyError:
+            self.__data[guild_id] = dict.fromkeys(FEED_URLS.keys(), [])
+        self.__data[guild_id][service].append(channel_id)
+
+    def remove_restriction(self, guild_id: int, service: str, channel_id: int):
+        """Remove a channel from the restriction cache."""
+        try:
+            self.__data[guild_id][service].remove(channel_id)
+        except ValueError:
+            pass
+
+    def get_guild(self, guild_id: int, service: str = None):
+        """Get the channels for a service in guild."""
+        if service:
+            return self.__data.get(guild_id, {}).get(service, [])
+        else:
+            return self.__data.get(guild_id, {})

@@ -1,9 +1,16 @@
+# ======== PLEASE READ ======================================================
+# Status is currently a bit of a mess. For this reason, I'll be undertaking a
+# rewrite in the near future: https://github.com/Vexed01/Vex-Cogs/issues/13
+#
+# For this reason, unless it's minor, PLEASE DO NOT OPEN A PR.
+# ===========================================================================
+
 import asyncio
 import datetime
 import logging
 import re
 from time import monotonic, time
-from typing import List
+from typing import List, Union
 
 import discord
 import feedparser
@@ -11,11 +18,13 @@ from feedparser import FeedParserDict
 from redbot.core import Config
 from redbot.core.bot import Red
 
+from status.utils import serialize
+
 from .consts import AVATAR_URLS, CUSTOM_SERVICES, FEED_FRIENDLY_NAMES, WEBHOOK_REASON
 from .objects import FeedDict, SendCache
 from .rsshelper import process_feed as helper_process_feed
 
-_log = logging.getLogger("red.vexed.status.sendupdate")
+_send_update_log = logging.getLogger("red.vexed.status.sendupdate")
 _update_checker_log = logging.getLogger("red.vexed.status.updatechecker")
 
 
@@ -70,13 +79,13 @@ class SendUpdate:
             await self._make_send_cache(feeddict, service)
             await self._update_dispatch(feeddict, fp_data, service, channels, False)
             await asyncio.sleep(1)  # guaranteed wait for other CCs
-            _log.info(f"Sending status update for {service} to {len(channels)} channels...")
+            _send_update_log.info(f"Sending status update for {service} to {len(channels)} channels...")
             start = monotonic()
             for channel in channels.items():
                 try:
                     await self._channel_send_updated_feed(feeddict, channel, service)
                 except Exception as e:
-                    return _log.warning(  # TODO: maybe from config
+                    return _send_update_log.warning(  # TODO: maybe from config
                         f"Something went wrong sending to {channel.id} in guild {channel.guild.id} - skipping",
                         exc_info=e,
                     )
@@ -84,11 +93,11 @@ class SendUpdate:
             raw = end - start
             time = round(raw) or "under a"
             if raw <= 15:
-                _log.info(f"Done, took {time} second(s).")
+                _send_update_log.info(f"Done, took {time} second(s).")
             elif raw <= 60:
-                _log.info(f"Sending status update for {service} took a long time ({time} seconds).")
+                _send_update_log.info(f"Sending status update for {service} took a long time ({time} seconds).")
             else:
-                _log.warning(
+                _send_update_log.warning(
                     f"Sending status update for {service} took too long ({time} seconds). All updates were "
                     "sent.\nThere is a real risk that, if multiple services post updates at once, some will "
                     "be skipped.\nPlease contact Vexed for ways to mitigate this."
@@ -102,30 +111,33 @@ class SendUpdate:
     async def _check_real_update(self, service: str, feeddict: List[FeedDict]) -> List[FeedDict]:
         """
         Check that there has been an actual update to the status against last known.
-        If so, will update the feed store.
+
+        This also updates the incident store.
 
         Returns a list of valid status updates - the list might be empty.
         """
         to_return = []
-        for entry in feeddict:
-            if abs(entry.actual_time.timestamp() - time()) < 330:
-                # 5 and a half mins to allow for 2 update runs
-                to_return.append(entry)
+        async with self.config.incidents() as incidents:
+            for entry in feeddict:
+                if not isinstance(entry.actual_time, datetime.datetime):
+                    continue
 
-        # add to the feed store for preview command, [-1] will be the one at the top of the feed
-        if to_return:
-            to_store = to_return[-1].to_dict()
-            if isinstance(to_store["time"], datetime.datetime):
-                to_store["time"] = to_store["time"].timestamp()
-            else:
-                to_store["time"] = ""
+                if abs(entry.actual_time.timestamp() - time()) < 330:
+                    # 5 and a half mins to allow for 2 update runs
+                    to_return.append(entry)
+                    _update_checker_log.info(f"Real update detected for {service}")
+                    feed = entry.to_dict()
+                    if isinstance(feed["time"], datetime.datetime):
+                        feed["time"] = feed["time"].timestamp()
+                    else:
+                        feed["time"] = ""
 
-            if isinstance(to_store["actual_time"], datetime.datetime):
-                to_store["actual_time"] = to_store["actual_time"].timestamp()
-            else:
-                to_store["actual_time"] = ""
-
-            await self.config.feed_store.set_raw(service, value=to_store)
+                    if isinstance(feed["actual_time"], datetime.datetime):
+                        feed["actual_time"] = feed["actual_time"].timestamp()
+                    else:
+                        feed["actual_time"] = ""
+                    incidents[service][entry.link] = serialize(entry.to_dict())
+                    incidents["latest"][service] = entry.link
 
         return to_return
 
@@ -134,7 +146,7 @@ class SendUpdate:
         feeds = await self.config.all_channels()
         return {name: data["feeds"][service] for name, data in feeds.items() if service in data["feeds"].keys()}
 
-    async def _make_send_cache(self, feeddict: FeedDict, service: str):
+    async def _make_send_cache(self, feeddict: FeedDict, service: str, set_global: bool = True):
         """Make the cache used in send_updated_feed"""
         try:
             base = discord.Embed(
@@ -145,7 +157,7 @@ class SendUpdate:
                 url=feeddict.link,
             )
         except Exception as e:  # can happen with timestamps, should now be fixed
-            _log.error(
+            _send_update_log.error(
                 "Failed turning a feed into an embed. Updates will not be sent. PLEASE REPORT THIS AND THE INFO BELOW TO VEXED.\n"
                 f"{feeddict.to_dict()}",
                 exc_info=e,
@@ -178,7 +190,8 @@ class SendUpdate:
         # LATEST
         id = feeddict.get_group_ids()[-1]
         for field in feeddict.fields:
-            if field.group_id == id or abs(field.time.timestamp() - time()) < 150:
+            timestamp = 0 if not isinstance(field.time, datetime.datetime) else field.time.timestamp()
+            if field.group_id == id or abs(timestamp - time()) < 150:
                 embed_latest.add_field(
                     name=field.name,
                     value=field.value,
@@ -211,12 +224,17 @@ class SendUpdate:
         plain_all = re.sub(regex, r"<\1>", plain_all)  # wrap links in <> for no previews
         plain_latest = re.sub(regex, r"<\1>", plain_latest)
 
-        self.send_cache = SendCache(
+        cache = SendCache(
             embed_all=embed_all,
             embed_latest=embed_latest,
             plain_latest=plain_latest,
             plain_all=plain_all,
         )
+
+        if set_global:
+            self.send_cache = cache
+        else:
+            return cache
 
     def _get_colour(self, feeddict: FeedDict, service: str):
         if service in ["aws", "gcp"]:  # only do this for statuspage ones
@@ -241,23 +259,30 @@ class SendUpdate:
             else:
                 return 1812720
         except Exception as e:  # hopefully never happens but will keep this for a while
-            _log.error(f"Error with getting correct colour for {service}:", exc_info=e)
+            _send_update_log.error(f"Error with getting correct colour for {service}:", exc_info=e)
             return 1812720
 
     async def _channel_send_updated_feed(
-        self, feeddict: FeedDict, channel_data: tuple, service: str, dispatch: bool = True
+        self,
+        feeddict: FeedDict,
+        channel_data: tuple,
+        service: str,
+        dispatch: bool = True,
+        cache: Union[SendCache, None] = None,
     ):
         """Send a feeddict to the specified channel."""
         mode = channel_data[1].get("mode")
         m_id = channel_data[1].get("edit_id", {}).get(feeddict.link)
         channel: discord.TextChannel = self.bot.get_channel(channel_data[0])
         if channel is None:
-            return _log.info(f"I can't find the channel {channel_data[0]} - skipping")
+            return _send_update_log.info(f"I can't find the channel {channel_data[0]} - skipping")
             # TODO: remove from config
 
         use_webhook = await self._check_perms(channel, channel_data[1].get("webhook"))
         if use_webhook == "exit":
-            return _log.info(f"I don't have proper permissions in {channel.id} in guild {channel.guild.id} - skipping")
+            return _send_update_log.info(
+                f"I don't have proper permissions in {channel.id} in guild {channel.guild.id} - skipping"
+            )
             # TODO: remove from config
 
         if not use_webhook:
@@ -265,12 +290,15 @@ class SendUpdate:
         else:
             use_embed = True
 
+        if not cache:
+            cache = self.send_cache
+
         # the efficiency could probably be improved here
         if use_embed:
             if mode in ["all", "edit"]:
-                embed = self.send_cache.embed_all
+                embed = cache.embed_all
             elif mode == "latest":
-                embed = self.send_cache.embed_latest
+                embed = cache.embed_latest
             else:
                 return
 
@@ -281,9 +309,9 @@ class SendUpdate:
 
         else:
             if mode in ["all", "edit"]:
-                msg = self.send_cache.plain_all
+                msg = cache.plain_all
             elif mode == "latest":
-                msg = self.send_cache.plain_latest
+                msg = cache.plain_latest
 
             await self._send_plain(channel, msg, service, mode, feeddict.link, m_id)
 
@@ -380,22 +408,24 @@ class SendUpdate:
             try:
                 channel = await self.bot.fetch_channel(c_id)
             except:
-                _log.info(
+                _send_update_log.info(
                     f"Unable to get channel {c_id} for status update. Removing from config so this won't happen again."
                 )
                 await self.config.channel_from_id(c_id).feeds.clear()
                 return "exit"
 
         if await self.bot.cog_disabled_in_guild_raw("Status", channel.guild):
-            _log.debug(f"Skipping channel {c_id} as cog is disabled in that guild.")
+            _send_update_log.debug(f"Skipping channel {c_id} as cog is disabled in that guild.")
             return "exit"
 
         if use_webhook and not channel.permissions_for(channel.guild.me).manage_webhooks:
-            _log.debug(f"Unable to send a webhook to {c_id} in guild {channel.guild.id} - sending normal instead")
+            _send_update_log.debug(
+                f"Unable to send a webhook to {c_id} in guild {channel.guild.id} - sending normal instead"
+            )
             use_webhook = False
 
         if not use_webhook and not channel.permissions_for(channel.guild.me).send_messages:
-            _log.info(
+            _send_update_log.info(
                 f"Unable to send messages to {c_id} in guild {channel.guild.id}. Removing from config so this won't happen again."
             )
             await self.config.channel_from_id(c_id).feeds.clear()

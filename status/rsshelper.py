@@ -1,10 +1,18 @@
+# ======== PLEASE READ ======================================================
+# Status is currently a bit of a mess. For this reason, I'll be undertaking a
+# rewrite in the near future: https://github.com/Vexed01/Vex-Cogs/issues/13
+#
+# For this reason, unless it's minor, PLEASE DO NOT OPEN A PR.
+# ===========================================================================
+
+
 import datetime
 import logging
 import re
-from typing import Any, List
+from typing import List
 
 import discord
-from dateutil.parser import parse
+from dateutil.parser import ParserError, parse
 from feedparser.util import FeedParserDict
 from redbot.core.utils.chat_formatting import pagify
 
@@ -44,8 +52,10 @@ def _parse_time(time: str):
     try:
         return parse(time, tzinfos={"PST": -28800, "PDT": -25200})
         #                                  - 8 h          - 7 h
-    except ValueError as e:
-        _log.warning("Unable to parse timestamp '{time}'. Please report this to Vexed.", exc_info=e)
+    except (ValueError, ParserError):
+        if not time.endswith("Feb 29, 00:00 UTC"):  # python not having many incidents and referencing a date from last
+            # year, then the time parser assume it's this year with didn't have a feb 29
+            _log.warning(f"Unable to parse timestamp '{time}'. Please report this to Vexed.")
         return discord.Embed.Empty
 
 
@@ -167,7 +177,7 @@ def _parse_aws(feed: FeedParserDict):
         fields=fields,
         time=updated,
         title=feed["title"],
-        link=feed["link"],
+        link="https://status.aws.amazon.com/",
         actual_time=updated,
     )
 
@@ -181,7 +191,7 @@ def _parse_gcp(feed: FeedParserDict):
         fields=fields,
         time=updated,
         title=feed["title"],
-        link=feed["link"],
+        link="https://status.cloud.google.com/",
         actual_time=updated,
     )
 
