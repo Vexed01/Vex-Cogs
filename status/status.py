@@ -53,7 +53,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.4.0"
+    __version__ = "1.4.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -209,6 +209,7 @@ class Status(commands.Cog):
 
     # TODO: support DMs
     @guild_only()
+    @commands.cooldown(2, 120, commands.BucketType.user)
     @commands.command()
     async def status(self, ctx: commands.Context, service: str):
         """
@@ -304,7 +305,7 @@ class Status(commands.Cog):
             if recent_finished:
                 msg += f"\n\n{len(recent_finished)} incident(s) were resolved in the last 24 hours:"
                 for incident in recent_finished:
-                    msg += "\n{}: {}".format(incident["link"], incident["title"])
+                    msg += "\n{}: <{}>".format(incident["title"], incident["link"])
             return await ctx.send(f"{msg}\n_This was cached {cached_at}._")
 
         feeddict = deserialize(live[0])
@@ -325,7 +326,7 @@ class Status(commands.Cog):
             msg += f"{num_recent_finished} other incident(s) were resolved in the last 24 hours:"
             for incident in recent_finished:
                 resolved_at = humanize_timedelta(seconds=abs(time() - incident["actual_time"]))
-                msg += "\nResolved at {} - {} (<{}>)".format(resolved_at, incident["link"], incident["title"])
+                msg += "\nResolved at {} - {} (<{}>)".format(resolved_at, incident["title"], incident["link"])
 
         await ctx.send(f"{msg}\n_This was cached {cached_at}._")
 
