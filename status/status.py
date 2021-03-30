@@ -53,7 +53,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.4.1"
+    __version__ = "1.4.2"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -468,7 +468,7 @@ class Status(commands.Cog):
             async with self.config.guild(ctx.guild).service_restrictions() as sr:
                 try:
                     sr[service].append(channel.id)
-                except ValueError:
+                except KeyError:
                     sr[service] = [channel.id]
 
         settings = {"mode": mode, "webhook": webhook, "edit_id": {}}
@@ -507,7 +507,7 @@ class Status(commands.Cog):
         async with self.config.guild(ctx.guild).service_restrictions() as sr:
             try:
                 sr[service].remove(channel.id)
-            except ValueError:
+            except KeyError:
                 sr[service] = [channel.id]
 
         await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {channel.mention}")
