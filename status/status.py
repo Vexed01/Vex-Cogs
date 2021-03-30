@@ -53,7 +53,7 @@ class Status(commands.Cog):
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "1.4.2"
+    __version__ = "1.4.3"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -508,7 +508,7 @@ class Status(commands.Cog):
             try:
                 sr[service].remove(channel.id)
             except KeyError:
-                sr[service] = [channel.id]
+                pass
 
         await ctx.send(f"Removed {FEED_FRIENDLY_NAMES[service]} status updates from {channel.mention}")
 
