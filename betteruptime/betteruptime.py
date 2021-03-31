@@ -35,7 +35,7 @@ class BetterUptime(commands.Cog):
     data to become available.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -282,7 +282,7 @@ class BetterUptime(commands.Cog):
 
         if seconds_data_collected - seconds_connected > 120:  # dont want to include stupidly small downtime
             downtime_info = (
-                f"`{downtime_connected}`\n`{downtime_cog_loaded}` of this was due to {botname} being unable to "
+                f"`{downtime_cog_loaded}`\n`{downtime_connected}` of this was due to {botname} being unable to "
                 "connect to Discord."
             )
             embed.add_field(name="Downtime:", value=downtime_info, inline=False)
