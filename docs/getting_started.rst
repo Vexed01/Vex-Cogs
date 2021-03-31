@@ -44,7 +44,8 @@ Click a cog name to see detailed documentation.
 Cog name                              Summary
 ===================================== ===========================================================================
 :ref:`aliases<aliases>`               Get all the information you could ever need about a command's aliases.
-:ref:`anotherpingcog<anotherpingcog>` Just another ping cog... But this one has fancy colours in an embed!
+:ref:`anotherpingcog<anotherpingcog>` Another ping cog... But this one has fancy colours in a customisable embed!
+:ref:`betteruptime<betteruptime>`     See your bot's uptime percentages and check when downtime happened.
 :ref:`github<github>`                 Create, comment, labelify and close GitHub issues, with partial PR support.
 :ref:`status<status>`                 Recieve automatic status updates from various services, including Discord.
 :ref:`system<system>`                 Get system metrics of the host device, such as RAM or CPU.
