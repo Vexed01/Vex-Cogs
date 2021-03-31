@@ -35,7 +35,7 @@ class BetterUptime(commands.Cog):
     data to become available.
     """
 
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -263,7 +263,9 @@ class BetterUptime(commands.Cog):
             seconds_cog_loaded += conf_cog_loaded.get(date, 0)
             seconds_connected += conf_connected.get(date, 0)
 
-        downtime_cog_loaded = humanize_timedelta(seconds=seconds_data_collected - seconds_cog_loaded) or "none"
+        downtime_cog_loaded = (
+            humanize_timedelta(seconds=seconds_data_collected - (seconds_cog_loaded - seconds_connected)) or "none"
+        )
         downtime_connected = humanize_timedelta(seconds=seconds_data_collected - seconds_connected) or "none"
 
         # if downtime is under the loop frequency we can just assume it's full uptime... this mainly fixes
@@ -281,10 +283,7 @@ class BetterUptime(commands.Cog):
         embed.add_field(name=f"Uptime ({botname} ready):", value=inline(f"{uptime_cog_loaded}%"))
 
         if seconds_data_collected - seconds_connected > 120:  # dont want to include stupidly small downtime
-            downtime_info = (
-                f"`{downtime_cog_loaded}`\n`{downtime_connected}` of this was due to {botname} being unable to "
-                "connect to Discord."
-            )
+            downtime_info = f"`{downtime_connected}`\n`{downtime_cog_loaded}` of this was due network issues"
             embed.add_field(name="Downtime:", value=downtime_info, inline=False)
 
         seconds_since_first_load = (datetime.datetime.utcnow() - conf_first_loaded).total_seconds()
