@@ -82,6 +82,9 @@ class Aliases(commands.Cog):
         else:
             full_com = command.qualified_name
 
+        if command is None:
+            return await ctx.send("That's not a command or alias.")
+
         builtin_aliases = command.aliases
         com_parent = command.parent or ""
 
