@@ -246,13 +246,14 @@ class BetterUptime(commands.Cog):
             end=datetime.datetime.today() - datetime.timedelta(days=1),
         ).tolist()
 
+
+        midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        seconds_since_midnight = (now - midnight).seconds
         if len(full_days_loaded) >= 30:
-            seconds_data_collected = SECONDS_IN_DAY * 30
+            seconds_data_collected = (SECONDS_IN_DAY * 29) + seconds_since_midnight
         else:
             seconds_data_collected = len(full_days_loaded) * SECONDS_IN_DAY
 
-            midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            seconds_since_midnight = (now - midnight).seconds
             if conf_first_loaded > midnight:  # cog was first loaded today
                 seconds_data_collected += (now - conf_first_loaded).total_seconds()
             else:
@@ -280,7 +281,7 @@ class BetterUptime(commands.Cog):
         embed.add_field(name="Uptime (connected to Discord):", value=inline(f"{uptime_connected}%"))
         embed.add_field(name=f"Uptime ({botname} ready):", value=inline(f"{uptime_cog_loaded}%"))
 
-        if seconds_data_collected - seconds_connected > 120:  # dont want to include stupidly small downtime
+        if seconds_data_collected - seconds_connected > 60:  # dont want to include stupidly small downtime
             downtime_info = f"`{main_downtime}`\n`{dt_due_to_net}` of this was due network issues"
             embed.add_field(name="Downtime:", value=downtime_info, inline=False)
 
@@ -334,6 +335,7 @@ class BetterUptime(commands.Cog):
         dates_to_look_for = pandas.date_range(
             end=datetime.datetime.today(), periods=30, tz=datetime.timezone.utc
         ).tolist()
+
         now = datetime.datetime.utcnow()
 
         try:
@@ -355,13 +357,13 @@ class BetterUptime(commands.Cog):
             end=datetime.datetime.today() - datetime.timedelta(days=1),
         ).tolist()
 
+        midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        seconds_since_midnight = (now - midnight).seconds
         if len(full_days_loaded) >= 30:
-            seconds_data_collected = SECONDS_IN_DAY * 30
+            seconds_data_collected = (SECONDS_IN_DAY * 29) + seconds_since_midnight
         else:
             seconds_data_collected = len(full_days_loaded) * SECONDS_IN_DAY
 
-            midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            seconds_since_midnight = (now - midnight).seconds
             if conf_first_loaded > midnight:  # cog was first loaded today
                 seconds_data_collected += (now - conf_first_loaded).total_seconds()
             else:
@@ -375,7 +377,8 @@ class BetterUptime(commands.Cog):
         await ctx.send(
             f"The cog was first loaded `{(now - conf_first_loaded).total_seconds()}` seconds ago\n"
             f"Seconds connected: `{seconds_connected}`\n"
-            f"Seconds cog loaded: `{seconds_cog_loaded}`"
+            f"Seconds cog loaded: `{seconds_cog_loaded}`\n"
+            f"Seconds of collection: `{seconds_data_collected}`\n"
         )
 
     @commands.command(name="uploop", hidden=True)
