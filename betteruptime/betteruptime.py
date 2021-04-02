@@ -36,7 +36,7 @@ class BetterUptime(commands.Cog):
     data to become available.
     """
 
-    __version__ = "1.0.4"
+    __version__ = "1.1.0"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
