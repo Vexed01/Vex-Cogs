@@ -62,6 +62,8 @@ class BetterUptime(commands.Cog):
         self.last_known_ping = 0.0
         self.last_ping_change = 0.0
 
+        self.first_load = 0.0
+
         self.cog_loaded_cache: Dict[str, int] = {}
         self.connected_cache: Dict[str, int] = {}
 
@@ -78,17 +80,19 @@ class BetterUptime(commands.Cog):
         self.last_known_ping: float = self.bot.latency
         self.last_ping_change = time()
 
+        self.first_load = await self.config.first_load()
+        # want to make sure its actually written
+        if self.first_load is None:
+            await self.config.first_load.set(time())
+            self.first_load = time()
+
         log.debug("Waiting a bit to allow for previous unload to clean up (assuming reload)...")
         await asyncio.sleep(2)  # assume reload - wait for unloading to be able to clean up properly
         log.debug("Setting up...")
         self.cog_loaded_cache = await self.config.cog_loaded()
         self.connected_cache = await self.config.connected()
 
-        # want to make sure its actually written
-        if await self.config.first_load() is None:
-            await self.config.first_load.set(time())
-
-        log.info("BetterUptime has been initialized. Waiting for some uptime to occur before starting loops...")
+        log.info("BetterUptime has been initialized. Waiting for some uptime to occur...")
 
         await asyncio.sleep(15)
         self.uptime_loop.start()
@@ -243,7 +247,7 @@ class BetterUptime(commands.Cog):
 
         conf_cog_loaded = self.cog_loaded_cache
         conf_connected = self.connected_cache
-        conf_first_loaded = datetime.datetime.utcfromtimestamp(await self.config.first_load())
+        conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
         dates_to_look_for = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
@@ -310,7 +314,7 @@ class BetterUptime(commands.Cog):
 
         conf_cog_loaded = self.cog_loaded_cache
         conf_connected = self.connected_cache
-        conf_first_loaded = datetime.datetime.utcfromtimestamp(await self.config.first_load())
+        conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
         dates_to_look_for = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
@@ -362,7 +366,7 @@ class BetterUptime(commands.Cog):
 
         conf_cog_loaded = self.cog_loaded_cache
         conf_connected = self.connected_cache
-        conf_first_loaded = datetime.datetime.utcfromtimestamp(await self.config.first_load())
+        conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
         dates_to_look_for = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
