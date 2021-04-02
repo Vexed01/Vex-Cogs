@@ -79,7 +79,7 @@ class BetterUptime(commands.Cog):
         self.last_ping_change = time()
 
         log.debug("Waiting a bit to allow for previous unload to clean up (assuming reload)...")
-        await asyncio.sleep(2)  # if reloading wait for unloading to be able to clean up properly
+        await asyncio.sleep(2)  # assume reload - wait for unloading to be able to clean up properly
         log.debug("Setting up...")
         self.cog_loaded_cache = await self.config.cog_loaded()
         self.connected_cache = await self.config.connected()
@@ -221,9 +221,12 @@ class BetterUptime(commands.Cog):
         description = f"Been up for: **{uptime_str}** (since {since} UTC)."
         # END
 
-        if not await ctx.embed_requested() or not self.connected_cache:  # connected_cache is done after other one
+        if not await ctx.embed_requested():
             # TODO: implement non-embed version
             return await ctx.send(description)
+
+        while not self.connected_cache:
+            await asyncio.sleep(0.2)  # max wait it 2 if command triggerd straight after cog load
 
         embed = discord.Embed(description=description, colour=await ctx.embed_colour())
         now = datetime.datetime.utcnow()
