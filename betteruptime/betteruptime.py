@@ -7,6 +7,7 @@ from typing import Dict
 import discord
 import pandas
 from discord.ext import tasks
+from pandas.core.arrays.datetimelike import validate_periods
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_timedelta, inline
@@ -35,7 +36,7 @@ class BetterUptime(commands.Cog):
     data to become available.
     """
 
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -217,14 +218,11 @@ class BetterUptime(commands.Cog):
         description = f"Been up for: **{uptime_str}** (since {since} UTC)."
         # END
 
-        if not await ctx.embed_requested() or self.connected_cache is None:
+        if not await ctx.embed_requested() or not self.connected_cache:  # connected_cache is done after other one
             # TODO: implement non-embed version
             return await ctx.send(description)
 
         embed = discord.Embed(description=description, colour=await ctx.embed_colour())
-        dates_to_look_for = pandas.date_range(
-            end=datetime.datetime.today(), periods=30, tz=datetime.timezone.utc
-        ).tolist()
         now = datetime.datetime.utcnow()
 
         try:
@@ -241,18 +239,21 @@ class BetterUptime(commands.Cog):
         conf_connected = self.connected_cache
         conf_first_loaded = datetime.datetime.utcfromtimestamp(await self.config.first_load())
 
-        full_days_loaded = pandas.date_range(
+        dates_to_look_for = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
-            end=datetime.datetime.today() - datetime.timedelta(days=1),
+            end=datetime.datetime.today(),
+            normalize=True,
         ).tolist()
 
+        if len(dates_to_look_for) > 30:
+            dates_to_look_for = dates_to_look_for[:29]
 
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
         seconds_since_midnight = (now - midnight).seconds
-        if len(full_days_loaded) >= 30:
+        if len(dates_to_look_for) >= 30:
             seconds_data_collected = (SECONDS_IN_DAY * 29) + seconds_since_midnight
         else:
-            seconds_data_collected = len(full_days_loaded) * SECONDS_IN_DAY
+            seconds_data_collected = (len(dates_to_look_for) - 1) * SECONDS_IN_DAY
 
             if conf_first_loaded > midnight:  # cog was first loaded today
                 seconds_data_collected += (now - conf_first_loaded).total_seconds()
@@ -288,42 +289,47 @@ class BetterUptime(commands.Cog):
         seconds_since_first_load = (datetime.datetime.utcnow() - conf_first_loaded).total_seconds()
         if seconds_since_first_load < 60 * 15:  # 15 mins
             content = "Data tracking only started in the last few minutes. Data may be inaccurate."
-        elif len(full_days_loaded) == 0:
+        elif len(dates_to_look_for) - 1 == 0:
             content = None
             embed.set_footer(text=f"Data is only for today.")
         else:
             content = None
-            embed.set_footer(text=f"Data is for the last {len(full_days_loaded) + 1} days.")
+            embed.set_footer(text=f"Data is for the last {len(dates_to_look_for)} days.")
 
         await ctx.send(content, embed=embed)
 
     @commands.command()
     async def downtime(self, ctx: commands.Context):
         """Check [botname] downtime over the last 30 days."""
+
         conf_cog_loaded = self.cog_loaded_cache
         conf_connected = self.connected_cache
         conf_first_loaded = datetime.datetime.utcfromtimestamp(await self.config.first_load())
 
-        full_days_loaded = pandas.date_range(
+        dates_to_look_for = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
             end=datetime.datetime.today() - datetime.timedelta(days=1),
+            normalize=True,
         ).tolist()
+
+        if len(dates_to_look_for) > 30:
+            dates_to_look_for = dates_to_look_for[:29]
 
         msg = ""
 
-        for date in full_days_loaded:
+        for date in dates_to_look_for:
             date = date.strftime("%Y-%m-%d")
             cog_unloaded = SECONDS_IN_DAY - conf_cog_loaded.get(date, 0)
             not_connected = SECONDS_IN_DAY - conf_connected.get(date, 0)
 
-            if not_connected > 120:
+            if not_connected > 45:  # from my experience heartbeats are ~41 secs
                 c_l_hum = humanize_timedelta(seconds=cog_unloaded) or "none"
                 c_hum = humanize_timedelta(seconds=not_connected) or "none"
 
                 msg += f"\n**{date}**: `{c_hum}`, of which `{c_l_hum}` was due to me not being ready."
 
         if not msg:
-            await ctx.send("It looks like there's been no recorded downtime.")
+            await ctx.send("It looks like there's been no recorded downtime.\n_This excludes any downtime today._")
         else:
             await ctx.send(
                 f"{msg}\n\n_Timezone: UTC, date format: Year-Month-Day_\n_This excludes any downtime today._"
@@ -345,24 +351,28 @@ class BetterUptime(commands.Cog):
         except Exception:
             until_next = 0
 
-        seconds_cog_loaded = 15 - until_next
+        seconds_cog_loaded = until_next
         seconds_connected = time() - self.last_ping_change
 
         conf_cog_loaded = self.cog_loaded_cache
         conf_connected = self.connected_cache
         conf_first_loaded = datetime.datetime.utcfromtimestamp(await self.config.first_load())
 
-        full_days_loaded = pandas.date_range(
+        dates_to_look_for = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
-            end=datetime.datetime.today() - datetime.timedelta(days=1),
+            end=datetime.datetime.today(),
+            normalize=True,
         ).tolist()
+
+        if len(dates_to_look_for) > 30:
+            dates_to_look_for = dates_to_look_for[:29]
 
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
         seconds_since_midnight = (now - midnight).seconds
-        if len(full_days_loaded) >= 30:
+        if len(dates_to_look_for) >= 30:
             seconds_data_collected = (SECONDS_IN_DAY * 29) + seconds_since_midnight
         else:
-            seconds_data_collected = len(full_days_loaded) * SECONDS_IN_DAY
+            seconds_data_collected = (len(dates_to_look_for) - 1) * SECONDS_IN_DAY
 
             if conf_first_loaded > midnight:  # cog was first loaded today
                 seconds_data_collected += (now - conf_first_loaded).total_seconds()
