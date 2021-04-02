@@ -202,7 +202,7 @@ class BetterUptime(commands.Cog):
                             self.connected_cache[utcdateyesterday] += just_before_midnight
                         except KeyError:
                             pass
-            self.last_known_ping = self.connected_cache
+            self.last_known_ping = current_latency
             self.last_ping_change = time()
 
     @tasks.loop(seconds=60)
@@ -235,7 +235,7 @@ class BetterUptime(commands.Cog):
         except Exception:
             until_next = 0
 
-        seconds_cog_loaded = until_next
+        seconds_cog_loaded = 15 - until_next
         seconds_connected = time() - self.last_ping_change
 
         conf_cog_loaded = self.cog_loaded_cache
@@ -286,7 +286,7 @@ class BetterUptime(commands.Cog):
         embed.add_field(name=f"Uptime ({botname} ready):", value=inline(f"{uptime_cog_loaded}%"))
 
         if seconds_data_collected - seconds_connected > 60:  # dont want to include stupidly small downtime
-            downtime_info = f"`{main_downtime}`\n`{dt_due_to_net}` of this was due network issues"
+            downtime_info = f"`{main_downtime}`\n`{dt_due_to_net}` of this was due network issues."
             embed.add_field(name="Downtime:", value=downtime_info, inline=False)
 
         seconds_since_first_load = (datetime.datetime.utcnow() - conf_first_loaded).total_seconds()
