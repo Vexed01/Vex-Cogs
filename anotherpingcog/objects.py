@@ -44,6 +44,8 @@ class Cache:
 
         return Settings(emoji, colour)
 
+    # TODO: use __setter__ and __getter__
+
     @property
     def red(self):
         return self.__get_settings("red")

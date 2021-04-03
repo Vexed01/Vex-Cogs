@@ -31,7 +31,7 @@ class AnotherPingCog(commands.Cog):
     You can customise the emojis, colours or force embeds with `[p]pingset`.
     """
 
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -139,7 +139,7 @@ class AnotherPingCog(commands.Cog):
     # im sure there's better way to do these two methods but i cba to find one
 
     def _get_emb_colour(self, ws_latency: int, m_latency: int, settings: Cache):
-        if ws_latency > 225 or m_latency > 300:
+        if ws_latency > 250 or m_latency > 350:
             return settings.red.colour
         elif ws_latency > 150 or m_latency > 225:
             return settings.orange.colour
