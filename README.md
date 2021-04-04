@@ -12,7 +12,7 @@ Add the repo: `[p]repo add vex-cogs https://github.com/Vexed01/Vex-Cogs`
 
 Then you can install cogs: `[p]cog install vex-cogs cogname`
 
-There's a list of cogs below you can use `[p]cog list vex-cogs`
+There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've added the repo.
 
 | Cog name | Description |
 | --- | --- |
