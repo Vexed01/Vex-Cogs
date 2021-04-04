@@ -7,7 +7,6 @@ from typing import Dict
 import discord
 import pandas
 from discord.ext import tasks
-from pandas.core.arrays.datetimelike import validate_periods
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_timedelta, inline
@@ -36,7 +35,7 @@ class BetterUptime(commands.Cog):
     data to become available.
     """
 
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -333,10 +332,10 @@ class BetterUptime(commands.Cog):
             not_connected = SECONDS_IN_DAY - conf_connected.get(date, 0)
 
             if not_connected > 45:  # from my experience heartbeats are ~41 secs
-                c_l_hum = humanize_timedelta(seconds=cog_unloaded) or "none"
-                c_hum = humanize_timedelta(seconds=not_connected) or "none"
+                main_downtime = humanize_timedelta(seconds=cog_unloaded) or "none"
+                dt_due_to_net = humanize_timedelta(seconds=not_connected - not_connected) or "none"
 
-                msg += f"\n**{date}**: `{c_hum}`, of which `{c_l_hum}` was due to me not being ready."
+                msg += f"\n**{date}**: `{main_downtime}`, of which `{dt_due_to_net}` was due to network issues."
 
         if not msg:
             await ctx.send("It looks like there's been no recorded downtime.\n_This excludes any downtime today._")
