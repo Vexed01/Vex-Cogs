@@ -34,6 +34,12 @@ class Aliases(commands.Cog):
     def _inline(self, text: str):
         return inline(text.lstrip())
 
+    @commands.command(hidden=True)
+    async def aliasesinfo(self, ctx: commands.Context):
+        await ctx.send(
+            f"Aliases by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\nVersion: `{self.__version__}`"
+        )
+
     @commands.command(usage="<command>")
     async def aliases(self, ctx: commands.Context, *, strcommand: str):
         """

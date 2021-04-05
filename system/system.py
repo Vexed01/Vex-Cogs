@@ -53,6 +53,10 @@ class System(commands.Cog):
             return False
         return (await self.config.settings())["embed"]
 
+    @commands.command(hidden=True)
+    async def systeminfo(self, ctx: commands.Context):
+        await ctx.send(f"System by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\nVersion: `{self.__version__}`")
+
     @checks.is_owner()
     @commands.group()
     async def system(self, ctx: commands.Context):

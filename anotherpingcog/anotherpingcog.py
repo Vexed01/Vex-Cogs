@@ -71,6 +71,13 @@ class AnotherPingCog(commands.Cog):
     ):
         self.cache = Cache(await self.config.custom_settings(), await self.config.force_embed(), self.bot)
 
+    @commands.command(hidden=True)
+    async def apcinfo(self, ctx: commands.Context):
+        print("AAAAAAAA")
+        await ctx.send(
+            f"AnotherPingCog by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\nVersion: `{self.__version__}`"
+        )
+
     # cspell:disable-next-line
     @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])
     async def ping(self, ctx: commands.Context):

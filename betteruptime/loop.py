@@ -27,6 +27,8 @@ class BetterUptimeLoop:
         self.cog_loaded_cache: Dict[str, int]
         self.connected_cache: Dict[str, int]
 
+        self.recent_load: bool
+
         asyncio.create_task(self.start())
 
     async def start(self):
@@ -54,6 +56,8 @@ class BetterUptimeLoop:
 
         await asyncio.sleep(1)
         self.config_loop.start()
+
+        self.recent_load = False
 
         _log.info("BetterUptime is now fully running.")
 

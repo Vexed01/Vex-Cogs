@@ -1,3 +1,4 @@
+import asyncio
 from asyncio import TimeoutError
 from typing import Mapping
 
@@ -9,21 +10,8 @@ from redbot.core.utils.chat_formatting import humanize_list, inline
 from redbot.core.utils.predicates import MessagePredicate
 
 from .api import GitHubAPI
+from .consts import *
 from .errors import CustomError
-
-GET_ISSUE = "get_issue"
-GET_REPO_LABELS = "get_repo_labels"
-GET_ISSUE_LABELS = "get_issue_labels"
-
-ADD_LABEL = "add_label"
-REMOVE_LABEL = "remove_label"
-
-CREATE_ISSUE = "create_issue"
-COMMENT = "comment"
-CLOSE = "close"
-CHECK_REAL = "check_real"
-
-EXCEPTIONS = (HTTPException, CustomError)
 
 # cspell:ignore labelify kowlin's resp
 
@@ -119,6 +107,23 @@ class GitHub(commands.Cog):
             return
 
         self.token = api_tokens.get("api_key")
+
+    @commands.command(hidden=True)
+    async def githubinfo(self, ctx: commands.Context):
+        token = CHECK if self.token else CROSS
+        repo = CHECK if self.repo else CROSS
+
+        if not (self.token and self.repo):
+            extra = f"It is expected these are `{CROSS}` if no commands have been used since the cog was last loaded.\n"
+        else:
+            extra = ""
+
+        await ctx.send(
+            f"GitHub by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n{extra}"
+            f"Token cache: `{token}`\n"
+            f"Repo cache: `{repo}`\n"
+            f"Version: `{self.__version__}`"
+        )
 
     @commands.group(aliases=["github"])
     @checks.is_owner()

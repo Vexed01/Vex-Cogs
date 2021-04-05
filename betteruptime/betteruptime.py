@@ -10,7 +10,7 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_timedelta, inline
 
-from .consts import SECONDS_IN_DAY
+from .consts import CHECK, CROSS, SECONDS_IN_DAY
 from .loop import BetterUptimeLoop
 
 # only used in dev com so dont want is as a requirement in info.json
@@ -65,7 +65,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         self.cog_loaded_cache: Dict[str, int] = {}
         self.connected_cache: Dict[str, int] = {}
 
-        asyncio.create_task(self._async_init())
+        self.recent_load = True
 
         try:
             self.bot.add_dev_env_value("bu", lambda x: self)
@@ -106,6 +106,24 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
             pass
 
     # ============================================================================================
+
+    @commands.command(hidden=True)
+    async def betteruptimeinfo(self, ctx: commands.Context):
+        main_status = CHECK if self.uptime_loop.is_running() else CROSS
+        conf_status = CHECK if self.config_loop.is_running() else CROSS
+
+        extra = (
+            f"Note: these **will** show `{CROSS}` for a few more seconds until the cog is fully ready.\n"
+            if self.recent_load
+            else ""
+        )
+
+        await ctx.send(
+            f"BetterUptime by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n{extra}"
+            f"Main loop: `{main_status}`\n"
+            f"Config loop: `{conf_status}`\n"
+            f"Version: `{self.__version__}`"
+        )
 
     @commands.command(name="uptime")
     async def uptime_command(self, ctx: commands.Context):
