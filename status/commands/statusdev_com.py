@@ -8,10 +8,10 @@ from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
-from status.core.statusapi import StatusAPI
 from tabulate import tabulate
 
 from ..commands.converters import ModeConverter, ServiceConverter
+from ..core.statusapi import StatusAPI
 from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
 from ..objects.configwrapper import ConfigWrapper
 from ..objects.incidentdata import Update

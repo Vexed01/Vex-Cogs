@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import logging
 
 from aiohttp.client import ClientSession
 from redbot.core import Config, commands
