@@ -24,6 +24,9 @@ Automatically check for status updates.
 When there is one, it will send the update to all channels that
 have registered to recieve updates from that service.
 
+There's also the ``status`` command which anyone can use to check
+updates whereever they want.
+
 If there's a service that you want added, contact Vexed#3211 or
 make an issue on the GitHub repo (or even better a PR!).
 
@@ -33,6 +36,28 @@ make an issue on the GitHub repo (or even better a PR!).
 --------
 Commands
 --------
+
+.. _status-command-status:
+
+^^^^^^
+status
+^^^^^^
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]status <service>
+
+**Description**
+
+Check for incidents for a variety of services, eg Discord.
+
+**Available Services:**
+
+discord, github, zoom, reddit, epic_games, cloudflare, statuspage,
+python, twitter_api, oracle_cloud, twitter, digitalocean, sentry,
+geforcenow
 
 .. _status-command-statusset:
 
@@ -46,7 +71,7 @@ statusset
 
 .. code-block:: none
 
-    [p]statusset 
+    [p]statusset
 
 **Description**
 
@@ -56,9 +81,9 @@ Get started with ``[p]statusset preview`` to see what they look like,
 then ``[p]statusset add`` to set up automatic updates.
 
 **Available services:**
-**``discord``**, ``github``, ``cloudflare``, ``python``, ``twitter_api``, ``statuspage``,
-**``zoom``**, ``oracle_cloud``, ``twitter``, **``epic_games``**, ``digitalocean``, **``reddit``**,
-``aws``,``gcp``, ``smartthings``, ``sentry``, ``status.io``
+discord, github, zoom, reddit, epic_games, cloudflare, statuspage,
+python, twitter_api, oracle_cloud, twitter, digitalocean, sentry,
+geforcenow
 
 .. _status-command-statusset-add:
 
@@ -78,13 +103,11 @@ Start getting status updates for the chosen service!
 
 There is a list of services you can use in the ``[p]statusset list`` command.
 
-You can use the ``[p]statusset preview`` command to see how different options look.
+This is an interactive command. It will ask what mode you want to use and if you
+want to use a webhook. You can use the ``[p]statusset preview`` command to see how
+different options look or take a look at https://vex-cogs.rtfd.io/en/latest/cogs/statusref.html
 
 If you don't specify a specific channel, I will use the current channel.
-
-This is an interactive command. It will ask what mode you want to use and if you
-want to use a webhook. There's more information about these options in the
-command.
 
 .. _status-command-statusset-edit:
 
@@ -96,7 +119,7 @@ statusset edit
 
 .. code-block:: none
 
-    [p]statusset edit 
+    [p]statusset edit
 
 **Description**
 
@@ -112,11 +135,11 @@ statusset edit mode
 
 .. code-block:: none
 
-    [p]statusset edit mode <service> [channel] <mode>
+    [p]statusset edit mode [channel] <service> <mode>
 
 **Description**
 
-Change what mode to use for updates
+Change what mode to use for status updates.
 
 **All**: Every time the service posts an update on an incident, I will send a new message
 containing the previous updates as well as the new update. Best used in a fast-moving
@@ -131,6 +154,26 @@ status channel.
 
 If you don't specify a channel, I will use the current channel.
 
+.. _status-command-statusset-edit-restrict:
+
+"""""""""""""""""""""""
+statusset edit restrict
+"""""""""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]statusset edit restrict [channel] <service> <restrict>
+
+**Description**
+
+Restrict access to the service in the ``status`` command.
+
+Enabling this will reduce spam. Instead of sending the whole update
+(if there's an incident) members will instead be redirected to channels
+that automatically receive the status updates, that they have permission to to view.
+
 .. _status-command-statusset-edit-webhook:
 
 """"""""""""""""""""""
@@ -141,11 +184,11 @@ statusset edit webhook
 
 .. code-block:: none
 
-    [p]statusset edit webhook <service> [channel] <webhook>
+    [p]statusset edit webhook [channel] <service> <webhook>
 
 **Description**
 
-Set whether or not to use webhooks to send the status update
+Set whether or not to use webhooks for status updates.
 
 Using a webhook means that the status updates will be sent with the avatar as the service's
 logo and the name will be ``[service] Status Update``, instead of my avatar and name.
@@ -188,27 +231,28 @@ statusset preview
 
 Preview what status updates will look like.
 
-**Service**
+You can also see this at https://vex-cogs.rtfd.io/en/latest/cogs/statusref.html
 
-The service you want to preview. There's a list of available services in the
-``[p]statusset list`` command.
+**<service>**
+
+    The service you want to preview. There's a list of available services in the
+    ``[p]help statusset`` command.
 
 **<mode>**
 
-    **All**: Every time the service posts an update on an incident, I will send
+    **all**: Every time the service posts an update on an incident, I will send
     a new message containing the previous updates as well as the new update. Best
     used in a fast-moving channel with other users.
 
-    **Latest**: Every time the service posts an update on an incident, I will send
+    **latest**: Every time the service posts an update on an incident, I will send
     a new message containing only the latest update. Best used in a dedicated status
     channel.
 
-    **Edit**: Naturally, edit mode can't have a preview so won't work with this command.
+    **edit**: Naturally, edit mode can't have a preview so won't work with this command.
     The message content is the same as the ``all`` mode.
     When a new incident is created, I will sent a new message. When this
     incident is updated, I will then add the update to the original message. Best
     used in a dedicated status channel.
-
 
 **<webhook>**
 

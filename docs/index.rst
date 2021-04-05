@@ -14,13 +14,19 @@ Welcome to Vex-Cogs's documentation!
 
 .. toctree::
    :maxdepth: 2
+   :caption: Changelog:
+
+   changelog
+
+.. toctree::
+   :maxdepth: 1
    :caption: Cogs:
 
    cogs/anotherpingcog
    cogs/aliases
-   cogs/betteruptime
    cogs/github
    cogs/status
+   cogs/statusref
    cogs/system
 
 .. toctree::
