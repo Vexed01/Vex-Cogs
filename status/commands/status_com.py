@@ -31,7 +31,7 @@ class StatusCom:
     # TODO: support DMs
     @commands.guild_only()
     @commands.cooldown(10, 120, commands.BucketType.user)
-    @commands.command()
+    @commands.command(autohelp=True)
     async def status(self, ctx: commands.Context, service: ServiceConverter):
         """
         Check for incidents for a variety of services, eg Discord.
