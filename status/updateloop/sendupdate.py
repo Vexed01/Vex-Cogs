@@ -168,11 +168,7 @@ class SendUpdate:
         https://vex-cogs.readthedocs.io/en/latest/statusdev.html
         """
         self.bot.dispatch(
-            "vexed_status_update",
-            update=self.update,
-            service=self.service,
-            channels=channels,
-            force=self.force,
+            "vexed_status_update", update=self.update, service=self.service, channels=channels, force=self.force
         )
 
     def _dispatch_channel(self, channeldata: ChannelData):

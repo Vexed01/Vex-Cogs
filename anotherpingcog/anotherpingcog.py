@@ -66,9 +66,7 @@ class AnotherPingCog(commands.Cog):
         """Nothing to delete"""
         return
 
-    async def _make_cache(
-        self,
-    ):
+    async def _make_cache(self):
         self.cache = Cache(await self.config.custom_settings(), await self.config.force_embed(), self.bot)
 
     @commands.command(hidden=True)

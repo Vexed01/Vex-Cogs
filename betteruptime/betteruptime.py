@@ -160,9 +160,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
         dates_to_look_for = pandas.date_range(
-            start=conf_first_loaded + datetime.timedelta(days=1),
-            end=datetime.datetime.today(),
-            normalize=True,
+            start=conf_first_loaded + datetime.timedelta(days=1), end=datetime.datetime.today(), normalize=True
         ).tolist()
 
         if len(dates_to_look_for) > 30:
@@ -283,9 +281,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
         dates_to_look_for = pandas.date_range(
-            start=conf_first_loaded + datetime.timedelta(days=1),
-            end=datetime.datetime.today(),
-            normalize=True,
+            start=conf_first_loaded + datetime.timedelta(days=1), end=datetime.datetime.today(), normalize=True,
         ).tolist()
 
         if len(dates_to_look_for) > 30:
