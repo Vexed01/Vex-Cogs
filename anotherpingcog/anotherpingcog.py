@@ -8,7 +8,7 @@ from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 
-from .objects import Cache
+from .objects import Cache, Settings
 
 DEFAULT = "default"
 
@@ -31,7 +31,7 @@ class AnotherPingCog(commands.Cog):
     You can customise the emojis, colours or force embeds with `[p]pingset`.
     """
 
-    __version__ = "1.1.2"
+    __version__ = "1.1.3"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -73,7 +73,6 @@ class AnotherPingCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def apcinfo(self, ctx: commands.Context):
-        print("AAAAAAAA")
         await ctx.send(
             f"AnotherPingCog by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\nVersion: `{self.__version__}`"
         )
@@ -211,6 +210,7 @@ class AnotherPingCog(commands.Cog):
             )
 
     # DRY's gone out the window here...
+    # TODO: emoji + hex converter
 
     @pingset.command()
     async def red(self, ctx: commands.Context, emoji: str, hex_colour: str = "default"):
@@ -231,8 +231,8 @@ class AnotherPingCog(commands.Cog):
         same colour as the emoji. Google "hex colour" if you need help with this.
         """
         if emoji.casefold() == "default":
-            self.cache.red.emoji = None
             await self.config.custom_settings.set_raw("red", "emoji", value=None)
+            emoji = None
         else:
             match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
             emoji = self.bot.get_emoji(int(match.group(2))) if match else None
@@ -240,11 +240,11 @@ class AnotherPingCog(commands.Cog):
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
                 )
-            self.cache.red.emoji = emoji.id
             await self.config.custom_settings.set_raw("red", "emoji", value=emoji.id)
+            emoji = emoji.id
         if hex_colour.casefold() == "default":
-            self.cache.red.colour = None
             await self.config.custom_settings.set_raw("red", "colour", value=None)
+            hex = None
         else:
             try:
                 int_colour = int(hex_colour, 16)
@@ -254,8 +254,10 @@ class AnotherPingCog(commands.Cog):
                 return await ctx.send(
                     'That doesn\'t look like a valid colour. Google "hex colour" for some converters.'
                 )
-            self.cache.red.colour = int_colour
             await self.config.custom_settings.set_raw("red", "colour", value=int_colour)
+            hex = int_colour
+
+        self.cache.set("red", Settings(emoji, hex))
 
         if await ctx.embed_requested():
             embed = discord.Embed(
@@ -286,8 +288,8 @@ class AnotherPingCog(commands.Cog):
         same colour as the emoji. Google "hex colour" if you need help with this.
         """
         if emoji.casefold() == "default":
-            self.cache.orange.emoji = None
             await self.config.custom_settings.set_raw("orange", "emoji", value=None)
+            emoji = None
         else:
             match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
             emoji = self.bot.get_emoji(int(match.group(2))) if match else None
@@ -295,11 +297,11 @@ class AnotherPingCog(commands.Cog):
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
                 )
-            self.cache.orange.emoji = emoji.id
             await self.config.custom_settings.set_raw("orange", "emoji", value=emoji.id)
+            emoji = emoji.id
         if hex_colour.casefold() == "default":
-            self.cache.orange.colour = None
             await self.config.custom_settings.set_raw("orange", "colour", value=None)
+            hex = None
         else:
             try:
                 int_colour = int(hex_colour, 16)
@@ -309,8 +311,10 @@ class AnotherPingCog(commands.Cog):
                 return await ctx.send(
                     'That doesn\'t look like a valid colour. Google "hex colour" for some converters.'
                 )
-            self.cache.orange.colour = int_colour
             await self.config.custom_settings.set_raw("orange", "colour", value=int_colour)
+            hex = int_colour
+
+        self.cache.set("orange", Settings(emoji, hex))
 
         if await ctx.embed_requested():
             embed = discord.Embed(
@@ -341,8 +345,8 @@ class AnotherPingCog(commands.Cog):
         same colour as the emoji. Google "hex colour" if you need help with this.
         """
         if emoji.casefold() == "default":
-            self.cache.green.emoji = None
             await self.config.custom_settings.set_raw("green", "emoji", value=None)
+            emoji = None
         else:
             match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
             emoji = self.bot.get_emoji(int(match.group(2))) if match else None
@@ -350,11 +354,11 @@ class AnotherPingCog(commands.Cog):
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
                 )
-            self.cache.green.emoji = emoji.id
             await self.config.custom_settings.set_raw("green", "emoji", value=emoji.id)
+            emoji = emoji.id
         if hex_colour.casefold() == "default":
-            self.cache.green.colour = None
             await self.config.custom_settings.set_raw("green", "colour", value=None)
+            hex = None
         else:
             try:
                 int_colour = int(hex_colour, 16)
@@ -364,8 +368,10 @@ class AnotherPingCog(commands.Cog):
                 return await ctx.send(
                     'That doesn\'t look like a valid colour. Google "hex colour" for some converters.'
                 )
-            self.cache.green.colour = int_colour
             await self.config.custom_settings.set_raw("green", "colour", value=int_colour)
+            hex = int_colour
+
+        self.cache.set("green", Settings(emoji, hex))
 
         if await ctx.embed_requested():
             embed = discord.Embed(

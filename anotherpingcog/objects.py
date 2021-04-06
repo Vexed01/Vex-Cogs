@@ -29,7 +29,7 @@ class Cache:
     def __repr__(self):
         return f"Cache({self.__data}, {self.force_embed}, bot)"
 
-    def __set_settings(self, colour_name: str, settings: Settings):
+    def set(self, colour_name: str, settings: Settings):
         self.__data[colour_name]["emoji"] = settings.emoji or DEFAULTS[colour_name]["emoji"]
         self.__data[colour_name]["colour"] = settings.colour or DEFAULTS[colour_name]["colour"]
 
@@ -44,28 +44,14 @@ class Cache:
 
         return Settings(emoji, colour)
 
-    # TODO: use __setter__ and __getter__
-
     @property
     def red(self):
         return self.__get_settings("red")
-
-    @red.setter
-    def red(self, value: Settings):
-        self.__set_settings("red", value)
 
     @property
     def orange(self):
         return self.__get_settings("orange")
 
-    @orange.setter
-    def orange(self, value: Settings):
-        self.__set_settings("orange", value)
-
     @property
     def green(self):
         return self.__get_settings("green")
-
-    @green.setter
-    def green(self, value: Settings):
-        return self.__set_settings("green", value)
