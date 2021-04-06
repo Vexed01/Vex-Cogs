@@ -239,18 +239,13 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
         for date in dates_to_look_for:
             date = date.strftime("%Y-%m-%d")
-            _log.debug(date)
+
             cog_loaded = conf_cog_loaded.get(date, 0)
             cog_unloaded = SECONDS_IN_DAY - cog_loaded
-            _log.debug(f"Unloaded for {cog_unloaded}")
-            _log.debug(f"Which means I was loaded for {cog_loaded}")
             connected = conf_connected.get(date, 0)
             not_connected = SECONDS_IN_DAY - connected
-            _log.debug(f"Not connected for {not_connected}")
-            _log.debug(f"Which meant I was connected for {connected}")
 
             dt_net = cog_loaded - connected
-            _log.debug(f"So this means {dt_net} of donwtime was due to network.")
             if not_connected > 45:  # from my experience heartbeats are ~41 secs
                 main_downtime = humanize_timedelta(seconds=cog_unloaded) or "none"
                 dt_due_to_net = humanize_timedelta(seconds=dt_net) or "none"
