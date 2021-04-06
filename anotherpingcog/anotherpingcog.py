@@ -31,7 +31,7 @@ class AnotherPingCog(commands.Cog):
     You can customise the emojis, colours or force embeds with `[p]pingset`.
     """
 
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -213,7 +213,7 @@ class AnotherPingCog(commands.Cog):
     # DRY's gone out the window here...
 
     @pingset.command()
-    async def red(self, ctx: commands.Context, emoji: str, hex_colour: str):
+    async def red(self, ctx: commands.Context, emoji: str, hex_colour: str = "default"):
         """
         Set the colour and emoji to use for the colour Red.
 
@@ -224,12 +224,11 @@ class AnotherPingCog(commands.Cog):
         `<emoji>`
         Just send the emoji as you normally would. It must be a custom emoji and I must
         be in the sever the emoji is in.
-        You can also put `default` to use the default emoji.
+        You can also put `default` to use \N{LARGE RED CIRCLE}
 
-        `<hex_colour>`
+        `[hex_colour]` (optional)
         The hex code you want the colour for Red to be. It looks best when this is the
-        same colour as the emoji.
-        You can also put `default` to use the default colour.
+        same colour as the emoji. Google "hex colour" if you need help with this.
         """
         if emoji.casefold() == "default":
             self.cache.red.emoji = None
@@ -269,7 +268,7 @@ class AnotherPingCog(commands.Cog):
             await ctx.send(f"The emoji is {str(self.cache.red.emoji)} and I've set the colour.")
 
     @pingset.command()
-    async def orange(self, ctx: commands.Context, emoji: str, hex_colour: str):
+    async def orange(self, ctx: commands.Context, emoji: str, hex_colour: str = "default"):
         """
         Set the colour and emoji to use for the colour Orange.
 
@@ -280,12 +279,11 @@ class AnotherPingCog(commands.Cog):
         `<emoji>`
         Just send the emoji as you normally would. It must be a custom emoji and I must
         be in the sever the emoji is in.
-        You can also put `default` to use the default emoji.
+        You can also put `default` to use \N{LARGE ORANGE CIRCLE}
 
-        `<hex_colour>`
+        `[hex_colour]` (optional)
         The hex code you want the colour for Red to be. It looks best when this is the
         same colour as the emoji. Google "hex colour" if you need help with this.
-        You can also put `default` to use the default colour.
         """
         if emoji.casefold() == "default":
             self.cache.orange.emoji = None
@@ -325,7 +323,7 @@ class AnotherPingCog(commands.Cog):
             await ctx.send(f"The emoji is {str(self.cache.orange.emoji)} and I've set the colour.")
 
     @pingset.command()
-    async def green(self, ctx: commands.Context, emoji: str, hex_colour: str):
+    async def green(self, ctx: commands.Context, emoji: str, hex_colour: str = "default"):
         """
         Set the colour and emoji to use for the colour Green.
 
@@ -336,12 +334,11 @@ class AnotherPingCog(commands.Cog):
         `<emoji>`
         Just send the emoji as you normally would. It must be a custom emoji and I must
         be in the sever the emoji is in.
-        You can also put `default` to use the default emoji.
+        You can also put `default` to use \N{LARGE GREEN CIRCLE}
 
-        `<hex_colour>`
+        `[hex_colour]` (optional)
         The hex code you want the colour for Red to be. It looks best when this is the
-        same colour as the emoji.
-        You can also put `default` to use the default colour.
+        same colour as the emoji. Google "hex colour" if you need help with this.
         """
         if emoji.casefold() == "default":
             self.cache.green.emoji = None
