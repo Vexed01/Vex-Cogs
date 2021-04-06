@@ -12,8 +12,7 @@ from tabulate import tabulate
 
 from ..core.consts import FEEDS, SPECIAL_INFO
 from ..core.statusapi import StatusAPI
-from ..objects.caches import (LastChecked, ServiceCooldown,
-                              ServiceRestrictionsCache, UsedFeeds)
+from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
 from ..objects.configwrapper import ConfigWrapper
 from ..objects.incidentdata import Update
 from ..objects.sendcache import SendCache

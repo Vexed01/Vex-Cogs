@@ -8,8 +8,7 @@ from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta
 
 from ..commands.converters import ServiceConverter
 from ..core.statusapi import StatusAPI
-from ..objects.caches import (LastChecked, ServiceCooldown,
-                              ServiceRestrictionsCache)
+from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache
 from ..objects.configwrapper import ConfigWrapper
 from ..objects.incidentdata import Update
 from ..objects.sendcache import SendCache

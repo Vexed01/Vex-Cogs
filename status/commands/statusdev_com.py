@@ -12,8 +12,7 @@ from tabulate import tabulate
 
 from ..commands.converters import ModeConverter, ServiceConverter
 from ..core.statusapi import StatusAPI
-from ..objects.caches import (LastChecked, ServiceCooldown,
-                              ServiceRestrictionsCache, UsedFeeds)
+from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
 from ..objects.configwrapper import ConfigWrapper
 from ..objects.incidentdata import Update
 from ..objects.sendcache import SendCache
