@@ -12,7 +12,8 @@ from tabulate import tabulate
 
 from ..core.consts import FEEDS, SPECIAL_INFO
 from ..core.statusapi import StatusAPI
-from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
+from ..objects.caches import (LastChecked, ServiceCooldown,
+                              ServiceRestrictionsCache, UsedFeeds)
 from ..objects.configwrapper import ConfigWrapper
 from ..objects.incidentdata import Update
 from ..objects.sendcache import SendCache
@@ -133,7 +134,7 @@ class StatusSetCom:
                     if hook.name == channel.guild.me.name:
                         existing_webhook = True
                 if not existing_webhook:
-                    await channel.create_webhook(name=channel.guild.me.name, reason=f"Created for status updates.")
+                    await channel.create_webhook(name=channel.guild.me.name, reason="Created for status updates.")
         else:
             await ctx.send(
                 "I would ask about whether you want me to send updates as a webhook (so they match the "
@@ -310,7 +311,7 @@ class StatusSetCom:
             of my avatar and name.
         """
         if webhook and not ctx.channel.permissions_for(ctx.me).manage_messages:
-            return await ctx.send(f"I don't have permission to manage webhook.")
+            return await ctx.send("I don't have permission to manage webhook.")
 
         incidentdata, extra_info = await self.config_wrapper.get_latest(service.name)
 

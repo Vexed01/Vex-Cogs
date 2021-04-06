@@ -211,7 +211,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
             content = "Data tracking only started in the last few minutes. Data may be inaccurate."
         elif len(dates_to_look_for) - 1 == 0:
             content = None
-            embed.set_footer(text=f"Data is only for today.")
+            embed.set_footer(text="Data is only for today.")
         else:
             content = None
             embed.set_footer(text=f"Data is for the last {len(dates_to_look_for)} days.")

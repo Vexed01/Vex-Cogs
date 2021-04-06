@@ -10,7 +10,8 @@ from redbot.core.bot import Red
 from ..commands.status_com import StatusCom
 from ..commands.statusdev_com import StatusDevCom
 from ..commands.statusset_com import StatusSetCom
-from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
+from ..objects.caches import (LastChecked, ServiceCooldown,
+                              ServiceRestrictionsCache, UsedFeeds)
 from ..objects.configwrapper import ConfigWrapper
 from ..updateloop.sendupdate import SendUpdate
 from ..updateloop.updatechecker import UpdateChecker

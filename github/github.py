@@ -1,4 +1,3 @@
-import asyncio
 from asyncio import TimeoutError
 from typing import Mapping
 
@@ -10,7 +9,7 @@ from redbot.core.utils.chat_formatting import humanize_list, inline
 from redbot.core.utils.predicates import MessagePredicate
 
 from .api import GitHubAPI
-from .consts import *
+from .consts import CHECK, CROSS, EXCEPTIONS
 from .errors import CustomError
 
 # cspell:ignore labelify kowlin's resp
@@ -226,7 +225,7 @@ class GitHub(commands.Cog):
         for label in issue_labels:
             il_names.append(label["name"])
 
-        avaliable_labels = self._inline_list([l for l in rl_names if l not in il_names])
+        avaliable_labels = self._inline_list([label for label in rl_names if label not in il_names])
         used_labels = self._inline_list(il_names)
         await ctx.send(
             "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
@@ -259,7 +258,7 @@ class GitHub(commands.Cog):
             il_names.append(answer.content)
             rl_names.remove(answer.content)
 
-            avaliable_labels = self._inline_list([l for l in rl_names if l not in il_names])
+            avaliable_labels = self._inline_list([label for label in rl_names if label not in il_names])
             used_labels = self._inline_list(il_names)
             await ctx.send(
                 "Label added. Again, 30 seconds. Say another label name if you want to add more, **`save` to save your "

@@ -212,7 +212,7 @@ class System(commands.Cog):
         for partition in partitions:
             try:
                 partition_data[partition.device] = [partition, psutil.disk_usage(partition.mountpoint)]
-            except:
+            except Exception:
                 continue
 
         e = "`" if embed else ""
@@ -282,7 +282,7 @@ class System(commands.Cog):
                 now = datetime.datetime.utcnow()
                 embed = discord.Embed(title="CPU Metrics", colour=await ctx.embed_colour(), timestamp=now)
                 embed.add_field(name="CPU Usage", value=self._box(percent))
-                embed.add_field(name=f"CPU Times", value=self._box(time))
+                embed.add_field(name="CPU Times", value=self._box(time))
                 extra = data["freq_note"]
                 embed.add_field(name=f"CPU Frequency{extra}", value=self._box(freq), inline=False)
                 await ctx.send(embed=embed)

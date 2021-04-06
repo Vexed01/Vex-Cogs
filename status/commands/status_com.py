@@ -8,7 +8,8 @@ from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta
 
 from ..commands.converters import ServiceConverter
 from ..core.statusapi import StatusAPI
-from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache
+from ..objects.caches import (LastChecked, ServiceCooldown,
+                              ServiceRestrictionsCache)
 from ..objects.configwrapper import ConfigWrapper
 from ..objects.incidentdata import Update
 from ..objects.sendcache import SendCache
@@ -77,7 +78,7 @@ class StatusCom:
             to_send = None
 
         if not to_send:
-            msg = f"\N{WHITE HEAVY CHECK MARK} There are currently no live incidents."
+            msg = "\N{WHITE HEAVY CHECK MARK} There are currently no live incidents."
             return await ctx.send(msg)
 
         update = Update(to_send, to_send.fields)
