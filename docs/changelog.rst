@@ -11,6 +11,46 @@ Not all changes will be documented here, only bigger updates.
 Status 2.0.0
 ============
 
+---------
+Important
+---------
+
+**If the cog fails to load after updating** then you'll need to do the following.
+
+.. note::
+    If you originally added my repo and didn't name it ``vex``,  replace ``vex`` with what you called it throughout.
+
+1. Uninstall status and remove my repo
+
+    .. code-block:: none
+
+        cog uninstall status
+
+    .. code-block:: none
+
+        repo remove vex
+
+2. Add my repo back and reinstall status
+
+    .. code-block:: none
+
+        repo add vex https://github.com/Vexed01/Vex-Cogs
+
+    .. code-block::
+
+        cog install vex status
+
+3. Restart
+
+    .. code-block:: none
+
+        restart
+
+    .. note::
+        If you haven't configured anything to catch the restart, you'll need to start your bot up again.
+
+    You should now be able to load the cog.
+
 -------------------
 User-facing changes
 -------------------
