@@ -80,18 +80,19 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
                 self.bot.add_dev_env_value("sendupdate", lambda _: SendUpdate)
                 _log.debug("Added dev env vars.")
             except Exception:
-                _log.debug("Unable to add status dev env var.", exc_info=True)
+                _log.exception("Unable to add dev env vars.", exc_info=True)
 
     def cog_unload(self):
+        self.update_checker.loop.cancel()
+        asyncio.create_task(self.session.close())
         try:
             self.bot.remove_dev_env_value("status")
             self.bot.remove_dev_env_value("loop")
             self.bot.remove_dev_env_value("statusapi")
             self.bot.remove_dev_env_value("sendupdate")
-        except Exception:
-            _log.exception("Unable to remove dev env var")
-        self.update_checker.loop.cancel()
-        asyncio.create_task(self.session.close())
+        except KeyError:
+            _log.debug("Unable to remove dev env vars. They probably weren't added.")
+        _log.info("Status unloaded.")
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete"""
