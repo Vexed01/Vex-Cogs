@@ -158,7 +158,6 @@ class UpdateChecker:
             new_fields = []
             for field in incidentdata.fields:
                 if field.update_id not in stored_ids:
-                    print(field.update_id)
                     stored_ids.append(field.update_id)
                     new_fields.append(field)
 

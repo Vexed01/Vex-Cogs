@@ -167,7 +167,6 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
         for c_id, data in really_old.items():
             c_old = deepcopy(data)["feeds"]
             for service in data.get("feeds", {}).keys():
-                print(service)
                 if service in ["twitter", "status.io", "aws", "gcp", "smartthings"]:
                     c_old.pop(service, None)
                 else:
