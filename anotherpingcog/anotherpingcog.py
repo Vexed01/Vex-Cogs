@@ -7,6 +7,7 @@ import tabulate
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
+from vexcogutils import format_help, format_info
 
 from .objects import Cache, Settings
 
@@ -36,13 +37,7 @@ class AnotherPingCog(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = (
-            "This cog has docs! Check them out at\n"
-            "https://vex-cogs.rtfd.io/en/latest/cogs/anotherpingcog.html?utm_source=cog&utm_medium=docstring&utm_campaign=main_help"
-        )
-        pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
-        # adding docs link here so doesn't show up in auto generated docs
+        return format_help(self, ctx)
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -71,9 +66,7 @@ class AnotherPingCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def apcinfo(self, ctx: commands.Context):
-        await ctx.send(
-            f"AnotherPingCog by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\nVersion: `{self.__version__}`"
-        )
+        await ctx.send(format_info(self.qualified_name, self.__version__))
 
     # cspell:disable-next-line
     @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])

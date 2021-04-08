@@ -16,6 +16,4 @@ CHECK_REAL = "check_real"
 
 EXCEPTIONS = (HTTPException, CustomError)
 
-
-CHECK = "\N{HEAVY CHECK MARK}\N{VARIATION SELECTOR-16}"
 CROSS = "\N{CROSS MARK}"

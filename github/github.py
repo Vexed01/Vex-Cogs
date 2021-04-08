@@ -7,9 +7,10 @@ from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_list, inline
 from redbot.core.utils.predicates import MessagePredicate
+from vexcogutils import format_help, format_info
 
 from .api import GitHubAPI
-from .consts import CHECK, CROSS, EXCEPTIONS
+from .consts import CROSS, EXCEPTIONS
 from .errors import CustomError
 
 # cspell:ignore labelify kowlin's resp
@@ -43,13 +44,7 @@ class GitHub(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = (
-            "This cog has docs! Check them out at\n"
-            "https://vex-cogs.rtfd.io/en/latest/cogs/github.html?utm_source=cog&utm_medium=docstring&utm_campaign=main_help"
-        )
-        pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
-        # adding docs link here so doesn't show up in auto generated docs
+        return format_help(self, ctx)
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -74,7 +69,7 @@ class GitHub(commands.Cog):
         elif not isinstance(error, CustomError):
             raise error
 
-    def _inline_list(self, list: list):
+    def inline_hum_list(self, list: list):
         inline_list = [inline(i) for i in list]
         return humanize_list(inline_list)
 
@@ -109,20 +104,15 @@ class GitHub(commands.Cog):
 
     @commands.command(hidden=True)
     async def githubinfo(self, ctx: commands.Context):
-        token = CHECK if self.token else CROSS
-        repo = CHECK if self.repo else CROSS
+        extras = {"Token": bool(self.token), "Repo": bool(self.repo)}
+        main = format_info(self.qualified_name, self.__version__, extras=extras)
 
         if not (self.token and self.repo):
-            extra = f"It is expected these are `{CROSS}` if no commands have been used since the cog was last loaded.\n"
+            extra = f"\nIt is expected these are `{CROSS}` if no commands have been used since the cog was last loaded."
         else:
             extra = ""
 
-        await ctx.send(
-            f"GitHub by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n{extra}"
-            f"Token cache: `{token}`\n"
-            f"Repo cache: `{repo}`\n"
-            f"Version: `{self.__version__}`"
-        )
+        await ctx.send(f"{main}{extra}")
 
     @commands.group(aliases=["github"])
     @checks.is_owner()
@@ -225,8 +215,8 @@ class GitHub(commands.Cog):
         for label in issue_labels:
             il_names.append(label["name"])
 
-        avaliable_labels = self._inline_list([label for label in rl_names if label not in il_names])
-        used_labels = self._inline_list(il_names)
+        avaliable_labels = self.inline_hum_list([label for label in rl_names if label not in il_names])
+        used_labels = self.inline_hum_list(il_names)
         await ctx.send(
             "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
             " This is case sensitive.\n\n"
@@ -258,8 +248,8 @@ class GitHub(commands.Cog):
             il_names.append(answer.content)
             rl_names.remove(answer.content)
 
-            avaliable_labels = self._inline_list([label for label in rl_names if label not in il_names])
-            used_labels = self._inline_list(il_names)
+            avaliable_labels = self.inline_hum_list([label for label in rl_names if label not in il_names])
+            used_labels = self.inline_hum_list(il_names)
             await ctx.send(
                 "Label added. Again, 30 seconds. Say another label name if you want to add more, **`save` to save your "
                 "changes** or **`exit` to exit without saving.**\n\n"
@@ -293,7 +283,7 @@ class GitHub(commands.Cog):
         for label in issue_labels:
             il_names.append(label["name"])
 
-        used_labels = self._inline_list(il_names)
+        used_labels = self.inline_hum_list(il_names)
         await ctx.send(
             "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
             " This is case sensitive.\n\n"
@@ -321,7 +311,7 @@ class GitHub(commands.Cog):
 
             il_names.remove(answer.content)
 
-            used_labels = self._inline_list(il_names)
+            used_labels = self.inline_hum_list(il_names)
             await ctx.send(
                 "Label removed. Again, 30 seconds. Say another label name if you want to remove one, or `exit` to "
                 f"finish.\n\nLabels currently on issue: {used_labels}"
@@ -364,7 +354,7 @@ class GitHub(commands.Cog):
             for label in repo_labels:
                 rl_names.append(label["name"])
 
-            avaliable_labels = self._inline_list(rl_names)
+            avaliable_labels = self.inline_hum_list(rl_names)
             await ctx.send(
                 "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
                 " This is case sensitive. Say `exit` to abort creating the issue, or **`create` to make the issue**.\n\n"
@@ -396,8 +386,8 @@ class GitHub(commands.Cog):
                 to_add.append(answer.content)
                 rl_names.remove(answer.content)
 
-                avaliable_labels = self._inline_list(rl_names)
-                used_labels = self._inline_list(to_add)
+                avaliable_labels = self.inline_hum_list(rl_names)
+                used_labels = self.inline_hum_list(to_add)
                 await ctx.send(
                     "Label added. Again, 30 seconds. Say another label name if you want to add more, `create` to create "
                     "the issue or `exit` to exit without saving.\n\n"

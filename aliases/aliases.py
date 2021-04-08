@@ -4,8 +4,7 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils import deduplicate_iterables
 from redbot.core.utils.chat_formatting import humanize_list, inline, pagify
-
-# cspell:ignore delims
+from vexcogutils import format_help, format_info, inline_hum_list
 
 
 class Aliases(commands.Cog):
@@ -16,13 +15,7 @@ class Aliases(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = (
-            "This cog has docs! Check them out at\n"
-            "https://vex-cogs.rtfd.io/en/latest/cogs/aliases.html?utm_source=cog&utm_medium=docstring&utm_campaign=main_help"
-        )
-        pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
-        # adding docs link here so doesn't show up in auto generated docs
+        return format_help(self, ctx)
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -36,7 +29,7 @@ class Aliases(commands.Cog):
 
     @commands.command(hidden=True)
     async def aliasesinfo(self, ctx: commands.Context):
-        await ctx.send(f"Aliases by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\nVersion: `{self.__version__}`")
+        await ctx.send(format_info(self.qualified_name, self.__version__))
 
     @commands.command(usage="<command>")
     async def aliases(self, ctx: commands.Context, *, strcommand: str):
@@ -111,27 +104,27 @@ class Aliases(commands.Cog):
         global_aliases = deduplicate_iterables(global_aliases)
 
         # make everything inline + make built in aliases
-        inline_builtin_aliases = [self._inline(f"{com_parent} {i}") for i in builtin_aliases]
-        inline_global_aliases = [self._inline(i) for i in global_aliases]
-        inline_guild_aliases = [self._inline(i) for i in guild_aliases]
+        # inline_builtin_aliases = [self._inline(f"{com_parent} {i}") for i in builtin_aliases]
+        # inline_global_aliases = [self._inline(i) for i in global_aliases]
+        # inline_guild_aliases = [self._inline(i) for i in guild_aliases]
+        hum_builtin_aliases = inline_hum_list([f"{com_parent} {i}" for i in builtin_aliases])
+        hum_global_aliases = inline_hum_list(global_aliases)
+        hum_guild_aliases = inline_hum_list(guild_aliases)
 
         aliases = ""
         none = []
-        if inline_builtin_aliases:
-            hum_list = humanize_list(inline_builtin_aliases)
-            aliases += f"Built-in aliases: {hum_list}\n"
+        if hum_builtin_aliases:
+            aliases += f"Built-in aliases: {hum_builtin_aliases}\n"
         else:
             none.append("built-in")
 
-        if not inline_global_aliases:
-            none.append("global")
+        if hum_global_aliases:
+            aliases += f"Global aliases: {hum_global_aliases}\n"
         else:
-            hum_list = humanize_list(inline_global_aliases)
-            aliases += f"Global aliases: {hum_list}\n"
+            none.append("global")
 
-        if inline_guild_aliases:
-            hum_list = humanize_list(inline_guild_aliases)
-            aliases += f"Server aliases: {hum_list}\n"
+        if hum_guild_aliases:
+            aliases += f"Server aliases: {hum_guild_aliases}\n"
         else:
             if ctx.guild:
                 none.append("guild")

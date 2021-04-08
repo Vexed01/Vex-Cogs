@@ -9,8 +9,9 @@ import pandas
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_timedelta, inline
+from vexcogutils import format_help, format_info
 
-from .consts import CHECK, CROSS, SECONDS_IN_DAY
+from .consts import CROSS, SECONDS_IN_DAY
 from .loop import BetterUptimeLoop
 
 # only used in dev com so dont want is as a requirement in info.json
@@ -39,13 +40,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = (
-            "This cog has docs! Check them out at\n"
-            "https://vex-cogs.rtfd.io/en/latest/cogs/betteruptime.html?utm_source=cog&utm_medium=docstring&utm_campaign=main_help"
-        )
-        pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
-        # adding docs link here so doesn't show up in auto generated docs
+        return format_help(self, ctx)
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -109,21 +104,16 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
     @commands.command(hidden=True)
     async def betteruptimeinfo(self, ctx: commands.Context):
-        main_status = CHECK if self.uptime_loop.is_running() else CROSS
-        conf_status = CHECK if self.config_loop.is_running() else CROSS
+        loops = {"Main loop": self.uptime_loop.is_running(), "Config loop": self.config_loop.is_running()}
+        main = format_info(self.qualified_name, self.__version__, extras=loops)
 
         extra = (
-            f"Note: these **will** show `{CROSS}` for a few more seconds until the cog is fully ready.\n"
+            f"\nNote: these **will** show `{CROSS}` for a few more seconds until the cog is fully ready."
             if self.recent_load
             else ""
         )
 
-        await ctx.send(
-            f"BetterUptime by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n{extra}"
-            f"Main loop: `{main_status}`\n"
-            f"Config loop: `{conf_status}`\n"
-            f"Version: `{self.__version__}`"
-        )
+        await ctx.send(f"{main}{extra}")
 
     @commands.command(name="uptime")
     async def uptime_command(self, ctx: commands.Context):

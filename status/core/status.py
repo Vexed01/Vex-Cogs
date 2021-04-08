@@ -6,6 +6,7 @@ from time import time
 import aiohttp
 from redbot.core import Config, commands
 from redbot.core.bot import Red
+from vexcogutils import format_help, format_info
 
 from ..commands.status_com import StatusCom
 from ..commands.statusdev_com import StatusDevCom
@@ -14,7 +15,7 @@ from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCa
 from ..objects.configwrapper import ConfigWrapper
 from ..updateloop.sendupdate import SendUpdate
 from ..updateloop.updatechecker import UpdateChecker
-from .consts import CHECK, CROSS, FEEDS
+from .consts import FEEDS
 from .statusapi import StatusAPI
 
 _log = logging.getLogger("red.vexed.status.core")
@@ -42,10 +43,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = "This cog has docs! Check them out at\nhttps://vex-cogs.readthedocs.io/en/latest/cogs/status.html?utm_source=cog&utm_medium=docstring&utm_campaign=main_help"
-        pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
-        # adding docs link here so doesn't show up in auto generated docs
+        return format_help(self, ctx)
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -176,16 +174,13 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
 
     @commands.command(name="statusinfo", hidden=True)
     async def command_statusinfo(self, ctx: commands.Context):
-        loopstatus = CHECK if self.update_checker.loop.is_running() else CROSS
-
+        loopstatus = self.update_checker.loop.is_running()
         try:
-            loopintegrity = CHECK if time() - self.update_checker.loop._last_iteration.timestamp() <= 120 else CROSS
+            loopintegrity = time() - self.update_checker.loop._last_iteration.timestamp() <= 120
         except AttributeError:
-            loopintegrity = CROSS
+            loopintegrity = False
 
-        await ctx.send(
-            "Status by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n"
-            f"Loop running: `{loopstatus}`\n"
-            f"Loop integrity: `{loopintegrity}`\n"
-            f"Version: `{self.__version__}`"
-        )
+        extras = {"Loop running": loopstatus, "Loop integrity": loopintegrity}
+        main = format_info(self.qualified_name, self.__version__, extras=extras)
+
+        await ctx.send(f"{main}")

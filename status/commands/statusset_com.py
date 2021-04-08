@@ -9,6 +9,7 @@ from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.predicates import MessagePredicate
 from tabulate import tabulate
+from vexcogutils import inline_hum_list
 
 from ..core.consts import FEEDS, SPECIAL_INFO
 from ..core.statusapi import StatusAPI
@@ -269,7 +270,7 @@ class StatusSetCom:
                     msg += box(tabulate(data, tablefmt="plain"), lang="arduino")  # cspell:disable-line
             if unused_feeds:
                 msg += "**Other available services:** "
-                msg += humanize_list(unused_feeds)
+                msg += inline_hum_list(unused_feeds)
             msg += f"\nTo see settings for a specific service, run `{ctx.clean_prefix}statusset list <service>`"
             await ctx.send(msg)
 

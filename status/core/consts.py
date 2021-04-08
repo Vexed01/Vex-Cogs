@@ -2,8 +2,6 @@ ALL = "all"
 LATEST = "latest"
 EDIT = "edit"
 
-CHECK = "\N{HEAVY CHECK MARK}\N{VARIATION SELECTOR-16}"
-CROSS = "\N{CROSS MARK}"
 
 LINK_RE = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]|\(([^\s()<>]|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
 # regex from https://stackoverflow.com/a/28187496

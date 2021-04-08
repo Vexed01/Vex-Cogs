@@ -4,6 +4,7 @@ import discord
 import psutil
 from redbot.core import checks, commands
 from redbot.core.bot import Red
+from vexcogutils import format_help, format_info
 
 from .utils import box, get_cpu, get_disk, get_mem, get_proc, get_sensors, get_uptime, get_users
 
@@ -26,13 +27,7 @@ class System(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context):
         """Thanks Sinbad."""
-        docs = (
-            "This cog has docs! Check them out at\n"
-            "https://vex-cogs.rtfd.io/en/latest/cogs/system.html?utm_source=cog&utm_medium=docstring&utm_campaign=main_help"
-        )
-        pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: **`{self.__version__}`**\n{docs}"
-        # adding docs link here so doesn't show up in auto generated docs
+        return format_help(self, ctx)
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -43,7 +38,7 @@ class System(commands.Cog):
 
     @commands.command(hidden=True)
     async def systeminfo(self, ctx: commands.Context):
-        await ctx.send(f"System by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\nVersion: `{self.__version__}`")
+        await ctx.send(format_info(self.qualified_name, self.__version__))
 
     @checks.is_owner()
     @commands.group()
