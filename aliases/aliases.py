@@ -10,7 +10,7 @@ from vexcogutils import format_help, format_info, inline_hum_list
 class Aliases(commands.Cog):
     """Get all the alias information you could ever want about a command."""
 
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -72,15 +72,10 @@ class Aliases(commands.Cog):
             for alias_cog in all_guild_aliases:
                 if alias_cog["name"] == strcommand:
                     command = self.bot.get_command(alias_cog["command"])
-                    full_com = alias_cog["command"]
 
             for alias_cog in all_global_aliases:
                 if alias_cog["name"] == strcommand:
                     command = self.bot.get_command(alias_cog["command"])
-                    full_com = alias_cog["command"]
-
-        else:
-            full_com = command.qualified_name
 
         if command is None:
             return await ctx.send("That's not a command or alias.")
@@ -93,10 +88,10 @@ class Aliases(commands.Cog):
             return
 
         for alias_cog in all_guild_aliases:
-            if full_com in [alias_cog["command"], alias_cog["name"]]:
+            if strcommand in [alias_cog["command"], alias_cog["name"]]:
                 guild_aliases.append(alias_cog["name"])
         for alias_cog in all_global_aliases:
-            if full_com in [alias_cog["command"], alias_cog["name"]]:
+            if strcommand in [alias_cog["command"], alias_cog["name"]]:
                 global_aliases.append(alias_cog["name"])
 
         # and probs picked up duplicates on second run so:
@@ -104,9 +99,6 @@ class Aliases(commands.Cog):
         global_aliases = deduplicate_iterables(global_aliases)
 
         # make everything inline + make built in aliases
-        # inline_builtin_aliases = [self._inline(f"{com_parent} {i}") for i in builtin_aliases]
-        # inline_global_aliases = [self._inline(i) for i in global_aliases]
-        # inline_guild_aliases = [self._inline(i) for i in guild_aliases]
         hum_builtin_aliases = inline_hum_list([f"{com_parent} {i}" for i in builtin_aliases])
         hum_global_aliases = inline_hum_list(global_aliases)
         hum_guild_aliases = inline_hum_list(guild_aliases)
@@ -132,7 +124,7 @@ class Aliases(commands.Cog):
                 aliases += "You're in DMs, so there aren't any server aliases."
         none = humanize_list(none, style="or")
 
-        msg = f"Main command: `{full_com}`\n{aliases}"
+        msg = f"Main command: `{strcommand}`\n{aliases}"
 
         if none:
             msg += f"This command has no {none} aliases."
