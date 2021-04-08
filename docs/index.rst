@@ -6,17 +6,13 @@
 Welcome to Vex-Cogs's documentation!
 ====================================
 
+Docs version: |version|
+
 .. toctree::
    :maxdepth: 1
    :caption: Getting started:
 
    getting_started
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Changelog:
-
-   changelog
 
 .. toctree::
    :maxdepth: 1
@@ -34,6 +30,12 @@ Welcome to Vex-Cogs's documentation!
    :caption: Event docs for developers:
 
    statusdev
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Changelog:
+
+   changelog
 
 
 Indices and tables

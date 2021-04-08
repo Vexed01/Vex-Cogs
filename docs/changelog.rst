@@ -1,6 +1,5 @@
 .. _changelog:
 
-
 =========
 Changelog
 =========
@@ -11,17 +10,8 @@ Usage of this for all version bumping updates started 21-04-08.
 
 Date format throughout is YYYY-MM-DD
 
-Jump to a cog:
+See the contents bar on the right to skip to a cog.
 
-| :ref:`aliases`
-| :ref:`apc`
-| :ref:`betteruptime`
-| :ref:`github`
-| :ref:`status`
-| :ref:`system`
-
-
-.. _aliases:
 
 =======
 Aliases
@@ -31,10 +21,10 @@ Aliases
 ``1.0.3``
 *********
 
+2021-04-08
+
 - Fix logic for checking command
 - Small internal cleanup (still more to do)
-
-.. _apc:
 
 ==============
 AnotherPingCog
@@ -43,23 +33,17 @@ AnotherPingCog
 *No updates since changelogs started*
 
 
-.. _betteruptime:
-
 ============
 BetterUptime
 ============
 
 *No updates since changelogs started*
 
-.. _github:
-
 ======
 GitHub
 ======
 
 *No updates since changelogs started*
-
-.. _status:
 
 ======
 Status
@@ -68,6 +52,8 @@ Status
 *********
 ``2.0.0``
 *********
+
+(backdated)
 
 ---------
 Important
@@ -133,12 +119,37 @@ Internal changes
 - Changes to how incidents are stored including config wrapper
 - No longer write ETags to config (just cache)
 
-.. _system:
-
 ======
 System
 ======
 
+*********
+``1.1.0``
+*********
+
+2021-04-08
+
 - New command: ``system uptime``
     - shows what time the system was booted and how long ago that was
 - Internal refactor, splitting commands and psutil parsers into two files
+
+=========
+Meta Docs
+=========
+
+*********
+``2.1.0``
+*********
+
+2021-04-08
+
+- Start versioning docs
+- Fully use changelog
+
+*********
+``2.0.0``
+*********
+
+(backdated)
+
+- Switch to furo theme
