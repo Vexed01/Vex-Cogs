@@ -1,13 +1,11 @@
-import asyncio
 import datetime
-from typing import Dict, List, Union
 
 import discord
 import psutil
-from redbot.core import Config, checks, commands
+from redbot.core import checks, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box, humanize_number
-from tabulate import tabulate
+
+from .utils import box, get_cpu, get_disk, get_mem, get_proc, get_sensors, get_uptime, get_users
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"
@@ -23,7 +21,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.0.5"
+    __version__ = "1.1.0"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context):
@@ -39,19 +37,9 @@ class System(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
 
-        self.config: Config = Config.get_conf(self, identifier="418078199982063626")
-        default = {"embed": True}
-        self.config.register_global(settings=default)
-        # this is a global setting... sorry bots with co-owners
-
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete"""
         return
-
-    async def _use_embed(self, ctx: commands.Context):
-        if await ctx.embed_requested() is False:
-            return False
-        return (await self.config.settings())["embed"]
 
     @commands.command(hidden=True)
     async def systeminfo(self, ctx: commands.Context):
@@ -67,200 +55,6 @@ class System(commands.Cog):
         See the help for individual commands for detailed limitations.
         """
 
-    @system.command(name="embedtoggle", aliases=["embed"])
-    async def system_embedtoggle(self, ctx: commands.Context):
-        """
-        Toggle embeds on and off for this cog.
-
-        Note: If embeds are set to False using the `embedset` command that will override this.
-        """
-        old = (await self.config.settings())["embed"]
-        new = not old
-        await self.config.settings.set_raw("embed", value=new)
-        await ctx.send(
-            f"Embeds for this cog set to **`{new}`**.\n"
-            "Note if embeds are set to False using the `embedset` command that will override this."
-        )
-
-    def _box(self, text: str):
-        """Box up text as css. May return over 2k chars"""
-        return box(text, "css")
-
-    def _hum(self, num: Union[int, float]):
-        """Round a number, then humanize."""
-        return humanize_number(round(num))
-
-    def _hum_mb(self, bytes: Union[int, float]):
-        """Convert to MBs, round, then humanize."""
-        mb = bytes / 1048576
-        return self._hum(mb)
-
-    def _hum_gb(self, bytes: Union[int, float]):
-        """Convert to GBs, round, then humanize."""
-        mb = bytes / 1073741824
-        return self._hum(mb)
-
-    def _secs_to_time(self, secs: Union[int, float]):
-        m, s = divmod(secs, 60)
-        h, m = divmod(m, 60)
-        return datetime.datetime.fromtimestamp(secs).strftime("%H:%M:%S")
-
-    def _system_uptime(self):
-        now = datetime.datetime.utcnow().timestamp()
-        return now - psutil.boot_time()
-
-    async def _cpu(self):
-        """Get CPU metrics"""
-        psutil.cpu_percent()
-        await asyncio.sleep(1)
-        percent = psutil.cpu_percent(percpu=True)
-        time = psutil.cpu_times()
-        freq = psutil.cpu_freq(percpu=True)
-        cores = psutil.cpu_count()
-
-        if psutil.LINUX:
-            data = {"percent": "", "freq": "", "freq_note": "", "time": ""}
-            for i in range(cores):
-                data["percent"] += f"[Core {i}] {percent[i]} %\n"
-                ghz = round((freq[i].current / 1000), 2)
-                data["freq"] += f"[Core {i}] {ghz} GHz\n"
-        else:
-            data = {"percent": "", "freq": "", "freq_note": " (nominal)", "time": ""}
-            for i in range(cores):
-                data[
-                    "percent"
-                ] += f"[Core {i}] {percent[i]} % \n"  # keep extra space here, for special case, tabulate removes it
-            ghz = round((freq[0].current / 1000), 2)
-            data["freq"] = f"{ghz} GHz\n"  # blame windows
-
-        data["time"] += f"[Idle]   {self._hum(time.idle)} seconds\n"
-        data["time"] += f"[User]   {self._hum(time.user)} seconds\n"
-        data["time"] += f"[System] {self._hum(time.system)} seconds\n"
-        data["time"] += f"[Uptime] {self._hum(self._system_uptime())} seconds\n"
-
-        return data
-
-    async def _mem(self):
-        """Get memory metrics"""
-        physical = psutil.virtual_memory()
-        swap = psutil.swap_memory()
-
-        data = {"physical": "", "swap": ""}
-
-        data["physical"] += f"[Percent]   {physical.percent} %\n"
-        data["physical"] += f"[Used]      {self._hum_mb(physical.used)} MB\n"
-        data["physical"] += f"[Available] {self._hum_mb(physical.available)} MB\n"
-        data["physical"] += f"[Total]     {self._hum_mb(physical.total)} MB\n"
-
-        data["swap"] += f"[Percent]   {swap.percent} %\n"
-        data["swap"] += f"[Used]      {self._hum_mb(swap.used)} MB\n"
-        data["swap"] += f"[Available] {self._hum_mb(swap.free)} MB\n"
-        data["swap"] += f"[Total]     {self._hum_mb(swap.total)} MB\n"
-
-        return data
-
-    async def _sensors(self, fahrenheit: bool):
-        """Get metrics from sensors"""
-        temp = psutil.sensors_temperatures(fahrenheit)
-        fans = psutil.sensors_fans()
-
-        data = {"temp": "", "fans": ""}
-
-        unit = "°F" if fahrenheit else "°C"
-
-        t_data = []
-        for k, v in temp.items():
-            for item in v:
-                item: psutil._common.shwtemp
-                name = item.label or k
-                t_data.append([f"[{name}]", f"{item.current} {unit}"])
-        data["temp"] = tabulate(t_data, tablefmt="plain") or "No temperature sensors found"
-
-        t_data = []
-        for k, v in fans.items():
-            for item in v:
-                item: psutil._common.sfan
-                name = item.label or k
-                t_data.append([f"[{name}]", f"{item.current} RPM"])
-        data["fans"] = tabulate(t_data, tablefmt="plain") or "No fan sensors found"
-
-        return data
-
-    async def _users(self, embed: bool):
-        """Get users connected"""
-        users: List[psutil._common.suser] = psutil.users()
-
-        e = "`" if embed else ""
-
-        data = {}
-
-        for user in users:
-            data[f"{e}{user.name}{e}"] = "[Terminal]  {}\n".format(user.terminal or "Unknown")
-            started = datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d at %H:%M:%S")
-            data[f"{e}{user.name}{e}"] += f"[Started]   {started}\n"
-            if not psutil.WINDOWS:
-                data[f"{e}{user.name}{e}"] += f"[PID]       {user.pid}"
-
-        return data
-
-    async def _disk(self, embed: bool):
-        """Get disk info"""
-        partitions = psutil.disk_partitions()
-        partition_data: Dict[str, List[Union[psutil._common.sdiskpart, psutil._common.sdiskusage]]] = {}
-        # that type hint was a waste of time...
-
-        for partition in partitions:
-            try:
-                partition_data[partition.device] = [partition, psutil.disk_usage(partition.mountpoint)]
-            except Exception:
-                continue
-
-        e = "`" if embed else ""
-
-        data = {}
-
-        for k, v in partition_data.items():
-            total_avaliable = (
-                f"{self._hum_gb(v[1].total)} GB" if v[1].total > 1073741824 else f"{self._hum_mb(v[1].total)} MB"
-            )
-            data[f"{e}{k}{e}"] = f"[Usage]       {v[1].percent} %\n"
-            data[f"{e}{k}{e}"] += f"[Total]       {total_avaliable}\n"
-            data[f"{e}{k}{e}"] += f"[Filesystem]  {v[0].fstype}\n"
-            data[f"{e}{k}{e}"] += f"[Mount point] {v[0].mountpoint}\n"
-
-        return data
-
-    async def _proc(self):
-        """Get process info"""
-        processes = psutil.process_iter(["status", "username"])
-        status = {"sleeping": 0, "idle": 0, "running": 0, "stopped": 0}
-
-        for process in processes:
-            try:
-                status[process.info["status"]] += 1
-            except KeyError:
-                continue
-
-        sleeping = status["sleeping"]
-        idle = status["idle"]
-        running = status["running"]
-        stopped = status["stopped"]
-        total = sleeping + idle + running + stopped
-
-        data = {"statuses": f"[Running]  {running}\n"}
-        if psutil.WINDOWS:
-            data["statuses"] += f"[Stopped]  {stopped}\n"
-            data["statuses"] += f"[Total]    {total}\n"
-        else:
-            data["statuses"] += f"[Idle]     {idle}\n"
-            data["statuses"] += f"[Sleeping] {sleeping}\n"
-            if status["stopped"]:  # want to keep it at 4 rows
-                data["statuses"] += f"[Stopped]  {stopped}\n"
-            else:
-                data["statuses"] += f"[Total]    {total}\n"
-
-        return data
-
     @system.command(name="cpu")
     async def system_cpu(self, ctx: commands.Context):
         """
@@ -274,17 +68,17 @@ class System(commands.Cog):
         on Linux it's current and per-core.
         """
         async with ctx.typing():
-            data = await self._cpu()
+            data = await get_cpu()
             percent = data["percent"]
             time = data["time"]
             freq = data["freq"]
-            if await self._use_embed(ctx):
+            if await ctx.embed_requested():
                 now = datetime.datetime.utcnow()
                 embed = discord.Embed(title="CPU Metrics", colour=await ctx.embed_colour(), timestamp=now)
-                embed.add_field(name="CPU Usage", value=self._box(percent))
-                embed.add_field(name="CPU Times", value=self._box(time))
+                embed.add_field(name="CPU Usage", value=box(percent))
+                embed.add_field(name="CPU Times", value=box(time))
                 extra = data["freq_note"]
-                embed.add_field(name=f"CPU Frequency{extra}", value=self._box(freq), inline=False)
+                embed.add_field(name=f"CPU Frequency{extra}", value=box(freq), inline=False)
                 await ctx.send(embed=embed)
             else:
                 msg = "**CPU Metrics**\n"
@@ -292,7 +86,7 @@ class System(commands.Cog):
                 to_box += f"CPU Times\n{time}\n"
                 extra = data["freq_note"]
                 to_box += f"CPU Frequency{extra}\n{freq}\n"
-                msg += self._box(to_box)
+                msg += box(to_box)
                 await ctx.send(msg)
 
     @system.command(name="mem", aliases=["memory", "ram"])
@@ -305,20 +99,20 @@ class System(commands.Cog):
 
         Platforms: Windows, Linux, Mac OS
         """
-        data = await self._mem()
+        data = await get_mem()
         physical = data["physical"]
         swap = data["swap"]
-        if await self._use_embed(ctx):
+        if await ctx.embed_requested():
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Memory", colour=await ctx.embed_colour(), timestamp=now)
-            embed.add_field(name="Physical Memory", value=self._box(physical))
-            embed.add_field(name="SWAP Memory", value=self._box(swap))
+            embed.add_field(name="Physical Memory", value=box(physical))
+            embed.add_field(name="SWAP Memory", value=box(swap))
             await ctx.send(embed=embed)
         else:
             msg = "**Memory**\n"
             to_box = f"Physical Memory\n{physical}\n"
             to_box += f"SWAP Memory\n{swap}\n"
-            msg += self._box(to_box)
+            msg += box(to_box)
             await ctx.send(msg)
 
     @system.command(name="sensors", aliases=["temp", "temperature", "fan", "fans"])
@@ -335,20 +129,20 @@ class System(commands.Cog):
         if not psutil.LINUX:
             return await ctx.send(UNAVAILABLE)
 
-        data = await self._sensors(fahrenheit)
+        data = await get_sensors(fahrenheit)
         temp = data["temp"]
         fans = data["fans"]
-        if await self._use_embed(ctx):
+        if await ctx.embed_requested():
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Sensors", colour=await ctx.embed_colour(), timestamp=now)
-            embed.add_field(name="Temperatures", value=self._box(temp))
-            embed.add_field(name="Fans", value=self._box(fans))
+            embed.add_field(name="Temperatures", value=box(temp))
+            embed.add_field(name="Fans", value=box(fans))
             await ctx.send(embed=embed)
         else:
             msg = "**Temperature**\n"
             to_box = f"Temperatures\n{temp}\n"
             to_box += f"Fans\n{fans}\n"
-            msg += self._box(to_box)
+            msg += box(to_box)
             await ctx.send(msg)
 
     @system.command(name="users")
@@ -362,20 +156,20 @@ class System(commands.Cog):
         Platforms: Windows, Linux, Mac OS
         Note: PID is not available on Windows. Terminal is usually `Unknown`
         """
-        embed = await self._use_embed(ctx)
-        data = await self._users(embed)
+        embed = await ctx.embed_requested()
+        data = await get_users(embed)
         if not data:
             return await ctx.send("It looks like no one is logged in.")
         if embed:
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Users", colour=await ctx.embed_colour(), timestamp=now)
             for name, userdata in data.items():
-                embed.add_field(name=name, value=self._box(userdata))
+                embed.add_field(name=name, value=box(userdata))
             await ctx.send(embed=embed)
         else:
             msg = "**Users**\n"
             to_box = "".join(f"{name}\n{userdata}" for name, userdata in data.items())
-            msg += self._box(to_box)
+            msg += box(to_box)
             await ctx.send(msg)
 
     @system.command(name="disk", aliases=["df"])
@@ -391,19 +185,19 @@ class System(commands.Cog):
         Note: Mount point is basically useless on Windows as it's the
         same as the drive name, though it's still shown.
         """
-        embed = await self._use_embed(ctx)
-        data = await self._disk(embed)
+        embed = await ctx.embed_requested()
+        data = await get_disk(embed)
 
         if embed:
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Disks", colour=await ctx.embed_colour(), timestamp=now)
             for name, diskdata in data.items():
-                embed.add_field(name=name, value=self._box(diskdata))
+                embed.add_field(name=name, value=box(diskdata))
             await ctx.send(embed=embed)
         else:
             msg = "**Disks**\n"
             to_box = "".join(f"{name}\n{diskdata}" for name, diskdata in data.items())
-            msg += self._box(to_box)
+            msg += box(to_box)
             await ctx.send(msg)
 
     @system.command(name="processes", aliases=["proc"])
@@ -414,17 +208,32 @@ class System(commands.Cog):
         Platforms: Windows, Linux, Mac OS
         """
         async with ctx.typing():
-            proc = await self._proc()
+            proc = await get_proc()
             proc = proc["statuses"]
 
-        if await self._use_embed(ctx):
+        if await ctx.embed_requested():
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Processes", colour=await ctx.embed_colour(), timestamp=now)
-            embed.add_field(name="Status", value=self._box(proc))
+            embed.add_field(name="Status", value=box(proc))
             await ctx.send(embed=embed)
         else:
             msg = "**Processes**\n"
-            msg += self._box(f"CPU\n{proc}\n")
+            msg += box(f"CPU\n{proc}\n")
+            await ctx.send(msg)
+
+    @system.command(name="uptime", aliases=["up"])
+    async def system_uptime(self, ctx: commands.Context):
+        uptime = await get_uptime()
+        uptime = uptime["uptime"]
+
+        if await ctx.embed_requested():
+            now = datetime.datetime.utcnow()
+            embed = discord.Embed(title="Uptime", colour=await ctx.embed_colour(), timestamp=now)
+            embed.add_field(name="Uptime", value=box(uptime))
+            await ctx.send(embed=embed)
+        else:
+            msg = "**Utime**\n"
+            msg += box(f"Uptime\n{uptime}\n")
             await ctx.send(msg)
 
     @system.command(name="top", aliases=["overview", "all"])
@@ -439,26 +248,28 @@ class System(commands.Cog):
         Note: This command appears to be very slow in Windows.
         """
         async with ctx.typing():
-            cpu = await self._cpu()
-            mem = await self._mem()
-            proc = await self._proc()
+            cpu = await get_cpu()
+            mem = await get_mem()
+            proc = await get_proc()
+            uptime = await get_uptime()
 
             percent = cpu["percent"]
             times = cpu["time"]
             physical = mem["physical"]
             swap = mem["swap"]
             procs = proc["statuses"]
+            uptime = uptime["uptime"]
 
-        if await self._use_embed(ctx):
+        if await ctx.embed_requested():
             now = datetime.datetime.utcnow()
             embed = discord.Embed(title="Overview", colour=await ctx.embed_colour(), timestamp=now)
-            embed.add_field(name="CPU Usage", value=self._box(percent))
-            embed.add_field(name="CPU Times", value=self._box(times))
+            embed.add_field(name="CPU Usage", value=box(percent))
+            embed.add_field(name="CPU Times", value=box(times))
             embed.add_field(name=ZERO_WIDTH, value=ZERO_WIDTH)
-            embed.add_field(name="Physical Memory", value=self._box(physical))
-            embed.add_field(name="SWAP Memory", value=self._box(swap))
+            embed.add_field(name="Physical Memory", value=box(physical))
+            embed.add_field(name="SWAP Memory", value=box(swap))
             embed.add_field(name=ZERO_WIDTH, value=ZERO_WIDTH)
-            embed.add_field(name="Processes", value=self._box(procs))
+            embed.add_field(name="Processes", value=box(procs))
             await ctx.send(embed=embed)
         else:
             msg = "**Overview**\n"
@@ -466,5 +277,5 @@ class System(commands.Cog):
             to_box += f"Physical Memory\n{physical}\n"
             to_box += f"SWAP Memory\n{swap}\n"
             to_box += f"Processes\n{procs}\n"
-            msg += self._box(to_box)
+            msg += box(to_box)
             await ctx.send(msg)
