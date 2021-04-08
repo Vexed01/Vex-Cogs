@@ -1,15 +1,73 @@
 .. _changelog:
 
 
-*********
+=========
 Changelog
+=========
+
+I may sometimes push an update without incrementing the version. These will not be put in the changelog.
+
+Usage of this for all version bumping updates started 21-04-08.
+
+Date format throughout is YYYY-MM-DD
+
+Jump to a cog:
+
+| :ref:`aliases`
+| :ref:`apc`
+| :ref:`betteruptime`
+| :ref:`github`
+| :ref:`status`
+| :ref:`system`
+
+
+.. _aliases:
+
+=======
+Aliases
+=======
+
+*********
+``1.0.3``
 *********
 
-Not all changes will be documented here, only bigger updates.
+- Fix logic for checking command
+- Small internal cleanup (still more to do)
+
+.. _apc:
+
+==============
+AnotherPingCog
+==============
+
+*No updates since changelogs started*
+
+
+.. _betteruptime:
 
 ============
-Status 2.0.0
+BetterUptime
 ============
+
+*No updates since changelogs started*
+
+.. _github:
+
+======
+GitHub
+======
+
+*No updates since changelogs started*
+
+.. _status:
+
+======
+Status
+======
+
+*********
+``2.0.0``
+*********
 
 ---------
 Important
@@ -21,7 +79,6 @@ Important
     If you originally added my repo and didn't name it ``vex``,  replace ``vex`` with what you called it throughout.
 
 1. Uninstall status and remove my repo
-
     .. code-block:: none
 
         cog uninstall status
@@ -31,7 +88,6 @@ Important
         repo remove vex
 
 2. Add my repo back and reinstall status
-
     .. code-block:: none
 
         repo add vex https://github.com/Vexed01/Vex-Cogs
@@ -41,7 +97,6 @@ Important
         cog install vex status
 
 3. Restart
-
     .. code-block:: none
 
         restart
@@ -77,3 +132,13 @@ Internal changes
 - Implementation of Status API instead of parsing RSS
 - Changes to how incidents are stored including config wrapper
 - No longer write ETags to config (just cache)
+
+.. _system:
+
+======
+System
+======
+
+- New command: ``system uptime``
+    - shows what time the system was booted and how long ago that was
+- Internal refactor, splitting commands and psutil parsers into two files
