@@ -8,15 +8,15 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info
 
-from ..commands.status_com import StatusCom
-from ..commands.statusdev_com import StatusDevCom
-from ..commands.statusset_com import StatusSetCom
-from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
-from ..objects.configwrapper import ConfigWrapper
-from ..updateloop.sendupdate import SendUpdate
-from ..updateloop.updatechecker import UpdateChecker
-from .consts import FEEDS
-from .statusapi import StatusAPI
+from status.commands.status_com import StatusCom
+from status.commands.statusdev_com import StatusDevCom
+from status.commands.statusset_com import StatusSetCom
+from status.core.consts import FEEDS
+from status.core.statusapi import StatusAPI
+from status.objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
+from status.objects.configwrapper import ConfigWrapper
+from status.updateloop.sendupdate import SendUpdate
+from status.updateloop.updatechecker import UpdateChecker
 
 _log = logging.getLogger("red.vexed.status.core")
 
@@ -41,16 +41,18 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
     __version__ = "2.0.1"
     __author__ = "Vexed#3211"
 
-    def format_help_for_context(self, ctx: commands.Context):
+    def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def __init__(self, bot: Red):
+    def __init__(self, bot: Red) -> None:
         self.bot = bot
 
         # config
-        default = {}
-        self.config: Config = Config.get_conf(self, identifier="Vexed-status")  # shit idntfr. bit late to change it...
+        default: dict = {}  # pointless typehint but hey
+        self.config: Config = Config.get_conf(
+            self, identifier="Vexed-status"  # type:ignore
+        )  # shit idntfr. bit late to change it... even mypy agrees...
         self.config.register_global(version=2)
         self.config.register_global(feed_store=default)
         self.config.register_global(old_ids=[])
@@ -80,7 +82,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
             except Exception:
                 _log.exception("Unable to add dev env vars.", exc_info=True)
 
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         self.update_checker.loop.cancel()
         asyncio.create_task(self.session.close())
         try:
@@ -92,11 +94,11 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
             _log.debug("Unable to remove dev env vars. They probably weren't added.")
         _log.info("Status unloaded.")
 
-    async def red_delete_data_for_user(self, **kwargs):
+    async def red_delete_data_for_user(self, **kwargs) -> None:
         """Nothing to delete"""
         return
 
-    async def _async_init(self):
+    async def _async_init(self) -> None:
         await self.bot.wait_until_red_ready()
 
         if await self.config.version() != 3:
@@ -126,7 +128,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
 
         _log.info("Status cog has been successfully initialized.")
 
-    async def _get_initial_data(self):
+    async def _get_initial_data(self) -> None:
         """Start with initial data."""
         old_ids = []
         for service, settings in FEEDS.items():
@@ -134,7 +136,9 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
             try:
                 incidents, etag, status = await self.statusapi.incidents(settings["id"])
                 if status != 200:
-                    _log.warning(f"Unable to get initial data from {service}: HTTP status {status}")
+                    _log.warning(
+                        f"Unable to get initial data from {service}: HTTP status {status}"
+                    )
                 incs = incidents["incidents"]
                 for inc in incs:
                     old_ids.append(inc["id"])
@@ -144,9 +148,13 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
                 continue
 
             try:
-                scheduled, etag, status = await self.statusapi.scheduled_maintenance(settings["id"])
+                scheduled, etag, status = await self.statusapi.scheduled_maintenance(
+                    settings["id"]
+                )
                 if status != 200:
-                    _log.warning(f"Unable to get initial data from {service}: HTTP status {status}")
+                    _log.warning(
+                        f"Unable to get initial data from {service}: HTTP status {status}"
+                    )
                 incs = scheduled["scheduled_maintenances"]
                 for inc in incs:
                     old_ids.append(inc["id"])
@@ -157,7 +165,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
 
         await self.config.old_ids.set(old_ids)
 
-    async def _migrate_to_v3(self):
+    async def _migrate_to_v3(self) -> None:
         # ik this is a mess
         really_old = await self.config.all_channels()
         _log.debug("Config migration in progress. Old data is below in case something goes wrong.")

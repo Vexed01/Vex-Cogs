@@ -6,12 +6,12 @@ from time import monotonic
 from discord import Embed, Message, TextChannel
 from redbot.core.bot import Red
 
-from ..core.consts import FEEDS, UPDATE_NAME
-from ..objects.channel import ChannelData, InvalidChannel
-from ..objects.configwrapper import ConfigWrapper
-from ..objects.incidentdata import Update
-from ..objects.sendcache import SendCache
-from ..updateloop.utils import get_channel_data, get_webhook
+from status.core.consts import FEEDS, UPDATE_NAME
+from status.objects.channel import ChannelData, InvalidChannel
+from status.objects.configwrapper import ConfigWrapper
+from status.objects.incidentdata import Update
+from status.objects.sendcache import SendCache
+from status.updateloop.utils import get_channel_data, get_webhook
 
 _log = logging.getLogger("red.vexed.status.sendupdate")
 
@@ -39,14 +39,17 @@ class SendUpdate:
         self.sendcache = sendcache
         self.dispatch = dispatch
         self.force = force
-        self.channeldata = None
+        self.channeldata: ChannelData
 
         asyncio.create_task(self._send_update(channels))
 
     def __repr__(self):
-        return f"<bot=bot update=update service={self.service} sendcache={self.sendcache} dispatch={self.dispatch}>"
+        return (
+            f"<bot=bot update=update service={self.service} sendcache={self.sendcache} "
+            f"dispatch={self.dispatch}>"
+        )
 
-    async def _send_update(self, channels):
+    async def _send_update(self, channels) -> None:
         if self.dispatch:
             self._dispatch_main(channels)
             # delay for listeners to do expensive stuff before channels start sending
@@ -59,13 +62,15 @@ class SendUpdate:
             try:
                 await self._send_updated_feed(c_id, settings)
             except Exception:
-                return _log.warning(f"Something went wrong sending to {c_id} - skipping.", exc_info=True)
+                return _log.warning(
+                    f"Something went wrong sending to {c_id} - skipping.", exc_info=True
+                )
 
         end = monotonic()
         time = floor(end - start) or "under a"
         _log.info(f"Sending update for {self.service} took {time} second(s).")
 
-    async def _send_updated_feed(self, c_id: int, settings: dict):
+    async def _send_updated_feed(self, c_id: int, settings: dict) -> None:
         try:
             channeldata = await get_channel_data(self.bot, c_id, settings)
         except InvalidChannel:
@@ -97,7 +102,7 @@ class SendUpdate:
 
     # TODO: maybe try to do some DRY on the next 3
 
-    async def _send_webhook(self, channel: TextChannel, embed: Embed):
+    async def _send_webhook(self, channel: TextChannel, embed: Embed) -> None:
         embed.set_footer(text=f"Powered by {channel.guild.me.name}\nLast update")
         webhook = await get_webhook(channel)
 
@@ -125,10 +130,11 @@ class SendUpdate:
                 embed=embed,
             )
 
-    async def _send_embed(self, channel: TextChannel, embed: Embed):
+    async def _send_embed(self, channel: TextChannel, embed: Embed) -> None:
         embed.set_footer(text="Last update")
         embed.set_author(
-            name=UPDATE_NAME.format(FEEDS[self.service]["friendly"]), icon_url=FEEDS[self.service]["avatar"]
+            name=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
+            icon_url=FEEDS[self.service]["avatar"],
         )
 
         if self.channeldata.mode == "edit":
@@ -146,7 +152,7 @@ class SendUpdate:
         else:
             await channel.send(embed=embed)
 
-    async def _send_plain(self, channel: TextChannel, msg: str):
+    async def _send_plain(self, channel: TextChannel, msg: str) -> None:
         if self.channeldata.mode == "edit":
             if edit_id := self.channeldata.edit_id.get(self.incidentdata.incident_id):
                 try:
@@ -162,16 +168,20 @@ class SendUpdate:
         else:
             await channel.send(content=msg)
 
-    def _dispatch_main(self, channels: dict):
+    def _dispatch_main(self, channels: dict) -> None:
         """
         For more information on this event, take a look at the event reference in the docs:
         https://vex-cogs.readthedocs.io/en/latest/statusdev.html
         """
         self.bot.dispatch(
-            "vexed_status_update", update=self.update, service=self.service, channels=channels, force=self.force
+            "vexed_status_update",
+            update=self.update,
+            service=self.service,
+            channels=channels,
+            force=self.force,
         )
 
-    def _dispatch_channel(self, channeldata: ChannelData):
+    def _dispatch_channel(self, channeldata: ChannelData) -> None:
         """
         For more information on this event, take a look at the event reference in the docs:
         https://vex-cogs.readthedocs.io/en/latest/statusdev.html

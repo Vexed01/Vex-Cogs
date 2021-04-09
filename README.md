@@ -33,7 +33,7 @@ I can be found in the [main Red server](https://discord.gg/red) or if you want s
 
 ### Contributing
 
-PRs are welcome! This repo is formatted with Black, line length 120. These are also ran in the workflow: ``isort --line-length 120 --trailing-comma .`` and ``flake8 --ignore E501,F401,W503``
+PRs are welcome! This repo is formatted with Black, line length 99. There are also some other checks on PRs - see the CONTRIBUTING.md file.
 
 ### Credits
 

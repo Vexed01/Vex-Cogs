@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import psutil
 from redbot.core.utils.chat_formatting import box as cf_box
@@ -8,34 +8,34 @@ from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelt
 from tabulate import tabulate
 
 
-def box(text: str):
+def box(text: str) -> str:
     """Box up text as toml. May return over 2k chars"""
     return cf_box(text, "toml")
 
 
-def _hum(num: Union[int, float]):
+def _hum(num: Union[int, float]) -> str:
     """Round a number, then humanize."""
     return humanize_number(round(num))
 
 
-def _hum_mb(bytes: Union[int, float]):
+def _hum_mb(bytes: Union[int, float]) -> str:
     """Convert to MBs, round, then humanize."""
     mb = bytes / 1048576
     return _hum(mb)
 
 
-def _hum_gb(bytes: Union[int, float]):
+def _hum_gb(bytes: Union[int, float]) -> str:
     """Convert to GBs, round, then humanize."""
     mb = bytes / 1073741824
     return _hum(mb)
 
 
-def _up_since():
+def _up_since() -> int:
     now = datetime.datetime.utcnow().timestamp()
     return now - psutil.boot_time()
 
 
-async def get_cpu():
+async def get_cpu() -> Dict[str, str]:
     """Get CPU metrics"""
     psutil.cpu_percent()
     await asyncio.sleep(1)
@@ -55,7 +55,8 @@ async def get_cpu():
         for i in range(cores):
             data[
                 "percent"
-            ] += f"[Core {i}] {percent[i]} % \n"  # keep extra space here, for special case, tabulate removes it
+            ] += f"[Core {i}] {percent[i]} % \n"  # keep extra space here, for special case,
+            # tabulate removes it
         ghz = round((freq[0].current / 1000), 2)
         data["freq"] = f"{ghz} GHz\n"  # blame windows
 
@@ -67,7 +68,7 @@ async def get_cpu():
     return data
 
 
-async def get_mem():
+async def get_mem() -> Dict[str, str]:
     """Get memory metrics"""
     physical = psutil.virtual_memory()
     swap = psutil.swap_memory()
@@ -87,10 +88,10 @@ async def get_mem():
     return data
 
 
-async def get_sensors(fahrenheit: bool):
+async def get_sensors(fahrenheit: bool) -> Dict[str, str]:
     """Get metrics from sensors"""
-    temp = psutil.sensors_temperatures(fahrenheit)
-    fans = psutil.sensors_fans()
+    temp: Dict[Any, List[psutil._common.shwtemp]] = psutil.sensors_temperatures(fahrenheit)
+    fans: Dict[Any, List[psutil._common.sfan]] = psutil.sensors_fans()
 
     data = {"temp": "", "fans": ""}
 
@@ -98,24 +99,22 @@ async def get_sensors(fahrenheit: bool):
 
     t_data = []
     for k, v in temp.items():
-        for item in v:
-            item: psutil._common.shwtemp
-            name = item.label or k
-            t_data.append([f"[{name}]", f"{item.current} {unit}"])
+        for t_item in v:
+            name = t_item.label or k
+            t_data.append([f"[{name}]", f"{t_item.current} {unit}"])
     data["temp"] = tabulate(t_data, tablefmt="plain") or "No temperature sensors found"
 
     t_data = []
     for k, v in fans.items():
-        for item in v:
-            item: psutil._common.sfan
-            name = item.label or k
-            t_data.append([f"[{name}]", f"{item.current} RPM"])
+        for f_item in v:
+            name = f_item.label or k
+            t_data.append([f"[{name}]", f"{f_item.current} RPM"])
     data["fans"] = tabulate(t_data, tablefmt="plain") or "No fan sensors found"
 
     return data
 
 
-async def get_users(embed: bool):
+async def get_users(embed: bool) -> Dict[str, str]:
     """Get users connected"""
     users: List[psutil._common.suser] = psutil.users()
 
@@ -133,10 +132,12 @@ async def get_users(embed: bool):
     return data
 
 
-async def get_disk(embed: bool):
+async def get_disk(embed: bool) -> Dict[str, str]:
     """Get disk info"""
     partitions = psutil.disk_partitions()
-    partition_data: Dict[str, List[Union[psutil._common.sdiskpart, psutil._common.sdiskusage]]] = {}
+    partition_data: Dict[
+        str, List[Union[psutil._common.sdiskpart, psutil._common.sdiskusage]]
+    ] = {}
     # that type hint was a waste of time...
 
     for partition in partitions:
@@ -150,7 +151,9 @@ async def get_disk(embed: bool):
     data = {}
 
     for k, v in partition_data.items():
-        total_avaliable = f"{_hum_gb(v[1].total)} GB" if v[1].total > 1073741824 else f"{_hum_mb(v[1].total)} MB"
+        total_avaliable = (
+            f"{_hum_gb(v[1].total)} GB" if v[1].total > 1073741824 else f"{_hum_mb(v[1].total)} MB"
+        )
         data[f"{e}{k}{e}"] = f"[Usage]       {v[1].percent} %\n"
         data[f"{e}{k}{e}"] += f"[Total]       {total_avaliable}\n"
         data[f"{e}{k}{e}"] += f"[Filesystem]  {v[0].fstype}\n"
@@ -159,7 +162,7 @@ async def get_disk(embed: bool):
     return data
 
 
-async def get_proc():
+async def get_proc() -> Dict[str, str]:
     """Get process info"""
     processes = psutil.process_iter(["status", "username"])
     status = {"sleeping": 0, "idle": 0, "running": 0, "stopped": 0}
@@ -191,7 +194,7 @@ async def get_proc():
     return data
 
 
-async def get_uptime():
+async def get_uptime() -> Dict[str, str]:
     """Get uptime info"""
     boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
 

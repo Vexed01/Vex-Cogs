@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import logging
 from time import time
-from typing import Dict
+from typing import Dict, Union
 
 import discord
 import pandas
@@ -18,7 +18,7 @@ from .loop import BetterUptimeLoop
 try:
     from tabulate import tabulate
 except ImportError:
-    tabulate = None
+    pass
 
 
 old_ping = None
@@ -35,18 +35,18 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
     data to become available.
     """
 
-    __version__ = "1.2.1"
+    __version__ = "1.2.2"
     __author__ = "Vexed#3211"
 
-    def format_help_for_context(self, ctx: commands.Context):
+    def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def __init__(self, bot: Red):
+    def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        default = {}
-        self.config = Config.get_conf(self, 418078199982063626, force_registration=True)
+        default: dict = {}  # :dict is pointless but maked mypy happy
+        self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(version=1)
         self.config.register_global(cog_loaded=default)
         self.config.register_global(connected=default)
@@ -57,8 +57,8 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
         self.first_load = 0.0
 
-        self.cog_loaded_cache: Dict[str, int] = {}
-        self.connected_cache: Dict[str, int] = {}
+        self.cog_loaded_cache: Dict[str, float] = {}
+        self.connected_cache: Dict[str, float] = {}
 
         self.recent_load = True
 
@@ -67,7 +67,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         except Exception:
             pass
 
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         _log.info("BetterUptime is now unloading. Cleaning up...")
         self.uptime_loop.cancel()
         self.config_loop.cancel()
@@ -81,7 +81,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
             utcdatetoday = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 
             self.cog_loaded_cache[utcdatetoday] += until_next
-            self.connected_cache += time() - self.last_ping_change
+            self.connected_cache[utcdatetoday] += time() - self.last_ping_change
         except Exception:
             pass
 
@@ -100,15 +100,19 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         except Exception:
             pass
 
-    # ============================================================================================
+    # =============================================================================================
 
     @commands.command(hidden=True)
     async def betteruptimeinfo(self, ctx: commands.Context):
-        loops = {"Main loop": self.uptime_loop.is_running(), "Config loop": self.config_loop.is_running()}
+        loops = {
+            "Main loop": self.uptime_loop.is_running(),
+            "Config loop": self.config_loop.is_running(),
+        }
         main = format_info(self.qualified_name, self.__version__, extras=loops)
 
         extra = (
-            f"\nNote: these **will** show `{CROSS}` for a few more seconds until the cog is fully ready."
+            f"\nNote: these **will** show `{CROSS}` for a few more seconds until the cog is fully "
+            "ready."
             if self.recent_load
             else ""
         )
@@ -150,18 +154,20 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
         dates_to_look_for = pandas.date_range(
-            start=conf_first_loaded + datetime.timedelta(days=1), end=datetime.datetime.today(), normalize=True
+            start=conf_first_loaded + datetime.timedelta(days=1),
+            end=datetime.datetime.today(),
+            normalize=True,
         ).tolist()
 
         if len(dates_to_look_for) > 30:
             dates_to_look_for = dates_to_look_for[:29]
 
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        seconds_since_midnight = (now - midnight).seconds
+        seconds_since_midnight = float((now - midnight).seconds)
         if len(dates_to_look_for) >= 30:
-            seconds_data_collected = (SECONDS_IN_DAY * 29) + seconds_since_midnight
+            seconds_data_collected = float((SECONDS_IN_DAY * 29) + seconds_since_midnight)
         else:
-            seconds_data_collected = (len(dates_to_look_for) - 1) * SECONDS_IN_DAY
+            seconds_data_collected = float((len(dates_to_look_for) - 1) * SECONDS_IN_DAY)
 
             if conf_first_loaded > midnight:  # cog was first loaded today
                 seconds_data_collected += (now - conf_first_loaded).total_seconds()
@@ -173,28 +179,43 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
             seconds_cog_loaded += conf_cog_loaded.get(date, 0)
             seconds_connected += conf_connected.get(date, 0)
 
-        main_downtime = humanize_timedelta(seconds=seconds_data_collected - seconds_connected) or "none"
-        dt_due_to_net = humanize_timedelta(seconds=seconds_cog_loaded - seconds_connected) or "none"
+        main_downtime = (
+            humanize_timedelta(seconds=seconds_data_collected - seconds_connected) or "none"
+        )
+        dt_due_to_net = (
+            humanize_timedelta(seconds=seconds_cog_loaded - seconds_connected) or "none"
+        )
 
-        # if downtime is under the loop frequency we can just assume it's full uptime... this mainly fixes
-        # irregularities near first load
+        # if downtime is under the loop frequency we can just assume it's full uptime... this
+        # mainly fixes irregularities near first load
         if seconds_data_collected - seconds_cog_loaded <= 16:  # 15 second loop
             seconds_cog_loaded = seconds_data_collected
-        if seconds_data_collected - seconds_connected <= 45:  # for my my experience heartbeats are ~41 secs
+        if (
+            seconds_data_collected - seconds_connected <= 45
+        ):  # for my my experience heartbeats are ~41 secs
             seconds_connected = seconds_data_collected
 
-        uptime_cog_loaded = format(round((seconds_cog_loaded / seconds_data_collected) * 100, 2), ".2f")
-        uptime_connected = format(round((seconds_connected / seconds_data_collected) * 100, 2), ".2f")
+        uptime_cog_loaded = format(
+            round((seconds_cog_loaded / seconds_data_collected) * 100, 2), ".2f"
+        )
+        uptime_connected = format(
+            round((seconds_connected / seconds_data_collected) * 100, 2), ".2f"
+        )
 
         botname = ctx.me.name
-        embed.add_field(name="Uptime (connected to Discord):", value=inline(f"{uptime_connected}%"))
+        embed.add_field(
+            name="Uptime (connected to Discord):", value=inline(f"{uptime_connected}%")
+        )
         embed.add_field(name=f"Uptime ({botname} ready):", value=inline(f"{uptime_cog_loaded}%"))
 
-        if seconds_data_collected - seconds_connected > 60:  # dont want to include stupidly small downtime
+        if (
+            seconds_data_collected - seconds_connected > 60
+        ):  # dont want to include stupidly small downtime
             downtime_info = f"`{main_downtime}`\n`{dt_due_to_net}` of this was due network issues."
             embed.add_field(name="Downtime:", value=downtime_info, inline=False)
 
         seconds_since_first_load = (datetime.datetime.utcnow() - conf_first_loaded).total_seconds()
+        content: Union[None, str]
         if seconds_since_first_load < 60 * 15:  # 15 mins
             content = "Data tracking only started in the last few minutes. Data may be inaccurate."
         elif len(dates_to_look_for) - 1 == 0:
@@ -228,23 +249,32 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         for date in dates_to_look_for:
             date = date.strftime("%Y-%m-%d")
 
-            cog_loaded = conf_cog_loaded.get(date, 0)
+            cog_loaded = conf_cog_loaded.get(date, 0.0)
             cog_unloaded = SECONDS_IN_DAY - cog_loaded
-            connected = conf_connected.get(date, 0)
+            connected = conf_connected.get(date, 0.0)
             not_connected = SECONDS_IN_DAY - connected
 
-            dt_net = cog_loaded - connected
-            if not_connected > 45:  # from my experience heartbeats are ~41 secs
+            if not_connected > 120:  # from my experience heartbeats are ~41 secs
+                dt_net = cog_loaded - connected
+                if dt_net < 45:  # heartbeats are ~41
+                    dt_net = 0.0
                 main_downtime = humanize_timedelta(seconds=cog_unloaded) or "none"
                 dt_due_to_net = humanize_timedelta(seconds=dt_net) or "none"
 
-                msg += f"\n**{date}**: `{main_downtime}`, of which `{dt_due_to_net}` was due to network issues."
+                msg += (
+                    f"\n**{date}**: `{main_downtime}`, of which `{dt_due_to_net}` was due to "
+                    "network issues."
+                )
 
         if not msg:
-            await ctx.send("It looks like there's been no recorded downtime.\n_This excludes any downtime today._")
+            await ctx.send(
+                "It looks like there's been no recorded downtime.\n_This excludes any downtime "
+                "today._"
+            )
         else:
             await ctx.send(
-                f"{msg}\n\n_Timezone: UTC, date format: Year-Month-Day_\n_This excludes any downtime today._"
+                f"{msg}\n\n_Timezone: UTC, date format: Year-Month-Day_\n_This excludes any "
+                "downtime today._"
             )
 
     @commands.command(name="updev", hidden=True)
@@ -271,7 +301,9 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
         dates_to_look_for = pandas.date_range(
-            start=conf_first_loaded + datetime.timedelta(days=1), end=datetime.datetime.today(), normalize=True,
+            start=conf_first_loaded + datetime.timedelta(days=1),
+            end=datetime.datetime.today(),
+            normalize=True,
         ).tolist()
 
         if len(dates_to_look_for) > 30:
@@ -280,9 +312,9 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
         seconds_since_midnight = (now - midnight).seconds
         if len(dates_to_look_for) >= 30:
-            seconds_data_collected = (SECONDS_IN_DAY * 29) + seconds_since_midnight
+            seconds_data_collected = float((SECONDS_IN_DAY * 29) + seconds_since_midnight)
         else:
-            seconds_data_collected = (len(dates_to_look_for) - 1) * SECONDS_IN_DAY
+            seconds_data_collected = float((len(dates_to_look_for) - 1) * SECONDS_IN_DAY)
 
             if conf_first_loaded > midnight:  # cog was first loaded today
                 seconds_data_collected += (now - conf_first_loaded).total_seconds()
@@ -303,8 +335,12 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
     @commands.command(name="uploop", hidden=True)
     async def _dev_loop(self, ctx: commands.Context):
-        if tabulate is None:
-            return await ctx.send("Tabulate must be installed to use this command (`[p]pipinstall tabulate`)")
+        try:
+            tabulate
+        except NameError:
+            return await ctx.send(
+                "Tabulate must be installed to use this command (`[p]pipinstall tabulate`)"
+            )
 
         uptime_loop = self.uptime_loop
 
@@ -347,7 +383,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         await ctx.send(embed=e)
 
 
-def setup(bot: Red):
+def setup(bot: Red) -> None:
     apc = BetterUptime(bot)
     global old_ping
     old_ping = bot.get_command("uptime")

@@ -1,21 +1,74 @@
-name: Lint and quality
+name: Style, lint and type.
 
 on: [push, pull_request]
 
 jobs:
-  quality-lint:
+  style:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+    name: Style
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install black isort
+
+    - name: Run black
+      run: |
+        python -m black --check --line-length 99 .
+    - name: Run isort
+      run: |
+        python -m isort --check --line-length 99 --trailing-comma .
+
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8"]
     name: Lint
     steps:
-      - uses: actions/checkout@v1
-      - uses: ricardochaves/python-lint@v1.3.0
-        with:
-          use-pylint: false
-          use-pycodestyle: false
-          use-flake8: true
-          use-black: true
-          use-mypy: false
-          use-isort: true
-          extra-flake8-options: "--ignore E501,F401,W503"
-          extra-black-options: "--line-length 120"
-          extra-isort-options: "--line-length 120 --trailing-comma"
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install flake8
+
+
+    - name: Run flake8
+      run: |
+        python -m flake8 --ignore W503 --max-line-length 99 --per-file-ignores=__init__.py:F401 .
+
+  type:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+    name: Type checking
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install mypy
+
+    - name: Run mypy
+      run: |
+        python -m mypy .

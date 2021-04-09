@@ -1,9 +1,11 @@
 import asyncio
 import re
 from time import monotonic
+from typing import Optional
 
 import discord
 import tabulate
+from discord.emoji import Emoji
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
@@ -35,11 +37,11 @@ class AnotherPingCog(commands.Cog):
     __version__ = "1.1.3"
     __author__ = "Vexed#3211"
 
-    def format_help_for_context(self, ctx: commands.Context):
+    def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def __init__(self, bot: Red):
+    def __init__(self, bot: Red) -> None:
         self.bot = bot
 
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
@@ -48,7 +50,7 @@ class AnotherPingCog(commands.Cog):
 
         asyncio.create_task(self._make_cache())
 
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         global old_ping
         if old_ping:
             try:
@@ -57,12 +59,14 @@ class AnotherPingCog(commands.Cog):
                 pass
             self.bot.add_command(old_ping)
 
-    async def red_delete_data_for_user(self, **kwargs):
+    async def red_delete_data_for_user(self, **kwargs) -> None:
         """Nothing to delete"""
         return
 
-    async def _make_cache(self):
-        self.cache = Cache(await self.config.custom_settings(), await self.config.force_embed(), self.bot)
+    async def _make_cache(self) -> None:
+        self.cache = Cache(
+            await self.config.custom_settings(), await self.config.force_embed(), self.bot
+        )
 
     @commands.command(hidden=True)
     async def apcinfo(self, ctx: commands.Context):
@@ -81,7 +85,9 @@ class AnotherPingCog(commands.Cog):
         ws_latency = round(self.bot.latency * 1000)
 
         title = (
-            "\N{TABLE TENNIS PADDLE AND BALL}  Pong!" if ctx.invoked_with == "ping" else "\N{SMIRKING FACE}  Nice typo!"
+            "\N{TABLE TENNIS PADDLE AND BALL}  Pong!"
+            if ctx.invoked_with == "ping"
+            else "\N{SMIRKING FACE}  Nice typo!"
         )
 
         settings = self.cache
@@ -98,14 +104,15 @@ class AnotherPingCog(commands.Cog):
             embed = discord.Embed(title=title)
             embed.add_field(name="Discord WS", value=box(f"{ws_latency} ms", "py"))
             embed.set_footer(
-                text="If the bot feels fast, don't worry about high numbers\nScale: Excellent | Good | Alright | Bad | Very Bad"
+                text="If the bot feels fast, don't worry about high numbers\nScale: Excellent | "
+                "Good | Alright | Bad | Very Bad"
             )
             start = monotonic()
             message: discord.Message = await ctx.send(embed=embed)
         else:
             msg = f"**{title}**\nDiscord WS: {ws_latency} ms"
             start = monotonic()
-            message: discord.Message = await ctx.send(msg)
+            message = await ctx.send(msg)
         end = monotonic()
 
         # im sure there's better way to do these long ifs, haven't looked properly yet
@@ -114,7 +121,9 @@ class AnotherPingCog(commands.Cog):
         if embed:
             colour = self._get_emb_colour(ws_latency, m_latency, settings)
 
-        ws_latency_text, m_latency_text = self._get_latency_text(ws_latency, m_latency, settings, embed)
+        ws_latency_text, m_latency_text = self._get_latency_text(
+            ws_latency, m_latency, settings, embed
+        )
 
         if embed:
             extra = box(f"{ws_latency} ms", "py")
@@ -193,11 +202,13 @@ class AnotherPingCog(commands.Cog):
         self.cache.force_embed = new_setting
         if new_setting:
             await ctx.send(
-                "The `ping` command will now always be sent as an embed, unless the bot doesn't have permission to send them."
+                "The `ping` command will now always be sent as an embed, unless the bot doesn't "
+                "have permission to send them."
             )
         else:
             await ctx.send(
-                "The `embedset` command will now decide whether or not to send an embed, which is by default True."
+                "The `embedset` command will now decide whether or not to send an embed, which "
+                "is by default True."
             )
 
     # DRY's gone out the window here...
@@ -222,19 +233,22 @@ class AnotherPingCog(commands.Cog):
         same colour as the emoji. Google "hex colour" if you need help with this.
         """
         if emoji.casefold() == "default":
-            await self.config.custom_settings.set_raw("red", "emoji", value=None)
-            emoji = None
+            await self.config.custom_settings.set_raw("red", "emoji", value=None)  # type:ignore
+            emoji_toset = None
         else:
             match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
-            emoji = self.bot.get_emoji(int(match.group(2))) if match else None
-            if not emoji:
+            bot_emoji: Optional[Emoji] = self.bot.get_emoji(int(match.group(2))) if match else None
+            if not bot_emoji:
                 return await ctx.send(
-                    "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
+                    "It looks like that's not a valid custom emoji. I'm probably not in the "
+                    "server the emoji was added to."
                 )
-            await self.config.custom_settings.set_raw("red", "emoji", value=emoji.id)
-            emoji = emoji.id
+            emoji_toset = bot_emoji.id
+            await self.config.custom_settings.set_raw(  # type:ignore
+                "red", "emoji", value=emoji_toset
+            )
         if hex_colour.casefold() == "default":
-            await self.config.custom_settings.set_raw("red", "colour", value=None)
+            await self.config.custom_settings.set_raw("red", "colour", value=None)  # type:ignore
             hex = None
         else:
             try:
@@ -243,12 +257,15 @@ class AnotherPingCog(commands.Cog):
                 int_colour = 16777216
             if int_colour > 16777215:  # max value
                 return await ctx.send(
-                    'That doesn\'t look like a valid colour. Google "hex colour" for some converters.'
+                    'That doesn\'t look like a valid colour. Google "hex colour" for some '
+                    "converters."
                 )
-            await self.config.custom_settings.set_raw("red", "colour", value=int_colour)
+            await self.config.custom_settings.set_raw(  # type:ignore
+                "red", "colour", value=int_colour
+            )
             hex = int_colour
 
-        self.cache.set("red", Settings(emoji, hex))
+        self.cache.set("red", Settings(emoji_toset, hex))
 
         if await ctx.embed_requested():
             embed = discord.Embed(
@@ -279,19 +296,24 @@ class AnotherPingCog(commands.Cog):
         same colour as the emoji. Google "hex colour" if you need help with this.
         """
         if emoji.casefold() == "default":
-            await self.config.custom_settings.set_raw("orange", "emoji", value=None)
-            emoji = None
+            await self.config.custom_settings.set_raw("orange", "emoji", value=None)  # type:ignore
+            emoji_toset = None
         else:
             match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
-            emoji = self.bot.get_emoji(int(match.group(2))) if match else None
-            if not emoji:
+            bot_emoji = self.bot.get_emoji(int(match.group(2))) if match else None
+            if not bot_emoji:
                 return await ctx.send(
-                    "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
+                    "It looks like that's not a valid custom emoji. I'm probably not in the "
+                    "server the emoji was added to."
                 )
-            await self.config.custom_settings.set_raw("orange", "emoji", value=emoji.id)
-            emoji = emoji.id
+            emoji_toset = bot_emoji.id
+            await self.config.custom_settings.set_raw(  # type:ignore
+                "orange", "emoji", value=emoji_toset
+            )
         if hex_colour.casefold() == "default":
-            await self.config.custom_settings.set_raw("orange", "colour", value=None)
+            await self.config.custom_settings.set_raw(  # type:ignore
+                "orange", "colour", value=None
+            )
             hex = None
         else:
             try:
@@ -300,12 +322,15 @@ class AnotherPingCog(commands.Cog):
                 int_colour = 16777216
             if int_colour > 16777215:  # max value
                 return await ctx.send(
-                    'That doesn\'t look like a valid colour. Google "hex colour" for some converters.'
+                    'That doesn\'t look like a valid colour. Google "hex colour" for some '
+                    "converters."
                 )
-            await self.config.custom_settings.set_raw("orange", "colour", value=int_colour)
+            await self.config.custom_settings.set_raw(  # type:ignore
+                "orange", "colour", value=int_colour
+            )
             hex = int_colour
 
-        self.cache.set("orange", Settings(emoji, hex))
+        self.cache.set("orange", Settings(emoji_toset, hex))
 
         if await ctx.embed_requested():
             embed = discord.Embed(
@@ -336,19 +361,22 @@ class AnotherPingCog(commands.Cog):
         same colour as the emoji. Google "hex colour" if you need help with this.
         """
         if emoji.casefold() == "default":
-            await self.config.custom_settings.set_raw("green", "emoji", value=None)
-            emoji = None
+            await self.config.custom_settings.set_raw("green", "emoji", value=None)  # type:ignore
+            emoji_toset = None
         else:
             match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
-            emoji = self.bot.get_emoji(int(match.group(2))) if match else None
-            if not emoji:
+            bot_emoji = self.bot.get_emoji(int(match.group(2))) if match else None
+            if not bot_emoji:
                 return await ctx.send(
-                    "It looks like that's not a valid custom emoji. I'm probably not in the server the emoji was added to."
+                    "It looks like that's not a valid custom emoji. I'm probably not in the "
+                    "server the emoji was added to."
                 )
-            await self.config.custom_settings.set_raw("green", "emoji", value=emoji.id)
-            emoji = emoji.id
+            emoji_toset = bot_emoji.id
+            await self.config.custom_settings.set_raw(  # type:ignore
+                "green", "emoji", value=emoji_toset
+            )
         if hex_colour.casefold() == "default":
-            await self.config.custom_settings.set_raw("green", "colour", value=None)
+            await self.config.custom_settings.set_raw("green", "colour", value=None)  # type:ignore
             hex = None
         else:
             try:
@@ -357,9 +385,12 @@ class AnotherPingCog(commands.Cog):
                 int_colour = 16777216
             if int_colour > 16777215:  # max value
                 return await ctx.send(
-                    'That doesn\'t look like a valid colour. Google "hex colour" for some converters.'
+                    'That doesn\'t look like a valid colour. Google "hex colour" for some '
+                    "converters."
                 )
-            await self.config.custom_settings.set_raw("green", "colour", value=int_colour)
+            await self.config.custom_settings.set_raw(  # type:ignore
+                "green", "colour", value=int_colour
+            )
             hex = int_colour
 
         self.cache.set("green", Settings(emoji, hex))
@@ -379,7 +410,8 @@ class AnotherPingCog(commands.Cog):
         """See your current settings."""
         if not ctx.channel.permissions_for(ctx.me).embed_links:
             return await ctx.send(
-                "I need to send this as an embed because Vexed is lazy and won't make a non-embed version."
+                "I need to send this as an embed because Vexed is lazy and won't make a "
+                "non-embed version."
             )
         settings = self.cache
         embed = discord.Embed(title="Global settings for the `ping` command.")
@@ -392,7 +424,8 @@ class AnotherPingCog(commands.Cog):
         embed.add_field(name="Embeds", value=embeds)
 
         # these 3 are alright with the 5/5 rate limit, plus it's owner only.
-        # if anyone wants to PR something with image generation, don't as it's wayyyyy to complex for this cog.
+        # if anyone wants to PR something with image generation, don't as it's wayyyyy to complex
+        # for this
         await ctx.send(
             content=embeds,
             embed=discord.Embed(
@@ -417,7 +450,7 @@ class AnotherPingCog(commands.Cog):
         )
 
 
-def setup(bot: Red):
+def setup(bot: Red) -> None:
     apc = AnotherPingCog(bot)
     global old_ping
     old_ping = bot.get_command("ping")

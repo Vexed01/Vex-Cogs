@@ -25,14 +25,14 @@ class System(commands.Cog):
     __version__ = "1.1.0"
     __author__ = "Vexed#3211"
 
-    def format_help_for_context(self, ctx: commands.Context):
+    def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def __init__(self, bot: Red):
+    def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-    async def red_delete_data_for_user(self, **kwargs):
+    async def red_delete_data_for_user(self, **kwargs) -> None:
         """Nothing to delete"""
         return
 
@@ -55,7 +55,8 @@ class System(commands.Cog):
         """
         Get metrics about the CPU.
 
-        This will show the CPU usage as a percent for each core, and frequency depending on platform.
+        This will show the CPU usage as a percent for each core, and frequency depending on
+        platform.
         It will also show the time spent idle, user and system as well as uptime.
 
         Platforms: Windows, Linux, Mac OS
@@ -69,7 +70,9 @@ class System(commands.Cog):
             freq = data["freq"]
             if await ctx.embed_requested():
                 now = datetime.datetime.utcnow()
-                embed = discord.Embed(title="CPU Metrics", colour=await ctx.embed_colour(), timestamp=now)
+                embed = discord.Embed(
+                    title="CPU Metrics", colour=await ctx.embed_colour(), timestamp=now
+                )
                 embed.add_field(name="CPU Usage", value=box(percent))
                 embed.add_field(name="CPU Times", value=box(time))
                 extra = data["freq_note"]
@@ -203,12 +206,13 @@ class System(commands.Cog):
         Platforms: Windows, Linux, Mac OS
         """
         async with ctx.typing():
-            proc = await get_proc()
-            proc = proc["statuses"]
+            proc = (await get_proc())["statuses"]
 
         if await ctx.embed_requested():
             now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Processes", colour=await ctx.embed_colour(), timestamp=now)
+            embed = discord.Embed(
+                title="Processes", colour=await ctx.embed_colour(), timestamp=now
+            )
             embed.add_field(name="Status", value=box(proc))
             await ctx.send(embed=embed)
         else:
@@ -218,8 +222,7 @@ class System(commands.Cog):
 
     @system.command(name="uptime", aliases=["up"])
     async def system_uptime(self, ctx: commands.Context):
-        uptime = await get_uptime()
-        uptime = uptime["uptime"]
+        uptime = (await get_uptime())["uptime"]
 
         if await ctx.embed_requested():
             now = datetime.datetime.utcnow()
@@ -246,14 +249,12 @@ class System(commands.Cog):
             cpu = await get_cpu()
             mem = await get_mem()
             proc = await get_proc()
-            uptime = await get_uptime()
 
             percent = cpu["percent"]
             times = cpu["time"]
             physical = mem["physical"]
             swap = mem["swap"]
             procs = proc["statuses"]
-            uptime = uptime["uptime"]
 
         if await ctx.embed_requested():
             now = datetime.datetime.utcnow()

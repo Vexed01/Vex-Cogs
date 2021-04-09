@@ -32,12 +32,15 @@ AnotherPingCog
 
 *No updates since changelogs started*
 
-
 ============
 BetterUptime
 ============
 
-*No updates since changelogs started*
+*********
+``1.2.2``
+*********
+
+- Slight logic changes to banding in ``downtime`` command
 
 ======
 GitHub

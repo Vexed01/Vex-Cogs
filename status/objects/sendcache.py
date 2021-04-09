@@ -1,11 +1,12 @@
 import logging
 import re
+from typing import Literal, Union
 
 from discord import Colour, Embed
 from redbot.core.utils.chat_formatting import pagify
 
-from ..core.consts import FEEDS, LINK_RE
-from ..objects.incidentdata import Update
+from status.core.consts import FEEDS, LINK_RE
+from status.objects.incidentdata import Update
 
 _log = logging.getLogger("red.vexed.status.sendupdate")
 
@@ -25,9 +26,12 @@ class SendCache:
         self.plain_latest = self._make_plain_all()
 
     def __repr__(self):
-        return f'SendCache({self.embed_latest}, {self.embed_all}, "{self.plain_all}", "{self.plain_latest}")'
+        return (
+            f'SendCache({self.embed_latest}, {self.embed_all}, "{self.plain_all}", '
+            f'"{self.plain_latest}")'
+        )
 
-    def _make_embed_base(self):
+    def _make_embed_base(self) -> Embed:
         return Embed(
             title=self.__incidentdata.title,
             url=self.__incidentdata.link,
@@ -36,21 +40,21 @@ class SendCache:
             colour=self._get_colour(),
         )
 
-    def _make_embed_latest(self):
+    def _make_embed_latest(self) -> Embed:
         embed = self._make_embed_base()
         for field in self.__new_fields:
             embed.add_field(name=field.name, value=field.value, inline=False)
 
         return self._handle_field_limits(embed)
 
-    def _make_embed_all(self):
+    def _make_embed_all(self) -> Embed:
         embed = self._make_embed_base()
         for field in self.__incidentdata.fields:
             embed.add_field(name=field.name, value=field.value, inline=False)
 
         return self._handle_field_limits(embed)
 
-    def _handle_field_limits(self, embed: Embed):
+    def _handle_field_limits(self, embed: Embed) -> Embed:
         before_fields = len(embed.fields)
         if before_fields > 25:
             dict_embed = embed.to_dict()
@@ -64,15 +68,17 @@ class SendCache:
 
         return embed
 
-    def _make_plain_base(self):
+    def _make_plain_base(self) -> str:
         title = self.__incidentdata.title
-        description = f"{self.__incidentdata.description}\n" if self.__incidentdata.description else ""
+        description = (
+            f"{self.__incidentdata.description}\n" if self.__incidentdata.description else ""
+        )
         link = self.__incidentdata.link
         name = FEEDS[self.__service]["friendly"]
 
         return f"**{name} Status Update\n{title}**\nIncident link: {link}\n{description}\n"
 
-    def _make_plain_latest(self):
+    def _make_plain_latest(self) -> str:
         msg = self._make_plain_base()
         for field in self.__new_fields:
             msg += f"**{field.name}**\n{field.value}\n"
@@ -81,7 +87,7 @@ class SendCache:
 
         return list(pagify(msg))[0]  # i really dont care about better handling for plain messages
 
-    def _make_plain_all(self):
+    def _make_plain_all(self) -> str:
         msg = self._make_plain_base()
         for field in self.__incidentdata.fields:
             msg += f"**{field.name}**\n{field.value}\n"
@@ -90,7 +96,7 @@ class SendCache:
 
         return list(pagify(msg))[0]  # i really dont care about better handling for plain messages
 
-    def _get_colour(self):
+    def _get_colour(self) -> Union[Colour, Literal[1812720]]:
         try:
             last_title = self.__incidentdata.fields[-1].name
             status = last_title.split(" ")[0].lower()
@@ -110,6 +116,8 @@ class SendCache:
                 return 1812720
         except Exception:  # hopefully never happens but will keep this for a while
             _log.warning(
-                f"Error with getting correct colour for {self.__service}. The update will still be sent.", exc_info=True
+                f"Error with getting correct colour for {self.__service}. The update will still "
+                "be sent.",
+                exc_info=True,
             )
             return 1812720

@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Union
+from typing import Any, Dict, List, Union
 
 from discord import Embed
 from redbot.core.utils import deduplicate_iterables
@@ -14,7 +14,9 @@ class UpdateField:
         self.update_id = update_id
 
     def __repr__(self):
-        return 'UpdateField("{}", "{}", "{}")'.format(self.name, self.value.replace("\n", "\\n"), self.update_id)
+        return 'UpdateField("{}", "{}", "{}")'.format(
+            self.name, self.value.replace("\n", "\\n"), self.update_id
+        )
 
 
 class IncidentData:
@@ -43,11 +45,17 @@ class IncidentData:
         self.scheduled_for = scheduled_for
 
     def __repr__(self):
-        return f'IncidentData({self.fields}, {self.time}, "{self.title}", "{self.link}", {self.actual_time}, "{self.description}", "{self.incident_id}")'
+        return (
+            f'IncidentData({self.fields}, {self.time}, "{self.title}", "{self.link}", '
+            f'{self.actual_time}, "{self.description}", "{self.incident_id}")'
+        )
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Get a dict of the data held in the object."""
-        fields = [{"name": field.name, "value": field.value, "update_id": field.update_id} for field in self.fields]
+        fields = [
+            {"name": field.name, "value": field.value, "update_id": field.update_id}
+            for field in self.fields
+        ]
         return {
             "fields": fields,
             "time": self.time,
@@ -59,7 +67,7 @@ class IncidentData:
             "scheduled_for": self.scheduled_for,
         }
 
-    def get_update_ids(self):
+    def get_update_ids(self) -> List[str]:
         """Get the group IDs for this feed, in order."""
         return deduplicate_iterables([field.update_id for field in self.fields])
 

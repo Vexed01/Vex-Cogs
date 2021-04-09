@@ -6,18 +6,18 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta
 
-from ..commands.converters import ServiceConverter
-from ..core.statusapi import StatusAPI
-from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache
-from ..objects.configwrapper import ConfigWrapper
-from ..objects.incidentdata import Update
-from ..objects.sendcache import SendCache
-from ..updateloop.processfeed import process_incidents, process_scheduled
-from ..updateloop.sendupdate import SendUpdate
+from status.commands.converters import ServiceConverter
+from status.core.statusapi import StatusAPI
+from status.objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache
+from status.objects.configwrapper import ConfigWrapper
+from status.objects.incidentdata import Update
+from status.objects.sendcache import SendCache
+from status.updateloop.processfeed import process_incidents, process_scheduled
+from status.updateloop.sendupdate import SendUpdate
 
 
 class StatusCom:
-    def __init__(self):
+    def __init__(self) -> None:
         self.bot: Red
         self.config: Config
         self.config_wrapper: ConfigWrapper
@@ -50,9 +50,13 @@ class StatusCom:
 
         if restrictions := self.service_restrictions_cache.get_guild(ctx.guild.id, service.name):
             channels = [self.bot.get_channel(channel) for channel in restrictions]
-            channels = humanize_list([channel.mention for channel in channels if channel], style="or")
-            if channels:
-                return await ctx.send(f"You can check updates for {service.friendly} in {channels}.")
+            channel_list = humanize_list(
+                [channel.mention for channel in channels if channel], style="or"
+            )
+            if channel_list:
+                return await ctx.send(
+                    f"You can check updates for {service.friendly} in {channel_list}."
+                )
 
         await ctx.trigger_typing()
 
@@ -64,7 +68,9 @@ class StatusCom:
         incidents_incidentdata_list = process_incidents(summary)
         all_scheduled = process_scheduled(summary)
         now = datetime.datetime.now(datetime.timezone.utc)
-        scheduled_incidentdata_list = [i for i in all_scheduled if i.scheduled_for < now]  # only want ones happening
+        scheduled_incidentdata_list = [
+            i for i in all_scheduled if i.scheduled_for < now
+        ]  # only want ones happening
 
         other_incidents, other_scheduled = [], []
         if incidents_incidentdata_list:
@@ -101,7 +107,10 @@ class StatusCom:
                 msg += f"{incident.title} (<{incident.link}>)\n"
 
         if other_scheduled:
-            msg += f"\n{len(other_scheduled)} other scheduled maintenance events are live at the moment:\n"
+            msg += (
+                f"\n{len(other_scheduled)} other scheduled maintenance events are live at the "
+                "moment:\n"
+            )
             for incident in other_scheduled:
                 msg += f"{incident.title} (<{incident.link}>)"
 

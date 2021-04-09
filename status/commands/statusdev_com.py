@@ -4,29 +4,27 @@ from time import time
 from aiohttp import ClientSession
 from redbot.core import commands
 from redbot.core.bot import Red
-from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from tabulate import tabulate
 
-from ..commands.converters import ModeConverter, ServiceConverter
-from ..core.statusapi import StatusAPI
-from ..objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
-from ..objects.configwrapper import ConfigWrapper
-from ..objects.incidentdata import Update
-from ..objects.sendcache import SendCache
-from ..updateloop.processfeed import process_incidents, process_scheduled
-from ..updateloop.sendupdate import SendUpdate
-from ..updateloop.updatechecker import UpdateChecker
+from status.commands.converters import ModeConverter, ServiceConverter
+from status.core.statusapi import StatusAPI
+from status.objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
+from status.objects.configwrapper import ConfigWrapper
+from status.objects.incidentdata import Update
+from status.objects.sendcache import SendCache
+from status.updateloop.processfeed import process_incidents, process_scheduled
+from status.updateloop.sendupdate import SendUpdate
+from status.updateloop.updatechecker import UpdateChecker
 
 _log = logging.getLogger("red.vexed.status.dev")
 
 
 class StatusDevCom:
-    def __init__(self):
+    def __init__(self) -> None:
         self.bot: Red
-        self.config: Config
         self.config_wrapper: ConfigWrapper
         self.last_checked: LastChecked
         self.service_cooldown: ServiceCooldown
@@ -36,15 +34,18 @@ class StatusDevCom:
         self.update_checker: UpdateChecker
         self.statusapi: StatusAPI
 
-    def super_unsupported():
-        async def predicate(ctx: commands.Context):
+    def super_unsupported():  # type:ignore
+        # ignore is for method not having argument
+        # would typehint but return is in private core/commands/_dyp_reimplements
+        async def predicate(ctx: commands.Context) -> bool:
             if ctx.author.id == 418078199982063626:  # vexed (my) id
                 return True
 
             msg = await ctx.send(
                 warning(
-                    "\nTHIS COMMAND IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended things can "
-                    "happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure you want to continue?"
+                    "\nTHIS COMMAND IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended "
+                    "things can happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure "
+                    "you want to continue?"
                 )
             )
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
@@ -66,7 +67,11 @@ class StatusDevCom:
     @super_unsupported()
     @statusdev.command(aliases=["cf"], hidden=True)
     async def checkfeed(
-        self, ctx: commands.Context, service: ServiceConverter, mode: ModeConverter = "all", webhook: bool = False
+        self,
+        ctx: commands.Context,
+        service: ServiceConverter,
+        mode: ModeConverter = "all",
+        webhook: bool = False,
     ):
         """Check the current status of a feed in the current channel"""
         json_resp, etag, status = await self.statusapi.incidents(service.id)
@@ -155,7 +160,7 @@ class StatusDevCom:
     async def refreshincidentids(self, ctx: commands.Context):
         """Regenerate the cache of past incident IDs."""
         await ctx.send("Starting.")
-        await self._get_initial_data()  # not typehinted, promise me it works
+        await self._get_initial_data()  # type:ignore
         await ctx.send("Done.")
 
     @statusdev.command(aliases=["l"], hidden=True)
@@ -177,7 +182,11 @@ class StatusDevCom:
             ["Seconds since last", time() - loop._last_iteration.timestamp()],
         ]
 
-        await ctx.send("**Attributes:**\n{}\n**Parsed:**\n{}".format(box(tabulate(data1)), box(tabulate(data2))))
+        await ctx.send(
+            "**Attributes:**\n{}\n**Parsed:**\n{}".format(
+                box(tabulate(data1)), box(tabulate(data2))
+            )
+        )
 
     @super_unsupported()
     @statusdev.command(aliases=["rl"], hidden=True)
@@ -202,7 +211,8 @@ class StatusDevCom:
             self.bot.add_dev_env_value("statusapi", lambda _: self.statusapi)
             self.bot.add_dev_env_value("sendupdate", lambda _: SendUpdate)
             await ctx.send(
-                "Added dev env vars `status`, `loop`, `statusapi`, `sendupdate`. They will be removed on cog unload."
+                "Added dev env vars `status`, `loop`, `statusapi`, `sendupdate`. They will be "
+                "removed on cog unload."
             )
         except Exception:
             _log.exception("Unable to add dev env vars.")

@@ -1,10 +1,10 @@
 from redbot.core.commands import BadArgument, Context, Converter
 
-from ..core.consts import FEEDS
+from status.core.consts import FEEDS
 
 
 class ServiceConverter(Converter):
-    def __init__(self):
+    def __init__(self) -> None:
         # for typehinting, copied from Service in objects/service.py
 
         self.name: str
@@ -13,7 +13,7 @@ class ServiceConverter(Converter):
         self.friendly: str
         self.avatar: str
 
-    async def convert(self, ctx: Context, argument: str):
+    async def convert(self, ctx: Context, argument: str) -> "ServiceConverter":
         argument = argument.casefold()
         if argument not in FEEDS.keys():
             # not the best but atm only used with `status` and `statusset` with both have service
@@ -33,8 +33,10 @@ class ServiceConverter(Converter):
 
 
 class ModeConverter(Converter):
-    async def convert(self, ctx: Context, argument: str):
+    async def convert(self, ctx: Context, argument: str) -> str:
         if argument.casefold() in ["all", "edit", "latest"]:
             return argument.casefold()
 
-        raise BadArgument("That doesn't look like a valid mode. Valid modes are `all`, `latest` and `edit`.")
+        raise BadArgument(
+            "That doesn't look like a valid mode. Valid modes are `all`, `latest` and `edit`."
+        )

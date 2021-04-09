@@ -1,13 +1,12 @@
 from asyncio import TimeoutError
-from typing import Mapping
+from typing import List, Mapping
 
 import discord
 from gidgethub import HTTPException
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import humanize_list, inline
 from redbot.core.utils.predicates import MessagePredicate
-from vexcogutils import format_help, format_info
+from vexcogutils import format_help, format_info, inline_hum_list
 
 from .api import GitHubAPI
 from .consts import CROSS, EXCEPTIONS
@@ -42,24 +41,26 @@ class GitHub(commands.Cog):
     __version__ = "1.0.0"
     __author__ = "Vexed#3211"
 
-    def format_help_for_context(self, ctx: commands.Context):
+    def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def __init__(self, bot: Red):
+    def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.config: Config = Config.get_conf(self, identifier=418078199982063626, force_registration=True)
+        self.config: Config = Config.get_conf(
+            self, identifier=418078199982063626, force_registration=True
+        )
         self.config.register_global(repo=None)
 
-        self.repo = None
-        self.token = None
+        self.repo = ""
+        self.token = ""
 
-    async def red_delete_data_for_user(self, **kwargs):
+    async def red_delete_data_for_user(self, **kwargs) -> None:
         """Nothing to delete"""
         return
 
-    async def _handle_error(self, ctx: commands.Context, error: Exception):
+    async def _handle_error(self, ctx: commands.Context, error: Exception) -> None:
         if isinstance(error, HTTPException):
             if error.status_code == 404:
                 await ctx.send("It looks like that isn't a valid issue or PR number.")
@@ -69,11 +70,7 @@ class GitHub(commands.Cog):
         elif not isinstance(error, CustomError):
             raise error
 
-    def inline_hum_list(self, list: list):
-        inline_list = [inline(i) for i in list]
-        return humanize_list(inline_list)
-
-    async def _get_repo(self, ctx: commands.Context):
+    async def _get_repo(self, ctx: commands.Context) -> str:
         """Get the repo. Return immediately on CustomError."""
         if self.repo:
             return self.repo
@@ -84,7 +81,7 @@ class GitHub(commands.Cog):
         self.repo = repo
         return repo
 
-    async def _get_token(self, ctx: commands.Context):
+    async def _get_token(self, ctx: commands.Context) -> str:
         """Get the token. Return immediately on CustomError."""
         if self.token:
             return self.token
@@ -100,7 +97,7 @@ class GitHub(commands.Cog):
         if service_name != "github":
             return
 
-        self.token = api_tokens.get("api_key")
+        self.token = api_tokens.get("api_key", "")  # want it to directly reflect shared thingy
 
     @commands.command(hidden=True)
     async def githubinfo(self, ctx: commands.Context):
@@ -108,7 +105,10 @@ class GitHub(commands.Cog):
         main = format_info(self.qualified_name, self.__version__, extras=extras)
 
         if not (self.token and self.repo):
-            extra = f"\nIt is expected these are `{CROSS}` if no commands have been used since the cog was last loaded."
+            extra = (
+                f"\nIt is expected these are `{CROSS}` if no commands have been used since "
+                "the cog was last loaded."
+            )
         else:
             extra = ""
 
@@ -128,9 +128,10 @@ class GitHub(commands.Cog):
         """Instructions on how to set up a token."""
         p = ctx.clean_prefix
         await ctx.send(
-            "Note: if you have already set up a GH API token with your bot (eg for `githubcards`) then this cog will "
-            "already work.\n\n"
-            "1. Create a new token at <https://github.com/settings/tokens> and tick the `repo` option at the top.\n"
+            "Note: if you have already set up a GH API token with your bot (eg for `githubcards`) "
+            "then this cog will already work.\n\n"
+            "1. Create a new token at <https://github.com/settings/tokens> and tick the `repo` "
+            "option at the top.\n"
             "2. Copy the token and, in my DMs, run this command: "
             f"`{p}set api github token PUTYOURTOKENHERE`\n"
             f"3. Set up a repo with `{p}gh setrepo`"
@@ -142,7 +143,9 @@ class GitHub(commands.Cog):
         try:
             await GitHubAPI.repo_info(await self._get_token(ctx), slug)
         except HTTPException:
-            return await ctx.send("That looks like a invalid slug or a private repo my token doesn't let me view.")
+            return await ctx.send(
+                "That looks like a invalid slug or a private repo my token doesn't let me view."
+            )
         except CustomError:
             return
 
@@ -177,7 +180,11 @@ class GitHub(commands.Cog):
             issue_info = await GitHubAPI.get_issue(token, repo, issue)
         except EXCEPTIONS as e:
             return await self._handle_error(ctx, e)
-        await ctx.send("Closed `{}` by `{}`".format(issue_info.get("title"), issue_info.get("user", {}).get("login")))
+        await ctx.send(
+            "Closed `{}` by `{}`".format(
+                issue_info.get("title"), issue_info.get("user", {}).get("login")
+            )
+        )
 
     @gh.command()
     async def commentclose(self, ctx: commands.Context, issue: int, *, text: str):
@@ -215,11 +222,11 @@ class GitHub(commands.Cog):
         for label in issue_labels:
             il_names.append(label["name"])
 
-        avaliable_labels = self.inline_hum_list([label for label in rl_names if label not in il_names])
-        used_labels = self.inline_hum_list(il_names)
+        avaliable_labels = inline_hum_list([label for label in rl_names if label not in il_names])
+        used_labels = inline_hum_list(il_names)
         await ctx.send(
-            "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
-            " This is case sensitive.\n\n"
+            "You have 30 seconds, please say what label you want to add. Any invalid input will "
+            "be ignored. This is case sensitive.\n\n"
             f"Available labels: {avaliable_labels}\nLabels currently on issue: {used_labels}"
         )
 
@@ -230,10 +237,12 @@ class GitHub(commands.Cog):
                 and (msg.content in rl_names or msg.content.casefold() in ["save", "exit"])
             )
 
-        to_add = []
+        to_add: List[str] = []
         while True:
             try:
-                answer: discord.Message = await self.bot.wait_for("message", check=check, timeout=30.0)
+                answer: discord.Message = await self.bot.wait_for(
+                    "message", check=check, timeout=30.0
+                )
             except TimeoutError:
                 return await ctx.send("Timeout. No changes were saved.")
             if answer.content.casefold() == "save":
@@ -242,17 +251,21 @@ class GitHub(commands.Cog):
                 to_add = []
                 break
             elif answer.content in il_names:
-                await ctx.send("It looks like that label's already on the issue. Choose another, 30 seconds.")
+                await ctx.send(
+                    "It looks like that label's already on the issue. Choose another, 30 seconds."
+                )
                 continue
             to_add.append(answer.content)
             il_names.append(answer.content)
             rl_names.remove(answer.content)
 
-            avaliable_labels = self.inline_hum_list([label for label in rl_names if label not in il_names])
-            used_labels = self.inline_hum_list(il_names)
+            avaliable_labels = inline_hum_list(
+                [label for label in rl_names if label not in il_names]
+            )
+            used_labels = inline_hum_list(il_names)
             await ctx.send(
-                "Label added. Again, 30 seconds. Say another label name if you want to add more, **`save` to save your "
-                "changes** or **`exit` to exit without saving.**\n\n"
+                "Label added. Again, 30 seconds. Say another label name if you want to add more, "
+                "**`save` to save your changes** or **`exit` to exit without saving.**\n\n"
                 f"Available labels: {avaliable_labels}\nLabels currently on issue: {used_labels}"
             )
         if to_add:
@@ -283,10 +296,10 @@ class GitHub(commands.Cog):
         for label in issue_labels:
             il_names.append(label["name"])
 
-        used_labels = self.inline_hum_list(il_names)
+        used_labels = inline_hum_list(il_names)
         await ctx.send(
-            "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
-            " This is case sensitive.\n\n"
+            "You have 30 seconds, please say what label you want to add. Any invalid input will "
+            "be ignored. This is case sensitive.\n\n"
             f"Labels currently on issue: {used_labels}"
         )
 
@@ -299,7 +312,9 @@ class GitHub(commands.Cog):
 
         while True:
             try:
-                answer: discord.Message = await self.bot.wait_for("message", check=check, timeout=30.0)
+                answer: discord.Message = await self.bot.wait_for(
+                    "message", check=check, timeout=30.0
+                )
             except TimeoutError:
                 return await ctx.send("Timeout.")
             if answer.content.casefold() == "exit":
@@ -311,10 +326,10 @@ class GitHub(commands.Cog):
 
             il_names.remove(answer.content)
 
-            used_labels = self.inline_hum_list(il_names)
+            used_labels = inline_hum_list(il_names)
             await ctx.send(
-                "Label removed. Again, 30 seconds. Say another label name if you want to remove one, or `exit` to "
-                f"finish.\n\nLabels currently on issue: {used_labels}"
+                "Label removed. Again, 30 seconds. Say another label name if you want to remove "
+                f"one, or `exit` to finish.\n\nLabels currently on issue: {used_labels}"
             )
 
     @gh.command()
@@ -327,8 +342,9 @@ class GitHub(commands.Cog):
             return await self._handle_error(ctx, e)
 
         await ctx.send(
-            "Your next message will be the description of the issue. If you answer exactly `cancel` I won't make an"
-            " issue. You've got 5 minutes, remember the 2000 Discord character limit!"
+            "Your next message will be the description of the issue. If you answer exactly "
+            "`cancel` I won't make an issue.\n"
+            "You've got 5 minutes, remember the 2000 Discord character limit!"
         )
         try:
             answer: discord.Message = await self.bot.wait_for(
@@ -341,24 +357,27 @@ class GitHub(commands.Cog):
         else:
             description = answer.content
 
-        await ctx.send("Do you want to add one or more labels to this issue? (yes or no, 15 seconds)")
+        await ctx.send(
+            "Do you want to add one or more labels to this issue? (yes or no, 15 seconds)"
+        )
         pred = MessagePredicate.yes_or_no(ctx)
         try:
             answer = await self.bot.wait_for("message", check=pred, timeout=15.0)
         except TimeoutError:
             return await ctx.send("Aborting.")
-        to_add = []
+
+        to_add: List[str] = []
         if pred.result is True:
             repo_labels = await GitHubAPI.get_repo_labels(token, repo)
             rl_names = []
             for label in repo_labels:
                 rl_names.append(label["name"])
 
-            avaliable_labels = self.inline_hum_list(rl_names)
+            avaliable_labels = inline_hum_list(rl_names)
             await ctx.send(
-                "You have 30 seconds, please say what label you want to add. Any invalid input will be ignored."
-                " This is case sensitive. Say `exit` to abort creating the issue, or **`create` to make the issue**.\n\n"
-                f"Avaliable labels: {avaliable_labels}"
+                "You have 30 seconds, please say what label you want to add. Any invalid input "
+                "will be ignored. This is case sensitive. Say `exit` to abort creating the issue, "
+                f"or **`create` to make the issue**.\n\nAvaliable labels: {avaliable_labels}"
             )
 
             def check(msg: discord.Message):
@@ -371,7 +390,7 @@ class GitHub(commands.Cog):
             to_add = []
             while True:
                 try:
-                    answer: discord.Message = await self.bot.wait_for("message", check=check, timeout=30.0)
+                    answer = await self.bot.wait_for("message", check=check, timeout=30.0)
                 except TimeoutError:
                     await ctx.send("Timeout on this label.")
                     break
@@ -381,21 +400,27 @@ class GitHub(commands.Cog):
                 if answer.content.casefold() == "create":
                     break
                 elif answer.content in to_add:
-                    await ctx.send("It looks like that label's already on the issue. Choose another, 30 seconds.")
+                    await ctx.send(
+                        "It looks like that label's already on the issue. Choose another, 30 "
+                        "seconds."
+                    )
                     continue
                 to_add.append(answer.content)
                 rl_names.remove(answer.content)
 
-                avaliable_labels = self.inline_hum_list(rl_names)
-                used_labels = self.inline_hum_list(to_add)
+                avaliable_labels = inline_hum_list(rl_names)
+                used_labels = inline_hum_list(to_add)
                 await ctx.send(
-                    "Label added. Again, 30 seconds. Say another label name if you want to add more, `create` to create "
-                    "the issue or `exit` to exit without saving.\n\n"
-                    f"Avaliable labels: {avaliable_labels}\nLabels currently on issue: {used_labels}"
+                    "Label added. Again, 30 seconds. Say another label name if you want to add "
+                    "more, `create` to create the issue or `exit` to exit without saving.\n\n"
+                    f"Avaliable labels: {avaliable_labels}\nLabels currently on issue: "
+                    f"{used_labels}"
                 )
         try:
             resp = await GitHubAPI.create_issue(token, repo, title, description, to_add)
         except EXCEPTIONS as e:
             return await self._handle_error(ctx, e)
 
-        await ctx.send("Created issue {}: {}".format(resp.get("number"), "<{}>".format(resp.get("html_url"))))
+        await ctx.send(
+            "Created issue {}: {}".format(resp.get("number"), "<{}>".format(resp.get("html_url")))
+        )

@@ -4,7 +4,9 @@ from discord import TextChannel
 
 
 class ChannelData:
-    def __init__(self, channel: TextChannel, mode: str, webhook: bool, edit_id: Dict[str, int], embed: bool):
+    def __init__(
+        self, channel: TextChannel, mode: str, webhook: bool, edit_id: Dict[str, int], embed: bool
+    ):
         self.channel = channel
         self.mode = mode
         self.webhook = webhook
@@ -12,7 +14,10 @@ class ChannelData:
         self.embed = embed
 
     def __repr__(self):
-        return f'ChannelSettings(channel={self.channel}, mode="{self.mode}", webhook={self.webhook}, edit_id={self.edit_id}, embed={self.embed})'
+        return (
+            f'ChannelSettings(channel={self.channel}, mode="{self.mode}", '
+            f"webhook={self.webhook}, edit_id={self.edit_id}, embed={self.embed})"
+        )
 
 
 class InvalidChannel(Exception):

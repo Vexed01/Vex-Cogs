@@ -5,16 +5,16 @@ from time import time
 from typing import Dict
 
 from discord.ext import tasks
+from redbot.core import Config
 from redbot.core.bot import Red
-from redbot.core.config import Config
 
-from betteruptime.consts import INF
+from .consts import INF
 
 _log = logging.getLogger("red.vexed.betteruptime.loop")
 
 
 class BetterUptimeLoop:
-    def __init__(self):
+    def __init__(self) -> None:
         self.bot: Red
 
         self.config: Config
@@ -24,17 +24,17 @@ class BetterUptimeLoop:
 
         self.fist_load: float
 
-        self.cog_loaded_cache: Dict[str, int]
-        self.connected_cache: Dict[str, int]
+        self.cog_loaded_cache: Dict[str, float]
+        self.connected_cache: Dict[str, float]
 
         self.recent_load: bool
 
         asyncio.create_task(self.start())
 
-    async def start(self):
+    async def start(self) -> None:
         await self.bot.wait_until_red_ready()
 
-        self.last_known_ping: float = self.bot.latency
+        self.last_known_ping = self.bot.latency
         self.last_ping_change = time()
 
         self.first_load = await self.config.first_load()
@@ -44,7 +44,9 @@ class BetterUptimeLoop:
             self.first_load = time()
 
         _log.debug("Waiting a bit to allow for previous unload to clean up (assuming reload)...")
-        await asyncio.sleep(2)  # assume reload - wait for unloading to be able to clean up properly
+        await asyncio.sleep(
+            2
+        )  # assume reload - wait for unloading to be able to clean up properly
         _log.debug("Setting up...")
         self.cog_loaded_cache = await self.config.cog_loaded()
         self.connected_cache = await self.config.connected()
@@ -61,7 +63,7 @@ class BetterUptimeLoop:
 
         _log.info("BetterUptime is now fully running.")
 
-    async def write_to_config(self, final=False):
+    async def write_to_config(self, final=False) -> None:
         if self.cog_loaded_cache:  # dont want to write if the cache is empty
             await self.config.cog_loaded.set(self.cog_loaded_cache)
         if self.connected_cache:
@@ -72,11 +74,15 @@ class BetterUptimeLoop:
         else:
             _log.debug("Wrote local cache to config.")
 
-    @tasks.loop(seconds=15)  # 15 seconds is basically guaranteed to catch all, heartbeats are ~41 secs atm
+    @tasks.loop(
+        seconds=15
+    )  # 15 seconds is basically guaranteed to catch all, heartbeats are ~41 secs atm
     async def uptime_loop(self):
         _log.debug("Loop started")
         utcdatetoday = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
-        utcdateyesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)
+        utcdateyesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+            days=1
+        )
         utcdateyesterday = utcdateyesterday.strftime("%Y-%m-%d")
 
         # === COG LOADED ===
@@ -103,8 +109,8 @@ class BetterUptimeLoop:
                     pass
 
         # === CONNECTED ===
-        # bit of background info here: the latency is updated every heartbeat and if the heartbeat fails the latency
-        # is infinity (INF)
+        # bit of background info here: the latency is updated every heartbeat and if the heartbeat
+        # fails the latency is infinity (INF)
 
         current_latency = self.bot.latency
 

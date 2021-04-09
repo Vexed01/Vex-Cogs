@@ -1,7 +1,7 @@
 from time import time
-from typing import Dict, List
+from typing import Dict, List, Literal, Union
 
-from ..core.consts import FEEDS
+from status.core.consts import FEEDS
 
 
 class UsedFeeds:
@@ -11,7 +11,7 @@ class UsedFeeds:
         used_feeds = dict.fromkeys(FEEDS.keys(), 0)
 
         for _, data in all_channels.items():
-            for feed in data.get("feeds").keys():
+            for feed in data.get("feeds", {}).keys():
                 used_feeds[feed] = used_feeds.get(feed, 0) + 1
 
         self.__data = used_feeds
@@ -20,10 +20,10 @@ class UsedFeeds:
         data = " ".join(f"{i[0]}={i[1]}" for i in self.__data.items())
         return f"<{data}>"
 
-    def add_feed(self, feedname: str):
+    def add_feed(self, feedname: str) -> None:
         self.__data[feedname] = self.__data.get(feedname, 0) + 1
 
-    def remove_feed(self, feedname: str):
+    def remove_feed(self, feedname: str) -> None:
         self.__data[feedname] = self.__data.get(feedname, 1) - 1
 
     def get_list(self) -> List[str]:
@@ -34,14 +34,14 @@ class ServiceRestrictionsCache:
     """Holds channel restrictions (for members) for when automatic updates are configured."""
 
     def __init__(self, all_guilds: Dict[int, Dict[str, list]]):
-        __data = {}
+        __data: dict = {}
 
         for g_id, data in all_guilds.items():
             __data[g_id] = data["service_restrictions"]
 
         self.__data = __data
 
-    def add_restriction(self, guild_id: int, service: str, channel_id: int):
+    def add_restriction(self, guild_id: int, service: str, channel_id: int) -> None:
         """Add a channel to the restriction cache."""
         try:
             self.__data[guild_id]
@@ -49,14 +49,14 @@ class ServiceRestrictionsCache:
             self.__data[guild_id] = dict.fromkeys(FEEDS.keys(), [])
         self.__data[guild_id][service].append(channel_id)
 
-    def remove_restriction(self, guild_id: int, service: str, channel_id: int):
+    def remove_restriction(self, guild_id: int, service: str, channel_id: int) -> None:
         """Remove a channel from the restriction cache."""
         try:
             self.__data[guild_id][service].remove(channel_id)
         except ValueError:
             pass
 
-    def get_guild(self, guild_id: int, service: str = None):
+    def get_guild(self, guild_id: int, service: str = None) -> Union[dict, list]:
         """Get the channels, optionally for a specific service, in a guild."""
         if service:
             return self.__data.get(guild_id, {}).get(service, [])
@@ -67,8 +67,8 @@ class ServiceRestrictionsCache:
 class LastChecked:
     """Store when incidents were last checked."""
 
-    def __init__(self):
-        self.last_checked = {}
+    def __init__(self) -> None:
+        self.last_checked: Dict[str, float] = {}
 
     def __repr__(self):
         m = "<"
@@ -77,16 +77,16 @@ class LastChecked:
         m = m.rstrip()
         return m + ">"
 
-    def get_time(self, service: str):
-        return self.last_checked.get(service, 0)
+    def get_time(self, service: str) -> float:
+        return self.last_checked.get(service, 0.0)
 
-    def update_time(self, service: str):
+    def update_time(self, service: str) -> None:
         self.last_checked[service] = time()
 
 
 class ServiceCooldown:
-    def __init__(self):
-        self.__data = {}
+    def __init__(self) -> None:
+        self.__data: Dict[int, Dict[str, List[float]]] = {}
 
     def __repr__(self):
         return str(self.__data)
@@ -102,8 +102,8 @@ class ServiceCooldown:
     # otherwise, basically pos 0 moves to pos 1
     # and pos 0 becomes the current time
 
-    def handle(self, user_id: int, service: str):
-        cooldown_data = self.__data.get(user_id, {}).get(service, [0, 0])
+    def handle(self, user_id: int, service: str) -> Union[float, Literal[False]]:
+        cooldown_data = self.__data.get(user_id, {}).get(service, [0.0, 0.0])
         time_since = abs(time() - cooldown_data[1])  # their second to last invoke
         if time_since < 120:  # their second to last invoke was within last 2 mins
             return 120 - time_since
@@ -114,5 +114,5 @@ class ServiceCooldown:
 
         return False
 
-    def get_from_id(self, user_id: int):
+    def get_from_id(self, user_id: int) -> dict:
         return self.__data.get(user_id, {})

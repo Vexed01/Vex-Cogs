@@ -1,20 +1,20 @@
 import asyncio
 import logging
 from time import monotonic
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from discord.ext import tasks
 from redbot.core.bot import Red
 from redbot.core.config import Config
 
-from ..core.consts import FEEDS
-from ..core.statusapi import StatusAPI
-from ..objects.caches import LastChecked, UsedFeeds
-from ..objects.configwrapper import ConfigWrapper
-from ..objects.incidentdata import IncidentData, Update
-from ..objects.sendcache import SendCache
-from ..updateloop.sendupdate import SendUpdate
-from .processfeed import process_incidents, process_scheduled
+from status.core.consts import FEEDS
+from status.core.statusapi import StatusAPI
+from status.objects.caches import LastChecked, UsedFeeds
+from status.objects.configwrapper import ConfigWrapper
+from status.objects.incidentdata import IncidentData, Update
+from status.objects.sendcache import SendCache
+from status.updateloop.processfeed import process_incidents, process_scheduled
+from status.updateloop.sendupdate import SendUpdate
 
 _log = logging.getLogger("red.vexed.status.updatechecker")
 
@@ -42,7 +42,7 @@ class UpdateChecker:
         self.actually_send = actually_send
 
         self.api = statusapi
-        self.etags = {}
+        self.etags: Dict[str, str] = {}
 
         if run_loop:
             self.loop = self._update_loop
@@ -56,13 +56,17 @@ class UpdateChecker:
         start = monotonic()
 
         try:
-            await asyncio.wait_for(self._check_for_updates(), timeout=245)  # 4 min (+ 5 sec for d.py loops)
+            await asyncio.wait_for(
+                self._check_for_updates(), timeout=245
+            )  # 4 min (+ 5 sec for d.py loops)
         except asyncio.TimeoutError:
-            _log.warning("Update checking timed out after 4 minutes. If this happens a lot contact Vexed.")
+            _log.warning(
+                "Update checking timed out after 4 minutes. If this happens a lot contact Vexed."
+            )
         except Exception:
             _log.error(
-                "Unable to check and send updates. Some services were likely missed. The might be picked up on the "
-                "next loop. You may want to report this to Vexed.",
+                "Unable to check and send updates. Some services were likely missed. The might be "
+                "picked up on the next loop. You may want to report this to Vexed.",
                 exc_info=True,
             )
         end = monotonic()
@@ -72,7 +76,7 @@ class UpdateChecker:
 
         self.actually_send = True
 
-    async def _check_for_updates(self):
+    async def _check_for_updates(self) -> None:
         # ############################ INCIDENTS ############################
         for service in self.used_feeds.get_list():
             try:
@@ -80,7 +84,10 @@ class UpdateChecker:
                     FEEDS[service]["id"], self.etags.get(f"incidents-{service}", "")
                 )
             except asyncio.TimeoutError:
-                _log.warning(f"Timeout checking {service}. Any missed updates will be caught on the next loop.")
+                _log.warning(
+                    f"Timeout checking {service}. Any missed updates will be caught on the next "
+                    "loop."
+                )
                 continue
             except Exception:  # want to catch everything and anything
                 _log.error(f"Something went wrong checking {service}.", exc_info=True)
@@ -95,10 +102,14 @@ class UpdateChecker:
                 await self._maybe_send_update(resp_json, service, "incidents")
             elif str(status)[0] == "5":
                 _log.info(
-                    f"I was unable to get an update for {service} due to problems on their side. (HTTP error {status})"
+                    f"I was unable to get an update for {service} due to problems on their side. "
+                    f"(HTTP error {status})"
                 )
             else:
-                _log.warning(f"Unexpected status code received from {service}: {status}. Please report this to Vexed.")
+                _log.warning(
+                    f"Unexpected status code received from {service}: {status}. Please report "
+                    "this to Vexed."
+                )
 
         # ############################ SCHEDULED ############################
         for service in self.used_feeds.get_list():
@@ -107,7 +118,10 @@ class UpdateChecker:
                     FEEDS[service]["id"], self.etags.get(f"scheduled-{service}", "")
                 )
             except asyncio.TimeoutError:
-                _log.warning(f"Timeout checking {service}. Any missed updates will be caught on the next loop.")
+                _log.warning(
+                    f"Timeout checking {service}. Any missed updates will be caught on the next "
+                    "loop."
+                )
                 continue
             except Exception:  # want to catch everything and anything
                 _log.error(f"Something went wrong checking {service}.", exc_info=True)
@@ -122,12 +136,16 @@ class UpdateChecker:
                 await self._maybe_send_update(resp_json, service, "scheduled")
             elif str(status)[0] == "5":
                 _log.info(
-                    f"I was unable to get an update for {service} due to problems on their side. (HTTP error {status})"
+                    f"I was unable to get an update for {service} due to problems on their side. "
+                    "(HTTP error {status})"
                 )
             else:
-                _log.warning(f"Unexpected status code received from {service}: {status}. Please report this to Vexed.")
+                _log.warning(
+                    f"Unexpected status code received from {service}: {status}. Please report "
+                    "this to Vexed."
+                )
 
-    async def _maybe_send_update(self, resp_json: dict, service: str, type: str):
+    async def _maybe_send_update(self, resp_json: dict, service: str, type: str) -> None:
         if type == "scheduled":
             real = await self._check_real_update(process_scheduled(resp_json), service)
         elif type == "incidents":
@@ -148,12 +166,14 @@ class UpdateChecker:
 
             await asyncio.sleep(5)
             # this loop normally only runs once
-            # this sleep will ensure there are no issues with channel webhook ratelimits if lots are being sent for
-            # whatever reason. eg when i break stuff locally.
+            # this sleep will ensure there are no issues with channel webhook ratelimits if lots
+            # are being sent for whatever reason. eg when i break stuff locally.
 
-    async def _check_real_update(self, incidentdata_list: List[IncidentData], service: str) -> List[Optional[Update]]:
+    async def _check_real_update(
+        self, incidentdata_list: List[IncidentData], service: str
+    ) -> List[Optional[Update]]:
         stored_ids: list = await self.config.old_ids()
-        valid_updates: List[Optional[Update]] = []
+        valid_updates: List[Update] = []
         for incidentdata in incidentdata_list:
             new_fields = []
             for field in incidentdata.fields:
