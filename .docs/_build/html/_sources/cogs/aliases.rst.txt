@@ -1,0 +1,48 @@
+.. _aliases:
+
+=======
+Aliases
+=======
+
+This is the cog guide for the aliases cog. You will
+find detailed docs about usage and commands.
+
+``[p]`` is considered as your prefix.
+
+.. note:: To use this cog, load it by typing this::
+
+        [p]load aliases
+
+.. _aliases-usage:
+
+-----
+Usage
+-----
+
+Get all the alias information you could ever want about a command.
+
+
+.. _aliases-commands:
+
+--------
+Commands
+--------
+
+.. _aliases-command-aliases:
+
+^^^^^^^
+aliases
+^^^^^^^
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]aliases <command>
+
+**Description**
+
+Get all the alias information you could ever want about a command.
+
+This will show the main command, built-in aliases, global aliases and
+server aliases.
