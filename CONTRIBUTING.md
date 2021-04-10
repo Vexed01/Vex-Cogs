@@ -14,19 +14,24 @@ This consists of: black, isort, flake8 and mypy.
 
 The config files will let you run all of these without arguments.
 
-```batch
-python -m flake8 --ignore E501,F401,W503 .
+> ### **Warning for MyPy**
+>
+> You **cannot** run ``mypy .`` as this results in an error (well, sometimes  it doesn't but normally it does. idk.)
+>
+> Instead, you should do this to run it "repo-wide":
+>
+>       mypy aliases anotherpingcog betteruptime github status system
+>
+> This is what tox and the PR cheks run. You could also only run mypy on the cog you're contributing to or use it in your editor - that _seems_ to work.
+>
+> This does appear to be on the GitHub for mypy.
 
 You can run these locally to check everything's working using tox:
 
 1. If you haven't already, install tox:
 
-    ```batch
-    pip install tox
-    ```
+        pip install tox
 
 2. Now run tox:
 
-    ```batch
-    tox
-    ```
+        tox

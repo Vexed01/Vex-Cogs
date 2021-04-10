@@ -1,16 +1,12 @@
 import datetime
-from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
+from typing import Dict, Tuple, Union
 
-from discord import Embed
 from redbot.core import Config
 
+from status.core.consts import SERVICE_LITERAL
 from status.objects.caches import LastChecked
-from status.objects.incidentdata import IncidentData, Update, UpdateField
-
-
-class _ConfDict(TypedDict):
-    fields: List[UpdateField]
-    time: datetime.datetime
+from status.objects.incidentdata import IncidentData, UpdateField
+from status.objects.typeddict import ConfFeeds, IncidentDataDict
 
 
 class ConfigWrapper:
@@ -21,23 +17,21 @@ class ConfigWrapper:
         self.last_checked = last_checked
 
     async def get_latest(
-        self, service: str
-    ) -> Union[
-        Tuple[IncidentData, Dict[str, Union[str, float]]], Tuple[None, None]
-    ]:  # ... this is long
-        incident: Optional[dict] = (await self.config.feed_store()).get(service)
+        self, service: SERVICE_LITERAL
+    ) -> Union[Tuple[IncidentData, Dict[str, float]], Tuple[None, None]]:  # ... this is long
+        incident: ConfFeeds = (await self.config.feed_store()).get(service, {})
         if not incident:
             return None, None
         extra_info = {"checked": self.last_checked.get_time(service)}
 
-        deserialised: Dict[str, Union[List[UpdateField], str, datetime.datetime]] = {"fields": []}
+        deserialised: IncidentDataDict = {"fields": []}
         if incident["time"]:
             deserialised["time"] = datetime.datetime.fromtimestamp(incident["time"])
         if incident["actual_time"]:
             deserialised["actual_time"] = datetime.datetime.fromtimestamp(incident["actual_time"])
         if incident.get("scheduled_for"):
             deserialised["scheduled_for"] = datetime.datetime.fromtimestamp(
-                incident["scheduled_for"]
+                float(incident["scheduled_for"])
             )
 
         for field in incident["fields"]:
@@ -51,7 +45,8 @@ class ConfigWrapper:
             title=incident["title"],
             link=incident["link"],
             actual_time=deserialised["actual_time"],
-            description=deserialised.get("description"),
+            description=deserialised.get("description", ""),
+            incident_id=incident.get("incident_id", ""),
             scheduled_for=deserialised["scheduled_for"],
         )
 

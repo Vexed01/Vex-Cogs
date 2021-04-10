@@ -1,9 +1,9 @@
+import datetime
 import re
-from typing import List
+from typing import List, Optional
 
 import pytz
 from dateutil.parser import parse as parse_time
-from discord import Embed
 from redbot.core.utils.chat_formatting import humanize_list, pagify
 
 from status.objects.incidentdata import IncidentData, UpdateField
@@ -71,7 +71,7 @@ def _process(incident: dict, type: str) -> IncidentData:
 
         desc += f"\nScheduled for: **{start}** to **{end}**"
 
-        scheduled_for = parse_time(incident["scheduled_for"])
+        scheduled_for: Optional[datetime.datetime] = parse_time(incident["scheduled_for"])
     else:
         scheduled_for = None
 

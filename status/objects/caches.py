@@ -1,13 +1,13 @@
 from time import time
 from typing import Dict, List, Literal, Union
 
-from status.core.consts import FEEDS
+from status.core.consts import FEEDS, SERVICE_LITERAL
 
 
 class UsedFeeds:
     """Counts for used feeds, for the update loop."""
 
-    def __init__(self, all_channels: Dict[str, Dict[str, dict]]):
+    def __init__(self, all_channels: Dict[str, Dict[str, Dict[SERVICE_LITERAL, dict]]]):
         used_feeds = dict.fromkeys(FEEDS.keys(), 0)
 
         for _, data in all_channels.items():
@@ -20,13 +20,13 @@ class UsedFeeds:
         data = " ".join(f"{i[0]}={i[1]}" for i in self.__data.items())
         return f"<{data}>"
 
-    def add_feed(self, feedname: str) -> None:
+    def add_feed(self, feedname: SERVICE_LITERAL) -> None:
         self.__data[feedname] = self.__data.get(feedname, 0) + 1
 
-    def remove_feed(self, feedname: str) -> None:
+    def remove_feed(self, feedname: SERVICE_LITERAL) -> None:
         self.__data[feedname] = self.__data.get(feedname, 1) - 1
 
-    def get_list(self) -> List[str]:
+    def get_list(self) -> list:
         return [k for k, v in self.__data.items() if v]
 
 

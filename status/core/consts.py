@@ -1,6 +1,26 @@
+from typing import Literal
+
 ALL = "all"
 LATEST = "latest"
 EDIT = "edit"
+
+MODES_LITERAL = Literal["all", "latest", "edit"]
+
+SERVICE_LITERAL = Literal[  # we love DRY
+    "discord",
+    "github",
+    "cloudflare",
+    "python",
+    "twitter_api",
+    "statuspage",
+    "zoom",
+    "oracle_cloud",
+    "epic_games",
+    "digitalocean",
+    "reddit",
+    "sentry",
+    "geforcenow",
+]
 
 
 LINK_RE = (

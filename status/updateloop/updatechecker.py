@@ -1,13 +1,13 @@
 import asyncio
 import logging
 from time import monotonic
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from discord.ext import tasks
 from redbot.core.bot import Red
 from redbot.core.config import Config
 
-from status.core.consts import FEEDS
+from status.core.consts import FEEDS, SERVICE_LITERAL
 from status.core.statusapi import StatusAPI
 from status.objects.caches import LastChecked, UsedFeeds
 from status.objects.configwrapper import ConfigWrapper
@@ -145,7 +145,9 @@ class UpdateChecker:
                     "this to Vexed."
                 )
 
-    async def _maybe_send_update(self, resp_json: dict, service: str, type: str) -> None:
+    async def _maybe_send_update(
+        self, resp_json: dict, service: SERVICE_LITERAL, type: str
+    ) -> None:
         if type == "scheduled":
             real = await self._check_real_update(process_scheduled(resp_json), service)
         elif type == "incidents":
@@ -171,7 +173,7 @@ class UpdateChecker:
 
     async def _check_real_update(
         self, incidentdata_list: List[IncidentData], service: str
-    ) -> List[Optional[Update]]:
+    ) -> List[Update]:
         stored_ids: list = await self.config.old_ids()
         valid_updates: List[Update] = []
         for incidentdata in incidentdata_list:

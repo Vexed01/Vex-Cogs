@@ -60,7 +60,7 @@ class Aliases(commands.Cog):
             msg += humanize_list(com_builtin_aliases)
             return await ctx.send(msg)
 
-        alias_conf: Config = alias_cog.config
+        alias_conf: Config = alias_cog.config  # type:ignore
         all_global_aliases: List[dict] = await alias_conf.entries()
 
         global_aliases = []

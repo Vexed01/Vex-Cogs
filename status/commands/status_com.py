@@ -1,7 +1,9 @@
 import asyncio
 import datetime
+from typing import Optional
 
 from aiohttp.client import ClientSession
+from discord.channel import TextChannel
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta
@@ -10,7 +12,7 @@ from status.commands.converters import ServiceConverter
 from status.core.statusapi import StatusAPI
 from status.objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache
 from status.objects.configwrapper import ConfigWrapper
-from status.objects.incidentdata import Update
+from status.objects.incidentdata import IncidentData, Update
 from status.objects.sendcache import SendCache
 from status.updateloop.processfeed import process_incidents, process_scheduled
 from status.updateloop.sendupdate import SendUpdate
@@ -48,10 +50,13 @@ class StatusCom:
             )
             return await ctx.send(message, delete_after=time_until)
 
-        if restrictions := self.service_restrictions_cache.get_guild(ctx.guild.id, service.name):
+        if restrictions := self.service_restrictions_cache.get_guild(
+            ctx.guild.id, service.name  # type:ignore  # guild check
+        ):
             channels = [self.bot.get_channel(channel) for channel in restrictions]
             channel_list = humanize_list(
-                [channel.mention for channel in channels if channel], style="or"
+                [channel.mention for channel in channels if isinstance(channel, TextChannel)],
+                style="or",
             )
             if channel_list:
                 return await ctx.send(
@@ -69,9 +74,10 @@ class StatusCom:
         all_scheduled = process_scheduled(summary)
         now = datetime.datetime.now(datetime.timezone.utc)
         scheduled_incidentdata_list = [
-            i for i in all_scheduled if i.scheduled_for < now
+            i for i in all_scheduled if i.scheduled_for and i.scheduled_for < now
         ]  # only want ones happening
 
+        to_send: Optional[IncidentData]
         other_incidents, other_scheduled = [], []
         if incidents_incidentdata_list:
             to_send = incidents_incidentdata_list[0]

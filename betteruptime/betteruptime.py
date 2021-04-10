@@ -74,16 +74,17 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
         # it should be pretty safe to assume the bot's online when unloading
         # and if not it's only a few seconds of "mistake"
-        try:
-            until_next = (
-                self.uptime_loop.next_iteration - datetime.datetime.now(datetime.timezone.utc)
-            ).total_seconds()  # assume up to now was uptime because the command was invoked
-            utcdatetoday = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+        if self.uptime_loop.next_iteration:  # could be None
+            try:
+                until_next = (
+                    self.uptime_loop.next_iteration - datetime.datetime.now(datetime.timezone.utc)
+                ).total_seconds()  # assume up to now was uptime because the command was invoked
+                utcdatetoday = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 
-            self.cog_loaded_cache[utcdatetoday] += until_next
-            self.connected_cache[utcdatetoday] += time() - self.last_ping_change
-        except Exception:
-            pass
+                self.cog_loaded_cache[utcdatetoday] += until_next
+                self.connected_cache[utcdatetoday] += time() - self.last_ping_change
+            except Exception:  # TODO: pos remove
+                pass
 
         asyncio.create_task(self.write_to_config())
 
@@ -139,12 +140,15 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         embed = discord.Embed(description=description, colour=await ctx.embed_colour())
         now = datetime.datetime.utcnow()
 
-        try:
-            until_next = (
-                self.uptime_loop.next_iteration - datetime.datetime.now(datetime.timezone.utc)
-            ).total_seconds()  # assume up to now was uptime because the command was invoked
-        except Exception:
-            until_next = 0
+        if self.uptime_loop.next_iteration is None:
+            until_next = 0.0
+        else:
+            try:
+                until_next = (
+                    self.uptime_loop.next_iteration - datetime.datetime.now(datetime.timezone.utc)
+                ).total_seconds()  # assume up to now was uptime because the command was invoked
+            except Exception:  # TODO: pos remove
+                until_next = 0.0
 
         seconds_cog_loaded = 15 - until_next
         seconds_connected = time() - self.last_ping_change
@@ -176,8 +180,8 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
         for date in dates_to_look_for:
             date = date.strftime("%Y-%m-%d")
-            seconds_cog_loaded += conf_cog_loaded.get(date, 0)
-            seconds_connected += conf_connected.get(date, 0)
+            seconds_cog_loaded += conf_cog_loaded.get(date, 0.0)
+            seconds_connected += conf_connected.get(date, 0.0)
 
         main_downtime = (
             humanize_timedelta(seconds=seconds_data_collected - seconds_connected) or "none"
@@ -286,12 +290,15 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
         now = datetime.datetime.utcnow()
 
-        try:
-            until_next = (
-                self.uptime_loop.next_iteration - datetime.datetime.now(datetime.timezone.utc)
-            ).total_seconds()  # assume up to now was uptime because the command was invoked
-        except Exception:
-            until_next = 0
+        if not self.uptime_loop.next_iteration:
+            until_next = 0.0
+        else:
+            try:
+                until_next = (
+                    self.uptime_loop.next_iteration - datetime.datetime.now(datetime.timezone.utc)
+                ).total_seconds()  # assume up to now was uptime because the command was invoked
+            except Exception:  # TODO: pos remove
+                until_next = 0.0
 
         seconds_cog_loaded = until_next
         seconds_connected = time() - self.last_ping_change
@@ -323,8 +330,8 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
         for date in dates_to_look_for:
             date = date.strftime("%Y-%m-%d")
-            seconds_cog_loaded += conf_cog_loaded.get(date, 0)
-            seconds_connected += conf_connected.get(date, 0)
+            seconds_cog_loaded += conf_cog_loaded.get(date, 0.0)
+            seconds_connected += conf_connected.get(date, 0.0)
 
         await ctx.send(
             f"The cog was first loaded `{(now - conf_first_loaded).total_seconds()}` seconds ago\n"
@@ -344,42 +351,50 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
         uptime_loop = self.uptime_loop
 
+        # lots of type:ignores.... basically idc about this
+
         uptime_data1 = [
             ["next_iteration", uptime_loop.next_iteration],
-            ["_last_iteration", uptime_loop._last_iteration],
+            ["_last_iteration", uptime_loop._last_iteration],  # type:ignore
             ["is_running", uptime_loop.is_running()],
             ["failed", uptime_loop.failed()],
-            ["_last_iteration_failed", uptime_loop._last_iteration_failed],
+            ["_last_iteration_failed", uptime_loop._last_iteration_failed],  # type:ignore
             ["current_loop", uptime_loop.current_loop],
         ]
 
         uptime_data2 = [
-            ["Seconds until next", uptime_loop.next_iteration.timestamp() - time()],
-            ["Seconds since last", time() - uptime_loop._last_iteration.timestamp()],
+            ["Seconds until next", uptime_loop.next_iteration.timestamp() - time()],  # type:ignore
+            [
+                "Seconds since last",
+                time() - uptime_loop._last_iteration.timestamp(),  # type:ignore
+            ],
         ]
 
         config_loop = self.config_loop
 
         config_data1 = [
             ["next_iteration", config_loop.next_iteration],
-            ["_last_iteration", config_loop._last_iteration],
+            ["_last_iteration", config_loop._last_iteration],  # type:ignore
             ["is_running", config_loop.is_running()],
             ["failed", config_loop.failed()],
-            ["_last_iteration_failed", config_loop._last_iteration_failed],
+            ["_last_iteration_failed", config_loop._last_iteration_failed],  # type:ignore
             ["current_loop", config_loop.current_loop],
         ]
 
         config_data2 = [
-            ["Seconds until next", config_loop.next_iteration.timestamp() - time()],
-            ["Seconds since last", time() - config_loop._last_iteration.timestamp()],
+            ["Seconds until next", config_loop.next_iteration.timestamp() - time()],  # type:ignore
+            [
+                "Seconds since last",
+                time() - config_loop._last_iteration.timestamp(),  # type:ignore
+            ],
         ]
 
-        uptime_loop = f"{box(tabulate(uptime_data1))}\n{box(tabulate(uptime_data2))}"
-        config_loop = f"{box(tabulate(config_data1))}\n{box(tabulate(config_data2))}"
+        parsed_uptime_loop = f"{box(tabulate(uptime_data1))}\n{box(tabulate(uptime_data2))}"
+        parsed_config_loop = f"{box(tabulate(config_data1))}\n{box(tabulate(config_data2))}"
 
         e = discord.Embed(title="Loop info")
-        e.add_field(name="Uptime loop", value=uptime_loop, inline=False)
-        e.add_field(name="Config loop", value=config_loop, inline=False)
+        e.add_field(name="Uptime loop", value=parsed_uptime_loop, inline=False)
+        e.add_field(name="Config loop", value=parsed_config_loop, inline=False)
         await ctx.send(embed=e)
 
 

@@ -2,10 +2,17 @@ from typing import Dict
 
 from discord import TextChannel
 
+from status.core.consts import MODES_LITERAL
+
 
 class ChannelData:
     def __init__(
-        self, channel: TextChannel, mode: str, webhook: bool, edit_id: Dict[str, int], embed: bool
+        self,
+        channel: TextChannel,
+        mode: MODES_LITERAL,
+        webhook: bool,
+        edit_id: Dict[str, int],
+        embed: bool,
     ):
         self.channel = channel
         self.mode = mode

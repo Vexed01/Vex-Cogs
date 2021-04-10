@@ -65,14 +65,14 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
         self.last_checked = LastChecked()
         self.config_wrapper = ConfigWrapper(self.config, self.last_checked)
         self.service_cooldown = ServiceCooldown()
-        self.used_feeds = None
-        self.service_restrictions_cache = None
+        self.used_feeds: UsedFeeds
+        self.service_restrictions_cache: ServiceRestrictionsCache
 
         self.statusapi = StatusAPI(self.session)
 
         asyncio.create_task(self._async_init())
 
-        if 418078199982063626 in self.bot.owner_ids:
+        if 418078199982063626 in self.bot.owner_ids:  # type:ignore  # im lazy
             try:
                 self.bot.add_dev_env_value("status", lambda _: self)
                 self.bot.add_dev_env_value("loop", lambda _: self.update_checker.loop)
@@ -184,7 +184,9 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
     async def command_statusinfo(self, ctx: commands.Context):
         loopstatus = self.update_checker.loop.is_running()
         try:
-            loopintegrity = time() - self.update_checker.loop._last_iteration.timestamp() <= 120
+            loopintegrity = (
+                time() - self.update_checker.loop._last_iteration.timestamp() <= 120  # type:ignore
+            )  # privates not in stubs
         except AttributeError:
             loopintegrity = False
 

@@ -25,12 +25,22 @@ DEFAULTS = Defaults(
 
 
 class Settings:
-    def __init__(self, emoji: Union[Emoji, str, int], colour: Optional[int]):
-        self.emoji: Union[Emoji, str, int] = emoji
+    def __init__(self, emoji: Optional[int], colour: Optional[int]) -> None:
+        self.emoji = emoji
         self.colour = colour
 
     def __repr__(self):
         return f"Cache({self.emoji}, {self.colour})"
+
+
+class FullSettings:
+    def __init__(self, emoji: Union[str, Emoji], colour: int) -> None:
+        self.emoji = emoji
+        self.colour = colour
+
+    def __repr__(self) -> str:
+        emoji = f'"{self.emoji}"' if isinstance(self.emoji, str) else self.emoji
+        return f"FullSettings({emoji}, {self.colour})"
 
 
 class Cache:
@@ -47,25 +57,27 @@ class Cache:
         self.__data[colour_name]["emoji"] = settings.emoji or DEFAULTS[colour_name]["emoji"]
         self.__data[colour_name]["colour"] = settings.colour or DEFAULTS[colour_name]["colour"]
 
-    def __get_settings(self, colour_name: COLOURS) -> Settings:
-        emoji_id = self.__data[colour_name].get("emoji")
-        if emoji_id is None:
-            emoji = DEFAULTS[colour_name]["emoji"]
+    def __get_settings(self, colour_name: COLOURS) -> FullSettings:
+        emoji_id = self.__data[colour_name].get("emoji", "")
+
+        if isinstance(emoji_id, int):
+            emoji = self.__bot.get_emoji(emoji_id) or DEFAULTS[colour_name]["emoji"]  # type:ignore
         else:
-            emoji = self.__bot.get_emoji(emoji_id) or DEFAULTS[colour_name]["emoji"]
+            emoji = DEFAULTS[colour_name]["emoji"]
 
         colour = self.__data[colour_name]["colour"] or DEFAULTS[colour_name]["colour"]
 
-        return Settings(emoji, colour)
+        return FullSettings(emoji, colour)  # type:ignore
+        # its being rly picky for whatever reason........
 
     @property
-    def red(self) -> Settings:
+    def red(self) -> FullSettings:
         return self.__get_settings("red")
 
     @property
-    def orange(self) -> Settings:
+    def orange(self) -> FullSettings:
         return self.__get_settings("orange")
 
     @property
-    def green(self) -> Settings:
+    def green(self) -> FullSettings:
         return self.__get_settings("green")

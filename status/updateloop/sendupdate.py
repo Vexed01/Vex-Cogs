@@ -11,6 +11,7 @@ from status.objects.channel import ChannelData, InvalidChannel
 from status.objects.configwrapper import ConfigWrapper
 from status.objects.incidentdata import Update
 from status.objects.sendcache import SendCache
+from status.objects.typeddict import ConfChannelSettings
 from status.updateloop.utils import get_channel_data, get_webhook
 
 _log = logging.getLogger("red.vexed.status.sendupdate")
@@ -70,7 +71,7 @@ class SendUpdate:
         time = floor(end - start) or "under a"
         _log.info(f"Sending update for {self.service} took {time} second(s).")
 
-    async def _send_updated_feed(self, c_id: int, settings: dict) -> None:
+    async def _send_updated_feed(self, c_id: int, settings: ConfChannelSettings) -> None:
         try:
             channeldata = await get_channel_data(self.bot, c_id, settings)
         except InvalidChannel:

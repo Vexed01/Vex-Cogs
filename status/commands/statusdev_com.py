@@ -1,7 +1,9 @@
 import logging
 from time import time
+from typing import TYPE_CHECKING
 
 from aiohttp import ClientSession
+from discord.guild import Guild
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, pagify, warning
@@ -126,7 +128,7 @@ class StatusDevCom:
         update = Update(incidentdata, [incidentdata.fields[-1]])
 
         channels = await self.config_wrapper.get_channels(service.name)
-        sendcache = SendCache(update, service)
+        sendcache = SendCache(update, service.name)
 
         SendUpdate(
             bot=self.bot,
@@ -142,19 +144,23 @@ class StatusDevCom:
     @statusdev.command(aliases=["cd"], hidden=True)
     async def cooldown(self, ctx: commands.Context, user_id: int = None):
         """Get custom cooldown info for a user"""
-        await ctx.send(box(self.service_cooldown.get_from_id(user_id or ctx.author.id)))
+        await ctx.send(box(str(self.service_cooldown.get_from_id(user_id or ctx.author.id))))
 
     @statusdev.command(aliases=["cfc"], hidden=True)
     async def checkusedfeedcache(self, ctx: commands.Context):
         """Check what feeds this is checking"""
-        raw = box(self.used_feeds, lang="py")
-        actual = box(self.used_feeds.get_list(), lang="py")
+        raw = box(str(self.used_feeds), lang="py")
+        actual = box(str(self.used_feeds.get_list()), lang="py")
         await ctx.send(f"**Raw data:**\n{raw}\n**Active:**\n{actual}")
 
     @statusdev.command(aliases=["cgr"], hidden=True)
     async def checkguildrestrictions(self, ctx: commands.Context):
         """Check guild restrictins for current guild"""
-        await ctx.send(box(self.service_restrictions_cache.get_guild(ctx.guild.id)))
+        if TYPE_CHECKING:
+            guild = Guild()
+        else:
+            guild = ctx.guild
+        await ctx.send(box(str(self.service_restrictions_cache.get_guild(guild.id))))
 
     @statusdev.command(aliases=["ri"], hidden=True)
     async def refreshincidentids(self, ctx: commands.Context):
@@ -168,18 +174,21 @@ class StatusDevCom:
         """Check status of the loop"""
         loop = self.update_checker.loop
 
+        # 1) stubs dont have private attar
+        # 2) i dont care about this commnad erroring
+
         data1 = [
             ["next_iteration", loop.next_iteration],
-            ["_last_iteration", loop._last_iteration],
+            ["_last_iteration", loop._last_iteration],  # type:ignore
             ["is_running", loop.is_running()],
             ["failed", loop.failed()],
-            ["_last_iteration_failed", loop._last_iteration_failed],
+            ["_last_iteration_failed", loop._last_iteration_failed],  # type:ignore
             ["current_loop", loop.current_loop],
         ]
 
         data2 = [
-            ["Seconds until next", loop.next_iteration.timestamp() - time()],
-            ["Seconds since last", time() - loop._last_iteration.timestamp()],
+            ["Seconds until next", loop.next_iteration.timestamp() - time()],  # type:ignore
+            ["Seconds since last", time() - loop._last_iteration.timestamp()],  # type:ignore
         ]
 
         await ctx.send(
@@ -206,8 +215,8 @@ class StatusDevCom:
         These will be removed on cog unload.
         """
         try:
-            self.bot.add_dev_env_value("status", lambda x: self)
-            self.bot.add_dev_env_value("loop", lambda x: self.update_checker.loop)
+            self.bot.add_dev_env_value("status", lambda _: self)
+            self.bot.add_dev_env_value("loop", lambda _: self.update_checker.loop)
             self.bot.add_dev_env_value("statusapi", lambda _: self.statusapi)
             self.bot.add_dev_env_value("sendupdate", lambda _: SendUpdate)
             await ctx.send(

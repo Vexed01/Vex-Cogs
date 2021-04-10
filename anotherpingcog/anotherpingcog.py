@@ -94,13 +94,14 @@ class AnotherPingCog(commands.Cog):
 
         if ctx.guild:
             if settings.force_embed:
-                embed = ctx.channel.permissions_for(ctx.me).embed_links
+                use_embed = ctx.channel.permissions_for(ctx.me).embed_links  # type:ignore
+                # ignoring because already check if in guild
             else:
-                embed = await ctx.embed_requested()
+                use_embed = await ctx.embed_requested()
         else:
-            embed = True
+            use_embed = True
 
-        if embed:
+        if use_embed:
             embed = discord.Embed(title=title)
             embed.add_field(name="Discord WS", value=box(f"{ws_latency} ms", "py"))
             embed.set_footer(
@@ -122,10 +123,10 @@ class AnotherPingCog(commands.Cog):
             colour = self._get_emb_colour(ws_latency, m_latency, settings)
 
         ws_latency_text, m_latency_text = self._get_latency_text(
-            ws_latency, m_latency, settings, embed
+            ws_latency, m_latency, settings, use_embed
         )
 
-        if embed:
+        if use_embed:
             extra = box(f"{ws_latency} ms", "py")
             embed.set_field_at(0, name="Discord WS", value=f"{ws_latency_text}{extra}")
             extra = box(f"{m_latency} ms", "py")
@@ -393,7 +394,7 @@ class AnotherPingCog(commands.Cog):
             )
             hex = int_colour
 
-        self.cache.set("green", Settings(emoji, hex))
+        self.cache.set("green", Settings(emoji_toset, hex))
 
         if await ctx.embed_requested():
             embed = discord.Embed(
@@ -408,7 +409,8 @@ class AnotherPingCog(commands.Cog):
     @pingset.command()
     async def settings(self, ctx: commands.Context):
         """See your current settings."""
-        if not ctx.channel.permissions_for(ctx.me).embed_links:
+        if ctx.guild and not ctx.channel.permissions_for(ctx.me).embed_links:  # type:ignore
+            # checking if guild so doesn't matter
             return await ctx.send(
                 "I need to send this as an embed because Vexed is lazy and won't make a "
                 "non-embed version."

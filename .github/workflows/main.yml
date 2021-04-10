@@ -71,4 +71,4 @@ jobs:
 
     - name: Run mypy
       run: |
-        python -m mypy .
+        python -m mypy aliases anotherpingcog betteruptime github status system

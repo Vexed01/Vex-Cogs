@@ -1,9 +1,13 @@
 import asyncio
 from time import time
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import discord
 from aiohttp import ClientSession
+from discord.abc import GuildChannel
+from discord.channel import TextChannel
+from discord.guild import Guild
+from discord.member import Member
 from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list
@@ -21,6 +25,10 @@ from status.objects.sendcache import SendCache
 from status.updateloop.processfeed import process_incidents
 from status.updateloop.sendupdate import SendUpdate
 from status.updateloop.updatechecker import UpdateChecker
+
+# NOTE:
+# Not using ctx.guild because mypy goes mad, using channel.guild - it'll make sense when you see it
+# ... i hope
 
 
 class StatusSetCom:
@@ -52,12 +60,12 @@ class StatusSetCom:
         geforcenow
         """
 
-    @statusset.command(name="add")
+    @statusset.command(name="add", usage="<service> [channel]")
     async def statusset_add(
         self,
         ctx: commands.Context,
         service: ServiceConverter,
-        channel: Optional[discord.TextChannel],
+        chan: Optional[discord.TextChannel],
     ):
         """
         Start getting status updates for the chosen service!
@@ -71,18 +79,21 @@ class StatusSetCom:
 
         If you don't specify a specific channel, I will use the current channel.
         """
-        channel = channel or ctx.channel
+        if TYPE_CHECKING:
+            channel = GuildChannel()
+        else:
+            channel = chan or ctx.channel
 
-        if not channel.permissions_for(ctx.me).send_messages:
+        if not channel.permissions_for(ctx.me).send_messages:  # type:ignore
             return await ctx.send(
                 f"I don't have permissions to send messages in {channel.mention}"
             )
 
-        existing_feeds = await self.config.channel(channel).feeds()
+        existing_feeds = await self.config.channel(channel).feeds()  # type:ignore
         if service in existing_feeds.keys():
             return await ctx.send(
-                f"{channel.mention} already receives {service.friendly} status updates. You can "
-                f"edit it with `{ctx.clean_prefix}statusset edit`."
+                f"{channel.mention} already receives {service.friendly} status "  # type:ignore
+                f"updates. You can edit it with `{ctx.clean_prefix}statusset edit`."
             )
 
         modes = (
@@ -107,7 +118,7 @@ class StatusSetCom:
 
         try:
             # really shouldn't monkey patch this
-            mode = await ModeConverter.convert(
+            mode = await ModeConverter.convert(  # type:ignore
                 None,
                 ctx,
                 (
@@ -123,7 +134,7 @@ class StatusSetCom:
 
         # === WEBHOOK ===
 
-        if channel.permissions_for(ctx.me).manage_webhooks:
+        if channel.permissions_for(ctx.me).manage_webhooks:  # type:ignore
             await ctx.send(
                 "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means "
                 f"that the status updates will be sent with the avatar as {service.friendly}'s "
@@ -141,12 +152,16 @@ class StatusSetCom:
             if webhook:
                 # already checked for perms to create
                 # thanks flare for your webhook logic (redditpost) (or trusty?)
+
+                # i know this makes the webhook in the wrong channel if a specific one is chosen...
+                # its remade later, mypy makes this annoying to fix
+                # TODO: ^
                 existing_webhook = False
-                for hook in await channel.webhooks():
+                for hook in await ctx.channel.webhooks():
                     if hook.name == channel.guild.me.name:
                         existing_webhook = True
                 if not existing_webhook:
-                    await channel.create_webhook(
+                    await ctx.channel.create_webhook(
                         name=channel.guild.me.name, reason="Created for status updates."
                     )
         else:
@@ -159,7 +174,7 @@ class StatusSetCom:
         # === RESTRICT ===
 
         await ctx.send(
-            f"**Would you like to restrict access to {service.friendly} in the "
+            f"**Would you like to restrict access to {service.friendly} in the "  # type:ignore
             f"`{ctx.clean_prefix}status` command?** (yes or no answer)\nThis will reduce spam. If "
             f"there's an incident, members will instead be redirected to {channel.mention} and "
             f"any other channels that you've set to receive {service.friendly} status updates "
@@ -200,21 +215,24 @@ class StatusSetCom:
             f"{msg}Done, {channel.mention} will now receive {service.friendly} status updates."
         )
 
-    @statusset.command(name="remove", aliases=["del", "delete"])
+    @statusset.command(name="remove", aliases=["del", "delete"], usage="<service> [channel]")
     async def statusset_remove(
         self,
         ctx: commands.Context,
         service: ServiceConverter,
-        channel: Optional[discord.TextChannel],
+        chan: Optional[discord.TextChannel],
     ):
         """
         Stop status updates for a specific service in this server.
 
         If you don't specify a channel, I will use the current channel.
         """
-        channel = channel or ctx.channel
+        if TYPE_CHECKING:
+            channel = GuildChannel()
+        else:
+            channel = chan or ctx.channel
 
-        async with self.config.channel(ctx.channel).feeds() as feeds:
+        async with self.config.channel(channel).feeds() as feeds:
             if not feeds.pop(service.name, None):
                 return await ctx.send(
                     f"It looks like I don't send {service.friendly} updates in {channel.mention}."
@@ -222,14 +240,14 @@ class StatusSetCom:
 
         self.used_feeds.remove_feed(service.name)
 
-        async with self.config.guild(ctx.guild).service_restrictions() as sr:
+        async with self.config.guild(channel.guild).service_restrictions() as sr:
             try:
                 sr[service.name].remove(channel.id)
             except KeyError:
                 pass
 
             self.service_restrictions_cache.remove_restriction(
-                ctx.guild.id, service.name, channel.id
+                channel.id, service.name, channel.id
             )
 
         await ctx.send(f"Removed {service.friendly} status updated from {channel.mention}")
@@ -246,13 +264,18 @@ class StatusSetCom:
         # i basically copied and pasted in rewrite
         # maybe stick the two sections in .utils
 
+        if TYPE_CHECKING:
+            guild = Guild()
+        else:
+            guild = ctx.guild
+
         unused_feeds = list(FEEDS.keys())
 
         if service:
             data = []
-            for channel in ctx.guild.channels:
+            for channel in guild.channels:
                 feeds = await self.config.channel(channel).feeds()
-                restrictions = await self.config.guild(ctx.guild).service_restrictions()
+                restrictions = await self.config.guild(guild).service_restrictions()
                 for name, settings in feeds.items():
                     if name != service.name:
                         continue
@@ -275,7 +298,7 @@ class StatusSetCom:
 
         else:
             guild_feeds: Dict[str, List[str]] = {}
-            for channel in ctx.guild.channels:
+            for channel in guild.channels:
                 feeds = await self.config.channel(channel).feeds()
                 for feed in feeds.keys():
                     try:
@@ -346,12 +369,19 @@ class StatusSetCom:
             as the service's logo and the name will be `[service] Status Update`, instead
             of my avatar and name.
         """
-        if webhook and not ctx.channel.permissions_for(ctx.me).manage_messages:
+        if TYPE_CHECKING:
+            me = Member()
+            channel = TextChannel()
+        else:
+            me = ctx.me
+            channel = ctx.channel
+
+        if webhook and not channel.permissions_for(me).manage_messages:
             return await ctx.send("I don't have permission to manage webhook.")
 
         incidentdata, extra_info = await self.config_wrapper.get_latest(service.name)
 
-        if incidentdata is None or (
+        if extra_info is None or (
             time() - extra_info.get("checked", 0) > 300
         ):  # its older than 3 mins
             try:
@@ -377,17 +407,17 @@ class StatusSetCom:
             True,
         )
 
-    # ################################### EDIT ####################################################
+    # ########################################### EDIT ############################################
 
     @statusset.group()
     async def edit(self, ctx: commands.Context):
         """Edit services you've already set up."""
 
-    @edit.command(name="mode")
+    @edit.command(name="mode", usage="[channel] <service> <mode>")
     async def edit_mode(
         self,
         ctx: commands.Context,
-        channel: Optional[discord.TextChannel],
+        chan: Optional[discord.TextChannel],
         service: ServiceConverter,
         mode: ModeConverter,
     ):
@@ -406,7 +436,10 @@ class StatusSetCom:
 
         If you don't specify a channel, I will use the current channel.
         """
-        channel = channel or ctx.channel
+        if TYPE_CHECKING:
+            channel = GuildChannel()
+        else:
+            channel = chan or ctx.channel
 
         old_conf = await self.config.channel(channel).feeds()
         if service.name not in old_conf.keys():
@@ -430,11 +463,11 @@ class StatusSetCom:
             f"{service.friendly} status updates in {channel.mention} will now use the {mode} mode."
         )
 
-    @edit.command(name="webhook")
+    @edit.command(name="webhook", usage="[channel] <service> <webhook>")
     async def edit_webhook(
         self,
         ctx: commands.Context,
-        channel: Optional[discord.TextChannel],
+        chan: Optional[discord.TextChannel],
         service: ServiceConverter,
         webhook: bool,
     ):
@@ -445,7 +478,12 @@ class StatusSetCom:
 
         If you don't specify a channel, I will use the current channel.
         """
-        channel = channel or ctx.channel
+        if TYPE_CHECKING:
+            channel = GuildChannel()
+            me = Member()
+        else:
+            channel = chan or ctx.channel
+            me = ctx.me
 
         old_conf = await self.config.channel(channel).feeds()
         if service.name not in old_conf.keys():
@@ -461,7 +499,7 @@ class StatusSetCom:
                 f"in {channel.mention}"
             )
 
-        if webhook and not ctx.channel.permissions_for(ctx.me).manage_webhooks:
+        if webhook and not channel.permissions_for(me).manage_webhooks:
             return await ctx.send("I don't have manage webhook permissions so I can't do that.")
 
         old_conf[service.name]["edit_id"] = {}
@@ -475,11 +513,11 @@ class StatusSetCom:
             f"{service.friendly} status updates in {channel.mention} will now {word} webhooks."
         )
 
-    @edit.command(name="restrict")
+    @edit.command(name="restrict", usage="[channel] <service> <restrict>")
     async def edit_restrict(
         self,
         ctx: commands.Context,
-        channel: Optional[discord.TextChannel],
+        chan: Optional[discord.TextChannel],
         service: ServiceConverter,
         restrict: bool,
     ):
@@ -490,7 +528,10 @@ class StatusSetCom:
         (if there's an incident) members will instead be redirected to channels
         that automatically receive the status updates, that they have permission to to view.
         """
-        channel = channel or ctx.channel
+        if TYPE_CHECKING:
+            channel = GuildChannel()
+        else:
+            channel = chan or ctx.channel
 
         feed_settings = await self.config.channel(channel).feeds()
         if service.name not in feed_settings.keys():
@@ -499,7 +540,7 @@ class StatusSetCom:
                 f"{channel.mention}"
             )
 
-        old_conf = (await self.config.guild(ctx.guild).service_restrictions()).get(
+        old_conf = (await self.config.guild(channel.guild).service_restrictions()).get(
             service.name, []
         )
         old_bool = channel.id in old_conf
@@ -510,19 +551,19 @@ class StatusSetCom:
                 "the `status` command."
             )
 
-        async with self.config.guild(ctx.guild).service_restrictions() as sr:
+        async with self.config.guild(channel.guild).service_restrictions() as sr:
             if restrict:
                 try:
                     sr[service.name].append(channel.id)
                 except KeyError:
                     sr[service.name] = [channel.id]
                 self.service_restrictions_cache.add_restriction(
-                    ctx.guild.id, service.name, channel.id
+                    channel.guild.id, service.name, channel.id
                 )
             else:
                 sr[service.name].remove(channel.id)
                 self.service_restrictions_cache.remove_restriction(
-                    ctx.guild.id, service.name, channel.id
+                    channel.guild.id, service.name, channel.id
                 )
 
         word = "" if restrict else "not "

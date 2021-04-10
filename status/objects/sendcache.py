@@ -5,7 +5,7 @@ from typing import Literal, Union
 from discord import Colour, Embed
 from redbot.core.utils.chat_formatting import pagify
 
-from status.core.consts import FEEDS, LINK_RE
+from status.core.consts import FEEDS, LINK_RE, SERVICE_LITERAL
 from status.objects.incidentdata import Update
 
 _log = logging.getLogger("red.vexed.status.sendupdate")
@@ -15,7 +15,7 @@ _log = logging.getLogger("red.vexed.status.sendupdate")
 
 
 class SendCache:
-    def __init__(self, update: Update, service: str):
+    def __init__(self, update: Update, service: SERVICE_LITERAL):
         self.__incidentdata = update.incidentdata
         self.__new_fields = update.new_fields
         self.__service = service

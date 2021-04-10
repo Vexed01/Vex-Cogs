@@ -1,7 +1,6 @@
 import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from discord import Embed
 from redbot.core.utils import deduplicate_iterables
 
 
@@ -24,13 +23,13 @@ class IncidentData:
 
     def __init__(
         self,
+        title: str,
+        link: str,
+        incident_id: str,
+        description: str,
         fields: List[UpdateField] = [],
         time: Optional[datetime.datetime] = None,
-        title: Optional[str] = None,
-        link: Optional[str] = None,
         actual_time: Optional[datetime.datetime] = None,
-        description: Optional[str] = None,
-        incident_id: Optional[str] = None,
         *,
         scheduled_for: Optional[datetime.datetime] = None,
     ):
