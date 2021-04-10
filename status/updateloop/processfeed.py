@@ -73,7 +73,7 @@ def _process(incident: dict, type: str) -> IncidentData:
 
         scheduled_for = parse_time(incident["scheduled_for"])
     else:
-        scheduled_for = Embed.Empty
+        scheduled_for = None
 
     return IncidentData(
         fields=fields,

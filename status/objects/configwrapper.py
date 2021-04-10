@@ -1,11 +1,16 @@
 import datetime
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
 
 from discord import Embed
 from redbot.core import Config
 
 from status.objects.caches import LastChecked
-from status.objects.incidentdata import IncidentData, UpdateField
+from status.objects.incidentdata import IncidentData, Update, UpdateField
+
+
+class _ConfDict(TypedDict):
+    fields: List[UpdateField]
+    time: datetime.datetime
 
 
 class ConfigWrapper:
@@ -18,28 +23,22 @@ class ConfigWrapper:
     async def get_latest(
         self, service: str
     ) -> Union[
-        Tuple[IncidentData, Dict[str, Union[int, str]]], Tuple[None, None]
+        Tuple[IncidentData, Dict[str, Union[str, float]]], Tuple[None, None]
     ]:  # ... this is long
-        incident = (await self.config.feed_store()).get(service)
+        incident: Optional[dict] = (await self.config.feed_store()).get(service)
         if not incident:
             return None, None
         extra_info = {"checked": self.last_checked.get_time(service)}
 
-        deserialised: Dict[str, Union[List[UpdateField], Any]] = {"fields": []}
+        deserialised: Dict[str, Union[List[UpdateField], str, datetime.datetime]] = {"fields": []}
         if incident["time"]:
             deserialised["time"] = datetime.datetime.fromtimestamp(incident["time"])
-        else:
-            deserialised["time"] = Embed.Empty
         if incident["actual_time"]:
             deserialised["actual_time"] = datetime.datetime.fromtimestamp(incident["actual_time"])
-        else:
-            deserialised["actual_time"] = Embed.Empty
-        if incident["scheduled_for"]:
+        if incident.get("scheduled_for"):
             deserialised["scheduled_for"] = datetime.datetime.fromtimestamp(
                 incident["scheduled_for"]
             )
-        else:
-            deserialised["scheduled_for"] = Embed.Empty
 
         for field in incident["fields"]:
             deserialised["fields"].append(
@@ -47,12 +46,13 @@ class ConfigWrapper:
             )
 
         incidentdata = IncidentData(
-            deserialised["fields"],
-            deserialised["time"],
-            incident["title"],
-            incident["link"],
-            deserialised["actual_time"],
+            fields=deserialised["fields"],
+            time=deserialised["time"],
+            title=incident["title"],
+            link=incident["link"],
+            actual_time=deserialised["actual_time"],
             description=deserialised.get("description"),
+            scheduled_for=deserialised["scheduled_for"],
         )
 
         return incidentdata, extra_info

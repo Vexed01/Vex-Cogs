@@ -154,12 +154,12 @@ incidentdata
 
 | **fields** (``List[UpdateField]``) – A list containing UpdateField objects
 | **title** (``str``) – The title of the incident
-| **time**: A datetime object, or if it was unable to parse it then ``discord.Embed.Empty``
+| **time**: (``datetime`` | None) - Parsed time, or None
 | **link** (``str``) – The incident link.
-| **actual_time**: A datetime object, or if it was unable to parse it then ``discord.Embed.Empty``
-| **description** (``str`` | None) – Exclusively used for when a scheduled incident is being sent.
-| **incident_id** (``str``) – The incident's unique ID.
-| **scheduled_for**: If the incident sent was scheduled, this is when the event starts/started. Could be ``discord.Embed.Empty``
+| **actual_time**: (``datetime`` | None) - Parsed time, or None
+| **description** (``str`` | None) – Exclusively used for when a scheduled incident is being sent
+| **incident_id** (``str``) – The incident's unique ID
+| **scheduled_for**: (``datetime`` | None) If the incident sent was scheduled, this is when the event starts/started
 
 **Methods**
 

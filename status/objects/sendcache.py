@@ -36,7 +36,7 @@ class SendCache:
             title=self.__incidentdata.title,
             url=self.__incidentdata.link,
             description=self.__incidentdata.description,
-            timestamp=self.__incidentdata.actual_time or self.__incidentdata.time,
+            timestamp=self.__incidentdata.actual_time or self.__incidentdata.time or Embed.Empty,
             colour=self._get_colour(),
         )
 
