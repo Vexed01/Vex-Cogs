@@ -8,9 +8,10 @@ This is the cog guide for the anotherpingcog cog. You will
 find detailed docs about usage and commands.
 
 ``[p]`` is considered as your prefix.
+
 .. note::
 
-    To use this cog, you will need to install it.
+    To use this cog, you will need to install and load it.
 
     See the :ref:`getting_started` page.
 
@@ -105,7 +106,7 @@ pingset green
 
 .. code-block:: none
 
-    [p]pingset green <emoji> <hex_colour>
+    [p]pingset green <emoji> [hex_colour=default]
 
 **Description**
 
@@ -118,12 +119,11 @@ If you want to go back to the defaults, just do ``[p]pingset green default defau
 ``<emoji>``
 Just send the emoji as you normally would. It must be a custom emoji and I must
 be in the sever the emoji is in.
-You can also put ``default`` to use the default emoji.
+You can also put ``default`` to use 🟢
 
-``<hex_colour>``
+``[hex_colour]`` (optional)
 The hex code you want the colour for Red to be. It looks best when this is the
-same colour as the emoji.
-You can also put ``default`` to use the default colour.
+same colour as the emoji. Google "hex colour" if you need help with this.
 
 .. _anotherpingcog-command-pingset-orange:
 
@@ -135,7 +135,7 @@ pingset orange
 
 .. code-block:: none
 
-    [p]pingset orange <emoji> <hex_colour>
+    [p]pingset orange <emoji> [hex_colour=default]
 
 **Description**
 
@@ -148,12 +148,11 @@ If you want to go back to the defaults, just do ``[p]pingset orange default defa
 ``<emoji>``
 Just send the emoji as you normally would. It must be a custom emoji and I must
 be in the sever the emoji is in.
-You can also put ``default`` to use the default emoji.
+You can also put ``default`` to use 🟠
 
-``<hex_colour>``
+``[hex_colour]`` (optional)
 The hex code you want the colour for Red to be. It looks best when this is the
 same colour as the emoji. Google "hex colour" if you need help with this.
-You can also put ``default`` to use the default colour.
 
 .. _anotherpingcog-command-pingset-red:
 
@@ -165,7 +164,7 @@ pingset red
 
 .. code-block:: none
 
-    [p]pingset red <emoji> <hex_colour>
+    [p]pingset red <emoji> [hex_colour=default]
 
 **Description**
 
@@ -178,12 +177,11 @@ If you want to go back to the defaults, just do ``[p]pingset red default default
 ``<emoji>``
 Just send the emoji as you normally would. It must be a custom emoji and I must
 be in the sever the emoji is in.
-You can also put ``default`` to use the default emoji.
+You can also put ``default`` to use 🔴
 
-``<hex_colour>``
+``[hex_colour]`` (optional)
 The hex code you want the colour for Red to be. It looks best when this is the
-same colour as the emoji.
-You can also put ``default`` to use the default colour.
+same colour as the emoji. Google "hex colour" if you need help with this.
 
 .. _anotherpingcog-command-pingset-settings:
 

@@ -11,7 +11,7 @@ find detailed docs about usage and commands.
 
 .. note::
 
-    To use this cog, you will need to install it.
+    To use this cog, you will need to install and load it.
 
     See the :ref:`getting_started` page.
 

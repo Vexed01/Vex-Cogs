@@ -21,6 +21,11 @@ Getting my cogs
 
         [p]cog install vex-cogs cogname
 
+3. Finally, you need to load the cog:
+    .. code-block:: none
+
+        [p]load cogname
+
 
 You can list my cogs with this command:
 

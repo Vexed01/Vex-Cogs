@@ -11,7 +11,7 @@ find detailed docs about usage and commands.
 
 .. note::
 
-    To use this cog, you will need to install it.
+    To use this cog, you will need to install and load it.
 
     See the :ref:`getting_started` page.
 
@@ -73,7 +73,7 @@ statusset
 
 .. code-block:: none
 
-    [p]statusset
+    [p]statusset 
 
 **Description**
 
@@ -107,7 +107,8 @@ There is a list of services you can use in the ``[p]statusset list`` command.
 
 This is an interactive command. It will ask what mode you want to use and if you
 want to use a webhook. You can use the ``[p]statusset preview`` command to see how
-different options look or take a look at https://vex-cogs.rtfd.io/en/latest/cogs/statusref.html
+different options look or take a look at
+https://vex-cogs.rtfd.io/en/latest/cogs/statusref.html
 
 If you don't specify a specific channel, I will use the current channel.
 
@@ -121,7 +122,7 @@ statusset edit
 
 .. code-block:: none
 
-    [p]statusset edit
+    [p]statusset edit 
 
 **Description**
 
@@ -147,8 +148,8 @@ Change what mode to use for status updates.
 containing the previous updates as well as the new update. Best used in a fast-moving
 channel with other users.
 
-**Latest**: Every time the service posts an update on an incident, I will send a new message
-containing only the latest update. Best used in a dedicated status channel.
+**Latest**: Every time the service posts an update on an incident, I will send a new
+message containing only the latest update. Best used in a dedicated status channel.
 
 **Edit**: When a new incident is created, I will sent a new message. When this incident is
 updated, I will then add the update to the original message. Best used in a dedicated
@@ -215,7 +216,8 @@ statusset list
 
 List that available services and ones are used in this server.
 
-Optionally add a service at the end of the command to view detailed settings for that service.
+Optionally add a service at the end of the command to view detailed settings for that
+service.
 
 .. _status-command-statusset-preview:
 

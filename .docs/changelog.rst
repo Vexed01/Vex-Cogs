@@ -40,7 +40,7 @@ Beautify
 ``1.0.0``
 *********
 
-(2021-04-2021)
+2021-04-2021
 
 - Initial release
 
@@ -151,6 +151,15 @@ System
 =========
 Meta Docs
 =========
+
+*********
+``2.1.1``
+*********
+
+2021-04-11
+
+- Change intro at top to link to :ref:`getting_started` instead of saying to load the cog
+- Bring docs up to date with docstring in all cogs
 
 *********
 ``2.1.0``

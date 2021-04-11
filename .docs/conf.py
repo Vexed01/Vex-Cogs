@@ -19,7 +19,7 @@
 project = "Vex-Cogs"
 copyright = "2021, Vexed"
 author = "Vexed"
-version = "2.1.0"  # this is docs version
+version = "2.1.1"  # this is docs version
 
 
 # -- General configuration ---------------------------------------------------

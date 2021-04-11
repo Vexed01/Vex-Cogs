@@ -11,7 +11,7 @@ find detailed docs about usage and commands.
 
 .. note::
 
-    To use this cog, you will need to install it.
+    To use this cog, you will need to install and load it.
 
     See the :ref:`getting_started` page.
 
@@ -70,7 +70,8 @@ system cpu
 
 Get metrics about the CPU.
 
-This will show the CPU usage as a percent for each core, and frequency depending on platform.
+This will show the CPU usage as a percent for each core, and frequency depending on
+platform.
 It will also show the time spent idle, user and system as well as uptime.
 
 Platforms: Windows, Linux, Mac OS
@@ -105,27 +106,6 @@ Platforms: Windows, Linux, Mac OS
 .. note::
     Mount point is basically useless on Windows as it's the
     same as the drive name, though it's still shown.
-
-.. _system-command-system-embedtoggle:
-
-""""""""""""""""""
-system embedtoggle
-""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]system embedtoggle 
-
-.. tip:: Alias: ``system embed``
-
-**Description**
-
-Toggle embeds on and off for this cog.
-
-.. note:: If embeds are set to False using the ``embedset`` command that will override this.
-
 
 .. _system-command-system-mem:
 
@@ -219,6 +199,25 @@ Platforms: Windows, Linux, Mac OS
 
 .. note:: This command appears to be very slow in Windows.
 
+.. _system-command-system-uptime:
+
+"""""""""""""
+system uptime
+"""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]system uptime 
+
+.. tip:: Alias: ``system up``
+
+**Description**
+
+Get the system boot time and how long ago it was.
+
+Platforms: Windows, Linux, Mac OS
 
 .. _system-command-system-users:
 

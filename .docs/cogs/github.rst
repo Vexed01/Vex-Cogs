@@ -11,7 +11,7 @@ find detailed docs about usage and commands.
 
 .. note::
 
-    To use this cog, you will need to install it.
+    To use this cog, you will need to install and load it.
 
     See the :ref:`getting_started` page.
 
@@ -66,7 +66,7 @@ gh
 
 **Description**
 
-Base command for interacting with this cog.
+Command to interact with this cog.
 
 All commands are owner only.
 
