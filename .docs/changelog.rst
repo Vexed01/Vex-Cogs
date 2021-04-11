@@ -18,6 +18,14 @@ Aliases
 =======
 
 *********
+``1.0.4``
+*********
+
+2021-04-11
+
+- Fix edge case to hide alias cog aliases if they are a built in command/command alias
+
+*********
 ``1.0.3``
 *********
 
