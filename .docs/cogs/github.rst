@@ -9,9 +9,11 @@ find detailed docs about usage and commands.
 
 ``[p]`` is considered as your prefix.
 
-.. note:: To use this cog, load it by typing this::
+.. note::
 
-        [p]load github
+    To use this cog, you will need to install it.
+
+    See the :ref:`getting_started` page.
 
 .. _github-usage:
 

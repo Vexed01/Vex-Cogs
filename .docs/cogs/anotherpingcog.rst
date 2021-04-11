@@ -8,10 +8,11 @@ This is the cog guide for the anotherpingcog cog. You will
 find detailed docs about usage and commands.
 
 ``[p]`` is considered as your prefix.
+.. note::
 
-.. note:: To use this cog, load it by typing this::
+    To use this cog, you will need to install it.
 
-        [p]load anotherpingcog
+    See the :ref:`getting_started` page.
 
 .. _anotherpingcog-usage:
 
