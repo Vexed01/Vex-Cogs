@@ -22,7 +22,7 @@ The config files will let you run all of these without arguments.
 >
 > Try again (trust me, that sometimes makes it work) or do this to run it "repo-wide":
 >
->       mypy aliases anotherpingcog betteruptime github status system
+>       mypy aliases anotherpingcog betteruptime github status system beautify
 >
 > This is what tox and the PR cheks run. You could also only run mypy on the cog you're contributing to or use it in your editor - that _seems_ to work.
 >

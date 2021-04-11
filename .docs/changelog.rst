@@ -32,6 +32,18 @@ AnotherPingCog
 
 *No updates since changelogs started*
 
+========
+Beautify
+========
+
+*********
+``1.0.0``
+*********
+
+(2021-04-2021)
+
+- Initial release
+
 ============
 BetterUptime
 ============
@@ -40,7 +52,7 @@ BetterUptime
 ``1.2.2``
 *********
 
-- Slight logic changes to banding in ``downtime`` command
+- Slight logic changes for banding in ``downtime`` command
 
 ======
 GitHub

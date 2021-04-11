@@ -18,6 +18,7 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | --- | --- |
 | [aliases](https://vex-cogs.readthedocs.io/en/latest/cogs/aliases.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Get all the information you could ever need about a command's aliases. |
 | [anotherpingcog](https://vex-cogs.readthedocs.io/en/latest/cogs/anotherpingcog.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Another ping cog... But this one has fancy colours in a customisable embed! |
+| [beautify](https://vex-cogs.readthedocs.io/en/latest/cogs/beautify.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Beautify and minify JSON.
 | [betteruptime](https://vex-cogs.readthedocs.io/en/latest/cogs/betteruptime.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | See your bot's uptime percentages and check when downtime happened. |
 | [github](https://vex-cogs.readthedocs.io/en/latest/cogs/github.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Create, comment, labelify and close GitHub issues, with partial PR support. |
 | [status](https://vex-cogs.readthedocs.io/en/latest/cogs/status.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Recieve automatic status updates from various services, including Discord. |

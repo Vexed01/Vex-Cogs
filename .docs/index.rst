@@ -20,6 +20,8 @@ Docs version: |version|
 
    cogs/anotherpingcog
    cogs/aliases
+   cogs/beautify
+   cogs/betteruptime
    cogs/github
    cogs/status
    cogs/statusref
