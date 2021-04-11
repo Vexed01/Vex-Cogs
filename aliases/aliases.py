@@ -11,7 +11,7 @@ from vexcogutils import format_help, format_info, inline_hum_list
 class Aliases(commands.Cog):
     """Get all the alias information you could ever want about a command."""
 
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -99,7 +99,9 @@ class Aliases(commands.Cog):
 
         # and probs picked up duplicates on second run so:
         guild_aliases = deduplicate_iterables(guild_aliases)
+        guild_aliases = [i for i in guild_aliases if not self.bot.get_command(i)]
         global_aliases = deduplicate_iterables(global_aliases)
+        global_aliases = [i for i in global_aliases if not self.bot.get_command(i)]
 
         # make everything inline + make built in aliases
         hum_builtin_aliases = inline_hum_list([f"{com_parent} {i}" for i in builtin_aliases])
