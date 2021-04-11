@@ -5,7 +5,7 @@
     "install_msg": "This cog has two commands - `beautify` and `minify`.\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/beautify.html?utm_source=cog&utm_medium=install_msg&utm_campaign=cog_level>",
     "description": "Beautify and minify JSON.",
     "short": "Beautify and minify JSON. Supports attachments, codeblocks and replies.",
-    "requirements": ["git+https://github.com/Vexed01/vex-cog-utils.git@v1.0.3"],
+    "requirements": ["vex-cog-utils==1.0.4"],
     "tags": ["utility", "json"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users."
 }
