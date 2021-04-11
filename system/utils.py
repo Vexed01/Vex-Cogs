@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, TypedDict, Union
 
 import psutil
 from redbot.core.utils.chat_formatting import box as cf_box
@@ -30,7 +30,7 @@ def _hum_gb(bytes: Union[int, float]) -> str:
     return _hum(mb)
 
 
-def _up_since() -> int:
+def _up_since() -> float:
     now = datetime.datetime.utcnow().timestamp()
     return now - psutil.boot_time()
 
@@ -90,33 +90,33 @@ async def get_mem() -> Dict[str, str]:
 
 async def get_sensors(fahrenheit: bool) -> Dict[str, str]:
     """Get metrics from sensors"""
-    temp: Dict[Any, List[psutil._common.shwtemp]] = psutil.sensors_temperatures(fahrenheit)
-    fans: Dict[Any, List[psutil._common.sfan]] = psutil.sensors_fans()
+    temp = psutil.sensors_temperatures(fahrenheit)
+    fans = psutil.sensors_fans()
 
     data = {"temp": "", "fans": ""}
 
     unit = "°F" if fahrenheit else "°C"
 
     t_data = []
-    for k, v in temp.items():
-        for t_item in v:
-            name = t_item.label or k
+    for t_k, t_v in temp.items():
+        for t_item in t_v:
+            name = t_item.label or t_k
             t_data.append([f"[{name}]", f"{t_item.current} {unit}"])
     data["temp"] = tabulate(t_data, tablefmt="plain") or "No temperature sensors found"
 
-    t_data = []
-    for k, v in fans.items():
-        for f_item in v:
-            name = f_item.label or k
-            t_data.append([f"[{name}]", f"{f_item.current} RPM"])
-    data["fans"] = tabulate(t_data, tablefmt="plain") or "No fan sensors found"
+    f_data = []
+    for f_k, f_v in fans.items():
+        for f_item in f_v:
+            name = f_item.label or f_k
+            f_data.append([f"[{name}]", f"{f_item.current} RPM"])
+    data["fans"] = tabulate(f_data, tablefmt="plain") or "No fan sensors found"
 
     return data
 
 
 async def get_users(embed: bool) -> Dict[str, str]:
     """Get users connected"""
-    users: List[psutil._common.suser] = psutil.users()
+    users = psutil.users()
 
     e = "`" if embed else ""
 
@@ -132,17 +132,23 @@ async def get_users(embed: bool) -> Dict[str, str]:
     return data
 
 
+class PartitionData(TypedDict):
+    part: psutil._common.sdiskpart
+    usage: psutil._common.sdiskusage
+
+
 async def get_disk(embed: bool) -> Dict[str, str]:
     """Get disk info"""
     partitions = psutil.disk_partitions()
-    partition_data: Dict[
-        str, List[Union[psutil._common.sdiskpart, psutil._common.sdiskusage]]
-    ] = {}
+    partition_data: Dict[str, PartitionData] = {}
     # that type hint was a waste of time...
 
     for partition in partitions:
         try:
-            partition_data[partition.device] = [partition, psutil.disk_usage(partition.mountpoint)]
+            partition_data[partition.device] = {
+                "part": partition,
+                "usage": psutil.disk_usage(partition.mountpoint),
+            }
         except Exception:
             continue
 
@@ -152,12 +158,14 @@ async def get_disk(embed: bool) -> Dict[str, str]:
 
     for k, v in partition_data.items():
         total_avaliable = (
-            f"{_hum_gb(v[1].total)} GB" if v[1].total > 1073741824 else f"{_hum_mb(v[1].total)} MB"
+            f"{_hum_gb(v['usage'].total)} GB"
+            if v["usage"].total > 1073741824
+            else f"{_hum_mb(v['usage'].total)} MB"
         )
-        data[f"{e}{k}{e}"] = f"[Usage]       {v[1].percent} %\n"
+        data[f"{e}{k}{e}"] = f"[Usage]       {v['usage'].percent} %\n"
         data[f"{e}{k}{e}"] += f"[Total]       {total_avaliable}\n"
-        data[f"{e}{k}{e}"] += f"[Filesystem]  {v[0].fstype}\n"
-        data[f"{e}{k}{e}"] += f"[Mount point] {v[0].mountpoint}\n"
+        data[f"{e}{k}{e}"] += f"[Filesystem]  {v['part'].fstype}\n"
+        data[f"{e}{k}{e}"] += f"[Mount point] {v['part'].mountpoint}\n"
 
     return data
 

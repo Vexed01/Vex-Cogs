@@ -22,7 +22,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -222,6 +222,11 @@ class System(commands.Cog):
 
     @system.command(name="uptime", aliases=["up"])
     async def system_uptime(self, ctx: commands.Context):
+        """
+        Get the system boot time and how long ago it was.
+
+        Platforms: Windows, Linux, Mac OS
+        """
         uptime = (await get_uptime())["uptime"]
 
         if await ctx.embed_requested():
