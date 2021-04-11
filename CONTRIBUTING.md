@@ -16,15 +16,19 @@ The config files will let you run all of these without arguments.
 
 > ### **Warning for MyPy**
 >
-> You **cannot** run ``mypy .`` as this results in an error (well, sometimes  it doesn't but normally it does. idk.)
+> You will need to install these stubs: ``pip install -U discord.py-stubs pandas-stubs``
 >
-> Instead, you should do this to run it "repo-wide":
+> You ``mypy .`` sometimes errors. It's pretty random.
+>
+> Try again (trust me, that sometimes makes it work) or do this to run it "repo-wide":
 >
 >       mypy aliases anotherpingcog betteruptime github status system
 >
 > This is what tox and the PR cheks run. You could also only run mypy on the cog you're contributing to or use it in your editor - that _seems_ to work.
 >
-> This does appear to be on the GitHub for mypy.
+> This does appear to be on the GitHub for mypy in a few separate issues.
+>
+> If the error still persists, you might want to try deleting the mypy cache folder (in the working dir).
 
 You can run these locally to check everything's working using tox:
 

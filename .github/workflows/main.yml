@@ -71,7 +71,7 @@ jobs:
 
     - name: Install stubs
       run: |
-        pip install discord.py-stubs
+        pip install discord.py-stubs pandas-stubs
 
     - name: Run mypy
       run: |
