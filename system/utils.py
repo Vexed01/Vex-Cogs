@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-from typing import Any, Dict, List, TypedDict, Union
+from typing import Dict, TypedDict, Union
 
 import psutil
 from redbot.core.utils.chat_formatting import box as cf_box
