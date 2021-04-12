@@ -1,4 +1,5 @@
 import json
+from ast import literal_eval
 from typing import Optional
 
 from redbot.core import commands
@@ -19,7 +20,7 @@ class Beautify(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -48,19 +49,24 @@ class Beautify(commands.Cog):
         2. Paste the JSON in the command
         ​ ​ ​ ​ - You send it raw, in inline code or a codeblock
         ​3. Reply to a message with JSON
-        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message, no embed support
+        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message
         """
         try:
             raw_json = await get_data(ctx, data)
         except NoData:
             return
 
+        # using literal_eval to support both valid JSON (") and python dicts (')
+        # this is PERFECTLY SAFE and will not execute arbitrary code (look at the docstring)
         try:
-            json_dict = json.loads(raw_json)
-        except json.decoder.JSONDecodeError:
+            json_literal = literal_eval(raw_json)
+            if not isinstance(json_literal, dict):
+                raise ValueError
+
+        except (ValueError, SyntaxError):  # these are main ones literal_eval raises, may be more
             return await ctx.send("That doesn't look like valid JSON.")
 
-        beautified = json.dumps(json_dict, indent=4)
+        beautified = json.dumps(json_literal, indent=4)
 
         await send_output(ctx, beautified)
 
@@ -76,18 +82,23 @@ class Beautify(commands.Cog):
         2. Paste the JSON in the command
         ​ ​ ​ ​ - You send it raw, in inline code or a codeblock
         ​3. Reply to a message with JSON
-        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message, no embed support
+        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message
         """
         try:
             raw_json = await get_data(ctx, data)
         except NoData:
             return
 
+        # using literal_eval to support both valid JSON (") and python dicts (')
+        # this is PERFECTLY SAFE and will not execute arbitrary code (look at the docstring)
         try:
-            json_dict = json.loads(raw_json)
-        except json.decoder.JSONDecodeError:
+            json_literal = literal_eval(raw_json)
+            if not isinstance(json_literal, dict):
+                raise ValueError
+
+        except (ValueError, SyntaxError):  # these are main ones literal_eval raises, may be more
             return await ctx.send("That doesn't look like valid JSON.")
 
-        beautified = json.dumps(json_dict)
+        beautified = json.dumps(json_literal)
 
         await send_output(ctx, beautified)
