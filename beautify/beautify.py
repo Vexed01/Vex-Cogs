@@ -25,7 +25,7 @@ class Beautify(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
