@@ -1,5 +1,6 @@
-from typing import Optional, Union
+from typing import Optional
 
+import discord
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, text_to_file
 
@@ -11,6 +12,7 @@ def cleanup_json(json: str) -> str:
     if json.startswith("```") and json.endswith("```"):
         # remove ```json and ``` from start and end
         json = json.strip("```json")
+        json = json.strip("```py")  # not documented but want to accept it as well
         return json.strip("```")
 
     elif json.startswith("`") and json.endswith("`"):
@@ -20,7 +22,7 @@ def cleanup_json(json: str) -> str:
     return json
 
 
-async def get_data(ctx: commands.Context, data: Optional[str]) -> Union[str, bytes]:
+async def get_data(ctx: commands.Context, data: Optional[str]) -> str:
     if data is not None:
         return cleanup_json(data)
 
@@ -50,8 +52,12 @@ async def get_data(ctx: commands.Context, data: Optional[str]) -> Union[str, byt
         raise AttachmentInvalid
 
     try:
-        return await attachment.read()
-    except Exception:
+        att_bytes = await attachment.read()
+        if not isinstance(att_bytes, bytes):
+            await ctx.send("Something's wrong with that attachment.")
+            raise AttachmentInvalid
+        return att_bytes.decode()  # hey i dont catch decode errors :aha:
+    except discord.HTTPException:
         await ctx.send("I can't access that attachment.")
         raise AttachmentPermsError
 

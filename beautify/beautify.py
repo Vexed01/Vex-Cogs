@@ -9,6 +9,12 @@ from vexcogutils.utils import format_info
 from .errors import NoData
 from .utils import get_data, send_output
 
+# dont want to force this as can be a pain on windows
+try:
+    import pyjson5
+except ImportError:
+    pass
+
 # NOTE FOR DOCSTRINGS:
 # They don't use a normal space character, if you're editing them make sure to copy and paste
 
@@ -19,7 +25,7 @@ class Beautify(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -36,6 +42,22 @@ class Beautify(commands.Cog):
     async def beautifyinfo(self, ctx: commands.Context):
         await ctx.send(format_info(self.qualified_name, self.__version__))
 
+    async def send_invalid(self, ctx: commands.Context):
+        if ctx.author.id in self.bot.owner_ids:  # type:ignore
+            try:
+                pyjson5
+                msg = ""
+            except NameError:
+                msg = (
+                    "\n\n_It looks like you're a bot owner. If you just passed a Python dict, you "
+                    f"can run this to let me support them `{ctx.clean_prefix}pipinstall pyjson5` "
+                    "You'll need to reload the cog. This might not work on Windows._"
+                )
+        else:
+            msg = ""
+
+        await ctx.send(f"That doesn't look like valid JSON.{msg}")
+
     @commands.command(name="beautify")
     async def com_beautify(self, ctx: commands.Context, *, data: Optional[str]):
         """
@@ -48,17 +70,29 @@ class Beautify(commands.Cog):
         2. Paste the JSON in the command
         ​ ​ ​ ​ - You send it raw, in inline code or a codeblock
         ​3. Reply to a message with JSON
-        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message, no embed support
+        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message
         """
         try:
             raw_json = await get_data(ctx, data)
         except NoData:
             return
 
+        print(raw_json)
+
+        # preferred parsing, supports python dicts
         try:
-            json_dict = json.loads(raw_json)
-        except json.decoder.JSONDecodeError:
-            return await ctx.send("That doesn't look like valid JSON.")
+            json_pyjson = pyjson5.loads(raw_json)
+            if not isinstance(json_pyjson, dict):
+                return await self.send_invalid(ctx)
+            json_dict = json_pyjson
+        except NameError:  # not imported
+            # secondary, doesn't support dicts
+            try:
+                json_dict = json.loads(raw_json)
+            except json.JSONDecodeError:
+                return await self.send_invalid(ctx)
+        except Exception:  # cant just catch pyjson5 as might not be imported
+            return await self.send_invalid(ctx)
 
         beautified = json.dumps(json_dict, indent=4)
 
@@ -76,17 +110,29 @@ class Beautify(commands.Cog):
         2. Paste the JSON in the command
         ​ ​ ​ ​ - You send it raw, in inline code or a codeblock
         ​3. Reply to a message with JSON
-        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message, no embed support
+        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message
         """
         try:
             raw_json = await get_data(ctx, data)
         except NoData:
             return
 
+        print(raw_json)
+
+        # preferred parsing, supports python dicts
         try:
-            json_dict = json.loads(raw_json)
-        except json.decoder.JSONDecodeError:
-            return await ctx.send("That doesn't look like valid JSON.")
+            json_pyjson = pyjson5.loads(raw_json)
+            if not isinstance(json_pyjson, dict):
+                return await self.send_invalid(ctx)
+            json_dict = json_pyjson
+        except NameError:  # not imported
+            # secondary, doesn't support dicts
+            try:
+                json_dict = json.loads(raw_json)
+            except json.JSONDecodeError:
+                return await self.send_invalid(ctx)
+        except Exception:  # cant just catch pyjson5 as might not be imported
+            return await self.send_invalid(ctx)
 
         beautified = json.dumps(json_dict)
 
