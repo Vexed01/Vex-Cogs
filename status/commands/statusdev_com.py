@@ -1,8 +1,10 @@
+import asyncio
 import logging
 from time import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aiohttp import ClientSession
+from discord.ext.commands.errors import CheckFailure
 from discord.guild import Guild
 from redbot.core import commands
 from redbot.core.bot import Red
@@ -36,12 +38,24 @@ class StatusDevCom:
         self.update_checker: UpdateChecker
         self.statusapi: StatusAPI
 
-    def super_unsupported():  # type:ignore
-        # ignore is for method not having argument
-        # would typehint but return is in private core/commands/_dyp_reimplements
-        async def predicate(ctx: commands.Context) -> bool:
+    @commands.guild_only()
+    @commands.is_owner()
+    @commands.group(hidden=True)
+    async def statusdev(self, ctx: commands.Context):
+        """Don't use this; hidden for a reason; stuff _might_ break."""
+
+    if TYPE_CHECKING:
+        # TypeError when its outside the class...
+        # mypy thinks its wrong when its inside the class...
+
+        async def unsupported(_: Any) -> bool:
+            ...
+
+    else:
+
+        async def unsupported(self, ctx: commands.Context) -> None:
             if ctx.author.id == 418078199982063626:  # vexed (my) id
-                return True
+                return
 
             msg = await ctx.send(
                 warning(
@@ -52,21 +66,16 @@ class StatusDevCom:
             )
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-            await ctx.bot.wait_for("reaction_add", check=pred, timeout=15)
+            try:
+                await ctx.bot.wait_for("reaction_add", check=pred, timeout=15)
+            except asyncio.TimeoutError:
+                await ctx.send("Timeout, aborting.")
+                raise CheckFailure("Reactions timed out")
             if pred.result is not True:
                 await ctx.send("Aborting.")
-                return False
-            return True
+                raise CheckFailure("User choose no.")
 
-        return commands.check(predicate)
-
-    @commands.guild_only()
-    @commands.is_owner()
-    @commands.group(hidden=True)
-    async def statusdev(self, ctx: commands.Context):
-        """Don't use this; hidden for a reason; stuff _might_ break."""
-
-    @super_unsupported()
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["cf"], hidden=True)
     async def checkfeed(
         self,
@@ -109,7 +118,7 @@ class StatusDevCom:
             True,
         )
 
-    @super_unsupported()
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["cfr"], hidden=True)
     async def checkfeedraw(self, ctx: commands.Context, service: ServiceConverter):
         """Get raw JSON data"""
@@ -118,7 +127,7 @@ class StatusDevCom:
         await ctx.send(f"Status: `{status}`\nETag: `{etag}`\nResponse:")
         await ctx.send_interactive(pagify(str(resp)), box_lang="")
 
-    @super_unsupported()
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["fs"], hidden=True)
     async def forcestatus(self, ctx: commands.Context, service: ServiceConverter):
         """Simulate latest incident. SENDS TO ALL CHANNELS IN ALL REGISTERED GUILDS."""
@@ -141,11 +150,13 @@ class StatusDevCom:
             force=True,
         )
 
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["cd"], hidden=True)
     async def cooldown(self, ctx: commands.Context, user_id: int = None):
         """Get custom cooldown info for a user"""
         await ctx.send(box(str(self.service_cooldown.get_from_id(user_id or ctx.author.id))))
 
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["cfc"], hidden=True)
     async def checkusedfeedcache(self, ctx: commands.Context):
         """Check what feeds this is checking"""
@@ -153,6 +164,7 @@ class StatusDevCom:
         actual = box(str(self.used_feeds.get_list()), lang="py")
         await ctx.send(f"**Raw data:**\n{raw}\n**Active:**\n{actual}")
 
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["cgr"], hidden=True)
     async def checkguildrestrictions(self, ctx: commands.Context):
         """Check guild restrictins for current guild"""
@@ -162,6 +174,7 @@ class StatusDevCom:
             guild = ctx.guild
         await ctx.send(box(str(self.service_restrictions_cache.get_guild(guild.id))))
 
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["ri"], hidden=True)
     async def refreshincidentids(self, ctx: commands.Context):
         """Regenerate the cache of past incident IDs."""
@@ -169,6 +182,7 @@ class StatusDevCom:
         await self._get_initial_data()  # type:ignore
         await ctx.send("Done.")
 
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["l"], hidden=True)
     async def loopstatus(self, ctx: commands.Context):
         """Check status of the loop"""
@@ -197,14 +211,14 @@ class StatusDevCom:
             )
         )
 
-    @super_unsupported()
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["rl"], hidden=True)
     async def restartloop(self, ctx: commands.Context):
         """Restart the loop (if `statusdev loopstatus` is all positive DO NOT DO THIS)"""
         self.update_checker.loop.restart()
         await ctx.tick()
 
-    @super_unsupported()
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["dev"], hidden=True)
     async def devenvvars(self, ctx: commands.Context):
         """
