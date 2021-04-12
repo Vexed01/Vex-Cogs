@@ -38,7 +38,7 @@ async def get_data(ctx: commands.Context, data: Optional[str]) -> str:
             content = ctx.message.reference.cached_message.content  # type:ignore
             substrings = content.split("```")
             if len(substrings) == 3:
-                return cleanup_json(substrings[1].lstrip("json"))
+                return cleanup_json(substrings[1].lstrip("json").lstrip("py"))
 
             await ctx.send_help()
             raise NoData

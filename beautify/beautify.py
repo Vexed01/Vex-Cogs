@@ -77,8 +77,6 @@ class Beautify(commands.Cog):
         except NoData:
             return
 
-        print(raw_json)
-
         # preferred parsing, supports python dicts
         try:
             json_pyjson = pyjson5.loads(raw_json)
@@ -116,8 +114,6 @@ class Beautify(commands.Cog):
             raw_json = await get_data(ctx, data)
         except NoData:
             return
-
-        print(raw_json)
 
         # preferred parsing, supports python dicts
         try:
