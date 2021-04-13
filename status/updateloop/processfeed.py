@@ -6,13 +6,25 @@ import pytz
 from dateutil.parser import parse as parse_time
 from redbot.core.utils.chat_formatting import humanize_list, pagify
 
+from status.core.consts import TYPES_LITERAL
 from status.objects.incidentdata import IncidentData, UpdateField
 
 
 def _handle_long_fields(
     old_fields: List[UpdateField],
-) -> List[UpdateField]:  # using updatefield because idk really
-    """Split long fields (over 1024 chars) into multiple, retaining order."""
+) -> List[UpdateField]:
+    """Split long fields (over 1024 chars) into multiple, retaining order.
+
+    Parameters
+    ----------
+    old_fields : List[UpdateField]
+        List of fields which may exceed per-field embed limits.
+
+    Returns
+    -------
+    List[UpdateField]
+        New list of fields which may be split to not exceed per-field embed limits
+    """
     new_fields = []
     for field in old_fields:
         field.value = re.sub(
@@ -31,7 +43,39 @@ def _handle_long_fields(
     return new_fields
 
 
-def _process(incident: dict, type: str) -> IncidentData:
+def _handle_html(text: str) -> str:
+    """Why tf do you put HTML tags in the API oracle...
+
+    At least I'm being kind and replacing them properly.
+
+    Parameters
+    ----------
+    text : str
+        Text to strip/replace
+
+    Returns
+    -------
+    str
+        Stripped/replaced string
+    """
+    return text.replace("<b>", "**").replace("</b>", "**")
+
+
+def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
+    """Turn a API JSON incident/maintenance into IncidentData
+
+    Parameters
+    ----------
+    incident : dict
+        JSON resp from Status API
+    type : TYPES_LITERAL
+        Either "incidents" or "scheduled"
+
+    Returns
+    -------
+    IncidentData
+        Standard object for further processing.
+    """
     fields = []
     for update in incident["incident_updates"]:
         # this is exactly how they are displayed on the website
@@ -44,7 +88,7 @@ def _process(incident: dict, type: str) -> IncidentData:
                 name="{} - {}".format(
                     update["status"].replace("_", " ").capitalize(), friendly_time
                 ),
-                value=update["body"],
+                value=_handle_html(update["body"]),
                 update_id=update["id"],
             )
         )
@@ -87,11 +131,23 @@ def _process(incident: dict, type: str) -> IncidentData:
     )
 
 
-def process_incidents(json_resp: dict) -> List[IncidentData]:
-    return [_process(j_data, "incidents") for j_data in json_resp.get("incidents", [])]
+def process_json(json_resp: dict, type: TYPES_LITERAL) -> List[IncidentData]:
+    """Turn the API into life
 
+    Parameters
+    ----------
+    json_resp : dict
+        Response from Status API
 
-def process_scheduled(json_resp: dict) -> List[IncidentData]:
-    return [
-        _process(j_data, "scheduled") for j_data in json_resp.get("scheduled_maintenances", [])
-    ]
+    Returns
+    -------
+    List[IncidentData]
+        List of parsed IncidentData
+    """
+    if type == "incidents":
+        return [_process(j_data, "incidents") for j_data in json_resp.get("incidents", [])]
+    elif type == "scheduled":
+        return [
+            _process(j_data, "scheduled") for j_data in json_resp.get("scheduled_maintenances", [])
+        ]
+    return []

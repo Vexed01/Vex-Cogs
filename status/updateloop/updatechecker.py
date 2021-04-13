@@ -1,19 +1,19 @@
 import asyncio
 import logging
 from time import monotonic
-from typing import Dict, List
+from typing import TYPE_CHECKING, Dict, List
 
 from discord.ext import tasks
 from redbot.core.bot import Red
 from redbot.core.config import Config
 
-from status.core.consts import FEEDS, SERVICE_LITERAL
+from status.core.consts import FEEDS, SERVICE_LITERAL, TYPES_LITERAL
 from status.core.statusapi import StatusAPI
 from status.objects.caches import LastChecked, UsedFeeds
 from status.objects.configwrapper import ConfigWrapper
 from status.objects.incidentdata import IncidentData, Update
 from status.objects.sendcache import SendCache
-from status.updateloop.processfeed import process_incidents, process_scheduled
+from status.updateloop.processfeed import process_json
 from status.updateloop.sendupdate import SendUpdate
 
 _log = logging.getLogger("red.vexed.status.updatechecker")
@@ -146,14 +146,9 @@ class UpdateChecker:
                 )
 
     async def _maybe_send_update(
-        self, resp_json: dict, service: SERVICE_LITERAL, type: str
+        self, resp_json: dict, service: SERVICE_LITERAL, type: TYPES_LITERAL
     ) -> None:
-        if type == "scheduled":
-            real = await self._check_real_update(process_scheduled(resp_json), service)
-        elif type == "incidents":
-            real = await self._check_real_update(process_incidents(resp_json), service)
-        else:  # should never happen
-            return
+        real = await self._check_real_update(process_json(resp_json, type), service)
 
         if not real:
             return _log.debug(f"Ghost status update for {service} ({type}) detected.")

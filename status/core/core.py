@@ -130,7 +130,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
         _log.info("Status cog has been successfully initialized.")
 
     async def get_initial_data(self) -> None:
-        """Start with initial data."""
+        """Start with initial data from services."""
         old_ids = []
         for service, settings in FEEDS.items():
             _log.debug(f"Starting {service}.")
@@ -167,6 +167,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
         await self.config.old_ids.set(old_ids)
 
     async def migrate_to_v3(self) -> None:
+        """Set up conifg for version 3"""
         # ik this is a mess
         really_old = await self.config.all_channels()
         _log.debug("Config migration in progress. Old data is below in case something goes wrong.")

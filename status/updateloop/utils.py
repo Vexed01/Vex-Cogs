@@ -10,6 +10,18 @@ _log = logging.getLogger("red.vexed.status.sendupdate")
 
 
 async def get_webhook(channel: TextChannel) -> Webhook:
+    """Get, or create, a webhook for the specified channel and return it.
+
+    Parameters
+    ----------
+    channel : TextChannel
+        Target channel
+
+    Returns
+    -------
+    Webhook
+        Valid webhook
+    """
     # thanks flare for your webhook logic (redditpost) (or trusty?)
     webhook = None
     for hook in await channel.webhooks():
@@ -25,6 +37,31 @@ async def get_webhook(channel: TextChannel) -> Webhook:
 
 
 async def get_channel_data(bot: Red, c_id: int, settings: ConfChannelSettings) -> ChannelData:
+    """Get ChannelData from the raw config TypedDict ConfChannelSettings
+
+    Parameters
+    ----------
+    bot : Red
+        Bot
+    c_id : int
+        Channel ID
+    settings : ConfChannelSettings
+        TypedDict from config
+
+    Returns
+    -------
+    ChannelData
+        ChannelData obj
+
+    Raises
+    ------
+    NotFound
+        Channel not found
+    CogDisabled
+        Cog disabled in guild
+    NoPermission
+        No permission to send
+    """
     channel: TextChannel = bot.get_channel(c_id)  # type:ignore
     if channel is None:
         # TODO: maybe remove from config

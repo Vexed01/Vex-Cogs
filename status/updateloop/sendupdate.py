@@ -2,16 +2,20 @@ import asyncio
 import logging
 from math import floor
 from time import monotonic
+from typing import Dict
 
 from discord import Embed, Message, TextChannel
 from redbot.core.bot import Red
 
 from status.core.consts import FEEDS, UPDATE_NAME
-from status.objects.channel import ChannelData, InvalidChannel
-from status.objects.configwrapper import ConfigWrapper
-from status.objects.incidentdata import Update
-from status.objects.sendcache import SendCache
-from status.objects.typeddict import ConfChannelSettings
+from status.objects import (
+    ChannelData,
+    ConfChannelSettings,
+    ConfigWrapper,
+    InvalidChannel,
+    SendCache,
+    Update,
+)
 from status.updateloop.utils import get_channel_data, get_webhook
 
 _log = logging.getLogger("red.vexed.status.sendupdate")
@@ -50,7 +54,14 @@ class SendUpdate:
             f"dispatch={self.dispatch}>"
         )
 
-    async def _send_update(self, channels) -> None:
+    async def _send_update(self, channels: Dict[int, ConfChannelSettings]) -> None:
+        """Send the update decalred in the class init.
+
+        Parameters
+        ----------
+        channels : dict
+            Channels to send to, format {ID: SETTINGS}
+        """
         if self.dispatch:
             self._dispatch_main(channels)
             # delay for listeners to do expensive stuff before channels start sending
@@ -72,6 +83,15 @@ class SendUpdate:
         _log.info(f"Sending update for {self.service} took {time} second(s).")
 
     async def _send_updated_feed(self, c_id: int, settings: ConfChannelSettings) -> None:
+        """Send feed decalred in init to a channel.
+
+        Parameters
+        ----------
+        c_id : int
+            Channel ID
+        settings : ConfChannelSettings
+            Settings for channel.
+        """
         try:
             channeldata = await get_channel_data(self.bot, c_id, settings)
         except InvalidChannel:
@@ -104,6 +124,15 @@ class SendUpdate:
     # TODO: maybe try to do some DRY on the next 3
 
     async def _send_webhook(self, channel: TextChannel, embed: Embed) -> None:
+        """Send a webhook to the specified channel
+
+        Parameters
+        ----------
+        channel : TextChannel
+            Channel to send to
+        embed : Embed
+            Embed to use
+        """
         embed.set_footer(text=f"Powered by {channel.guild.me.name}\nLast update")
         webhook = await get_webhook(channel)
 
@@ -132,6 +161,15 @@ class SendUpdate:
             )
 
     async def _send_embed(self, channel: TextChannel, embed: Embed) -> None:
+        """Send an embed to the specified channel
+
+        Parameters
+        ----------
+        channel : TextChannel
+            Channel to send to
+        embed : Embed
+            Embed to use
+        """
         embed.set_footer(text="Last update")
         embed.set_author(
             name=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
@@ -154,6 +192,15 @@ class SendUpdate:
             await channel.send(embed=embed)
 
     async def _send_plain(self, channel: TextChannel, msg: str) -> None:
+        """Send a plain message to the specified channel
+
+        Parameters
+        ----------
+        channel : TextChannel
+            Channel to send to
+        msg : str
+            Message to send
+        """
         if self.channeldata.mode == "edit":
             if edit_id := self.channeldata.edit_id.get(self.incidentdata.incident_id):
                 try:
@@ -173,6 +220,7 @@ class SendUpdate:
         """
         For more information on this event, take a look at the event reference in the docs:
         https://vex-cogs.readthedocs.io/en/latest/statusdev.html
+        (yes i could use autodoc but thats scary)
         """
         self.bot.dispatch(
             "vexed_status_update",
@@ -186,6 +234,7 @@ class SendUpdate:
         """
         For more information on this event, take a look at the event reference in the docs:
         https://vex-cogs.readthedocs.io/en/latest/statusdev.html
+        (yes i could use autodoc but thats scary)
         """
         self.bot.dispatch(
             "vexed_status_channel_send",

@@ -4,8 +4,8 @@ ALL = "all"
 LATEST = "latest"
 EDIT = "edit"
 
+TYPES_LITERAL = Literal["incidents", "scheduled"]
 MODES_LITERAL = Literal["all", "latest", "edit"]
-
 SERVICE_LITERAL = Literal[  # we love DRY
     "discord",
     "github",

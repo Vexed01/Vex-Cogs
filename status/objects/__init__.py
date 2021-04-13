@@ -3,4 +3,4 @@ from .channel import ChannelData, CogDisabled, InvalidChannel, NoPermission, Not
 from .configwrapper import ConfigWrapper
 from .incidentdata import IncidentData, Update, UpdateField
 from .sendcache import SendCache
-from .typeddict import ConfFeeds, IncidentDataDict
+from .typeddict import ConfChannelSettings, ConfFeeds, IncidentDataDict
