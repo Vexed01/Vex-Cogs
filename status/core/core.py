@@ -39,7 +39,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "2.0.2"
+    __version__ = "2.1.0"
     __author__ = "Vexed#3211"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:

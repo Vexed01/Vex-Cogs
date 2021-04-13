@@ -73,8 +73,27 @@ Status
 ======
 
 *********
-``2.0.0``
+``2.1.0``
 *********
+
+2021-13-04
+
+-------------------
+User-facing changes
+-------------------
+
+- Handle HTML tags for Oracle Cloud
+
+----------------
+Internal changes
+----------------
+
+- Utilise an Abstract Base Class
+- Add some internal docstrings
+
+********************
+``2.0.0``, ``2.0.1``
+********************
 
 (backdated)
 
