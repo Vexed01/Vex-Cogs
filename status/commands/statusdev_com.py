@@ -15,7 +15,7 @@ from status.commands.converters import ModeConverter, ServiceConverter
 from status.core.abc import MixinMeta
 from status.objects.incidentdata import Update
 from status.objects.sendcache import SendCache
-from status.updateloop.processfeed import process_incidents, process_scheduled
+from status.updateloop.processfeed import process_json
 from status.updateloop.sendupdate import SendUpdate
 
 _log = logging.getLogger("red.vexed.status.dev")
@@ -70,7 +70,7 @@ class StatusDevCom(MixinMeta):
     ):
         """Check the current status of a feed in the current channel"""
         json_resp, etag, status = await self.statusapi.incidents(service.id)
-        incidentdata = process_incidents(json_resp)[0]
+        incidentdata = process_json(json_resp, "incidents")[0]
 
         update = Update(incidentdata, [incidentdata.fields[-1]])
         SendUpdate(
@@ -85,7 +85,9 @@ class StatusDevCom(MixinMeta):
         )
 
         json_resp, _, _ = await self.statusapi.scheduled_maintenance(service.id)
-        incidentdata_list = process_scheduled(json_resp)  # some have no scheduled maintenance
+        incidentdata_list = process_json(
+            json_resp, "scheduled"
+        )  # some have no scheduled maintenance
         if incidentdata_list:
             incidentdata = incidentdata_list[0]
         else:
@@ -116,7 +118,7 @@ class StatusDevCom(MixinMeta):
     async def forcestatus(self, ctx: commands.Context, service: ServiceConverter):
         """Simulate latest incident. SENDS TO ALL CHANNELS IN ALL REGISTERED GUILDS."""
         json_resp, etag, status = await self.statusapi.incidents(service.id)
-        incidentdata = process_incidents(json_resp)[0]
+        incidentdata = process_json(json_resp, "incidents")[0]
 
         update = Update(incidentdata, [incidentdata.fields[-1]])
 

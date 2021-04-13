@@ -18,7 +18,7 @@ from status.core.abc import MixinMeta
 from status.core.consts import FEEDS, SPECIAL_INFO
 from status.objects.incidentdata import Update
 from status.objects.sendcache import SendCache
-from status.updateloop.processfeed import process_incidents
+from status.updateloop.processfeed import process_json
 from status.updateloop.sendupdate import SendUpdate
 
 # NOTE:
@@ -27,7 +27,6 @@ from status.updateloop.sendupdate import SendUpdate
 
 
 class StatusSetCom(MixinMeta):
-
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     @commands.group()
@@ -365,8 +364,10 @@ class StatusSetCom(MixinMeta):
 
         incidentdata, extra_info = await self.config_wrapper.get_latest(service.name)
 
-        if extra_info is None or (
-            time() - extra_info.get("checked", 0) > 300
+        if (
+            incidentdata is None
+            or extra_info is None
+            or (time() - extra_info.get("checked", 0) > 300)
         ):  # its older than 3 mins
             try:
                 json_resp, etag, status = await self.statusapi.incidents(service.id)
@@ -374,10 +375,10 @@ class StatusSetCom(MixinMeta):
                 return await ctx.send("Hmm, I couldn't preview that.")
             if status != 200:
                 return await ctx.send("Hmm, I couldn't preview that.")
-            incidentdata_list = process_incidents(json_resp)
+            incidentdata_list = process_json(json_resp, "incidents")
             await self.config_wrapper.update_incidents(service.name, incidentdata_list[0])
+            incidentdata = incidentdata_list[0]
 
-        incidentdata = incidentdata_list[0]
         update = Update(incidentdata, [incidentdata.fields[-1]])
 
         SendUpdate(

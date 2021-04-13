@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from time import monotonic
-from typing import TYPE_CHECKING, Dict, List
+from typing import Dict, List
 
 from discord.ext import tasks
 from redbot.core.bot import Red

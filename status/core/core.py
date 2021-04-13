@@ -1,14 +1,11 @@
 import asyncio
 import logging
-from abc import ABC, ABCMeta
 from copy import deepcopy
 from time import time
 
 import aiohttp
-from discord.ext.commands.cog import CogMeta
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.commands.commands import CogMixin
 from vexcogutils import format_help, format_info
 
 from status.commands.status_com import StatusCom

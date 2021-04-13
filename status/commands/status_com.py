@@ -10,7 +10,7 @@ from status.commands.converters import ServiceConverter
 from status.core.abc import MixinMeta
 from status.objects.incidentdata import IncidentData, Update
 from status.objects.sendcache import SendCache
-from status.updateloop.processfeed import process_incidents, process_scheduled
+from status.updateloop.processfeed import process_json
 from status.updateloop.sendupdate import SendUpdate
 
 
@@ -56,8 +56,8 @@ class StatusCom(MixinMeta):
         if status != 200:
             return await ctx.send(f"Hmm, I can't get {service.friendly}'s status at the moment.")
 
-        incidents_incidentdata_list = process_incidents(summary)
-        all_scheduled = process_scheduled(summary)
+        incidents_incidentdata_list = process_json(summary, "incidents")
+        all_scheduled = process_json(summary, "scheduled")
         now = datetime.datetime.now(datetime.timezone.utc)
         scheduled_incidentdata_list = [
             i for i in all_scheduled if i.scheduled_for and i.scheduled_for < now
