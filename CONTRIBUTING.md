@@ -12,11 +12,13 @@ Please also SPEAK TO ME either through an issue or in Discord (Vexed#3211) befor
 
 This consists of: black, isort, flake8 and mypy.
 
+It will also build the docs.
+
 The config files will let you run all of these without arguments.
 
 > ### **Warning for MyPy**
 >
-> You will need to install these stubs: ``pip install -U discord.py-stubs pandas-stubs``
+> To fully utilise type checking, install these stubs: ``pip install -U discord.py-stubs pandas-stubs``
 >
 > You ``mypy .`` sometimes errors. It's pretty random.
 >
