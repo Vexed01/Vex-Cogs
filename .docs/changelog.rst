@@ -45,10 +45,27 @@ Beautify
 ========
 
 *********
+``1.0.2``
+*********
+
+2021-04-12
+
+- Remove print statement
+- Allow ``py`` codeblocks in replies (eg for beautifying an eval)
+
+*********
+``1.0.1``
+*********
+
+2021-04-12
+
+- Use JSON5 to support Python dicts
+
+*********
 ``1.0.0``
 *********
 
-2021-04-2021
+2021-04-11
 
 - Initial release
 
