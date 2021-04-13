@@ -3,41 +3,25 @@ import logging
 from time import time
 from typing import TYPE_CHECKING, Any
 
-from aiohttp import ClientSession
 from discord.ext.commands.errors import CheckFailure
 from discord.guild import Guild
 from redbot.core import commands
-from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from tabulate import tabulate
 
 from status.commands.converters import ModeConverter, ServiceConverter
-from status.core.statusapi import StatusAPI
-from status.objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
-from status.objects.configwrapper import ConfigWrapper
+from status.core.abc import MixinMeta
 from status.objects.incidentdata import Update
 from status.objects.sendcache import SendCache
 from status.updateloop.processfeed import process_incidents, process_scheduled
 from status.updateloop.sendupdate import SendUpdate
-from status.updateloop.updatechecker import UpdateChecker
 
 _log = logging.getLogger("red.vexed.status.dev")
 
 
-class StatusDevCom:
-    def __init__(self) -> None:
-        self.bot: Red
-        self.config_wrapper: ConfigWrapper
-        self.last_checked: LastChecked
-        self.service_cooldown: ServiceCooldown
-        self.session: ClientSession
-        self.used_feeds: UsedFeeds
-        self.service_restrictions_cache: ServiceRestrictionsCache
-        self.update_checker: UpdateChecker
-        self.statusapi: StatusAPI
-
+class StatusDevCom(MixinMeta):
     @commands.guild_only()
     @commands.is_owner()
     @commands.group(hidden=True)
@@ -187,6 +171,8 @@ class StatusDevCom:
     async def loopstatus(self, ctx: commands.Context):
         """Check status of the loop"""
         loop = self.update_checker.loop
+        if loop is None:
+            return await ctx.send("Loop is none, this won't work stupid.")
 
         # 1) stubs dont have private attar
         # 2) i dont care about this commnad erroring

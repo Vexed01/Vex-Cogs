@@ -2,33 +2,19 @@ import asyncio
 import datetime
 from typing import Optional
 
-from aiohttp.client import ClientSession
 from discord.channel import TextChannel
-from redbot.core import Config, commands
-from redbot.core.bot import Red
+from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta
 
 from status.commands.converters import ServiceConverter
-from status.core.statusapi import StatusAPI
-from status.objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache
-from status.objects.configwrapper import ConfigWrapper
+from status.core.abc import MixinMeta
 from status.objects.incidentdata import IncidentData, Update
 from status.objects.sendcache import SendCache
 from status.updateloop.processfeed import process_incidents, process_scheduled
 from status.updateloop.sendupdate import SendUpdate
 
 
-class StatusCom:
-    def __init__(self) -> None:
-        self.bot: Red
-        self.config: Config
-        self.config_wrapper: ConfigWrapper
-        self.last_checked: LastChecked
-        self.session: ClientSession
-        self.service_restrictions_cache: ServiceRestrictionsCache
-        self.statusapi: StatusAPI
-
-        self.service_cooldown: ServiceCooldown
+class StatusCom(MixinMeta):
 
     # TODO: support DMs
     @commands.guild_only()

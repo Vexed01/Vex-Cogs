@@ -54,7 +54,8 @@ class SendCache:
 
         return self._handle_field_limits(embed)
 
-    def _handle_field_limits(self, embed: Embed) -> Embed:
+    @staticmethod
+    def _handle_field_limits(embed: Embed) -> Embed:
         before_fields = len(embed.fields)
         if before_fields > 25:
             dict_embed = embed.to_dict()

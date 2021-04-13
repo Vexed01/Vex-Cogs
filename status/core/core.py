@@ -1,16 +1,20 @@
 import asyncio
 import logging
+from abc import ABC, ABCMeta
 from copy import deepcopy
 from time import time
 
 import aiohttp
+from discord.ext.commands.cog import CogMeta
 from redbot.core import Config, commands
 from redbot.core.bot import Red
+from redbot.core.commands.commands import CogMixin
 from vexcogutils import format_help, format_info
 
 from status.commands.status_com import StatusCom
 from status.commands.statusdev_com import StatusDevCom
 from status.commands.statusset_com import StatusSetCom
+from status.core.abc import CompositeMetaClass
 from status.core.consts import FEEDS
 from status.core.statusapi import StatusAPI
 from status.objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
@@ -21,10 +25,7 @@ from status.updateloop.updatechecker import UpdateChecker
 _log = logging.getLogger("red.vexed.status.core")
 
 
-# cspell:ignore DONT
-
-
-class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
+class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=CompositeMetaClass):
     """
     Automatically check for status updates.
 
@@ -52,7 +53,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
         default: dict = {}  # pointless typehint but hey
         self.config: Config = Config.get_conf(
             self, identifier="Vexed-status"  # type:ignore
-        )  # shit idntfr. bit late to change it... even mypy agrees...
+        )  # shit idntfr... bit late to change it... even mypy agrees...
         self.config.register_global(version=2)
         self.config.register_global(feed_store=default)
         self.config.register_global(old_ids=[])
@@ -103,8 +104,8 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
 
         if await self.config.version() != 3:
             _log.info("Getting initial data from services...")
-            await self._migrate_to_v3()
-            await self._get_initial_data()
+            await self.migrate_to_v3()
+            await self.get_initial_data()
             await self.config.incidents.clear()
             await self.config.version.set(3)
             _log.info("Done!")
@@ -128,7 +129,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
 
         _log.info("Status cog has been successfully initialized.")
 
-    async def _get_initial_data(self) -> None:
+    async def get_initial_data(self) -> None:
         """Start with initial data."""
         old_ids = []
         for service, settings in FEEDS.items():
@@ -165,7 +166,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom):
 
         await self.config.old_ids.set(old_ids)
 
-    async def _migrate_to_v3(self) -> None:
+    async def migrate_to_v3(self) -> None:
         # ik this is a mess
         really_old = await self.config.all_channels()
         _log.debug("Config migration in progress. Old data is below in case something goes wrong.")

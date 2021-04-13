@@ -3,46 +3,30 @@ from time import time
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import discord
-from aiohttp import ClientSession
 from discord.abc import GuildChannel
 from discord.channel import TextChannel
 from discord.guild import Guild
 from discord.member import Member
-from redbot.core import Config, checks, commands
-from redbot.core.bot import Red
+from redbot.core import checks, commands
 from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.predicates import MessagePredicate
 from tabulate import tabulate
 from vexcogutils import inline_hum_list
 
 from status.commands.converters import ModeConverter, ServiceConverter
+from status.core.abc import MixinMeta
 from status.core.consts import FEEDS, SPECIAL_INFO
-from status.core.statusapi import StatusAPI
-from status.objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
-from status.objects.configwrapper import ConfigWrapper
 from status.objects.incidentdata import Update
 from status.objects.sendcache import SendCache
 from status.updateloop.processfeed import process_incidents
 from status.updateloop.sendupdate import SendUpdate
-from status.updateloop.updatechecker import UpdateChecker
 
 # NOTE:
 # Not using ctx.guild because mypy goes mad, using channel.guild - it'll make sense when you see it
 # ... i hope
 
 
-class StatusSetCom:
-    def __init__(self) -> None:
-        self.bot: Red
-        self.config: Config
-        self.config_wrapper: ConfigWrapper
-        self.last_checked: LastChecked
-        self.service_cooldown: ServiceCooldown
-        self.session: ClientSession
-        self.used_feeds: UsedFeeds
-        self.service_restrictions_cache: ServiceRestrictionsCache
-        self.update_checker: UpdateChecker
-        self.statusapi: StatusAPI
+class StatusSetCom(MixinMeta):
 
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
