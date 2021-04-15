@@ -11,8 +11,8 @@ from vexcogutils import format_help, format_info
 from status.commands.status_com import StatusCom
 from status.commands.statusdev_com import StatusDevCom
 from status.commands.statusset_com import StatusSetCom
-from status.core.abc import CompositeMetaClass
 from status.core import FEEDS
+from status.core.abc import CompositeMetaClass
 from status.core.statusapi import StatusAPI
 from status.objects import (
     ConfigWrapper,
