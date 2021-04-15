@@ -11,8 +11,10 @@ jobs:
         python_version:
           - "3.8"
         tox_env:
-          - py
-          - style
+          - style-black
+          - style-isort
+          - lint-flake8
+          - type-mypy
           - docs
         include:
           - tox_env: style-black
