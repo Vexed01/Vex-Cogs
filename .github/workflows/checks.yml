@@ -2,100 +2,49 @@ name: Checks
 
 on: [push, pull_request]
 
+# thanks red or wherever you got it from
 jobs:
-  style:
+  tox:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8"]
-    name: Style
+        python_version:
+          - "3.8"
+        tox_env:
+          - py
+          - style
+          - docs
+        include:
+          - tox_env: style-black
+            friendly_name: Style (black)
+          - tox_env: style-isort
+            friendly_name: Style (isort)
+          - tox_env: lint-flake8
+            friendly_name: Lint (flake8)
+          - tox_env: type-mypy
+            friendly_name: Type check (mypy)
+          - tox_env: docs
+            friendly_name: Docs
+
+      fail-fast: false
+
+    name: Tox - ${{ matrix.friendly_name }}
     steps:
       - uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.python-version }}
+        with:
+          ref: ${{ env.ref }}
+      - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python_version }}
 
-      - name: Install dependencies
+      - name: Install tox
         run: |
-          pip install black isort
+          python -m pip install --upgrade pip
+          pip install tox
 
-      - name: Run black
+      - name: "Run tox: ${{ matrix.friendly_name }}"
+        env:
+          TOXENV: ${{ matrix.tox_env }}
         run: |
-          python -m black --check --line-length 99 .
-      - name: Run isort
-        run: |
-          python -m isort --check --line-length 99 --trailing-comma .
-
-  lint:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8"]
-    name: Lint
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          pip install flake8
-
-
-      - name: Run flake8
-        run: |
-          python -m flake8 --ignore W503 --max-line-length 99 --per-file-ignores=__init__.py:F401 .
-
-  type:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8"]
-    name: Type checking
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          pip install mypy
-
-      - name: Install stubs
-        run: |
-          pip install discord.py-stubs pandas-stubs
-
-      - name: Run mypy
-        run: |
-          python -m mypy aliases anotherpingcog beautify betteruptime github status system
-
-  docs:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8"]
-    name: Check docs
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          pip install sphinx sphinx-rtd-theme furo
-
-      - name: Build docs
-        run: |
-          cd .docs
-          make html
+          tox
