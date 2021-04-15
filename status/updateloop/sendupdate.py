@@ -7,7 +7,7 @@ from typing import Dict
 from discord import Embed, Message, TextChannel
 from redbot.core.bot import Red
 
-from status.core.consts import FEEDS, UPDATE_NAME
+from status.core import FEEDS, UPDATE_NAME
 from status.objects import (
     ChannelData,
     ConfChannelSettings,
@@ -16,7 +16,8 @@ from status.objects import (
     SendCache,
     Update,
 )
-from status.updateloop.utils import get_channel_data, get_webhook
+
+from .utils import get_channel_data, get_webhook
 
 _log = logging.getLogger("red.vexed.status.sendupdate")
 
@@ -31,7 +32,6 @@ class SendUpdate:
         update: Update,
         service: str,
         sendcache: SendCache,
-        channels: dict,
         dispatch: bool = True,
         force: bool = False,
     ):
@@ -46,15 +46,13 @@ class SendUpdate:
         self.force = force
         self.channeldata: ChannelData
 
-        asyncio.create_task(self._send_update(channels))
-
     def __repr__(self):
         return (
             f"<bot=bot update=update service={self.service} sendcache={self.sendcache} "
-            f"dispatch={self.dispatch}>"
+            f"dispatch={self.dispatch} force={self.force}>"
         )
 
-    async def _send_update(self, channels: Dict[int, ConfChannelSettings]) -> None:
+    async def send(self, channels: Dict[int, ConfChannelSettings]) -> None:
         """Send the update decalred in the class init.
 
         Parameters

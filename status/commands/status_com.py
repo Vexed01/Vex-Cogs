@@ -8,10 +8,8 @@ from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta
 
 from status.commands.converters import ServiceConverter
 from status.core.abc import MixinMeta
-from status.objects.incidentdata import IncidentData, Update
-from status.objects.sendcache import SendCache
-from status.updateloop.processfeed import process_json
-from status.updateloop.sendupdate import SendUpdate
+from status.objects import IncidentData, SendCache, Update
+from status.updateloop import SendUpdate, process_json
 
 
 class StatusCom(MixinMeta):
@@ -79,15 +77,16 @@ class StatusCom(MixinMeta):
             return await ctx.send(msg)
 
         update = Update(to_send, to_send.fields)
-        SendUpdate(
+        await SendUpdate(
             self.bot,
             self.config_wrapper,
             update,
             service.name,
             SendCache(update, service.name),
-            {ctx.channel.id: {"mode": "all", "webhook": False}},
             dispatch=False,
             force=True,
+        ).send(
+            {ctx.channel.id: {"mode": "all", "webhook": False, "edit_id": {}}},
         )
         await asyncio.sleep(0.2)
 

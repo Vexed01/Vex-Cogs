@@ -12,12 +12,16 @@ from status.commands.status_com import StatusCom
 from status.commands.statusdev_com import StatusDevCom
 from status.commands.statusset_com import StatusSetCom
 from status.core.abc import CompositeMetaClass
-from status.core.consts import FEEDS
+from status.core import FEEDS
 from status.core.statusapi import StatusAPI
-from status.objects.caches import LastChecked, ServiceCooldown, ServiceRestrictionsCache, UsedFeeds
-from status.objects.configwrapper import ConfigWrapper
-from status.updateloop.sendupdate import SendUpdate
-from status.updateloop.updatechecker import UpdateChecker
+from status.objects import (
+    ConfigWrapper,
+    LastChecked,
+    ServiceCooldown,
+    ServiceRestrictionsCache,
+    UsedFeeds,
+)
+from status.updateloop import SendUpdate, UpdateChecker
 
 _log = logging.getLogger("red.vexed.status.core")
 

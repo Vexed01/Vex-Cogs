@@ -3,10 +3,11 @@ from typing import Dict, Tuple, Union
 
 from redbot.core import Config
 
-from status.core.consts import SERVICE_LITERAL
-from status.objects.caches import LastChecked
-from status.objects.incidentdata import IncidentData, UpdateField
-from status.objects.typeddict import ConfFeeds, IncidentDataDict
+from status.core import SERVICE_LITERAL
+
+from .caches import LastChecked
+from .incidentdata import IncidentData, UpdateField
+from .typeddict import ConfChannelSettings, ConfFeeds, IncidentDataDict
 
 
 class ConfigWrapper:
@@ -70,7 +71,7 @@ class ConfigWrapper:
         await self.config.feed_store.set_raw(service, value=feeddict)  # type:ignore
         self.last_checked.update_time(service)
 
-    async def get_channels(self, service: str) -> Dict[str, dict]:
+    async def get_channels(self, service: str) -> Dict[int, ConfChannelSettings]:
         """Get the channels for a feed. The list is channel IDs from config, they may be
         invalid."""
         feeds = await self.config.all_channels()

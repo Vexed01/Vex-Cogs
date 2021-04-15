@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from redbot.core.commands import BadArgument, Context, Converter
 
-from status.core.consts import FEEDS, MODES_LITERAL, SERVICE_LITERAL
+from status.core import FEEDS, MODES_LITERAL, SERVICE_LITERAL
 
 
 class _ServiceTypeHint:

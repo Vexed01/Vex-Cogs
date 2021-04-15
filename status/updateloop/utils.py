@@ -3,8 +3,7 @@ import logging
 from discord import TextChannel, Webhook
 from redbot.core.bot import Red
 
-from status.objects.channel import ChannelData, CogDisabled, NoPermission, NotFound
-from status.objects.typeddict import ConfChannelSettings
+from status.objects import ChannelData, CogDisabled, ConfChannelSettings, NoPermission, NotFound
 
 _log = logging.getLogger("red.vexed.status.sendupdate")
 
@@ -89,14 +88,14 @@ async def get_channel_data(bot: Red, c_id: int, settings: ConfChannelSettings) -
         raise NoPermission
 
     if not settings["webhook"]:
-        settings["embed"] = await bot.embed_requested(channel, channel.guild.me)
+        use_embed = await bot.embed_requested(channel, channel.guild.me)
     else:
-        settings["embed"] = True
+        use_embed = True
 
     return ChannelData(
         channel=channel,
         mode=settings.get("mode", "latest"),
         webhook=settings.get("webhook", False),
         edit_id=settings.get("edit_id", {}),
-        embed=settings.get("embed", False),
+        embed=use_embed,
     )

@@ -7,14 +7,12 @@ from discord.ext import tasks
 from redbot.core.bot import Red
 from redbot.core.config import Config
 
-from status.core.consts import FEEDS, SERVICE_LITERAL, TYPES_LITERAL
+from status.core import FEEDS, SERVICE_LITERAL, TYPES_LITERAL
 from status.core.statusapi import StatusAPI
-from status.objects.caches import LastChecked, UsedFeeds
-from status.objects.configwrapper import ConfigWrapper
-from status.objects.incidentdata import IncidentData, Update
-from status.objects.sendcache import SendCache
-from status.updateloop.processfeed import process_json
-from status.updateloop.sendupdate import SendUpdate
+from status.objects import ConfigWrapper, IncidentData, LastChecked, SendCache, Update, UsedFeeds
+
+from .processfeed import process_json
+from .sendupdate import SendUpdate
 
 _log = logging.getLogger("red.vexed.status.updatechecker")
 
@@ -159,7 +157,13 @@ class UpdateChecker:
         for update in real:
             channels = await self.config_wrapper.get_channels(service)
             sendcache = SendCache(update, service)
-            SendUpdate(self.bot, self.config_wrapper, update, service, sendcache, channels)
+            await SendUpdate(
+                bot=self.bot,
+                config_wrapper=self.config_wrapper,
+                update=update,
+                service=service,
+                sendcache=sendcache,
+            ).send(channels)
 
             await asyncio.sleep(5)
             # this loop normally only runs once

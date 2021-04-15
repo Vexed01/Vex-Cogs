@@ -2,7 +2,7 @@ from typing import Dict, NamedTuple
 
 from aiohttp import ClientSession
 
-from status.core.consts import FEEDS
+from status.core import FEEDS
 
 
 class APIResp(NamedTuple):

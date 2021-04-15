@@ -13,7 +13,7 @@ from status.objects import (
     ServiceRestrictionsCache,
     UsedFeeds,
 )
-from status.updateloop.updatechecker import UpdateChecker
+from status.updateloop import UpdateChecker
 
 
 class CompositeMetaClass(CogMeta, ABCMeta):

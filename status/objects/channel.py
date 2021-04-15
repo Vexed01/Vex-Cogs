@@ -2,7 +2,7 @@ from typing import Dict
 
 from discord import TextChannel
 
-from status.core.consts import MODES_LITERAL
+from status.core import MODES_LITERAL
 
 
 class ChannelData:

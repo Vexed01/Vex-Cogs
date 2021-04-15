@@ -13,10 +13,8 @@ from tabulate import tabulate
 
 from status.commands.converters import ModeConverter, ServiceConverter
 from status.core.abc import MixinMeta
-from status.objects.incidentdata import Update
-from status.objects.sendcache import SendCache
-from status.updateloop.processfeed import process_json
-from status.updateloop.sendupdate import SendUpdate
+from status.objects import SendCache, Update
+from status.updateloop import SendUpdate, process_json
 
 _log = logging.getLogger("red.vexed.status.dev")
 
@@ -73,16 +71,15 @@ class StatusDevCom(MixinMeta):
         incidentdata = process_json(json_resp, "incidents")[0]
 
         update = Update(incidentdata, [incidentdata.fields[-1]])
-        SendUpdate(
+        await SendUpdate(
             self.bot,
             self.config_wrapper,
             update,
             service.name,
             SendCache(update, service.name),
-            {ctx.channel.id: {"mode": mode, "webhook": webhook}},
             True,
             True,
-        )
+        ).send({ctx.channel.id: {"mode": mode, "webhook": webhook, "edit_id": {}}})
 
         json_resp, _, _ = await self.statusapi.scheduled_maintenance(service.id)
         incidentdata_list = process_json(
@@ -93,16 +90,15 @@ class StatusDevCom(MixinMeta):
         else:
             return
         update = Update(incidentdata, [incidentdata.fields[-1]])
-        SendUpdate(
+        await SendUpdate(
             self.bot,
             self.config_wrapper,
             update,
             service.name,
             SendCache(update, service.name),
-            {ctx.channel.id: {"mode": mode, "webhook": webhook}},
             True,
             True,
-        )
+        ).send({ctx.channel.id: {"mode": mode, "webhook": webhook, "edit_id": {}}})
 
     @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["cfr"], hidden=True)
@@ -125,16 +121,15 @@ class StatusDevCom(MixinMeta):
         channels = await self.config_wrapper.get_channels(service.name)
         sendcache = SendCache(update, service.name)
 
-        SendUpdate(
+        await SendUpdate(
             bot=self.bot,
             config_wrapper=self.config_wrapper,
             update=update,
             service=service.name,
             sendcache=sendcache,
-            channels=channels,
             dispatch=True,
             force=True,
-        )
+        ).send(channels)
 
     @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["cd"], hidden=True)

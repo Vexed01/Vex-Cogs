@@ -1,7 +1,7 @@
 from time import time
 from typing import Dict, List, Literal, Union
 
-from status.core.consts import FEEDS, SERVICE_LITERAL
+from status.core import FEEDS, SERVICE_LITERAL
 
 
 class UsedFeeds:

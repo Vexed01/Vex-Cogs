@@ -14,12 +14,10 @@ from tabulate import tabulate
 from vexcogutils import inline_hum_list
 
 from status.commands.converters import ModeConverter, ServiceConverter
+from status.core import FEEDS, SPECIAL_INFO
 from status.core.abc import MixinMeta
-from status.core.consts import FEEDS, SPECIAL_INFO
-from status.objects.incidentdata import Update
-from status.objects.sendcache import SendCache
-from status.updateloop.processfeed import process_json
-from status.updateloop.sendupdate import SendUpdate
+from status.objects import SendCache, Update
+from status.updateloop import SendUpdate, process_json
 
 # NOTE:
 # Not using ctx.guild because mypy goes mad, using channel.guild - it'll make sense when you see it
@@ -381,16 +379,15 @@ class StatusSetCom(MixinMeta):
 
         update = Update(incidentdata, [incidentdata.fields[-1]])
 
-        SendUpdate(
+        await SendUpdate(
             self.bot,
             self.config_wrapper,
             update,
             service.name,
             SendCache(update, service.name),
-            {ctx.channel.id: {"mode": mode, "webhook": webhook}},
             False,
             True,
-        )
+        ).send({ctx.channel.id: {"mode": mode, "webhook": webhook, "edit_id": {}}})
 
     # ########################################### EDIT ############################################
 

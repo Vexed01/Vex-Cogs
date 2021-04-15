@@ -1,14 +1,14 @@
 import datetime
 from typing import Dict, List, Optional, TypedDict
 
-from status.core.consts import MODES_LITERAL
-from status.objects.incidentdata import UpdateField
+from status.core import MODES_LITERAL
+
+from .incidentdata import UpdateField
 
 
 class ConfChannelSettings(TypedDict):
     mode: MODES_LITERAL
     webhook: bool
-    embed: bool
     edit_id: Dict[str, int]
 
 

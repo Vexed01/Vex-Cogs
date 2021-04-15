@@ -5,8 +5,9 @@ from typing import Literal, Union
 from discord import Colour, Embed
 from redbot.core.utils.chat_formatting import pagify
 
-from status.core.consts import FEEDS, LINK_RE, SERVICE_LITERAL
-from status.objects.incidentdata import Update
+from status.core import FEEDS, LINK_RE, SERVICE_LITERAL
+
+from .incidentdata import Update
 
 _log = logging.getLogger("red.vexed.status.sendupdate")
 

@@ -6,8 +6,8 @@ import pytz
 from dateutil.parser import parse as parse_time
 from redbot.core.utils.chat_formatting import humanize_list, pagify
 
-from status.core.consts import TYPES_LITERAL
-from status.objects.incidentdata import IncidentData, UpdateField
+from status.core import TYPES_LITERAL
+from status.objects import IncidentData, UpdateField
 
 
 def _handle_long_fields(
