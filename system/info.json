@@ -6,6 +6,6 @@
     "description": "Check system metrics on the host device, such as CPU or  RAM usage",
     "short": "Check system metrics on the host device.",
     "tags": ["utility", "system", "metrics", "top"],
-    "requirements": ["psutil>=5.8.0", "vex-cog-utils>=1.1.0"],
+    "requirements": ["psutil>=5.8.0", "vex-cog-utils==1.1.1"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users."
 }
