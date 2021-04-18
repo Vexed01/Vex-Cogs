@@ -86,10 +86,6 @@ class Aliases(commands.Cog):
         builtin_aliases = command.aliases
         com_parent = command.parent or ""
 
-        if command is None:
-            await ctx.send("Hmm, I can't find that command.")
-            return
-
         for alias in all_guild_aliases:
             if strcommand in [alias["command"], alias["name"]]:
                 guild_aliases.append(alias["name"])
