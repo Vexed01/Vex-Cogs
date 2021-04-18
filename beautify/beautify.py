@@ -3,8 +3,7 @@ from typing import Optional
 
 from redbot.core import commands
 from redbot.core.bot import Red
-from vexcogutils import format_help
-from vexcogutils.utils import format_info
+from vexcogutils import format_help, format_info
 
 from .errors import NoData
 from .utils import get_data, send_output
