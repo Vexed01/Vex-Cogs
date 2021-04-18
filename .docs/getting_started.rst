@@ -55,6 +55,7 @@ Cog name                              Summary
 :ref:`anotherpingcog<anotherpingcog>` Just another ping cog... But this one has fancy colours in an embed!
 :ref:`beautify<beautify>`             Beautify and minify JSON.
 :ref:`betteruptime<betteruptime>`     New uptime command that tracks the bot's uptime percentage (last 30 days).
+:ref:`cmdlog<cmdlog>`                 Track command usage, searchable by user, server or command name.
 :ref:`github<github>`                 Create, comment, labelify and close GitHub issues, with partial PR support.
 :ref:`status<status>`                 Recieve automatic status updates from various services, including Discord.
 :ref:`system<system>`                 Get system metrics of the host device, such as RAM or CPU.
