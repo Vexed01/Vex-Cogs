@@ -31,8 +31,8 @@ class CmdLog(commands.Cog):
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.log_cache: Deque[Union[LoggedCommand, LoggedCheckFailure]] = deque(maxlen=20000)
-        # this is about 1MB max RAM
+        self.log_cache: Deque[Union[LoggedCommand, LoggedCheckFailure]] = deque(maxlen=100_000)
+        # this is about 5-10MB max RAM
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -75,7 +75,7 @@ class CmdLog(commands.Cog):
         """
         View command logs.
 
-        Note the cache is limited to 20 000 commands, which is approximately 1MB of RAM
+        Note the cache is limited to 100 000 commands, which is approximately 5-10MB of RAM
         """
 
     @cmdlog.command()
