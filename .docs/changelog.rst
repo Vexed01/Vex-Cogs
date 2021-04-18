@@ -80,6 +80,18 @@ BetterUptime
 - Slight logic changes for banding in ``downtime`` command
 
 ======
+CmdLog
+======
+
+*********
+``1.0.0``
+*********
+
+2021-04-18
+
+- Initial release
+
+======
 GitHub
 ======
 

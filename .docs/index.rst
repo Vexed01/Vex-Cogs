@@ -22,6 +22,7 @@ Docs version: |version|
    cogs/aliases
    cogs/beautify
    cogs/betteruptime
+   cogs/cmdlog
    cogs/github
    cogs/status
    cogs/statusref
