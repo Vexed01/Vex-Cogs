@@ -11,7 +11,8 @@ from redbot.core import checks, commands
 from redbot.core.bot import Red
 from redbot.core.commands import CheckFailure as RedCheckFailure
 from redbot.core.utils.chat_formatting import humanize_number
-from vexcogutils import format_help, format_info, humanize_bytes
+from vexcogutils import format_help, format_info
+from vexcogutils.chat import humanize_bytes
 
 from cmdlog.objects import TIME_FORMAT, LoggedCheckFailure, LoggedCommand
 

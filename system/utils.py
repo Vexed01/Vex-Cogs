@@ -6,7 +6,7 @@ import psutil
 from redbot.core.utils.chat_formatting import box as cf_box
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta
 from tabulate import tabulate
-from vexcogutils import humanize_bytes
+from vexcogutils.chat import humanize_bytes
 
 
 def box(text: str) -> str:
