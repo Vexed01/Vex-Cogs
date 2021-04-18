@@ -1,5 +1,6 @@
 import datetime
 import logging
+import sys
 from collections import deque
 from io import BytesIO
 from typing import Deque, Union
@@ -9,8 +10,8 @@ from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
 from redbot.core import checks, commands
 from redbot.core.bot import Red
 from redbot.core.commands import CheckFailure as RedCheckFailure
-from vexcogutils import format_help
-from vexcogutils.utils import format_info
+from redbot.core.utils.chat_formatting import humanize_number
+from vexcogutils import format_help, format_info, humanize_bytes
 
 from cmdlog.objects import TIME_FORMAT, LoggedCheckFailure, LoggedCommand
 
@@ -26,13 +27,13 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
         self.log_cache: Deque[Union[LoggedCommand, LoggedCheckFailure]] = deque(maxlen=100_000)
-        # this is about 5-10MB max RAM
+        # this is about 50MB max from my simulated testing
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -49,6 +50,12 @@ class CmdLog(commands.Cog):
         logged_com = LoggedCheckFailure(ctx)
         log.info(logged_com)
         self.log_cache.append(logged_com)
+
+    def cache_size(self) -> int:
+        size = 0
+        for i in self.log_cache:
+            size += sys.getsizeof(i)
+        return size
 
     @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):
@@ -67,7 +74,11 @@ class CmdLog(commands.Cog):
 
     @commands.command(hidden=True)
     async def cmdloginfo(self, ctx: commands.Context):
-        await ctx.send(format_info(self.qualified_name, self.__version__))
+        main = format_info(self.qualified_name, self.__version__)
+        cache_size = humanize_bytes(self.cache_size())
+        cache_count = humanize_number(len(self.log_cache))
+        extra = f"\nCache size: {cache_size} with {cache_count} commands."
+        await ctx.send(main + extra)
 
     @checks.is_owner()
     @commands.group(aliases=["cmdlogs"])
@@ -75,8 +86,17 @@ class CmdLog(commands.Cog):
         """
         View command logs.
 
-        Note the cache is limited to 100 000 commands, which is approximately 5-10MB of RAM
+        Note the cache is limited to 100 000 commands, which is approximately 50MB of RAM
         """
+
+    @cmdlog.command()
+    async def cache(self, ctx: commands.Context):
+        """Show the size of the internal command cache."""
+        cache_bytes = self.cache_size()
+        log.debug(f"Cache size is exactly {cache_bytes} bytes.")
+        cache_size = humanize_bytes(cache_bytes)
+        cache_count = humanize_number(len(self.log_cache))
+        await ctx.send(f"\nCache size: {cache_size} with {cache_count} commands.")
 
     @cmdlog.command()
     async def full(self, ctx: commands.Context):

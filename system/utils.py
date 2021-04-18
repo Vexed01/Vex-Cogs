@@ -6,6 +6,7 @@ import psutil
 from redbot.core.utils.chat_formatting import box as cf_box
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta
 from tabulate import tabulate
+from vexcogutils import humanize_bytes
 
 
 def box(text: str) -> str:
@@ -16,18 +17,6 @@ def box(text: str) -> str:
 def _hum(num: Union[int, float]) -> str:
     """Round a number, then humanize."""
     return humanize_number(round(num))
-
-
-def _hum_mb(bytes: Union[int, float]) -> str:
-    """Convert to MBs, round, then humanize."""
-    mb = bytes / 1048576
-    return _hum(mb)
-
-
-def _hum_gb(bytes: Union[int, float]) -> str:
-    """Convert to GBs, round, then humanize."""
-    mb = bytes / 1073741824
-    return _hum(mb)
 
 
 def _up_since() -> float:
@@ -76,14 +65,14 @@ async def get_mem() -> Dict[str, str]:
     data = {"physical": "", "swap": ""}
 
     data["physical"] += f"[Percent]   {physical.percent} %\n"
-    data["physical"] += f"[Used]      {_hum_mb(physical.used)} MB\n"
-    data["physical"] += f"[Available] {_hum_mb(physical.available)} MB\n"
-    data["physical"] += f"[Total]     {_hum_mb(physical.total)} MB\n"
+    data["physical"] += f"[Used]      {humanize_bytes(physical.used, 2)}\n"
+    data["physical"] += f"[Available] {humanize_bytes(physical.available, 2)}\n"
+    data["physical"] += f"[Total]     {humanize_bytes(physical.total, 2)}\n"
 
     data["swap"] += f"[Percent]   {swap.percent} %\n"
-    data["swap"] += f"[Used]      {_hum_mb(swap.used)} MB\n"
-    data["swap"] += f"[Available] {_hum_mb(swap.free)} MB\n"
-    data["swap"] += f"[Total]     {_hum_mb(swap.total)} MB\n"
+    data["swap"] += f"[Used]      {humanize_bytes(swap.used, 2)}\n"
+    data["swap"] += f"[Available] {humanize_bytes(swap.free, 2)}\n"
+    data["swap"] += f"[Total]     {humanize_bytes(swap.total, 2)}\n"
 
     return data
 
@@ -158,9 +147,9 @@ async def get_disk(embed: bool) -> Dict[str, str]:
 
     for k, v in partition_data.items():
         total_avaliable = (
-            f"{_hum_gb(v['usage'].total)} GB"
+            f"{humanize_bytes(v['usage'].total)}"
             if v["usage"].total > 1073741824
-            else f"{_hum_mb(v['usage'].total)} MB"
+            else f"{humanize_bytes(v['usage'].total)}"
         )
         data[f"{e}{k}{e}"] = f"[Usage]       {v['usage'].percent} %\n"
         data[f"{e}{k}{e}"] += f"[Total]       {total_avaliable}\n"
