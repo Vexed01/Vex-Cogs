@@ -50,7 +50,7 @@ cmdlog
 
 View command logs.
 
-Note the cache is limited to 10 000 commands.
+Note the cache is limited to 100 000 commands, around 50MB of RAM.
 
 .. _cmdlog-command-cmdlog-command:
 
