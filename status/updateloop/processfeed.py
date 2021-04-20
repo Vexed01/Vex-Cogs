@@ -99,7 +99,9 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
     fields.reverse()
     fields = _handle_long_fields(fields)
 
-    affected_components = humanize_list([c["name"] for c in incident["components"]]) or "_Unknown_"
+    affected_components = (
+        humanize_list([c["name"] for c in incident.get("components", [])]) or "_Unknown_"
+    )
 
     desc = f"Impact: **{incident['impact'].capitalize()}**\nAffects: {affected_components}"
 

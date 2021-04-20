@@ -16,6 +16,7 @@ jobs:
           - lint-flake8
           - type-mypy
           - docs
+          - pytest
         include:
           - tox_env: style-black
             friendly_name: Style (black)
@@ -27,6 +28,8 @@ jobs:
             friendly_name: Type check (mypy)
           - tox_env: docs
             friendly_name: Docs
+          - tox_env: pytest
+            friendly_name: Tests
 
       fail-fast: false
 
