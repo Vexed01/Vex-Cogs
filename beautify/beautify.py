@@ -24,7 +24,7 @@ class Beautify(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
