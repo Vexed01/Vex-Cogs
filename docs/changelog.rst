@@ -45,6 +45,26 @@ Beautify
 ========
 
 *********
+``1.1.0``
+*********
+
+2021-04-21
+
+-------------------
+User-facing changes
+-------------------
+
+- Accept more values (True, False and None in that specific casing)
+
+----------------
+Internal Changes
+----------------
+
+- Cache whether pyjson5 is available instead of catching NameError each time
+- Move more stuff to utils to better apply DRY
+
+
+*********
 ``1.0.3``
 *********
 

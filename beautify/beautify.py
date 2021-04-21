@@ -5,14 +5,16 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info
 
-from .errors import NoData
-from .utils import get_data, send_output
+from .errors import JSONDecodeError, NoData
+from .utils import decode_json, get_data, send_output
 
 # dont want to force this as can be a pain on windows
 try:
     import pyjson5
+
+    use_pyjson = True
 except ImportError:
-    pass
+    use_pyjson = False
 
 # NOTE FOR DOCSTRINGS:
 # They don't use a normal space character, if you're editing them make sure to copy and paste
@@ -24,7 +26,7 @@ class Beautify(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.0.3"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -43,10 +45,9 @@ class Beautify(commands.Cog):
 
     async def send_invalid(self, ctx: commands.Context):
         if ctx.author.id in self.bot.owner_ids:  # type:ignore
-            try:
-                pyjson5
+            if use_pyjson:
                 msg = ""
-            except NameError:
+            else:
                 msg = (
                     "\n\n_It looks like you're a bot owner. If you just passed a Python dict, you "
                     f"can run this to let me support them `{ctx.clean_prefix}pipinstall pyjson5` "
@@ -76,24 +77,14 @@ class Beautify(commands.Cog):
         except NoData:
             return
 
-        # preferred parsing, supports python dicts
         try:
-            json_pyjson = pyjson5.loads(raw_json)
-            if not isinstance(json_pyjson, dict):
-                return await self.send_invalid(ctx)
-            json_dict = json_pyjson
-        except NameError:  # not imported
-            # secondary, doesn't support dicts
-            try:
-                json_dict = json.loads(raw_json)
-            except json.JSONDecodeError:
-                return await self.send_invalid(ctx)
-        except Exception:  # cant just catch pyjson5 as might not be imported
+            json_dict, changed_input = decode_json(raw_json)
+        except JSONDecodeError:
             return await self.send_invalid(ctx)
 
         beautified = json.dumps(json_dict, indent=4)
 
-        await send_output(ctx, beautified)
+        await send_output(ctx, beautified, changed_input)
 
     @commands.command(name="minify")
     async def com_minify(self, ctx: commands.Context, *, data: Optional[str]):
@@ -114,21 +105,11 @@ class Beautify(commands.Cog):
         except NoData:
             return
 
-        # preferred parsing, supports python dicts
         try:
-            json_pyjson = pyjson5.loads(raw_json)
-            if not isinstance(json_pyjson, dict):
-                return await self.send_invalid(ctx)
-            json_dict = json_pyjson
-        except NameError:  # not imported
-            # secondary, doesn't support dicts
-            try:
-                json_dict = json.loads(raw_json)
-            except json.JSONDecodeError:
-                return await self.send_invalid(ctx)
-        except Exception:  # cant just catch pyjson5 as might not be imported
+            json_dict, changed_input = decode_json(raw_json)
+        except JSONDecodeError:
             return await self.send_invalid(ctx)
 
         beautified = json.dumps(json_dict)
 
-        await send_output(ctx, beautified)
+        await send_output(ctx, beautified, changed_input)

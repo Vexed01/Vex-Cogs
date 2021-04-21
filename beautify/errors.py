@@ -14,3 +14,7 @@ class AttachmentPermsError(NoData):
 
 class AttachmentInvalid(NoData):
     """Attachment has wrong file type"""
+
+
+class JSONDecodeError(Exception):
+    """Custom decoding error for either pyjson5 or json modules"""
