@@ -26,12 +26,12 @@ class Beautify(commands.Cog):
     __author__ = "Vexed#3211"
     __version__ = "1.0.2"
 
+    def __init__(self, bot: Red) -> None:
+        self.bot = bot
+
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
-
-    def __init__(self, bot: Red) -> None:
-        self.bot = bot
 
     async def red_delete_data_for_user(self, **kwargs) -> None:
         """Nothing to delete"""

@@ -38,10 +38,6 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
     __version__ = "1.2.2"
     __author__ = "Vexed#3211"
 
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad."""
-        return format_help(self, ctx)
-
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
@@ -66,6 +62,14 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
             self.bot.add_dev_env_value("bu", lambda x: self)
         except Exception:
             pass
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad."""
+        return format_help(self, ctx)
+
+    async def red_delete_data_for_user(self, **kwargs) -> None:
+        """Nothing to delete"""
+        return
 
     def cog_unload(self) -> None:
         _log.info("BetterUptime is now unloading. Cleaning up...")

@@ -43,10 +43,6 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
     __version__ = "2.1.1"
     __author__ = "Vexed#3211"
 
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad."""
-        return format_help(self, ctx)
-
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
@@ -84,6 +80,14 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
             except Exception:
                 _log.exception("Unable to add dev env vars.", exc_info=True)
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad."""
+        return format_help(self, ctx)
+
+    async def red_delete_data_for_user(self, **kwargs) -> None:
+        """Nothing to delete"""
+        return
+
     def cog_unload(self) -> None:
         self.update_checker.loop.cancel()
         asyncio.create_task(self.session.close())
@@ -95,10 +99,6 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
         except KeyError:
             _log.debug("Unable to remove dev env vars. They probably weren't added.")
         _log.info("Status unloaded.")
-
-    async def red_delete_data_for_user(self, **kwargs) -> None:
-        """Nothing to delete"""
-        return
 
     async def _async_init(self) -> None:
         await self.bot.wait_until_red_ready()

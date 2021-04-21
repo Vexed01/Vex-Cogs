@@ -4,8 +4,15 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from redbot.core.utils import deduplicate_iterables
-from redbot.core.utils.chat_formatting import humanize_list, inline, pagify
+from redbot.core.utils.chat_formatting import humanize_list
+from redbot.core.utils.chat_formatting import inline as cf_inline
+from redbot.core.utils.chat_formatting import pagify
 from vexcogutils import format_help, format_info, inline_hum_list
+
+
+def inline(text: str) -> str:
+    """Get the given text as inline code."""
+    return cf_inline(text.lstrip())
 
 
 class Aliases(commands.Cog):
@@ -14,19 +21,16 @@ class Aliases(commands.Cog):
     __version__ = "1.0.4"
     __author__ = "Vexed#3211"
 
+    def __init__(self, bot: Red) -> None:
+        self.bot = bot
+
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def __init__(self, bot: Red) -> None:
-        self.bot = bot
-
     async def red_delete_data_for_user(self, **kwargs) -> None:
         """Nothing to delete"""
         return
-
-    def _inline(self, text: str) -> str:
-        return inline(text.lstrip())
 
     @commands.command(hidden=True)
     async def aliasesinfo(self, ctx: commands.Context):
@@ -51,8 +55,7 @@ class Aliases(commands.Cog):
             com_parent = command.parent or ""
 
             com_builtin_aliases = [
-                self._inline(f"{com_parent} {builtin_aliases[i]}")
-                for i in range(len(builtin_aliases))
+                inline(f"{com_parent} {builtin_aliases[i]}") for i in range(len(builtin_aliases))
             ]
 
             msg = "I was unable to get information from the alias cog. It's probably not loaded.\n"

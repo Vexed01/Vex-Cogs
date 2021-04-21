@@ -37,10 +37,6 @@ class AnotherPingCog(commands.Cog):
     __version__ = "1.1.3"
     __author__ = "Vexed#3211"
 
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad."""
-        return format_help(self, ctx)
-
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
@@ -50,6 +46,14 @@ class AnotherPingCog(commands.Cog):
 
         asyncio.create_task(self._make_cache())
 
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad."""
+        return format_help(self, ctx)
+
+    async def red_delete_data_for_user(self, **kwargs) -> None:
+        """Nothing to delete"""
+        return
+
     def cog_unload(self) -> None:
         global old_ping
         if old_ping:
@@ -58,10 +62,6 @@ class AnotherPingCog(commands.Cog):
             except Exception:
                 pass
             self.bot.add_command(old_ping)
-
-    async def red_delete_data_for_user(self, **kwargs) -> None:
-        """Nothing to delete"""
-        return
 
     async def _make_cache(self) -> None:
         self.cache = Cache(
