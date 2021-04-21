@@ -10,7 +10,7 @@ from .utils import decode_json, get_data, send_output
 
 # dont want to force this as can be a pain on windows
 try:
-    import pyjson5  # flake8:noqa
+    import pyjson5  # noqa
 
     use_pyjson = True
 except ImportError:
