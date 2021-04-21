@@ -98,8 +98,8 @@ def decode_json(str_json: str) -> DecodeReturn:
                 return DecodeReturn(json_pyjson, changed_input)
         except Exception:  # cant just catch pyjson5 as might not be imported... sad
             log.debug(
-                "Exception caught. If the bellow information doesn't mention 'pyjson5' please report "
-                "this to Vexed.",
+                "Exception caught. If the bellow information doesn't mention 'pyjson5' please "
+                "report this to Vexed.",
                 exc_info=True,
             )
 
