@@ -45,6 +45,14 @@ Beautify
 ========
 
 *********
+``1.0.3``
+*********
+
+2021-04-21
+
+- Add EUD key to ``__init__.py``
+
+*********
 ``1.0.2``
 *********
 
@@ -108,6 +116,20 @@ GitHub
 ======
 Status
 ======
+
+*********
+``2.1.2``
+*********
+
+- Handle EUD data deletion requests (return None)
+
+*********
+``2.1.1``
+*********
+
+2021-13-04
+
+- Minor refactoring
 
 *********
 ``2.1.0``
@@ -201,6 +223,15 @@ Internal changes
 ======
 System
 ======
+
+*********
+``1.1.1``
+*********
+
+2021-04-09
+
+- Add missing docstring for ``system uptime``
+- (internal) Add stubs for psutil
 
 *********
 ``1.1.0``
