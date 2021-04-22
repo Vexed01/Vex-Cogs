@@ -1,5 +1,6 @@
+from collections import defaultdict, deque
 from time import time
-from typing import Dict, List, Literal, Union
+from typing import Deque, Dict, List, Literal, Union
 
 from status.core import FEEDS, SERVICE_LITERAL
 
@@ -86,31 +87,31 @@ class LastChecked:
 
 class ServiceCooldown:
     def __init__(self) -> None:
-        self.__data: Dict[int, Dict[str, List[float]]] = {}
+        self.__data: Dict[int, Dict[str, Deque[float]]] = defaultdict(dict)
 
     def __repr__(self):
         return str(self.__data)
 
-    # so, the data for each service is like this: [int, int]
+    # so, the data for each service is like this: [float, float]
     # pos 0 is the latest invoke
     # pos 1 is the second most recent
-    # all others aren't stored because they dont really matter
+    # all others aren't stored because they dont matter
     #
     # so if pos 1 was within the last 120 seconds there have been 2 valid invocations
     # which means there needs to be a cooldown
     #
-    # otherwise, basically pos 0 moves to pos 1
+    # otherwise, basically pos 0 moves to pos 1 with append_left
     # and pos 0 becomes the current time
 
     def handle(self, user_id: int, service: str) -> Union[float, Literal[False]]:
-        cooldown_data = self.__data.get(user_id, {}).get(service, [0.0, 0.0])
+        cooldown_data = self.__data.get(user_id, {}).get(service, deque([0.0, 0.0], maxlen=2))
         time_since = abs(time() - cooldown_data[1])  # their second to last invoke
         if time_since < 120:  # their second to last invoke was within last 2 mins
             return 120 - time_since
 
-        if self.__data.get(user_id) is None:
-            self.__data[user_id] = {}
-        self.__data[user_id][service] = [time(), cooldown_data[0]]
+        cooldown_data.appendleft(time())
+
+        self.__data[user_id][service] = cooldown_data
 
         return False
 

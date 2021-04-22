@@ -2,8 +2,12 @@ import re
 
 from git import Repo
 
+# hello person looking at my code
+# i chose not to do releases as they are "repo-wide"... but then so are tags. tags just feel less
+# sorta... invasive. idk.
+
 TAG_MESSAGE = """
-Created with GitHub actions.
+Created with GitHub Actions.
 
 The changelog can be found at
 https://vex-cogs.readthedocs.io/en/latest/changelog.html#{cogname}
