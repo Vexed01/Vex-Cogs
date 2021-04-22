@@ -1,6 +1,6 @@
 from collections import defaultdict, deque
 from time import time
-from typing import Deque, Dict, List, Literal, Union
+from typing import Deque, Dict, Literal, Union
 
 from status.core import FEEDS, SERVICE_LITERAL
 
