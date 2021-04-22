@@ -3,7 +3,7 @@
     "author": ["Vexed (Vexed#3211)"],
     "name": "AnotherPingCog",
     "install_msg": "Thanks for installing! This cog will replace the normal `ping` command. The bot owner can customise the colours and emojis for different latency levels, as well as force an embed with use `[p]pingset`.\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/anotherpingcog.html?utm_source=cog&utm_medium=install_msg&utm_campaign=cog_level>",
-    "requirements": ["tabulate", "vex-cog-utils==1.1.1"],
+    "requirements": ["tabulate", "vex-cog-utils"],
     "description": "Replace the ping command with a rich embed that shows ping time and message time. It is colour coded: red, orange and green, and the bot owner can customise the colours and emojis for different latency levels, as well as force an embed.",
     "short": "Just another ping cog... But this one has fancy colours in an embed the bot owner can customise!",
     "tags": ["utility", "ping", "pingtime"],
