@@ -112,6 +112,14 @@ CmdLog
 ======
 
 *********
+``1.0.2``
+*********
+
+2021-04-22
+
+- Return correct size... I really thought I already did this.
+
+*********
 ``1.0.1``
 *********
 

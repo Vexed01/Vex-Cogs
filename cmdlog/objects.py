@@ -1,4 +1,5 @@
 import datetime
+from sys import getsizeof
 from typing import Optional
 
 from discord.channel import DMChannel
@@ -12,6 +13,10 @@ class IDFKWhatToNameThis:
         self.id = id
         self.name = name
 
+    def __sizeof__(self) -> int:
+        # using getsizeof includes things like garbage
+        return getsizeof(self.id) + getsizeof(self.name)
+
 
 class LogMixin:
     """Base for logged data"""
@@ -22,8 +27,8 @@ class LogMixin:
             id=ctx.author.id, name=f"{ctx.author.name}#{ctx.author.discriminator}"
         )
 
-        self.guild: Optional[IDFKWhatToNameThis] = None
         self.channel: Optional[IDFKWhatToNameThis] = None
+        self.guild: Optional[IDFKWhatToNameThis] = None
         if ctx.guild:
             if isinstance(ctx.channel, DMChannel):
                 return
@@ -34,6 +39,18 @@ class LogMixin:
 
     def __str__(self) -> str:
         raise NotImplementedError()
+
+    def __sizeof__(self) -> int:
+        # using getsizeof here will include other stuff eg garbage
+        size = 0
+
+        size += getsizeof(self.command)
+        size += getsizeof(self.user)
+        size += getsizeof(self.channel)
+        size += getsizeof(self.guild)
+        size += getsizeof(self.time)
+
+        return size
 
 
 class LoggedCommand(LogMixin):
