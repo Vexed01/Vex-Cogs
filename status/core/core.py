@@ -40,7 +40,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "2.1.3"
+    __version__ = "2.1.4"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:

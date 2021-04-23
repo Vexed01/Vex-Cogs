@@ -1,7 +1,8 @@
-import asyncio
 import datetime
-from typing import Optional
+from collections import defaultdict
+from typing import Dict, List, NamedTuple, Optional
 
+import discord
 from discord.channel import TextChannel
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta
@@ -12,6 +13,34 @@ from status.objects import IncidentData, SendCache, Update
 from status.updateloop import SendUpdate, process_json
 
 
+class Comps(NamedTuple):
+    groups: Dict[str, str]
+    degraded_comps: Dict[str, List[str]]
+
+
+def process_components(json_data: dict) -> Comps:
+    components: List[dict] = json_data["components"]
+
+    groups: Dict[str, str] = {}
+    for comp in components:
+        if comp.get("group"):
+            groups[comp.get("id", "uh oh")] = comp.get("name", "")
+
+    degraded_comps: Dict[str, List[str]] = defaultdict(list)
+    for comp in components:
+        if comp.get("status") == "operational":
+            continue
+
+        name: str = comp.get("name", "")
+        status: str = comp.get("status", "").replace("_", " ")
+
+        degraded_comps[groups.get(comp.get("group_id", "")) or "No group"].append(
+            f"{name}: {status.capitalize()}"
+        )
+
+    return Comps(groups, degraded_comps)
+
+
 class StatusCom(MixinMeta):
 
     # TODO: support DMs
@@ -20,7 +49,7 @@ class StatusCom(MixinMeta):
     @commands.command()
     async def status(self, ctx: commands.Context, service: ServiceConverter):
         """
-        Check for incidents for a variety of services, eg Discord.
+        Check for the status of a variety of services, eg Discord.
 
         **Available Services:**
 
@@ -56,6 +85,7 @@ class StatusCom(MixinMeta):
 
         incidents_incidentdata_list = process_json(summary, "incidents")
         all_scheduled = process_json(summary, "scheduled")
+        components = process_components(summary)
         now = datetime.datetime.now(datetime.timezone.utc)
         scheduled_incidentdata_list = [
             i for i in all_scheduled if i.scheduled_for and i.scheduled_for < now
@@ -73,37 +103,61 @@ class StatusCom(MixinMeta):
             to_send = None
 
         if not to_send:
-            msg = "\N{WHITE HEAVY CHECK MARK} There are currently no live incidents."
-            return await ctx.send(msg)
-
-        update = Update(to_send, to_send.fields)
-        await SendUpdate(
-            self.bot,
-            self.config_wrapper,
-            update,
-            service.name,
-            SendCache(update, service.name),
-            dispatch=False,
-            force=True,
-        ).send(
-            {ctx.channel.id: {"mode": "all", "webhook": False, "edit_id": {}}},
-        )
-        await asyncio.sleep(0.2)
-
-        msg = ""
-
-        if other_incidents:
-            msg += f"{len(other_incidents)} other incidents are live at the moment:\n"
-            for incident in other_incidents:
-                msg += f"{incident.title} (<{incident.link}>)\n"
-
-        if other_scheduled:
-            msg += (
-                f"\n{len(other_scheduled)} other scheduled maintenance events are live at the "
-                "moment:\n"
+            msg = (
+                "\N{WHITE HEAVY CHECK MARK} There are no ongoing incidents or scheduled "
+                "maintenace."
             )
-            for incident in other_scheduled:
-                msg += f"{incident.title} (<{incident.link}>)"
+        else:
+            msg = ""
 
-        if msg:
+        if components.degraded_comps:
+            embed = discord.Embed(
+                title="Components",
+                timestamp=datetime.datetime.utcnow(),
+                colour=await ctx.embed_colour(),
+            )
+            for group, comps in components.degraded_comps.items():
+                value = ""
+                for comp in comps:
+                    value += comp + "\n"
+                embed.add_field(name=group, value=value, inline=False)
+
+            await ctx.send(msg, embed=embed)
+        else:
+            msg += "\n\N{WHITE HEAVY CHECK MARK} All components are operational."
+
             await ctx.send(msg)
+
+        if to_send:
+            msg = ""
+
+            update = Update(to_send, to_send.fields)
+            await SendUpdate(
+                self.bot,
+                self.config_wrapper,
+                update,
+                service.name,
+                SendCache(update, service.name),
+                dispatch=False,
+                force=True,
+            ).send(
+                {ctx.channel.id: {"mode": "all", "webhook": False, "edit_id": {}}},
+            )
+
+            if other_incidents:
+                msg += f"{len(other_incidents)} other incidents are live at the moment:\n"
+                for incident in other_incidents:
+                    msg += f"{incident.title} (<{incident.link}>)\n"
+                msg += "\n"
+
+            if other_scheduled:
+                msg += (
+                    f"{len(other_scheduled)} other scheduled maintenance events are live at the "
+                    "moment:\n"
+                )
+                for incident in other_scheduled:
+                    msg += f"{incident.title} (<{incident.link}>)\n"
+                msg += "\n"
+
+            if msg:
+                await ctx.send(msg)

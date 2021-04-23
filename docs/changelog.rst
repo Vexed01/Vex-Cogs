@@ -146,10 +146,18 @@ Status
 ======
 
 *********
+``2.1.4``
+*********
+
+2021-04-23
+
+- Show status of components in command ``status``
+
+*********
 ``2.1.3``
 *********
 
-20210-04-22
+2021-04-22
 
 - Use deque for cooldown
 

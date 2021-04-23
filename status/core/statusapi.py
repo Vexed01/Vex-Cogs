@@ -35,6 +35,14 @@ class StatusAPI:
 
     # you'll see this doesn't implement the whole 8 endpoints of the API, im lazy
 
+    async def components(self, service_id: str) -> APIResp:
+        base = get_base(service_id)
+
+        resp = await self.session.get(f"{base}/components.json")
+
+        respo_json = await resp.json() if resp.status == 200 else {}
+        return APIResp(respo_json, resp.headers.get("Etag", ""), resp.status)
+
     async def summary(self, service_id: str) -> APIResp:
         base = get_base(service_id)
 
