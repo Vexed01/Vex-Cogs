@@ -1,4 +1,4 @@
-# Hey there! 
+# Hey there!
 
 The limited collection of stubs here focuses on what's not available in other forms.
 
@@ -6,25 +6,26 @@ Only necessary stubs are included.
 
 ---
 
-Bellow is a list of libraries used, not in the standard lib. 
+Bellow is a list of libraries used, not in the standard lib.
 
 ### To do
 
-- gidgethub
-- py-json5
+*None*
 
 ### Done
 
 ##### Present in this folder (.stubs):
 
 - psutil
+- pyjson5
 
 ##### Others:
 
-- discord (via pip)
-- pandas (via pip)
+- discord (via pip stubs)
+- pandas (via pip stubs)
 - Red-DiscordBot (via py.typed)
 - vex-cog-utils (via py.typed)
-- tabulate (via typeshed) 
-- python-dateutil (via typeshed) 
+- gidgethub (via py.typed)
+- tabulate (via typeshed)
+- python-dateutil (via typeshed)
 
