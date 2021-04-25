@@ -10,7 +10,7 @@ from .utils import decode_json, get_data, send_output
 
 # dont want to force this as can be a pain on windows
 try:
-    import pyjson5  # noqa
+    import pyjson5  # noqa  # import otherwise unused
 
     use_pyjson = True
 except ImportError:
@@ -26,7 +26,7 @@ class Beautify(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

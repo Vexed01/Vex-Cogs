@@ -92,7 +92,7 @@ def decode_json(str_json: str) -> DecodeReturn:
     # preferred parsing, supports single quotes and other more "versatile" formats
     if use_pyjson:
         try:
-            json_pyjson = pyjson5.loads(str_json)
+            json_pyjson = pyjson5.decode(str_json)
 
             if isinstance(json_pyjson, dict):
                 return DecodeReturn(json_pyjson, changed_input)
