@@ -8,7 +8,7 @@ import discord
 import pandas
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box, humanize_timedelta, inline
+from redbot.core.utils.chat_formatting import box, humanize_timedelta, inline, pagify
 from vexcogutils import format_help, format_info
 
 from .consts import CROSS, SECONDS_IN_DAY
@@ -35,7 +35,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
     data to become available.
     """
 
-    __version__ = "1.2.2"
+    __version__ = "1.3.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -125,14 +125,24 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         await ctx.send(f"{main}{extra}")
 
     @commands.command(name="uptime")
-    async def uptime_command(self, ctx: commands.Context):
-        """Get [botname]'s uptime percent over the last 30 days, and when I was last restarted."""
+    async def uptime_command(self, ctx: commands.Context, num_days: int = 30):
+        """
+        Get [botname]'s uptime percent over the last 30 days, and when I was last restarted.
+
+        The default value for `num_days` is `30`. You can put `0` days for all-time data.
+        Otherwise, it needs to be `5` or more.
+        """
         # START OF CODE FROM RED'S CORE uptime COMMAND
         since = ctx.bot.uptime.strftime("%Y-%m-%d %H:%M:%S")
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or "Less than one second."
         description = f"Been up for: **{uptime_str}** (since {since} UTC)."
         # END
+
+        if num_days == 0:
+            num_days = 9999  # this works, trust me
+        elif num_days < 5:
+            return await ctx.send("The minimum number of days is `5`.")
 
         if not await ctx.embed_requested():
             # TODO: implement non-embed version
@@ -167,13 +177,15 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
             normalize=True,
         ).tolist()
 
-        if len(dates_to_look_for) > 30:
-            dates_to_look_for = dates_to_look_for[:29]
+        if len(dates_to_look_for) > num_days:
+            dates_to_look_for = dates_to_look_for[: (num_days - 1)]
 
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
         seconds_since_midnight = float((now - midnight).seconds)
-        if len(dates_to_look_for) >= 30:
-            seconds_data_collected = float((SECONDS_IN_DAY * 29) + seconds_since_midnight)
+        if len(dates_to_look_for) >= num_days:
+            seconds_data_collected = float(
+                (SECONDS_IN_DAY * (num_days - 1)) + seconds_since_midnight
+            )
         else:
             seconds_data_collected = float((len(dates_to_look_for) - 1) * SECONDS_IN_DAY)
 
@@ -199,7 +211,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         if seconds_data_collected - seconds_cog_loaded <= 16:  # 15 second loop
             seconds_cog_loaded = seconds_data_collected
         if (
-            seconds_data_collected - seconds_connected <= 45
+            seconds_data_collected - seconds_connected <= 60
         ):  # for my my experience heartbeats are ~41 secs
             seconds_connected = seconds_data_collected
 
@@ -231,14 +243,20 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
             embed.set_footer(text="Data is only for today.")
         else:
             content = None
-            embed.set_footer(text=f"Data is for the last {len(dates_to_look_for)} days.")
+            embed.set_footer(
+                text=f"Data is for the last {len(dates_to_look_for)} days, and today."
+            )
 
         await ctx.send(content, embed=embed)
 
     @commands.command()
-    async def downtime(self, ctx: commands.Context):
-        """Check [botname] downtime over the last 30 days."""
+    async def downtime(self, ctx: commands.Context, num_days: int = 30):
+        """
+        Check [botname] downtime over the last 30 days.
 
+        The default value for `num_days` is `30`. You can put `0` days for all-time data.
+        Otherwise, it needs to be `5` or more.
+        """
         conf_cog_loaded = self.cog_loaded_cache
         conf_connected = self.connected_cache
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
@@ -249,8 +267,8 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
             normalize=True,
         ).tolist()
 
-        if len(dates_to_look_for) > 30:
-            dates_to_look_for = dates_to_look_for[:29]
+        if len(dates_to_look_for) > num_days:
+            dates_to_look_for = dates_to_look_for[: (num_days - 1)]
 
         msg = ""
 
@@ -280,10 +298,12 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
                 "today._"
             )
         else:
-            await ctx.send(
-                f"{msg}\n\n_Timezone: UTC, date format: Year-Month-Day_\n_This excludes any "
-                "downtime today._"
+            full = (
+                "_Timezone: UTC, date format: Year-Month-Day_\n_This excludes any "
+                f"downtime today._\n\n{msg}"
             )
+            paged = pagify(full, page_length=1000)
+            await ctx.send_interactive(paged)
 
     @commands.command(name="updev", hidden=True)
     async def _dev_com(self, ctx: commands.Context):

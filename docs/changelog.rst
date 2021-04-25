@@ -45,6 +45,14 @@ Beautify
 ========
 
 *********
+``1.1.1``
+*********
+
+2021-04-24
+
+- Internal: switch to ``pyjson5.decode`` instead of ``pyjson5.loads``
+
+*********
 ``1.1.0``
 *********
 
@@ -100,6 +108,13 @@ Internal Changes
 ============
 BetterUptime
 ============
+
+*********
+``1.3.0``
+*********
+
+- Allow a custom timeframe in ``uptime`` and ``downtime``, eg ``uptime 7``
+- Pagify the ``downtime`` command
 
 *********
 ``1.2.2``
