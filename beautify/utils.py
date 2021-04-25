@@ -132,4 +132,4 @@ async def send_output(ctx: commands.Context, text: str, changed_input: bool) -> 
             )
 
         file = text_to_file(text, "output.json")
-        await ctx.send("The output is big, so I've attached it as a file.", file=file)
+        await ctx.send(f"{extra}The output is big, so I've attached it as a file.", file=file)
