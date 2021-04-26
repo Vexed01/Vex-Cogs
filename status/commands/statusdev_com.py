@@ -101,6 +101,30 @@ class StatusDevCom(MixinMeta):
         ).send({ctx.channel.id: {"mode": mode, "webhook": webhook, "edit_id": {}}})
 
     @commands.before_invoke(unsupported)
+    @statusdev.command(aliases=["cid"], hidden=True)
+    async def checkid(self, ctx: commands.Context, service: ServiceConverter, id: str):
+        inc, _, _ = await self.statusapi.incidents(service.id)
+        maint, _, _ = await self.statusapi.scheduled_maintenance(service.id)
+
+        data_list = process_json(inc, "incidents")
+        data_list.extend(process_json(maint, "scheduled"))
+
+        incidentdata_list = [i for i in data_list if i.incident_id == id]
+        if not incidentdata_list:
+            return await ctx.send("Cant find that.")
+
+        update = Update(incidentdata_list[0], [incidentdata_list[0].fields[-1]])
+        await SendUpdate(
+            self.bot,
+            self.config_wrapper,
+            update,
+            service.name,
+            SendCache(update, service.name),
+            True,
+            True,
+        ).send({ctx.channel.id: {"mode": "all", "webhook": False, "edit_id": {}}})
+
+    @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["cfr"], hidden=True)
     async def checkfeedraw(self, ctx: commands.Context, service: ServiceConverter):
         """Get raw JSON data"""
