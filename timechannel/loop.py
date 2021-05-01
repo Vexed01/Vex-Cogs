@@ -33,7 +33,7 @@ class TCLoop(MixinMeta):
         while True:
             try:
                 self.loop_meta.iter_start()
-                # await self.maybe_update_channels()
+                await self.maybe_update_channels()
                 self.loop_meta.iter_finish()
             except Exception as e:
                 self.loop_meta.iter_error(e)
