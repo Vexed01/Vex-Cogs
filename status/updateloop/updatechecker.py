@@ -3,6 +3,7 @@ import logging
 from time import monotonic
 from typing import Dict, List
 
+import aiohttp
 from discord.ext import tasks
 from redbot.core.bot import Red
 from redbot.core.config import Config
@@ -87,8 +88,14 @@ class UpdateChecker:
                     "loop."
                 )
                 continue
+            except aiohttp.ClientError:
+                _log.warning(
+                    f"Unable to check {service}. Any missed updates will be caught on the next "
+                    "loop."
+                )
+                continue
             except Exception:  # want to catch everything and anything
-                _log.error(f"Something went wrong checking {service}.", exc_info=True)
+                _log.error(f"Something unexpected went wrong checking {service}.", exc_info=True)
                 continue
 
             if status == 304:
@@ -121,8 +128,14 @@ class UpdateChecker:
                     "loop."
                 )
                 continue
+            except aiohttp.ClientError:
+                _log.warning(
+                    f"Unable to check {service}. Any missed updates will be caught on the next "
+                    "loop."
+                )
+                continue
             except Exception:  # want to catch everything and anything
-                _log.error(f"Something went wrong checking {service}.", exc_info=True)
+                _log.error(f"Something unexpected went wrong checking {service}.", exc_info=True)
                 continue
 
             if status == 304:
@@ -135,7 +148,7 @@ class UpdateChecker:
             elif str(status)[0] == "5":
                 _log.info(
                     f"I was unable to get an update for {service} due to problems on their side. "
-                    "(HTTP error {status})"
+                    f"(HTTP error {status})"
                 )
             else:
                 _log.warning(
