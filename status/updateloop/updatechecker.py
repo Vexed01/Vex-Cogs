@@ -167,6 +167,10 @@ class UpdateChecker:
         if not self.actually_send:
             return
 
+        if len(real) > 3:
+            real = real[:3]  # latest 3
+            _log.warning(f"Lots of updates detected for {service}. I will only send the latest 3.")
+
         for update in real:
             channels = await self.config_wrapper.get_channels(service)
             sendcache = SendCache(update, service)
