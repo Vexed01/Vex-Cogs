@@ -161,6 +161,16 @@ Status
 ======
 
 *********
+``2.1.5``
+*********
+
+2021-05-01
+
+- Properly handle errors relating to service restrictions when removing a feed
+- Improve error handling/logging in update loop
+- Limit number of updates sent per service per check to 3 (eg when cog has been unloaded for a while)
+
+*********
 ``2.1.4``
 *********
 
