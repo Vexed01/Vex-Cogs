@@ -107,6 +107,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     async def timechannelset(self, ctx: commands.Context):
         """Manage channels which will show the time for a timezone."""
 
+    @checks.bot_has_permissions(manage_channels=True)
     @timechannelset.command()
     async def create(self, ctx: commands.Context, timezone: TimezoneConverter):
         """
@@ -154,6 +155,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             "**click 'Keep Current Permissions' in the sync permissions dialogue.**"
         )
 
+    @checks.bot_has_permissions(manage_channels=True)
     @timechannelset.command()
     async def remove(self, ctx: commands.Context, channel: discord.VoiceChannel):
         """
