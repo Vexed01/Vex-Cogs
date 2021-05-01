@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from copy import deepcopy
-from time import time
 
 import aiohttp
 from redbot.core import Config, commands
@@ -21,12 +20,14 @@ from status.objects import (
     ServiceRestrictionsCache,
     UsedFeeds,
 )
-from status.updateloop import SendUpdate, UpdateChecker
+from status.updateloop import SendUpdate, StatusLoop
 
 _log = logging.getLogger("red.vexed.status.core")
 
 
-class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=CompositeMetaClass):
+class Status(
+    commands.Cog, StatusLoop, StatusCom, StatusDevCom, StatusSetCom, metaclass=CompositeMetaClass
+):
     """
     Automatically check for status updates.
 
@@ -40,7 +41,7 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "2.1.5"
+    __version__ = "2.2.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -63,17 +64,16 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
         self.last_checked = LastChecked()
         self.config_wrapper = ConfigWrapper(self.config, self.last_checked)
         self.service_cooldown = ServiceCooldown()
-        self.used_feeds: UsedFeeds
-        self.service_restrictions_cache: ServiceRestrictionsCache
 
         self.statusapi = StatusAPI(self.session)
+
+        self.ready = False
 
         asyncio.create_task(self._async_init())
 
         if 418078199982063626 in self.bot.owner_ids:  # type:ignore  # im lazy
             try:
                 self.bot.add_dev_env_value("status", lambda _: self)
-                self.bot.add_dev_env_value("loop", lambda _: self.update_checker.loop)
                 self.bot.add_dev_env_value("statusapi", lambda _: self.statusapi)
                 self.bot.add_dev_env_value("sendupdate", lambda _: SendUpdate)
                 _log.debug("Added dev env vars.")
@@ -89,11 +89,10 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
         return
 
     def cog_unload(self) -> None:
-        self.update_checker.loop.cancel()
+        self.loop.cancel()
         asyncio.create_task(self.session.close())
         try:
             self.bot.remove_dev_env_value("status")
-            self.bot.remove_dev_env_value("loop")
             self.bot.remove_dev_env_value("statusapi")
             self.bot.remove_dev_env_value("sendupdate")
         except KeyError:
@@ -110,23 +109,15 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
             await self.config.incidents.clear()
             await self.config.version.set(3)
             _log.info("Done!")
-            act_send = False
+            self.actually_send = False
         else:
-            act_send = True
+            self.actually_send = True
 
         self.used_feeds = UsedFeeds(await self.config.all_channels())
         self.service_restrictions_cache = ServiceRestrictionsCache(await self.config.all_guilds())
 
         # this will start the loop
-        self.update_checker = UpdateChecker(
-            self.bot,
-            self.used_feeds,
-            self.last_checked,
-            self.config,
-            self.config_wrapper,
-            self.statusapi,
-            actually_send=act_send,
-        )
+        self.ready = True
 
         _log.info("Status cog has been successfully initialized.")
 
@@ -185,15 +176,4 @@ class Status(commands.Cog, StatusCom, StatusDevCom, StatusSetCom, metaclass=Comp
 
     @commands.command(name="statusinfo", hidden=True)
     async def command_statusinfo(self, ctx: commands.Context):
-        loopstatus = self.update_checker.loop.is_running()
-        try:
-            loopintegrity = (
-                time() - self.update_checker.loop._last_iteration.timestamp() <= 120  # type:ignore
-            )  # privates not in stubs
-        except AttributeError:
-            loopintegrity = False
-
-        extras = {"Loop running": loopstatus, "Loop integrity": loopintegrity}
-        main = format_info(self.qualified_name, self.__version__, extras=extras)
-
-        await ctx.send(f"{main}")
+        await ctx.send(format_info(self.qualified_name, self.__version__, loops=[self.loop_meta]))

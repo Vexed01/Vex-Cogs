@@ -1,9 +1,11 @@
+import asyncio
 from abc import ABC, ABCMeta, abstractmethod
 
 from aiohttp import ClientSession
 from discord.ext.commands.cog import CogMeta
 from redbot.core.bot import Red
 from redbot.core.config import Config
+from vexcogutils.loop import VexLoop
 
 from status.core.statusapi import StatusAPI
 from status.objects import (
@@ -13,7 +15,6 @@ from status.objects import (
     ServiceRestrictionsCache,
     UsedFeeds,
 )
-from status.updateloop import UpdateChecker
 
 
 class CompositeMetaClass(CogMeta, ABCMeta):
@@ -30,7 +31,9 @@ class MixinMeta(ABC):
     config: Config
     config_wrapper: ConfigWrapper
 
-    update_checker: UpdateChecker
+    loop_meta: VexLoop
+    loop: asyncio.Task
+    actually_send: bool
 
     used_feeds: UsedFeeds
     last_checked: LastChecked
@@ -39,6 +42,8 @@ class MixinMeta(ABC):
 
     session: ClientSession
     statusapi: StatusAPI
+
+    ready: bool
 
     @abstractmethod
     async def get_initial_data(self) -> None:

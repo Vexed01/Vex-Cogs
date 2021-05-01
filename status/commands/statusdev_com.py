@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from time import time
 from typing import TYPE_CHECKING, Any
 
 from discord.ext.commands.errors import CheckFailure
@@ -9,7 +8,6 @@ from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
-from tabulate import tabulate
 
 from status.commands.converters import ModeConverter, ServiceConverter
 from status.core.abc import MixinMeta
@@ -191,39 +189,8 @@ class StatusDevCom(MixinMeta):
     @statusdev.command(aliases=["l"], hidden=True)
     async def loopstatus(self, ctx: commands.Context):
         """Check status of the loop"""
-        loop = self.update_checker.loop
-        if loop is None:
-            return await ctx.send("Loop is none, this won't work stupid.")
-
-        # 1) stubs dont have private attar
-        # 2) i dont care about this commnad erroring
-
-        data1 = [
-            ["next_iteration", loop.next_iteration],
-            ["_last_iteration", loop._last_iteration],  # type:ignore
-            ["is_running", loop.is_running()],
-            ["failed", loop.failed()],
-            ["_last_iteration_failed", loop._last_iteration_failed],  # type:ignore
-            ["current_loop", loop.current_loop],
-        ]
-
-        data2 = [
-            ["Seconds until next", loop.next_iteration.timestamp() - time()],  # type:ignore
-            ["Seconds since last", time() - loop._last_iteration.timestamp()],  # type:ignore
-        ]
-
-        await ctx.send(
-            "**Attributes:**\n{}\n**Parsed:**\n{}".format(
-                box(tabulate(data1)), box(tabulate(data2))
-            )
-        )
-
-    @commands.before_invoke(unsupported)
-    @statusdev.command(aliases=["rl"], hidden=True)
-    async def restartloop(self, ctx: commands.Context):
-        """Restart the loop (if `statusdev loopstatus` is all positive DO NOT DO THIS)"""
-        self.update_checker.loop.restart()
-        await ctx.tick()
+        embed = self.loop_meta.get_debug_embed()
+        await ctx.send(embed=embed)
 
     @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["dev"], hidden=True)
@@ -237,11 +204,10 @@ class StatusDevCom(MixinMeta):
         """
         try:
             self.bot.add_dev_env_value("status", lambda _: self)
-            self.bot.add_dev_env_value("loop", lambda _: self.update_checker.loop)
             self.bot.add_dev_env_value("statusapi", lambda _: self.statusapi)
             self.bot.add_dev_env_value("sendupdate", lambda _: SendUpdate)
             await ctx.send(
-                "Added dev env vars `status`, `loop`, `statusapi`, `sendupdate`. They will be "
+                "Added dev env vars `status`, `statusapi`, `sendupdate`. They will be "
                 "removed on cog unload."
             )
         except Exception:

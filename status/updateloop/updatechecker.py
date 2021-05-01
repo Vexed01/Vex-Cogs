@@ -4,13 +4,11 @@ from time import monotonic
 from typing import Dict, List
 
 import aiohttp
-from discord.ext import tasks
-from redbot.core.bot import Red
-from redbot.core.config import Config
+from vexcogutils.loop import VexLoop
 
 from status.core import FEEDS, SERVICE_LITERAL, TYPES_LITERAL
-from status.core.statusapi import StatusAPI
-from status.objects import ConfigWrapper, IncidentData, LastChecked, SendCache, Update, UsedFeeds
+from status.core.abc import MixinMeta
+from status.objects import IncidentData, SendCache, Update
 
 from .processfeed import process_json
 from .sendupdate import SendUpdate
@@ -18,68 +16,57 @@ from .sendupdate import SendUpdate
 _log = logging.getLogger("red.vexed.status.updatechecker")
 
 
-class UpdateChecker:
+class StatusLoop(MixinMeta):
     """Loop for checking for updates."""
 
-    def __init__(
-        self,
-        bot: Red,
-        used_feeds: UsedFeeds,
-        last_checked: LastChecked,
-        config: Config,
-        config_wrapper: ConfigWrapper,
-        statusapi: StatusAPI,
-        *,
-        run_loop: bool = True,
-        actually_send: bool = True,
-    ):
-        self.bot = bot
-        self.used_feeds = used_feeds
-        self.last_checked = last_checked
-        self.config = config
-        self.config_wrapper = config_wrapper
-        self.actually_send = actually_send
-
-        self.api = statusapi
+    def __init__(self) -> None:
         self.etags: Dict[str, str] = {}
 
-        if run_loop:
-            self.loop = self._update_loop
-            self.loop.start()
+        self.loop_meta = VexLoop("Status Loop", 120.0)
+        self.loop = asyncio.create_task(self.status_loop())
 
-    @tasks.loop(minutes=2.0)
-    async def _update_loop(self):
-        _log.debug("Update loop started.")
-        if not self.used_feeds.get_list():
-            return _log.debug("Nothing to do - no channels have registered for auto updates.")
-        start = monotonic()
+    async def status_loop(self):
+        while not self.ready:
+            await asyncio.sleep(1)
 
-        try:
-            await asyncio.wait_for(
-                self._check_for_updates(), timeout=245
-            )  # 4 min (+ 5 sec for d.py loops)
-        except asyncio.TimeoutError:
-            _log.warning(
-                "Update checking timed out after 4 minutes. If this happens a lot contact Vexed."
-            )
-        except Exception:
-            _log.error(
-                "Unable to check and send updates. Some services were likely missed. The might be "
-                "picked up on the next loop. You may want to report this to Vexed.",
-                exc_info=True,
-            )
-        end = monotonic()
-        total = round(end - start, 1)
+        while True:
+            self.loop_meta.iter_start()
+            _log.debug("Update loop started.")
+            if not self.used_feeds.get_list():
+                return _log.debug("Nothing to do - no channels have registered for auto updates.")
+            start = monotonic()
 
-        _log.debug(f"Update loop finished in {total}s.")
+            try:
+                await asyncio.wait_for(self._check_for_updates(), timeout=245)  # 4 min and a bit
 
-        self.actually_send = True
+                self.loop_meta.iter_finish()
+            except asyncio.TimeoutError as e:
+                self.loop_meta.iter_error(e)
+                _log.warning(
+                    "Update checking timed out after 4 minutes. If this happens a lot contact "
+                    "Vexed."
+                )
+            except Exception as e:
+                self.loop_meta.iter_error(e)
+                _log.error(
+                    "Unable to check and send updates. Some services were likely missed. The "
+                    "might be picked up on the next loop. You may want to report this to Vexed.",
+                    exc_info=True,
+                )
+            end = monotonic()
+            total = round(end - start, 1)
+
+            _log.debug(f"Update loop finished in {total}s.")
+
+            self.actually_send = True
+
+            await self.loop_meta.sleep_until_next()
 
     async def _check_for_updates(self) -> None:
         # ############################ INCIDENTS ############################
         for service in self.used_feeds.get_list():
             try:
-                resp_json, new_etag, status = await self.api.incidents(
+                resp_json, new_etag, status = await self.statusapi.incidents(
                     FEEDS[service]["id"], self.etags.get(f"incidents-{service}", "")
                 )
             except asyncio.TimeoutError:
@@ -119,7 +106,7 @@ class UpdateChecker:
         # ############################ SCHEDULED ############################
         for service in self.used_feeds.get_list():
             try:
-                resp_json, new_etag, status = await self.api.scheduled_maintenance(
+                resp_json, new_etag, status = await self.statusapi.scheduled_maintenance(
                     FEEDS[service]["id"], self.etags.get(f"scheduled-{service}", "")
                 )
             except asyncio.TimeoutError:
@@ -164,6 +151,7 @@ class UpdateChecker:
         if not real:
             return _log.debug(f"Ghost status update for {service} ({type}) detected.")
 
+        # skip just after migration
         if not self.actually_send:
             return
 
