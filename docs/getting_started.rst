@@ -59,4 +59,5 @@ Cog name                              Summary
 :ref:`github<github>`                 Create, comment, labelify and close GitHub issues, with partial PR support.
 :ref:`status<status>`                 Recieve automatic status updates from various services, including Discord.
 :ref:`system<system>`                 Get system metrics of the host device, such as RAM or CPU.
+:ref:`timechannel<timechannel>`       Get the time in different timezones in voice channels.
 ===================================== ===========================================================================

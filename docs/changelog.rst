@@ -10,7 +10,7 @@ Usage of this for all version bumping updates started 21-04-08.
 
 Date format throughout is YYYY-MM-DD
 
-See the contents bar on the right to skip to a cog.
+See the contents bar on the right to jump to a cog.
 
 
 =======
@@ -311,6 +311,18 @@ System
 - New command: ``system uptime``
     - shows what time the system was booted and how long ago that was
 - Internal refactor, splitting commands and psutil parsers into two files
+
+===========
+TimeChannel
+===========
+
+*********
+``1.0.0``
+*********
+
+2021-05-01
+
+- Initial release
 
 =========
 Meta Docs
