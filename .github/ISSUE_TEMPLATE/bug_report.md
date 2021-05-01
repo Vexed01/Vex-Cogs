@@ -9,6 +9,10 @@ assignees: ''
 
 # Bug report
 
-<!-- Please include the cog and command it came from, what you expected to happen and what actually happened. -->
+<!--
+    Please briefly describe what went wrong.
 
-<!-- If there's a traceback, please post it as well. -->
+    If there's a traceback, please post it as well.
+
+    I would also appreciate it if you send the output of `[p]<cogname>info`, for example `[p]statusinfo`
+-->
