@@ -110,8 +110,18 @@ BetterUptime
 ============
 
 *********
+``1.4.0``
+*********
+
+2021-05-01
+
+- Utilise an Abstract Base Class and move to VexLoop
+
+*********
 ``1.3.0``
 *********
+
+2021-04-25
 
 - Allow a custom timeframe in ``uptime`` and ``downtime``, eg ``uptime 7``
 - Pagify the ``downtime`` command

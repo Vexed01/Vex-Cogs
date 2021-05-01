@@ -2,31 +2,25 @@ import asyncio
 import datetime
 import logging
 from time import time
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 import discord
 import pandas
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box, humanize_timedelta, inline, pagify
+from redbot.core.utils.chat_formatting import humanize_timedelta, inline, pagify
 from vexcogutils import format_help, format_info
 
-from .consts import CROSS, SECONDS_IN_DAY
-from .loop import BetterUptimeLoop
-
-# only used in dev com so dont want is as a requirement in info.json
-try:
-    from tabulate import tabulate
-except ImportError:
-    pass
-
+from .abc import CompositeMetaClass
+from .consts import SECONDS_IN_DAY
+from .loop import BULoop
 
 old_ping = None
 
 _log = logging.getLogger("red.vexed.betteruptime")
 
 
-class BetterUptime(commands.Cog, BetterUptimeLoop):
+class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
     """
     Replaces the core `uptime` command to show the uptime
     percentage over the last 30 days.
@@ -35,7 +29,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
     data to become available.
     """
 
-    __version__ = "1.3.0"
+    __version__ = "1.4.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -56,7 +50,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         self.cog_loaded_cache: Dict[str, float] = {}
         self.connected_cache: Dict[str, float] = {}
 
-        self.recent_load = True
+        self.ready = False
 
         try:
             self.bot.add_dev_env_value("bu", lambda x: self)
@@ -73,15 +67,15 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
     def cog_unload(self) -> None:
         _log.info("BetterUptime is now unloading. Cleaning up...")
-        self.uptime_loop.cancel()
-        self.config_loop.cancel()
+        self.main_loop.cancel()
+        self.conf_loop.cancel()
 
         # it should be pretty safe to assume the bot's online when unloading
         # and if not it's only a few seconds of "mistake"
-        if self.uptime_loop.next_iteration:  # could be None
+        if self.main_loop_meta.next_iter:  # could be None
             try:
                 until_next = (
-                    self.uptime_loop.next_iteration - datetime.datetime.now(datetime.timezone.utc)
+                    self.main_loop_meta.next_iter - datetime.datetime.now(datetime.timezone.utc)
                 ).total_seconds()  # assume up to now was uptime because the command was invoked
                 utcdatetoday = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 
@@ -109,20 +103,8 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
     @commands.command(hidden=True)
     async def betteruptimeinfo(self, ctx: commands.Context):
-        loops = {
-            "Main loop": self.uptime_loop.is_running(),
-            "Config loop": self.config_loop.is_running(),
-        }
-        main = format_info(self.qualified_name, self.__version__, extras=loops)
-
-        extra = (
-            f"\nNote: these **will** show `{CROSS}` for a few more seconds until the cog is fully "
-            "ready."
-            if self.recent_load
-            else ""
-        )
-
-        await ctx.send(f"{main}{extra}")
+        loops = [self.main_loop_meta, self.conf_loop_meta]
+        await ctx.send(format_info(self.qualified_name, self.__version__, loops=loops))
 
     @commands.command(name="uptime")
     async def uptime_command(self, ctx: commands.Context, num_days: int = 30):
@@ -153,13 +135,12 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
         embed = discord.Embed(description=description, colour=await ctx.embed_colour())
         now = datetime.datetime.utcnow()
-
-        if self.uptime_loop.next_iteration is None:
+        if self.main_loop_meta.next_iter is None:
             until_next = 0.0
         else:
             try:
                 until_next = (
-                    self.uptime_loop.next_iteration - datetime.datetime.now(datetime.timezone.utc)
+                    self.main_loop_meta.next_iter - datetime.datetime.now(datetime.timezone.utc)
                 ).total_seconds()  # assume up to now was uptime because the command was invoked
             except Exception:  # TODO: pos remove
                 until_next = 0.0
@@ -171,6 +152,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         conf_connected = self.connected_cache
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
+        dates_to_look_for: List[datetime.datetime]
         dates_to_look_for = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
             end=datetime.datetime.today(),
@@ -195,9 +177,9 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
                 seconds_data_collected += seconds_since_midnight
 
         for date in dates_to_look_for:
-            date = date.strftime("%Y-%m-%d")
-            seconds_cog_loaded += conf_cog_loaded.get(date, 0.0)
-            seconds_connected += conf_connected.get(date, 0.0)
+            str_date = date.strftime("%Y-%m-%d")
+            seconds_cog_loaded += conf_cog_loaded.get(str_date, 0.0)
+            seconds_connected += conf_connected.get(str_date, 0.0)
 
         main_downtime = (
             humanize_timedelta(seconds=seconds_data_collected - seconds_connected) or "none"
@@ -308,18 +290,14 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
     @commands.command(name="updev", hidden=True)
     async def _dev_com(self, ctx: commands.Context):
 
-        dates_to_look_for = pandas.date_range(
-            end=datetime.datetime.today(), periods=30, tz=datetime.timezone.utc
-        ).tolist()
-
         now = datetime.datetime.utcnow()
 
-        if not self.uptime_loop.next_iteration:
+        if not self.main_loop_meta.next_iter:
             until_next = 0.0
         else:
             try:
                 until_next = (
-                    self.uptime_loop.next_iteration - datetime.datetime.now(datetime.timezone.utc)
+                    self.main_loop_meta.next_iter - datetime.datetime.now(datetime.timezone.utc)
                 ).total_seconds()  # assume up to now was uptime because the command was invoked
             except Exception:  # TODO: pos remove
                 until_next = 0.0
@@ -331,6 +309,7 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
         conf_connected = self.connected_cache
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
+        dates_to_look_for: List[datetime.datetime]
         dates_to_look_for = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
             end=datetime.datetime.today(),
@@ -353,9 +332,9 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
                 seconds_data_collected += seconds_since_midnight
 
         for date in dates_to_look_for:
-            date = date.strftime("%Y-%m-%d")
-            seconds_cog_loaded += conf_cog_loaded.get(date, 0.0)
-            seconds_connected += conf_connected.get(date, 0.0)
+            str_date = date.strftime("%Y-%m-%d")
+            seconds_cog_loaded += conf_cog_loaded.get(str_date, 0.0)
+            seconds_connected += conf_connected.get(str_date, 0.0)
 
         await ctx.send(
             f"The cog was first loaded `{(now - conf_first_loaded).total_seconds()}` seconds ago\n"
@@ -366,60 +345,11 @@ class BetterUptime(commands.Cog, BetterUptimeLoop):
 
     @commands.command(name="uploop", hidden=True)
     async def _dev_loop(self, ctx: commands.Context):
-        try:
-            tabulate
-        except NameError:
-            return await ctx.send(
-                "Tabulate must be installed to use this command (`[p]pipinstall tabulate`)"
-            )
+        main = self.main_loop_meta.get_debug_embed()
+        conf = self.conf_loop_meta.get_debug_embed()
 
-        uptime_loop = self.uptime_loop
-
-        # lots of type:ignores.... basically idc about this
-
-        uptime_data1 = [
-            ["next_iteration", uptime_loop.next_iteration],
-            ["_last_iteration", uptime_loop._last_iteration],  # type:ignore
-            ["is_running", uptime_loop.is_running()],
-            ["failed", uptime_loop.failed()],
-            ["_last_iteration_failed", uptime_loop._last_iteration_failed],  # type:ignore
-            ["current_loop", uptime_loop.current_loop],
-        ]
-
-        uptime_data2 = [
-            ["Seconds until next", uptime_loop.next_iteration.timestamp() - time()],  # type:ignore
-            [
-                "Seconds since last",
-                time() - uptime_loop._last_iteration.timestamp(),  # type:ignore
-            ],
-        ]
-
-        config_loop = self.config_loop
-
-        config_data1 = [
-            ["next_iteration", config_loop.next_iteration],
-            ["_last_iteration", config_loop._last_iteration],  # type:ignore
-            ["is_running", config_loop.is_running()],
-            ["failed", config_loop.failed()],
-            ["_last_iteration_failed", config_loop._last_iteration_failed],  # type:ignore
-            ["current_loop", config_loop.current_loop],
-        ]
-
-        config_data2 = [
-            ["Seconds until next", config_loop.next_iteration.timestamp() - time()],  # type:ignore
-            [
-                "Seconds since last",
-                time() - config_loop._last_iteration.timestamp(),  # type:ignore
-            ],
-        ]
-
-        parsed_uptime_loop = f"{box(tabulate(uptime_data1))}\n{box(tabulate(uptime_data2))}"
-        parsed_config_loop = f"{box(tabulate(config_data1))}\n{box(tabulate(config_data2))}"
-
-        e = discord.Embed(title="Loop info")
-        e.add_field(name="Uptime loop", value=parsed_uptime_loop, inline=False)
-        e.add_field(name="Config loop", value=parsed_config_loop, inline=False)
-        await ctx.send(embed=e)
+        await ctx.send(embed=main)
+        await ctx.send(embed=conf)
 
 
 def setup(bot: Red) -> None:

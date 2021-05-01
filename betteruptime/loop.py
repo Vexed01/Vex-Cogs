@@ -2,36 +2,26 @@ import asyncio
 import datetime
 import logging
 from time import time
-from typing import Dict
 
-from discord.ext import tasks
-from redbot.core import Config
-from redbot.core.bot import Red
+from vexcogutils.loop import VexLoop
 
+from .abc import MixinMeta
 from .consts import INF
 
 _log = logging.getLogger("red.vexed.betteruptime.loop")
 
 
-class BetterUptimeLoop:
+class BULoop(MixinMeta):
     def __init__(self) -> None:
-        self.bot: Red
+        asyncio.create_task(self.initialise())
 
-        self.config: Config
+        self.main_loop_meta = VexLoop("BetterUptime Main Loop", 15.0)
+        self.main_loop = asyncio.create_task(self.betteruptime_main_loop())
 
-        self.last_known_ping: float
-        self.last_ping_change: float
+        self.conf_loop_meta = VexLoop("BetterUptime Config Loop", 60.0)
+        self.conf_loop = asyncio.create_task(self.betteruptime_conf_loop())
 
-        self.fist_load: float
-
-        self.cog_loaded_cache: Dict[str, float]
-        self.connected_cache: Dict[str, float]
-
-        self.recent_load: bool
-
-        asyncio.create_task(self.start())
-
-    async def start(self) -> None:
+    async def initialise(self) -> None:
         await self.bot.wait_until_red_ready()
 
         self.last_known_ping = self.bot.latency
@@ -44,24 +34,56 @@ class BetterUptimeLoop:
             self.first_load = time()
 
         _log.debug("Waiting a bit to allow for previous unload to clean up (assuming reload)...")
-        await asyncio.sleep(
-            2
-        )  # assume reload - wait for unloading to be able to clean up properly
+        await asyncio.sleep(2)  # wait for unloading to be able to clean up properly
         _log.debug("Setting up...")
         self.cog_loaded_cache = await self.config.cog_loaded()
         self.connected_cache = await self.config.connected()
 
-        _log.info("BetterUptime has been initialized. Waiting for some uptime to occur...")
+        _log.info("BetterUptime has been initialised and is now running.")
 
-        await asyncio.sleep(15)
-        self.uptime_loop.start()
+        self.ready = True
 
-        await asyncio.sleep(1)
-        self.config_loop.start()
+    async def betteruptime_main_loop(self):
+        while not self.ready:
+            await asyncio.sleep(1)
 
-        self.recent_load = False
+        await asyncio.sleep(15)  # wait for initial uptime to occur
 
-        _log.info("BetterUptime is now fully running.")
+        while True:
+            _log.debug("Main BetterUptime loop has started next iteration")
+            try:
+                self.main_loop_meta.iter_start()
+                await self.update_uptime()
+                self.main_loop_meta.iter_finish()
+            except Exception as e:
+                self.main_loop_meta.iter_error(e)
+                _log.exception(
+                    "Something went wrong in the main BetterUptime loop. The loop will try again "
+                    "in 15 seconds. Please report this to Vexed."
+                )
+
+            await self.main_loop_meta.sleep_until_next()
+
+    async def betteruptime_conf_loop(self):
+        while not self.ready:
+            await asyncio.sleep(1)
+
+        await asyncio.sleep(65)  # wait for main loop to run for a minute before writing anything
+
+        while True:
+            _log.debug("Config BetterUptime loop has started next iteration")
+            try:
+                self.conf_loop_meta.iter_start()
+                await self.update_uptime()
+                self.conf_loop_meta.iter_finish()
+            except Exception as e:
+                self.conf_loop_meta.iter_error(e)
+                _log.exception(
+                    "Something went wrong in the conf BetterUptime loop. The loop will try again "
+                    "in 60 seconds. Please report this to Vexed."
+                )
+
+            await self.conf_loop_meta.sleep_until_next()
 
     async def write_to_config(self, final=False) -> None:
         if self.cog_loaded_cache:  # dont want to write if the cache is empty
@@ -74,11 +96,7 @@ class BetterUptimeLoop:
         else:
             _log.debug("Wrote local cache to config.")
 
-    @tasks.loop(
-        seconds=15
-    )  # 15 seconds is basically guaranteed to catch all, heartbeats are ~41 secs atm
-    async def uptime_loop(self):
-        _log.debug("Loop started")
+    async def update_uptime(self):
         utcdatetoday = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
         utcdateyesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
             days=1
@@ -140,7 +158,3 @@ class BetterUptimeLoop:
                             pass
             self.last_known_ping = current_latency
             self.last_ping_change = time()
-
-    @tasks.loop(seconds=60)
-    async def config_loop(self):
-        await self.write_to_config()
