@@ -18,6 +18,7 @@ Bellow is a list of libraries used, not in the standard lib.
 
 - psutil
 - pyjson5
+- rapidfuzz
 
 ##### Others:
 
@@ -28,4 +29,4 @@ Bellow is a list of libraries used, not in the standard lib.
 - gidgethub (via py.typed)
 - tabulate (via typeshed)
 - python-dateutil (via typeshed)
-
+- pytz (via typeshed)
