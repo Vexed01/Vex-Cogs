@@ -1,6 +1,6 @@
 from collections import defaultdict, deque
 from time import time
-from typing import Deque, Dict, Literal, Union
+from typing import Deque, Dict, List, Literal, Union
 
 from status.core import FEEDS, SERVICE_LITERAL
 
@@ -34,8 +34,8 @@ class UsedFeeds:
 class ServiceRestrictionsCache:
     """Holds channel restrictions (for members) for when automatic updates are configured."""
 
-    def __init__(self, all_guilds: Dict[int, Dict[str, list]]):
-        __data: dict = {}
+    def __init__(self, all_guilds: Dict[int, Dict[str, Dict[str, List[int]]]]):
+        __data: Dict[int, Dict[str, List[int]]] = {}
 
         for g_id, data in all_guilds.items():
             __data[g_id] = data["service_restrictions"]
@@ -53,8 +53,8 @@ class ServiceRestrictionsCache:
     def remove_restriction(self, guild_id: int, service: str, channel_id: int) -> None:
         """Remove a channel from the restriction cache."""
         try:
-            self.__data[guild_id][service].remove(channel_id)
-        except ValueError:
+            self.__data.get(guild_id, {}).get(service, []).remove(channel_id)
+        except ValueError:  # not in list
             pass
 
     def get_guild(self, guild_id: int, service: str = None) -> Union[dict, list]:

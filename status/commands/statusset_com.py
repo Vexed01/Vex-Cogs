@@ -221,10 +221,11 @@ class StatusSetCom(MixinMeta):
 
         self.used_feeds.remove_feed(service.name)
 
+        sr: Dict[str, List[int]]
         async with self.config.guild(channel.guild).service_restrictions() as sr:
             try:
                 sr[service.name].remove(channel.id)
-            except KeyError:
+            except ValueError:
                 pass
 
             self.service_restrictions_cache.remove_restriction(
