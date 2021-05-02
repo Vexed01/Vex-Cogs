@@ -32,7 +32,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     The `[p]timezones` command (runnable by anyone) will show the full location name.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.1.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
