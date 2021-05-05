@@ -171,6 +171,15 @@ Status
 ======
 
 *********
+``2.3.0``
+*********
+
+2021-05-05
+
+- Use dedicated library (``markdownify``) for handling HTML to markdown
+- Remove ``pytz`` for requirements and remove from code.
+
+*********
 ``2.2.0``
 *********
 

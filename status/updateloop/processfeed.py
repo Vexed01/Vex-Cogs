@@ -1,13 +1,16 @@
 import datetime
+import logging
 import re
 from typing import List, Optional
 
-import pytz
 from dateutil.parser import parse as parse_time
+from markdownify import markdownify
 from redbot.core.utils.chat_formatting import humanize_list, pagify
 
 from status.core import TYPES_LITERAL
 from status.objects import IncidentData, UpdateField
+
+_log = logging.getLogger("red.vexed.status.processfeed")
 
 
 def _handle_long_fields(
@@ -44,9 +47,14 @@ def _handle_long_fields(
 
 
 def _handle_html(text: str) -> str:
-    """Why tf do you put HTML tags in the API oracle...
+    """Why tf do you put HTML tags in the API...
 
     At least I'm being kind and replacing them properly.
+
+    Culprits:
+    - Oracle
+    - Cloudflare
+    - GitHub
 
     Parameters
     ----------
@@ -58,7 +66,7 @@ def _handle_html(text: str) -> str:
     str
         Stripped/replaced string
     """
-    return text.replace("<b>", "**").replace("</b>", "**")
+    return markdownify(text)
 
 
 def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
@@ -80,7 +88,9 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
     for update in incident["incident_updates"]:
         # this is exactly how they are displayed on the website
         friendly_time = (
-            parse_time(update["created_at"]).astimezone(pytz.utc).strftime("%b %d, %H:%M %Z")
+            parse_time(update["created_at"])
+            .astimezone(datetime.timezone.utc)
+            .strftime("%b %d, %H:%M %Z")
         )
 
         fields.append(
@@ -107,11 +117,13 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
 
     if type == "scheduled":
         start = (
-            parse_time(incident["scheduled_for"]).astimezone(pytz.utc).strftime("%b %d, %H:%M %Z")
+            parse_time(incident["scheduled_for"])
+            .astimezone(datetime.timezone.utc)
+            .strftime("%b %d, %H:%M %Z")
         )
         end = (
             parse_time(incident["scheduled_until"])
-            .astimezone(pytz.utc)
+            .astimezone(datetime.timezone.utc)
             .strftime("%b %d, %H:%M %Z")
         )
 

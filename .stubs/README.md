@@ -8,25 +8,34 @@ Only necessary stubs are included.
 
 Bellow is a list of libraries used, not in the standard lib.
 
-### To do
+## To do
 
 *None*
 
-### Done
+## Done
 
-##### Present in this folder (.stubs):
+#### Present in this folder (.stubs):
 
+- markdownify
+- rapidfuzz
 - psutil
 - pyjson5
-- rapidfuzz
 
-##### Others:
+#### Others:
 
-- discord (via pip stubs)
-- pandas (via pip stubs)
-- Red-DiscordBot (via py.typed)
-- vex-cog-utils (via py.typed)
-- gidgethub (via py.typed)
-- tabulate (via typeshed)
-- python-dateutil (via typeshed)
-- pytz (via typeshed)
+##### via PyPi stubs
+
+- discord
+- pandas
+
+##### via py.typed
+
+- Red-DiscordBot
+- vex-cog-utils
+- gidgethub
+
+##### via typeshed
+
+- tabulate
+- python-dateutil
+- pytz

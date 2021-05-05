@@ -89,6 +89,7 @@ class StatusLoop(MixinMeta):
                 _log.debug(f"Incidents: no update for {service} - 304")
                 self.last_checked.update_time(service)
             elif status == 200:
+                _log.debug(f"Incidents: update detected for {service} - 200")
                 self.etags[f"incidents-{service}"] = new_etag
                 # dont need to update checked time as above because _maybe_send_update does it
                 await self._maybe_send_update(resp_json, service, "incidents")
@@ -129,6 +130,7 @@ class StatusLoop(MixinMeta):
                 _log.debug(f"Scheduled: no update for {service} - 304")
                 self.last_checked.update_time(service)
             elif status == 200:
+                _log.debug(f"Scheduled: update detected for {service} - 200")
                 self.etags[f"scheduled-{service}"] = new_etag
                 # dont need to update checked time as above because _maybe_send_update does it
                 await self._maybe_send_update(resp_json, service, "scheduled")
@@ -184,6 +186,10 @@ class StatusLoop(MixinMeta):
             new_fields = []
             for field in incidentdata.fields:
                 if field.update_id not in stored_ids:
+                    _log.debug(
+                        f"New field detected with ID {field.update_id} on incident "
+                        f"{incidentdata.incident_id}"
+                    )
                     stored_ids.append(field.update_id)
                     new_fields.append(field)
 
