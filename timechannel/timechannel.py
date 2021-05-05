@@ -69,7 +69,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
 
         # partially from core at (what a tight fit with the link :aha:)
         # https://github.com/Cog-Creators/Red-DiscordBot/blob/V3/develop/redbot/core/events.py#L355
-        sys_now = datetime.datetime.utcnow() + datetime.timedelta(minutes=2)
+        sys_now = datetime.datetime.utcnow()
         discord_now = ctx.message.created_at
         if "UTC" not in data.values():
             description = f"UTC time: {sys_now.strftime('%b %d, %H:%M')}"
