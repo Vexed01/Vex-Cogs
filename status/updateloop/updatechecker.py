@@ -4,6 +4,7 @@ from time import monotonic
 from typing import Dict, List
 
 import aiohttp
+from aiohttp.client_exceptions import ClientError, ClientOSError
 from vexcogutils.loop import VexLoop
 
 from status.core import FEEDS, SERVICE_LITERAL, TYPES_LITERAL
@@ -75,7 +76,7 @@ class StatusLoop(MixinMeta):
                     "loop."
                 )
                 continue
-            except aiohttp.ClientError:
+            except (aiohttp.ClientError, ClientOSError):
                 _log.warning(
                     f"Unable to check {service}. Any missed updates will be caught on the next "
                     "loop."
@@ -116,7 +117,7 @@ class StatusLoop(MixinMeta):
                     "loop."
                 )
                 continue
-            except aiohttp.ClientError:
+            except (aiohttp.ClientError, ClientOSError):
                 _log.warning(
                     f"Unable to check {service}. Any missed updates will be caught on the next "
                     "loop."
