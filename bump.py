@@ -1,6 +1,8 @@
+import datetime
 import re
 import sys
 from pathlib import Path
+from typing import Optional
 
 COGS = [
     "aliases",
@@ -16,10 +18,12 @@ COGS = [
 
 UPDATE_LEVELS = ["major", "minor", "patch"]
 
-REGEX = r".*__version__ = \"(\d)\.(\d)\.(\d)\".*"
+VER_REGEX = r".*__version__ = \"(\d)\.(\d)\.(\d)\".*"
+
+DOCS_REGEX = r"({}\n=*\n\n)"
 
 
-def bump(cogname: str, update_level: str) -> None:
+def bump(cogname: str, update_level: str):
     if cogname == "status":
         to_open = Path(__file__).parent / "status" / "core" / "core.py"
     else:
@@ -28,7 +32,7 @@ def bump(cogname: str, update_level: str) -> None:
     with open(to_open, "r") as fp:
         file_data = fp.read()
 
-    match = re.match(REGEX, file_data, flags=re.S)
+    match = re.match(VER_REGEX, file_data, flags=re.S)
     if match is None or len(match.groups()) != 3:
         print("Something doesn't look right with that file.")
         return
@@ -48,20 +52,50 @@ def bump(cogname: str, update_level: str) -> None:
     old = ".".join([str(i) for i in old_ver])
     new = ".".join([str(i) for i in new_ver])
 
-    print(f"Old version: {old}\nNew version: {new}")
-
     new_data = file_data.replace(old, new)
 
     with open(to_open, "w") as fp:
         fp.write(new_data)
 
+    return new
+
+
+def changelog(cogname: str, new_ver: str):
+    stars = "*" * (len(new_ver) + 4)  # backticks
+    date = datetime.datetime.utcnow().strftime("%Y-%m-%d")
+    extra_changelog = f"{stars}\n``{new_ver}``\n{stars}\n\n{date}\n\n"
+    print(
+        "It's now time to write the changelog. Input each bullet point separately. Say 'done' to finish."
+    )
+    while True:
+        new_bullet = input("- ")
+        if new_bullet.lower() == "done":
+            break
+        extra_changelog += f"- {new_bullet}\n"
+
+    to_open = Path(__file__).parent / "docs" / "changelog.rst"
+
+    with open(to_open, "r") as fp:
+        file_data = fp.read()
+
+    match = re.sub(
+        DOCS_REGEX.format(cogname), r"\1" + extra_changelog + r"\n", file_data, flags=re.I
+    )
+
+    with open(to_open, "w") as fp:
+        fp.write(match)
+
+    print("Changelog updated.")
+
 
 args = sys.argv
-print(args)
 if len(args) != 3 or args[1] not in COGS or args[2] not in UPDATE_LEVELS:
     print(
         "You must use the format bump <cog> <level>\n<cog> is not dynamic\n"
         "<level> must be patch, minor or major."
     )
 else:
-    bump(args[1], args[2])
+    new = bump(args[1], args[2])
+    if new:
+        changelog(args[1], new)
+        print(f"New version: {new}")
