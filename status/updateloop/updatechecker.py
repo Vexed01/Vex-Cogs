@@ -4,7 +4,7 @@ from time import monotonic
 from typing import Dict, List
 
 import aiohttp
-from aiohttp.client_exceptions import ClientError, ClientOSError
+from aiohttp.client_exceptions import ClientOSError
 from vexcogutils.loop import VexLoop
 
 from status.core import FEEDS, SERVICE_LITERAL, TYPES_LITERAL
