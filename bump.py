@@ -65,7 +65,8 @@ def changelog(cogname: str, new_ver: str):
     date = datetime.datetime.utcnow().strftime("%Y-%m-%d")
     extra_changelog = f"{stars}\n``{new_ver}``\n{stars}\n\n{date}\n\n"
     print(
-        "It's now time to write the changelog. Input each bullet point separately. Say 'done' to finish."
+        "It's now time to write the changelog. Input each bullet point separately. Say 'done' to "
+        "finish."
     )
     while True:
         new_bullet = input("- ")
