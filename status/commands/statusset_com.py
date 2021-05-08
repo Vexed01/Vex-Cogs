@@ -204,11 +204,7 @@ class StatusSetCom(MixinMeta):
 
         If you don't specify a channel, I will use the current channel.
         """
-        if TYPE_CHECKING:
-            channel = GuildChannel()
-        else:
-            channel = chan or ctx.channel
-
+        channel = GuildChannel() if TYPE_CHECKING else chan or ctx.channel
         async with self.config.channel(channel).feeds() as feeds:
             if not feeds.pop(service.name, None):
                 return await ctx.send(
@@ -242,11 +238,7 @@ class StatusSetCom(MixinMeta):
         # i basically copied and pasted in rewrite
         # maybe stick the two sections in .utils
 
-        if TYPE_CHECKING:
-            guild = Guild()
-        else:
-            guild = ctx.guild
-
+        guild = Guild() if TYPE_CHECKING else ctx.guild
         unused_feeds = list(FEEDS.keys())
 
         if service:
@@ -259,10 +251,7 @@ class StatusSetCom(MixinMeta):
                         continue
                     mode = settings["mode"]
                     webhook = settings["webhook"]
-                    if channel.id in restrictions.get(service, []):
-                        restrict = True
-                    else:
-                        restrict = False
+                    restrict = channel.id in restrictions.get(service, [])
                     data.append([f"#{channel.name}", mode, webhook, restrict])
 
             table = box(
@@ -415,11 +404,7 @@ class StatusSetCom(MixinMeta):
 
         If you don't specify a channel, I will use the current channel.
         """
-        if TYPE_CHECKING:
-            channel = GuildChannel()
-        else:
-            channel = chan or ctx.channel
-
+        channel = GuildChannel() if TYPE_CHECKING else chan or ctx.channel
         old_conf = await self.config.channel(channel).feeds()
         if service.name not in old_conf.keys():
             return await ctx.send(
@@ -507,11 +492,7 @@ class StatusSetCom(MixinMeta):
         (if there's an incident) members will instead be redirected to channels
         that automatically receive the status updates, that they have permission to to view.
         """
-        if TYPE_CHECKING:
-            channel = GuildChannel()
-        else:
-            channel = chan or ctx.channel
-
+        channel = GuildChannel() if TYPE_CHECKING else chan or ctx.channel
         feed_settings = await self.config.channel(channel).feeds()
         if service.name not in feed_settings.keys():
             return await ctx.send(
