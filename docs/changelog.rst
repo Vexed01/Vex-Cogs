@@ -321,6 +321,14 @@ System
 ======
 
 *********
+``1.1.2``
+*********
+
+2021-05-08
+
+- Dynamic help showing if commands are avablible on your system
+
+*********
 ``1.1.1``
 *********
 

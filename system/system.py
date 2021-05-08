@@ -6,6 +6,7 @@ from redbot.core import checks, commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info
 
+from .command import DynamicHelp
 from .utils import box, get_cpu, get_disk, get_mem, get_proc, get_sensors, get_uptime, get_users
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
@@ -22,7 +23,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -50,7 +51,7 @@ class System(commands.Cog):
         See the help for individual commands for detailed limitations.
         """
 
-    @system.command(name="cpu")
+    @system.command(name="cpu", cls=DynamicHelp, supported_sys=True)  # all systems
     async def system_cpu(self, ctx: commands.Context):
         """
         Get metrics about the CPU.
@@ -87,7 +88,9 @@ class System(commands.Cog):
                 msg += box(to_box)
                 await ctx.send(msg)
 
-    @system.command(name="mem", aliases=["memory", "ram"])
+    @system.command(
+        name="mem", aliases=["memory", "ram"], cls=DynamicHelp, supported_sys=True
+    )  # all systems
     async def system_mem(self, ctx: commands.Context):
         """
         Get infomation about memory usage.
@@ -113,7 +116,12 @@ class System(commands.Cog):
             msg += box(to_box)
             await ctx.send(msg)
 
-    @system.command(name="sensors", aliases=["temp", "temperature", "fan", "fans"])
+    @system.command(
+        name="sensors",
+        aliases=["temp", "temperature", "fan", "fans"],
+        cls=DynamicHelp,
+        supported_sys=psutil.LINUX,
+    )
     async def system_sensors(self, ctx: commands.Context, fahrenheit: bool = False):
         """
         Get sensor metrics.
@@ -143,7 +151,7 @@ class System(commands.Cog):
             msg += box(to_box)
             await ctx.send(msg)
 
-    @system.command(name="users")
+    @system.command(name="users", cls=DynamicHelp, supported_sys=True)  # all systems
     async def system_users(self, ctx: commands.Context):
         """
         Get information about logged in users.
@@ -170,7 +178,9 @@ class System(commands.Cog):
             msg += box(to_box)
             await ctx.send(msg)
 
-    @system.command(name="disk", aliases=["df"])
+    @system.command(
+        name="disk", aliases=["df"], cls=DynamicHelp, supported_sys=True
+    )  # all systems
     async def system_disk(self, ctx: commands.Context):
         """
         Get infomation about disks connected to the system.
@@ -198,7 +208,9 @@ class System(commands.Cog):
             msg += box(to_box)
             await ctx.send(msg)
 
-    @system.command(name="processes", aliases=["proc"])
+    @system.command(
+        name="processes", aliases=["proc"], cls=DynamicHelp, supported_sys=True
+    )  # all systems
     async def system_processes(self, ctx: commands.Context):
         """
         Get an overview of the status of currently running processes.
@@ -220,7 +232,9 @@ class System(commands.Cog):
             msg += box(f"CPU\n{proc}\n")
             await ctx.send(msg)
 
-    @system.command(name="uptime", aliases=["up"])
+    @system.command(
+        name="uptime", aliases=["up"], cls=DynamicHelp, supported_sys=True
+    )  # all systems
     async def system_uptime(self, ctx: commands.Context):
         """
         Get the system boot time and how long ago it was.
@@ -239,7 +253,9 @@ class System(commands.Cog):
             msg += box(f"Uptime\n{uptime}\n")
             await ctx.send(msg)
 
-    @system.command(name="top", aliases=["overview", "all"])
+    @system.command(
+        name="top", aliases=["overview", "all"], cls=DynamicHelp, supported_sys=True
+    )  # all systems
     async def system_all(self, ctx: commands.Context):
         """
         Get an overview of the current system metrics, similar to `top`.
