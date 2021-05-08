@@ -66,8 +66,6 @@ class Aliases(commands.Cog):
         alias_conf: Config = alias_cog.config  # type:ignore
         all_global_aliases: List[dict] = await alias_conf.entries()
 
-        global_aliases = []
-        guild_aliases = []
         if ctx.guild:
             all_guild_aliases: List[dict] = await alias_conf.guild(ctx.guild).entries()
         else:
@@ -89,12 +87,17 @@ class Aliases(commands.Cog):
         builtin_aliases = command.aliases
         com_parent = command.parent or ""
 
-        for alias in all_guild_aliases:
-            if strcommand in [alias["command"], alias["name"]]:
-                guild_aliases.append(alias["name"])
-        for alias in all_global_aliases:
-            if strcommand in [alias["command"], alias["name"]]:
-                global_aliases.append(alias["name"])
+        guild_aliases = [
+            alias["name"]
+            for alias in all_guild_aliases
+            if strcommand in [alias["command"], alias["name"]]
+        ]
+
+        global_aliases = [
+            alias["name"]
+            for alias in all_global_aliases
+            if strcommand in [alias["command"], alias["name"]]
+        ]
 
         # and probs picked up duplicates on second run so:
         guild_aliases = deduplicate_iterables(guild_aliases)

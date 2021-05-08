@@ -53,10 +53,7 @@ class CmdLog(commands.Cog):
         self.log_cache.append(logged_com)
 
     def cache_size(self) -> int:
-        size = 0
-        for i in self.log_cache:
-            size += sys.getsizeof(i)
-        return size
+        return sum(sys.getsizeof(i) for i in self.log_cache)
 
     @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):
