@@ -171,6 +171,14 @@ Status
 ======
 
 *********
+``2.3.2``
+*********
+
+2021-05-08
+
+- Dynamic help for avalible services in all commands that previously had them listed
+
+*********
 ``2.3.0``
 *********
 

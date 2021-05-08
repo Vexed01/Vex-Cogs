@@ -13,6 +13,7 @@ from redbot.core.utils.predicates import MessagePredicate
 from tabulate import tabulate
 from vexcogutils import inline_hum_list
 
+from status.commands.command import DynamicHelp, DynamicHelpGroup
 from status.commands.converters import ModeConverter, ServiceConverter
 from status.core import FEEDS, SPECIAL_INFO
 from status.core.abc import MixinMeta
@@ -27,21 +28,16 @@ from status.updateloop import SendUpdate, process_json
 class StatusSetCom(MixinMeta):
     @commands.guild_only()
     @checks.admin_or_permissions(manage_guild=True)
-    @commands.group()
+    @commands.group(cls=DynamicHelpGroup)
     async def statusset(self, ctx: commands.Context):
         """
         Get automatic status updates in a channel, eg Discord.
 
         Get started with `[p]statusset preview` to see what they look like,
         then `[p]statusset add` to set up automatic updates.
-
-        **Available services:**
-        discord, github, zoom, reddit, epic_games, cloudflare, statuspage,
-        python, twitter_api, oracle_cloud, twitter, digitalocean, sentry,
-        geforcenow
         """
 
-    @statusset.command(name="add", usage="<service> [channel]")
+    @statusset.command(name="add", usage="<service> [channel]", cls=DynamicHelp)
     async def statusset_add(
         self,
         ctx: commands.Context,

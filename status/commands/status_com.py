@@ -7,6 +7,7 @@ from discord.channel import TextChannel
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta
 
+from status.commands.command import DynamicHelp
 from status.commands.converters import ServiceConverter
 from status.core.abc import MixinMeta
 from status.objects import IncidentData, SendCache, Update
@@ -46,16 +47,10 @@ class StatusCom(MixinMeta):
     # TODO: support DMs
     @commands.guild_only()
     @commands.cooldown(10, 120, commands.BucketType.user)
-    @commands.command()
+    @commands.command(cls=DynamicHelp)
     async def status(self, ctx: commands.Context, service: ServiceConverter):
         """
         Check for the status of a variety of services, eg Discord.
-
-        **Available Services:**
-
-        discord, github, zoom, reddit, epic_games, cloudflare, statuspage,
-        python, twitter_api, oracle_cloud, twitter, digitalocean, sentry,
-        geforcenow
         """
         if time_until := self.service_cooldown.handle(ctx.author.id, service.name):
             message = "Status updates for {} are on cooldown. Try again in {}.".format(
