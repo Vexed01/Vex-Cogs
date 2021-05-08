@@ -171,7 +171,10 @@ class StatusDevCom(MixinMeta):
     @statusdev.command(aliases=["cgr"], hidden=True)
     async def checkguildrestrictions(self, ctx: commands.Context):
         """Check guild restrictins for current guild"""
-        guild = Guild() if TYPE_CHECKING else ctx.guild
+        if TYPE_CHECKING:
+            guild = Guild()
+        else:
+            guild = ctx.guild
         await ctx.send(box(str(self.service_restrictions_cache.get_guild(guild.id))))
 
     @commands.before_invoke(unsupported)
