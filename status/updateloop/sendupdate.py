@@ -19,7 +19,7 @@ from status.objects import (
 
 from .utils import get_channel_data, get_webhook
 
-_log = logging.getLogger("red.vexed.status.sendupdate")
+_log = logging.getLogger("red.vex.status.sendupdate")
 
 
 class SendUpdate:

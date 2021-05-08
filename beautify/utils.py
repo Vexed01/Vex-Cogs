@@ -16,7 +16,7 @@ try:
 except ImportError:
     use_pyjson = False
 
-log = logging.getLogger("red.vexed.beautify")
+_log = logging.getLogger("red.vex.beautify")
 
 
 def cleanup_json(json: str) -> str:
@@ -97,7 +97,7 @@ def decode_json(str_json: str) -> DecodeReturn:
             if isinstance(json_pyjson, dict):
                 return DecodeReturn(json_pyjson, changed_input)
         except Exception:  # cant just catch pyjson5 as might not be imported... sad
-            log.debug(
+            _log.debug(
                 "Exception caught. If the bellow information doesn't mention 'pyjson5' please "
                 "report this to Vexed.",
                 exc_info=True,

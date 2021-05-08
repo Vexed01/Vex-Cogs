@@ -14,7 +14,7 @@ from status.objects import IncidentData, SendCache, Update
 from .processfeed import process_json
 from .sendupdate import SendUpdate
 
-_log = logging.getLogger("red.vexed.status.updatechecker")
+_log = logging.getLogger("red.vex.status.updatechecker")
 
 
 class StatusLoop(MixinMeta):

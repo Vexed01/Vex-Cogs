@@ -8,7 +8,7 @@ from vexcogutils.loop import VexLoop
 from .abc import MixinMeta
 from .consts import INF
 
-_log = logging.getLogger("red.vexed.betteruptime.loop")
+_log = logging.getLogger("red.vex.betteruptime.loop")
 
 
 class BULoop(MixinMeta):

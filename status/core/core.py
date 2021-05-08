@@ -22,7 +22,7 @@ from status.objects import (
 )
 from status.updateloop import SendUpdate, StatusLoop
 
-_log = logging.getLogger("red.vexed.status.core")
+_log = logging.getLogger("red.vex.status.core")
 
 
 class Status(

@@ -10,7 +10,7 @@ from vexcogutils.loop import VexLoop
 
 from .abc import MixinMeta
 
-log = logging.getLogger("red.vexed.timechannel.loop")
+_log = logging.getLogger("red.vex.timechannel.loop")
 
 
 class TCLoop(MixinMeta):
@@ -24,12 +24,12 @@ class TCLoop(MixinMeta):
         next_hour = now.replace(minute=0, second=1, microsecond=0) + delta
         seconds_to_sleep = (next_hour - now).total_seconds()
 
-        log.debug(f"Sleeping for {seconds_to_sleep} seconds until next hour...")
+        _log.debug(f"Sleeping for {seconds_to_sleep} seconds until next hour...")
         await asyncio.sleep(seconds_to_sleep)
 
     async def timechannel_loop(self) -> None:
         await self.bot.wait_until_red_ready()
-        log.debug("Timechannel loop has started.")
+        _log.debug("Timechannel loop has started.")
         while True:
             try:
                 self.loop_meta.iter_start()
@@ -37,7 +37,7 @@ class TCLoop(MixinMeta):
                 self.loop_meta.iter_finish()
             except Exception as e:
                 self.loop_meta.iter_error(e)
-                log.exception(
+                _log.exception(
                     "Something went wrong in the timechannel loop. Some channels may have been "
                     "missed. The loop will run again at the next hour."
                 )
@@ -47,13 +47,13 @@ class TCLoop(MixinMeta):
     async def maybe_update_channels(self) -> None:
         all_guilds: Dict[int, Dict[str, Dict[int, str]]] = await self.config.all_guilds()
         if not all_guilds:
-            log.debug("No time channels registered, nothing to do...")
+            _log.debug("No time channels registered, nothing to do...")
             return
 
         for guild_id, guild_data in all_guilds.items():
             guild = self.bot.get_guild(guild_id)
             if guild is None:
-                log.debug(f"Can't find guild with ID {guild_id} - removing from config")
+                _log.debug(f"Can't find guild with ID {guild_id} - removing from config")
                 await self.config.guild_from_id(guild_id).clear()
                 continue
 
@@ -62,10 +62,10 @@ class TCLoop(MixinMeta):
                 assert not isinstance(channel, DMChannel) and not isinstance(channel, GroupChannel)
                 if channel is None:
                     # yes log *could* be inaccurate but a timezone being removed is unlikely
-                    log.debug(f"Can't find channel with ID {c_id} - skipping")
+                    _log.debug(f"Can't find channel with ID {c_id} - skipping")
                     continue
                 if target_timezone not in pytz.common_timezones:
-                    log.debug(f"Timezone {target_timezone} is not recognised.")
+                    _log.debug(f"Timezone {target_timezone} is not recognised.")
                     # hard to remove from config as config is guild based, guild based so can
                     # easily iterate through timechannels in guild for timezones command.
                     continue
@@ -85,7 +85,7 @@ class TCLoop(MixinMeta):
                         name=new_name,
                         reason="Edited for timechannel - disable with `tcset remove`",
                     )
-                    log.debug(f"Edited channel {c_id} to {new_name}")
+                    _log.debug(f"Edited channel {c_id} to {new_name}")
                 except HTTPException:
-                    log.debug(f"Unable to edit channel ID {c_id} - removing from config")
+                    _log.debug(f"Unable to edit channel ID {c_id} - removing from config")
                     continue

@@ -9,7 +9,7 @@ from status.core import FEEDS, LINK_RE, SERVICE_LITERAL
 
 from .incidentdata import Update
 
-_log = logging.getLogger("red.vexed.status.sendupdate")
+_log = logging.getLogger("red.vex.status.sendupdate")
 
 
 # TODO: implement separation for normal embeds and webhook embeds here

@@ -14,7 +14,7 @@ from .abc import CompositeMetaClass
 from .converters import TimezoneConverter
 from .loop import TCLoop
 
-log = logging.getLogger("red.vexed.timechannel")
+_log = logging.getLogger("red.vex.timechannel")
 
 
 class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
@@ -51,7 +51,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
 
     def cog_unload(self) -> None:
         self.loop.cancel()
-        log.debug("Loop stopped as cog unloaded.")
+        _log.debug("Loop stopped as cog unloaded.")
 
     @commands.command(hidden=True, aliases=["tcinfo"])
     async def timechannelinfo(self, ctx: commands.Context):

@@ -10,7 +10,7 @@ from redbot.core.utils.chat_formatting import humanize_list, pagify
 from status.core import TYPES_LITERAL
 from status.objects import IncidentData, UpdateField
 
-_log = logging.getLogger("red.vexed.status.processfeed")
+_log = logging.getLogger("red.vex.status.processfeed")
 
 
 def _handle_long_fields(

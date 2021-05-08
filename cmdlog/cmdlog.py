@@ -16,7 +16,7 @@ from vexcogutils.chat import humanize_bytes
 
 from cmdlog.objects import TIME_FORMAT, LoggedCheckFailure, LoggedCommand
 
-log = logging.getLogger("red.vexed.cmdlog")
+_log = logging.getLogger("red.vex.cmdlog")
 
 
 class CmdLog(commands.Cog):
@@ -24,7 +24,7 @@ class CmdLog(commands.Cog):
     Log command usage in a form searchable by user ID, server ID or command name.
 
     The cog keeps an internal cache and everything is also logged to the bot's main logs under
-    `red.vexed.cmdlog`, level INFO.
+    `red.vex.cmdlog`, level INFO.
     """
 
     __author__ = "Vexed#3211"
@@ -44,12 +44,12 @@ class CmdLog(commands.Cog):
 
     def log_com(self, ctx: commands.Context) -> None:
         logged_com = LoggedCommand(ctx)
-        log.info(logged_com)
+        _log.info(logged_com)
         self.log_cache.append(logged_com)
 
     def log_cf(self, ctx: commands.Context) -> None:
         logged_com = LoggedCheckFailure(ctx)
-        log.info(logged_com)
+        _log.info(logged_com)
         self.log_cache.append(logged_com)
 
     def cache_size(self) -> int:
@@ -94,7 +94,7 @@ class CmdLog(commands.Cog):
     async def cache(self, ctx: commands.Context):
         """Show the size of the internal command cache."""
         cache_bytes = self.cache_size()
-        log.debug(f"Cache size is exactly {cache_bytes} bytes.")
+        _log.debug(f"Cache size is exactly {cache_bytes} bytes.")
         cache_size = humanize_bytes(cache_bytes)
         cache_count = humanize_number(len(self.log_cache))
         await ctx.send(f"\nCache size: {cache_size} with {cache_count} commands.")

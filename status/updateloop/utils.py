@@ -5,7 +5,7 @@ from redbot.core.bot import Red
 
 from status.objects import ChannelData, CogDisabled, ConfChannelSettings, NoPermission, NotFound
 
-_log = logging.getLogger("red.vexed.status.sendupdate")
+_log = logging.getLogger("red.vex.status.sendupdate")
 
 
 async def get_webhook(channel: TextChannel) -> Webhook:

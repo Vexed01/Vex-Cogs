@@ -14,7 +14,7 @@ from status.core.abc import MixinMeta
 from status.objects import SendCache, Update
 from status.updateloop import SendUpdate, process_json
 
-_log = logging.getLogger("red.vexed.status.dev")
+_log = logging.getLogger("red.vex.status.dev")
 
 
 class StatusDevCom(MixinMeta):

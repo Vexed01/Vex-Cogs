@@ -17,7 +17,7 @@ from .loop import BULoop
 
 old_ping = None
 
-_log = logging.getLogger("red.vexed.betteruptime")
+_log = logging.getLogger("red.vex.betteruptime")
 
 
 class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
