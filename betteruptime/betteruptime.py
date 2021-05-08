@@ -220,7 +220,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         content: Union[None, str]
         if seconds_since_first_load < 60 * 15:  # 15 mins
             content = "Data tracking only started in the last few minutes. Data may be inaccurate."
-        elif len(dates_to_look_for) - 1 == 0:
+        elif len(dates_to_look_for) == 1:
             content = None
             embed.set_footer(text="Data is only for today.")
         else:

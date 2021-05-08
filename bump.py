@@ -48,8 +48,8 @@ def bump(cogname: str, update_level: str):
         print("hey you broke the code")
         return
 
-    old = ".".join([str(i) for i in old_ver])
-    new = ".".join([str(i) for i in new_ver])
+    old = ".".join(str(i) for i in old_ver)
+    new = ".".join(str(i) for i in new_ver)
 
     new_data = file_data.replace(old, new)
 
