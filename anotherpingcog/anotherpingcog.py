@@ -34,7 +34,7 @@ class AnotherPingCog(commands.Cog):
     You can customise the emojis, colours or force embeds with `[p]pingset`.
     """
 
-    __version__ = "1.1.3"
+    __version__ = "1.1.4"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -453,9 +453,10 @@ class AnotherPingCog(commands.Cog):
 
 
 def setup(bot: Red) -> None:
-    apc = AnotherPingCog(bot)
     global old_ping
     old_ping = bot.get_command("ping")
     if old_ping:
         bot.remove_command(old_ping.name)
+
+    apc = AnotherPingCog(bot)
     bot.add_cog(apc)

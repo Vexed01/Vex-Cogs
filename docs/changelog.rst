@@ -38,6 +38,14 @@ Aliases
 AnotherPingCog
 ==============
 
+*********
+``1.1.4``
+*********
+
+2021-05-09
+
+- Potentially fix super edge case behaviour with command not registering
+
 *No updates since changelogs started*
 
 ========
