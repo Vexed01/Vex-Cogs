@@ -29,7 +29,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
     data to become available.
     """
 
-    __version__ = "1.4.0"
+    __version__ = "1.4.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -131,7 +131,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
             return await ctx.send(description)
 
         while not self.connected_cache:
-            await asyncio.sleep(0.2)  # max wait it 2 if command triggerd straight after cog load
+            await asyncio.sleep(0.2)  # max wait is 2 if command triggerd straight after cog load
 
         embed = discord.Embed(description=description, colour=await ctx.embed_colour())
         now = datetime.datetime.utcnow()
@@ -159,12 +159,10 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
             normalize=True,
         ).tolist()
 
-        if len(dates_to_look_for) > num_days:
-            dates_to_look_for = dates_to_look_for[: (num_days - 1)]
-
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
         seconds_since_midnight = float((now - midnight).seconds)
         if len(dates_to_look_for) >= num_days:
+            dates_to_look_for = dates_to_look_for[: (num_days - 1)]
             seconds_data_collected = float(
                 (SECONDS_IN_DAY * (num_days - 1)) + seconds_since_midnight
             )
@@ -353,9 +351,10 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
 
 
 def setup(bot: Red) -> None:
-    apc = BetterUptime(bot)
     global old_ping
     old_ping = bot.get_command("uptime")
     if old_ping:
         bot.remove_command(old_ping.name)
-    bot.add_cog(apc)
+
+    bu = BetterUptime(bot)
+    bot.add_cog(bu)
