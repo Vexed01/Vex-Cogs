@@ -26,12 +26,11 @@ class LogMixin:
         self.user = IDFKWhatToNameThis(
             id=ctx.author.id, name=f"{ctx.author.name}#{ctx.author.discriminator}"
         )
-
+        self.msg_id = ctx.message.id
         self.channel: Optional[IDFKWhatToNameThis] = None
         self.guild: Optional[IDFKWhatToNameThis] = None
         if ctx.guild:
-            if isinstance(ctx.channel, DMChannel):
-                return
+            assert not isinstance(ctx.channel, DMChannel)
             self.channel = IDFKWhatToNameThis(id=ctx.channel.id, name=f"#{ctx.channel.name}")
             self.guild = IDFKWhatToNameThis(id=ctx.guild.id, name=ctx.guild.name)
 
@@ -46,6 +45,7 @@ class LogMixin:
 
         size += getsizeof(self.command)
         size += getsizeof(self.user)
+        size += getsizeof(self.msg_id)
         size += getsizeof(self.channel)
         size += getsizeof(self.guild)
         size += getsizeof(self.time)
@@ -62,13 +62,14 @@ class LoggedCommand(LogMixin):
 
         return (
             f"'{self.command}' ran by {self.user.id} ({self.user.name}) "
+            f"with message ID {self.msg_id} "
             f"in channel {self.channel.id} ({self.channel.name}) "
             f"in guild {self.guild.id} ({self.guild.name})"
         )
 
 
 class LoggedCheckFailure(LogMixin):
-    """Inherits from LogMixin, for a logged check faliure"""
+    """Inherits from LogMixin, for a logged check failure"""
 
     def __str__(self) -> str:
         if not self.guild or not self.channel:
@@ -76,6 +77,7 @@ class LoggedCheckFailure(LogMixin):
 
         return (
             f"'{self.command}' raised a check failure by {self.user.id} ({self.user.name}) "
+            f"with message ID {self.msg_id} "
             f"in channel {self.channel.id} ({self.channel.name}) "
             f"in guild {self.guild.id} ({self.guild.name})"
         )

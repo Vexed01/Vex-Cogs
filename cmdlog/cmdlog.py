@@ -28,7 +28,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.0.2"
+    __version__ = "1.1.0"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -58,9 +58,7 @@ class CmdLog(commands.Cog):
     @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):
         if ctx.guild:
-            # just for mypy:
-            if isinstance(ctx.channel, discord.DMChannel):
-                return
+            assert not isinstance(ctx.channel, discord.DMChannel)
             self.log_com(ctx)
         else:
             self.log_com(ctx)
@@ -73,7 +71,7 @@ class CmdLog(commands.Cog):
     @commands.command(hidden=True)
     async def cmdloginfo(self, ctx: commands.Context):
         main = format_info(self.qualified_name, self.__version__)
-        cache_size = humanize_bytes(self.cache_size())
+        cache_size = humanize_bytes(self.cache_size(), 1)
         cache_count = humanize_number(len(self.log_cache))
         extra = f"\nCache size: {cache_size} with {cache_count} commands."
         await ctx.send(main + extra)
@@ -92,7 +90,7 @@ class CmdLog(commands.Cog):
         """Show the size of the internal command cache."""
         cache_bytes = self.cache_size()
         _log.debug(f"Cache size is exactly {cache_bytes} bytes.")
-        cache_size = humanize_bytes(cache_bytes)
+        cache_size = humanize_bytes(cache_bytes, 1)
         cache_count = humanize_number(len(self.log_cache))
         await ctx.send(f"\nCache size: {cache_size} with {cache_count} commands.")
 
@@ -138,7 +136,7 @@ class CmdLog(commands.Cog):
             file=discord.File(logs_bytes, f"cmdlog_{server_id}.txt"),
         )
 
-    @cmdlog.command(aliases=["cmdlog"])
+    @cmdlog.command()
     async def command(self, ctx: commands.Context, *, command: str):
         """
         Upload all the logs that are stored for a specific command in the cache.

@@ -153,6 +153,15 @@ CmdLog
 ======
 
 *********
+``1.1.0``
+*********
+
+2021-05-10
+
+- Log command invoke message IDs
+- Round cache size to 1 decimal place
+
+*********
 ``1.0.2``
 *********
 
