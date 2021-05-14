@@ -9,6 +9,7 @@ import discord
 import pandas
 from redbot.core import Config, commands
 from redbot.core.bot import Red
+from redbot.core.utils import AsyncIter
 from vexcogutils import format_help, format_info
 from vexcogutils.loop import VexLoop
 
