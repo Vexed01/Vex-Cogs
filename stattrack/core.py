@@ -7,19 +7,13 @@ from typing import Dict, Set
 
 import discord
 import pandas
-from discord import activity
-from discord.enums import ActivityType
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils import AsyncIter, deduplicate_iterables
-from redbot.core.utils.chat_formatting import box
 from vexcogutils import format_help, format_info
 from vexcogutils.loop import VexLoop
 
 from stattrack.abc import CompositeMetaClass
 from stattrack.commands import StatTrackCommands
-
-from .plot import plot
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 

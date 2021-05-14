@@ -43,8 +43,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -61,8 +61,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -79,8 +79,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -97,8 +97,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -119,8 +119,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -137,8 +137,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -155,8 +155,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -173,8 +173,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -197,8 +197,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -218,8 +218,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -239,8 +239,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -260,8 +260,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -282,8 +282,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -300,8 +300,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -318,8 +318,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -336,8 +336,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
@@ -354,8 +354,8 @@ class StatTrackCommands(MixinMeta):
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be at least
-        1 hour.
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
 
         **Examples:**
 
