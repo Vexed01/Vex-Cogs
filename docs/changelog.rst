@@ -196,6 +196,14 @@ Status
 ======
 
 *********
+``2.3.3``
+*********
+
+2021-05-16
+
+- Change the colour for ``investigating`` to orange (from red)
+
+*********
 ``2.3.2``
 *********
 
