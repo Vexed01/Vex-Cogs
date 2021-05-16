@@ -9,6 +9,7 @@
         "github": "1.0.0",
         "status": "2.3.2",
         "system": "1.2.1",
-        "timechannel": "1.1.0"
+        "timechannel": "1.1.0",
+        "workflowtest": "7.0.0"
     }
 }
