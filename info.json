@@ -1,7 +1,0 @@
-{
-    "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog_repo.schema.json",
-    "author": ["Vexed (Vexed#3211)"],
-    "install_msg" : "Thanks for installing this! These cogs are typically utility stuff that I wanted myself that might be useful to others.\nIf you find anything that's wrong, feel free to make a GH issue or find me in the main Red server or in the cog support server https://discord.gg/GET4DVk - I'm Vexed#3211.\n\nAll these cogs have detailed documentation! Check them out at <https://vex-cogs.rtfd.io/?utm_source=cog&utm_medium=install_msg&utm_campaign=repo_level>",
-    "description": "These cogs are stuff typically utility stuff that I wanted myself that might be useful to others.\nIt's mainly cogs for bot or server owners.\n\nIf you find anything that's wrong, feel free to make a GH issue or find me in the main Red server or the cog support server (https://discord.gg/GET4DVk). I'm Vexed#3211",
-    "short": "Mainly utility cogs."
-}

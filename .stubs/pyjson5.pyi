@@ -1,3 +1,0 @@
-from typing import Optional
-
-def decode(data: str, maxdepth: Optional[int] = ..., some: bool = ...) -> object: ...
