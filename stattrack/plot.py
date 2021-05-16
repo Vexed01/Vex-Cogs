@@ -41,8 +41,7 @@ def _plot(
     # plotting and saving takes ~0.5 to 1 second for me
     now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
     start = now - delta
-    if start < sr.first_valid_index():
-        start = sr.first_valid_index()
+    start = max(start, sr.first_valid_index())
     expected_index = pandas.date_range(start=start, end=now, freq="min")
     ret = sr.reindex(expected_index)  # ensure all data is present or set to NaN
     assert isinstance(ret, pandas.Series)
