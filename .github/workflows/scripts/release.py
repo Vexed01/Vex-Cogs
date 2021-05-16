@@ -1,5 +1,6 @@
-import re
 import json
+import re
+
 from git import Repo
 
 # hello person looking at my code
