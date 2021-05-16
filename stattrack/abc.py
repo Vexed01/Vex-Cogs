@@ -24,6 +24,7 @@ class MixinMeta(ABC):
 
     loop_meta: Optional[VexLoop]
     loop: Optional[asyncio.Task]
+    last_loop_time: Optional[float]
 
     df_cache: Optional[pandas.DataFrame]
 

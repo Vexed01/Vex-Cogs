@@ -4,42 +4,72 @@ import functools
 import io
 
 import discord
+import matplotlib
 import pandas
 
-from stattrack.converters import TimeData
+matplotlib.use("agg")
+
+from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.dates import DateFormatter
+from matplotlib.ticker import MaxNLocator
 
 
-async def plot(df: pandas.DataFrame, timespan: TimeData, title: str, ylabel: str) -> discord.File:
+async def plot(
+    sr: pandas.Series, delta: datetime.timedelta, title: str, ylabel: str
+) -> discord.File:
     """Plot the standard dataframe to the specified parameters. Returns a file ready for Discord"""
     return await asyncio.get_event_loop().run_in_executor(
         None,
         functools.partial(
             _plot,
-            df=df,
-            delta=timespan.delta,
+            sr=sr,
+            delta=delta,
             title=title,
             ylabel=ylabel,
-            freq=timespan.freq,
         ),
     )
 
 
 def _plot(
-    df: pandas.DataFrame, delta: datetime.timedelta, title: str, ylabel: str, freq: str
+    sr: pandas.Series,
+    delta: datetime.timedelta,
+    title: str,
+    ylabel: str,
 ) -> discord.File:
     """Do not use on own - blocking."""
     # plotting and saving takes ~0.5 to 1 second for me
     now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
     start = now - delta
-    if start < df.first_valid_index():
-        start = df.first_valid_index()
-    expected_index = pandas.date_range(start=start, end=now, freq=freq)
-    df = df.reindex(expected_index)
+    if start < sr.first_valid_index():
+        start = sr.first_valid_index()
+    expected_index = pandas.date_range(start=start, end=now, freq="min")
+    ret = sr.reindex(expected_index)  # ensure all data is present or set to NaN
+    assert isinstance(ret, pandas.Series)
+    sr = ret
 
+    fig = plt.figure(figsize=(7, 5))
+    ax = fig.add_subplot(111)
+    assert isinstance(ax, Axes)
+    ax.set_title(title)
+    ax.set_xlabel("Time (UTC)")
+    ax.set_ylabel(ylabel)
+    ax.xaxis.set_major_formatter(_get_date_formatter(delta))
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.margins(y=0.05)
+    with plt.style.context("dark_background"):
+        ax.plot(sr.index, sr)
+    ax.ticklabel_format(axis="y", style="plain")
     buffer = io.BytesIO()
-    plot = df.plot(figsize=(7, 4), title=title, xlabel="Time (UTC)", ylabel=ylabel)
-    plot.set_ylim(bottom=0)
-
-    plot.get_figure().savefig(buffer, format="png", dpi=200)
+    fig.savefig(buffer, format="png", dpi=200)
+    plt.close(fig)
     buffer.seek(0)
     return discord.File(buffer, "plot.png")
+
+
+def _get_date_formatter(delta: datetime.timedelta) -> DateFormatter:
+    if delta.seconds <= 86400:  # 1 day
+        return DateFormatter("%H:%M")
+    elif delta.days <= 7:
+        return DateFormatter("%d %I%p")
+    return DateFormatter("%d %b")

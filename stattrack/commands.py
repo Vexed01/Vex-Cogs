@@ -5,24 +5,29 @@ from redbot.core import commands
 from redbot.core.utils.chat_formatting import box
 
 from stattrack.abc import MixinMeta
-from stattrack.converters import TimeData, TimespanConverter
+from stattrack.converters import TimespanConverter
 
 from .plot import plot
 
-DEFAULT_TD = TimeData("1min", "1 minute", datetime.timedelta(days=1))
+DEFAULT_DELTA = datetime.timedelta(days=1)
 
 
 class StatTrackCommands(MixinMeta):
     async def all_in_one(
-        self, ctx: commands.Context, timedata: TimeData, label: str, title: str, ylabel: str = None
+        self,
+        ctx: commands.Context,
+        delta: datetime.timedelta,
+        label: str,
+        title: str,
+        ylabel: str = None,
     ):
         if self.df_cache is None:
             return await ctx.send("This command isn't ready yet. Try again in a few seconds.")
         await ctx.trigger_typing()  # wont be that long
         if ylabel is None:
             ylabel = title
-        df = self.df_cache[[label]]
-        file = await plot(df, timedata, title, ylabel)
+        sr = self.df_cache[label]
+        file = await plot(sr, delta, title, ylabel)
         await ctx.send(file=file)
 
     @commands.cooldown(10, 60.0, BucketType.user)
@@ -32,10 +37,10 @@ class StatTrackCommands(MixinMeta):
 
     @stattrack.command()
     async def raw(self, ctx, var):
-        await ctx.send(box(str(self.df_cache[[var]].head())))
+        await ctx.send(box(str(self.df_cache[var])))
 
     @stattrack.command()
-    async def ping(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def ping(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get my ping stats.
 
@@ -52,10 +57,10 @@ class StatTrackCommands(MixinMeta):
         `[p]stattrack ping 5d`
         `[p]stattrack ping all`
         """
-        await self.all_in_one(ctx, timespan, "ping", "Commands per minute")
+        await self.all_in_one(ctx, timespan, "ping", "Ping", "Ping (ms)")
 
     @stattrack.command(name="commands")
-    async def com(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def com(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get command usage stats.
 
@@ -70,10 +75,15 @@ class StatTrackCommands(MixinMeta):
         `[p]stattrack commands 5d`
         `[p]stattrack commands all`
         """
-        await self.all_in_one(ctx, timespan, "command_count", "Commands per minute")
+        await self.all_in_one(
+            ctx,
+            timespan,
+            "command_count",
+            "Commands per minute",
+        )
 
     @stattrack.command()
-    async def messages(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def messages(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get message stats.
 
@@ -91,7 +101,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "message_count", "Messages per minute")
 
     @stattrack.command(aliases=["guilds"])
-    async def servers(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def servers(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get server stats.
 
@@ -113,7 +123,7 @@ class StatTrackCommands(MixinMeta):
         """See stats about user's statuses."""
 
     @group_status.command()
-    async def online(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def online(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get online stats.
 
@@ -131,7 +141,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "status_online", "Users online")
 
     @group_status.command()
-    async def idle(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def idle(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get idle stats.
 
@@ -149,7 +159,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "status_online", "Users idle")
 
     @group_status.command()
-    async def offline(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def offline(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get offline stats.
 
@@ -167,7 +177,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "status_offline", "Users offline")
 
     @group_status.command()
-    async def dnd(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def dnd(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get dnd stats.
 
@@ -189,7 +199,9 @@ class StatTrackCommands(MixinMeta):
         """See stats about user counts"""
 
     @users_group.command(name="total")
-    async def users_total(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def users_total(
+        self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA
+    ):
         """
         Get total user stats.
 
@@ -209,7 +221,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "users_total", "Total users")
 
     @users_group.command()
-    async def unique(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def unique(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get total user stats.
 
@@ -230,7 +242,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "users_unique", "Unique users")
 
     @users_group.command()
-    async def humans(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def humans(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get human user stats.
 
@@ -251,7 +263,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "users_humans", "Humans")
 
     @users_group.command()
-    async def bots(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def bots(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get bot user stats.
 
@@ -276,7 +288,7 @@ class StatTrackCommands(MixinMeta):
         """See how many channels there are in all my guilds"""
 
     @channels_group.command(name="total")
-    async def chan_total(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def chan_total(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get total channel stats.
 
@@ -294,7 +306,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "channels_total", "Total channels")
 
     @channels_group.command()
-    async def text(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def text(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get text channel stats.
 
@@ -312,7 +324,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "channels_text", "Text channels")
 
     @channels_group.command()
-    async def voice(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def voice(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get voice channel stats.
 
@@ -330,7 +342,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "channels_voice", "Voice channels")
 
     @channels_group.command()
-    async def categories(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def categories(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get categories stats.
 
@@ -348,7 +360,7 @@ class StatTrackCommands(MixinMeta):
         await self.all_in_one(ctx, timespan, "channels_cat", "Categories")
 
     @channels_group.command()
-    async def stage(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_TD):
+    async def stage(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
         Get stage channel stats.
 

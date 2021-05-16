@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import logging
 import time
-import warnings
 from typing import Dict, Set
 
 import discord
@@ -15,8 +14,6 @@ from vexcogutils.loop import VexLoop
 
 from stattrack.abc import CompositeMetaClass
 from stattrack.commands import StatTrackCommands
-
-warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 _log = logging.getLogger("red.vexed.stattrack")
 
@@ -37,6 +34,7 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
         self.df_cache = None
         self.loop = None
         self.loop_meta = None
+        self.last_loop_time = None
 
         self.cmd_count = 0
         self.msg_count = 0
@@ -73,7 +71,19 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
 
     @commands.command(hidden=True)
     async def stattrackinfo(self, ctx: commands.Context):
-        await ctx.send(format_info(self.qualified_name, self.__version__))
+        pre = format_info(
+            self.qualified_name,
+            self.__version__,
+            loops=[self.loop_meta] if self.loop_meta else [],
+        )
+        pre += f"\n\nLast loop time: `{self.last_loop_time}` seconds"
+        await ctx.send(pre)
+
+    @commands.command(hidden=True)
+    async def stattrackloop(self, ctx: commands.Context):
+        if not self.loop_meta:
+            return await ctx.send("Loop not running yet")
+        await ctx.send(embed=self.loop_meta.get_debug_embed())
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -110,7 +120,10 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
         start = time.monotonic()
         data = {}
         try:
-            data["ping"] = round(self.bot.latency * 1000)
+            latency = round(self.bot.latency * 1000)
+            if latency > 1000:  # somethings up... lets not track stats
+                return
+            df["ping"] = latency
         except OverflowError:  # ping is INF so not connected, no point in updating
             return
         data["users_unique"] = len(self.bot.users)
@@ -160,8 +173,7 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
 
         end = time.monotonic()
 
-        _log.debug(f"Loop finished in {round(end - start, 1)} seconds")
+        looptime = round(end - start, 1)
 
-    # @commands.command()
-    # async def stattrack(self, ctx: commands.Context, var):
-    #     await ctx.send(box(str(self.df_cache[[var]].head())))
+        _log.debug(f"Loop finished in {looptime} seconds")
+        self.last_loop_time = looptime
