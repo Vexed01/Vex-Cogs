@@ -1,5 +1,3 @@
-# Vex-Cogs GitHub pages
+# ``gh-pages`` branch
 
-This hosts a simple API with the latest version of my cogs and Vex-Cog-Utils, available at `/api/v1/versions.json`.
-
-The documentation for my cogs is available at https://vex-cogs.readthedocs.io/
+This branch is intended to host an API for getting whether the cog's version is up to date for the `[p]<cogname>info` command.

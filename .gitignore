@@ -130,3 +130,10 @@ dmypy.json
 
 # VS Code
 .vscode/
+
+# jekyll
+_site
+.sass-cache
+.jekyll-cache
+.jekyll-metadata
+vendor
