@@ -1,5 +1,5 @@
 import re
-
+import json
 from git import Repo
 
 # hello person looking at my code
@@ -16,6 +16,8 @@ This is an automatically created tag based of the following commit:
 {commit}
 """
 
+VER_FILE_LOCATION = "api/v1/version.json"
+
 repo = Repo()  # repo in working dir
 
 regex = re.compile(r"\[(\w+) (\d+\.\d+\.\d+)\]")
@@ -27,11 +29,31 @@ match = regex.match(latest_commit)
 if match is None or len(list(match.groups())) != 2:
     print("Most recent commit does not match regex, nothing to do.")
 else:
-    print("Commit matches regex. Creating and pushing new tag...")
+    print("Commit matches regex.")
     cog = match.group(1).lower()
+    if cog == "apc":
+        cog = "anotherpingcog"
     ver = match.group(2)
-    tag_name = f"{cog}-{ver}"
 
+    # tag
+    print("Creating and pushing new tag...")
+    tag_name = f"{cog}-{ver}"
     repo.create_tag(tag_name, message=TAG_MESSAGE.format(cogname=cog, commit=latest_commit))
-    origin = repo.remote().push(f"refs/tags/{tag_name}")
+    repo.remote().push(f"refs/tags/{tag_name}")
     print(f"Pushed a new tag {tag_name}.")
+
+    # api
+    print("Updating latest version API on GitHub pages...")
+    repo.git.checkout("gh-pages")
+    with open(VER_FILE_LOCATION) as fp:
+        data = json.load(fp)
+    data["cogs"][cog] = ver
+    with open(VER_FILE_LOCATION) as fp:
+        json.dump(data, fp, index=4)
+    repo.index.add([VER_FILE_LOCATION])
+    repo.index.commit(f"Update {cog} ver to {ver}")
+    repo.remote().push()
+    print("Pushed update to the lastest version API.")
+
+
+print("Script finished.")

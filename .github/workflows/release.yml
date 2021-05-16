@@ -1,4 +1,4 @@
-name: Auto tag
+name: Cog release
 
 on: push
 
@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8"]
-    name: Auto tag
+    name: Cog release
     steps:
     - uses: actions/checkout@v2
     
@@ -26,6 +26,6 @@ jobs:
         git config user.name "GitHub Actions Bot"
         git config user.email "<>"
 
-    - name: Run script autotag.py
+    - name: Run script release.py
       run: |
-        python .github/workflows/scripts/autotag.py
+        python .github/workflows/scripts/release.py
