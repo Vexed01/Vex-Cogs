@@ -176,4 +176,4 @@ class Status(
 
     @commands.command(name="statusinfo", hidden=True)
     async def command_statusinfo(self, ctx: commands.Context):
-        await ctx.send(format_info(self.qualified_name, self.__version__, loops=[self.loop_meta]))
+        await ctx.send(await format_info(self.qualified_name, self.__version__, loops=[self.loop_meta]))
