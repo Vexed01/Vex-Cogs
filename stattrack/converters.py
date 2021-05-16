@@ -11,7 +11,7 @@ else:
     class TimespanConverter(Converter):
         async def convert(self, ctx: Context, argument: str) -> datetime.timedelta:
             if argument.lower() == "all":
-                return TimeData("5min", "30 minutes", datetime.timedelta(days=9000))
+                return datetime.timedelta(days=9000)
             delta = parse_timedelta(argument, minimum=datetime.timedelta(hours=1))
             if delta is None:
                 raise BadArgument("That's not a valid time.")
