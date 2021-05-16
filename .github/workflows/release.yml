@@ -36,11 +36,6 @@ jobs:
         LATEST_COMMIT: ${{ github.event.commits[0].message }}
       # this file exists on the branch checked out (gh-pages) but not master
 
-    - name: Commit and push changes
-      run: |
-        git commit -am "Automated version update"
-        git push
-
   autotag:
     runs-on: ubuntu-latest
     strategy:
