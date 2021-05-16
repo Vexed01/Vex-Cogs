@@ -7,9 +7,8 @@
         "betteruptime": "1.4.1",
         "cmdlog": "1.1.0",
         "github": "1.0.0",
-        "status": "2.3.2",
+        "status": "2.3.3",
         "system": "1.2.1",
-        "timechannel": "1.1.0",
-        "workflowtest": "8.0.0"
+        "timechannel": "1.1.0"
     }
 }
