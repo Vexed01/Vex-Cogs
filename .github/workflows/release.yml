@@ -31,7 +31,8 @@ jobs:
 
     - name: Run script autoapi.py
       run: |
-        python .github/workflows/scripts/autoapi.py
+        python autoapi.py
+      # this file exists on the branch checked out (gh-pages) but not master
 
   autotag:
     runs-on: ubuntu-latest
