@@ -31,10 +31,7 @@ else:
     data["cogs"][cog] = ver
     with open(VER_FILE_LOCATION, "w") as fp:
         json.dump(data, fp, indent=4)
-    repo.index.add([VER_FILE_LOCATION])
-    repo.index.commit(f"Update {cog} ver to {ver}")
-    repo.remote().push()
-    print("Pushed update to the lastest version API.")
+    print("Made changes to files.")
 
 
 print("Script finished.")
