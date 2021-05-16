@@ -1,0 +1,70 @@
+name: Cog release
+
+on: push
+
+jobs:
+  autoapi:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+
+    name: Auto API
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: "gh-pages"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install gitpython
+
+    - name: Set up git
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
+
+    - name: Run script autoapi.py
+      run: |
+        python autoapi.py
+      env:
+        LATEST_COMMIT: ${{ github.event.commits[0].message }}
+      # this file exists on the branch checked out (gh-pages) but not master
+
+    - name: Commit and push changes
+      run: |
+        git commit -am "Automated version update"
+        git push
+
+  autotag:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+
+    name: Auto tag
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install gitpython
+
+    - name: Set up git
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
+
+    - name: Run script autotag.py
+      run: |
+        python .github/workflows/scripts/autotag.py

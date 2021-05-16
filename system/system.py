@@ -39,7 +39,7 @@ class System(commands.Cog):
 
     @commands.command(hidden=True)
     async def systeminfo(self, ctx: commands.Context):
-        await ctx.send(format_info(self.qualified_name, self.__version__))
+        await ctx.send(await format_info(self.qualified_name, self.__version__))
 
     @checks.is_owner()
     @commands.group()

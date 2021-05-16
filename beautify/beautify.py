@@ -41,7 +41,7 @@ class Beautify(commands.Cog):
 
     @commands.command(hidden=True)
     async def beautifyinfo(self, ctx: commands.Context):
-        await ctx.send(format_info(self.qualified_name, self.__version__))
+        await ctx.send(await format_info(self.qualified_name, self.__version__))
 
     async def send_invalid(self, ctx: commands.Context):
         if ctx.author.id in self.bot.owner_ids:  # type:ignore

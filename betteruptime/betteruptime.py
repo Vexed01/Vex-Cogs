@@ -104,7 +104,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
     @commands.command(hidden=True)
     async def betteruptimeinfo(self, ctx: commands.Context):
         loops = [self.main_loop_meta, self.conf_loop_meta]
-        await ctx.send(format_info(self.qualified_name, self.__version__, loops=loops))
+        await ctx.send(await format_info(self.qualified_name, self.__version__, loops=loops))
 
     @commands.command(name="uptime")
     async def uptime_command(self, ctx: commands.Context, num_days: int = 30):

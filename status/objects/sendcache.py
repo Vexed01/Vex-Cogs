@@ -103,11 +103,12 @@ class SendCache:
             last_title = self.__incidentdata.fields[-1].name
             status = last_title.split(" ")[0].lower()
 
-            if status in ["investigating", "identified"]:
+            if status == "identified":
                 return Colour.red()
             elif status in [
                 "update",
                 "monitoring",
+                "investigating",
                 "scheduled",  # decided to put this in orange as is in future, not now
                 "in",  # scheduled - full is "in progress"
             ]:

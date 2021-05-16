@@ -27,11 +27,17 @@ match = regex.match(latest_commit)
 if match is None or len(list(match.groups())) != 2:
     print("Most recent commit does not match regex, nothing to do.")
 else:
-    print("Commit matches regex. Creating and pushing new tag...")
+    print("Commit matches regex.")
     cog = match.group(1).lower()
+    if cog == "apc":
+        cog = "anotherpingcog"
     ver = match.group(2)
-    tag_name = f"{cog}-{ver}"
 
+    print("Creating and pushing new tag...")
+    tag_name = f"{cog}-{ver}"
     repo.create_tag(tag_name, message=TAG_MESSAGE.format(cogname=cog, commit=latest_commit))
-    origin = repo.remote().push(f"refs/tags/{tag_name}")
+    repo.remote().push(f"refs/tags/{tag_name}")
     print(f"Pushed a new tag {tag_name}.")
+
+
+print("Script finished.")

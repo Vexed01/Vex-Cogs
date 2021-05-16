@@ -41,7 +41,7 @@ class Status(
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "2.3.2"
+    __version__ = "2.3.3"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -176,4 +176,6 @@ class Status(
 
     @commands.command(name="statusinfo", hidden=True)
     async def command_statusinfo(self, ctx: commands.Context):
-        await ctx.send(format_info(self.qualified_name, self.__version__, loops=[self.loop_meta]))
+        await ctx.send(
+            await format_info(self.qualified_name, self.__version__, loops=[self.loop_meta])
+        )
