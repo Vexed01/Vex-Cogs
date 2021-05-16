@@ -1,6 +1,7 @@
 # This is triggered by a workflow (release.yml) on the main branch which checks out this branch
 
 import json
+import os
 import re
 
 from git import Repo
@@ -11,7 +12,7 @@ repo = Repo()  # repo in working dir
 
 regex = re.compile(r"\[(\w+) (\d+\.\d+\.\d+)\]")
 
-latest_commit = repo.head.commit.message
+latest_commit = os.environ.get("LATEST_COMMIT")
 print("Most recent commit detected as: " + latest_commit)
 
 match = regex.match(latest_commit)
