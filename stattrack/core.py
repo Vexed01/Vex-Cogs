@@ -71,13 +71,14 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
 
     @commands.command(hidden=True)
     async def stattrackinfo(self, ctx: commands.Context):
-        pre = format_info(
-            self.qualified_name,
-            self.__version__,
-            loops=[self.loop_meta] if self.loop_meta else [],
+        await ctx.send(
+            await format_info(
+                self.qualified_name,
+                self.__version__,
+                loops=[self.loop_meta] if self.loop_meta else [],
+                extras={"Loop time": f"{self.last_loop_time} seconds"},  # type:ignore
+            )
         )
-        pre += f"\n\nLast loop time: `{self.last_loop_time}` seconds"
-        await ctx.send(pre)
 
     @commands.command(hidden=True)
     async def stattrackloop(self, ctx: commands.Context):
