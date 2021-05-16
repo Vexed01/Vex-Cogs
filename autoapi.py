@@ -30,7 +30,7 @@ else:
         data = json.load(fp)
     data["cogs"][cog] = ver
     with open(VER_FILE_LOCATION) as fp:
-        json.dump(data, fp, index=4)
+        json.dump(data, fp, indent=4)
     repo.index.add([VER_FILE_LOCATION])
     repo.index.commit(f"Update {cog} ver to {ver}")
     repo.remote().push()
