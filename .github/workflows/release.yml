@@ -32,6 +32,8 @@ jobs:
     - name: Run script autoapi.py
       run: |
         python autoapi.py
+      with:
+        LATEST_COMMIT: ${{ github.event.commits[0].message }}
       # this file exists on the branch checked out (gh-pages) but not master
 
   autotag:
