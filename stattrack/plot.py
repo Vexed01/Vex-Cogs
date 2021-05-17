@@ -13,6 +13,7 @@ from matplotlib.ticker import MaxNLocator
 
 matplotlib.use("agg")
 
+
 async def plot(
     sr: pandas.Series, delta: datetime.timedelta, title: str, ylabel: str
 ) -> discord.File:
