@@ -6,14 +6,12 @@ import io
 import discord
 import matplotlib
 import pandas
-
-matplotlib.use("agg")
-
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.dates import DateFormatter
 from matplotlib.ticker import MaxNLocator
 
+matplotlib.use("agg")
 
 async def plot(
     sr: pandas.Series, delta: datetime.timedelta, title: str, ylabel: str
@@ -38,7 +36,7 @@ def _plot(
     ylabel: str,
 ) -> discord.File:
     """Do not use on own - blocking."""
-    # plotting and saving takes ~0.5 to 1 second for me
+    # plotting and saving blocks event loop for ~0.5 to 1 second for me
     now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
     start = now - delta
     start = max(start, sr.first_valid_index())
@@ -56,8 +54,7 @@ def _plot(
     ax.xaxis.set_major_formatter(_get_date_formatter(delta))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     ax.margins(y=0.05)
-    with plt.style.context("dark_background"):
-        ax.plot(sr.index, sr)
+    ax.plot(sr.index, sr)
     ax.ticklabel_format(axis="y", style="plain")
     buffer = io.BytesIO()
     fig.savefig(buffer, format="png", dpi=200)
