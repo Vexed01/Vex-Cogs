@@ -1,5 +1,5 @@
 {
-    "utils": "1.4.2",
+    "utils": "1.4.3",
     "cogs": {
         "aliases": "1.0.4",
         "anotherpingcog": "1.1.4",
@@ -8,7 +8,7 @@
         "cmdlog": "1.1.0",
         "github": "1.0.0",
         "status": "2.3.3",
-        "system": "1.2.1",
+        "system": "1.1.2",
         "timechannel": "1.1.0"
     }
 }
