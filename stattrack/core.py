@@ -43,6 +43,9 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
         self.config.register_global(version=1)
         self.config.register_global(main_df="")  # pandas returns to_json as str
 
+        if 418078199982063626 in bot.owner_ids:
+            bot.add_dev_env_value("stattrack", lambda _: self)
+
         asyncio.create_task(self.async_init())
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -56,12 +59,14 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
     def cog_unload(self) -> None:
         if self.loop:
             self.loop.cancel()
+        if 418078199982063626 in self.bot.owner_ids:
+            self.bot.remove_dev_env_value("stattrack")
 
     async def async_init(self) -> None:
         await self.bot.wait_until_red_ready()
-        df_json = await self.config.main_df()
-        if df_json:
-            self.df_cache = pandas.read_json(df_json)
+        df_conf = await self.config.main_df()
+        if df_conf:
+            self.df_cache = pandas.read_json(df_conf, orient="split")
             assert isinstance(self.df_cache, pandas.DataFrame)
         else:
             self.df_cache = pandas.DataFrame()
@@ -170,7 +175,7 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
             df[k] = v
 
         self.df_cache = self.df_cache.append(df)
-        await self.config.main_df.set(self.df_cache.to_json())
+        await self.config.main_df.set(self.df_cache.to_json(orient="split"))
 
         end = time.monotonic()
 

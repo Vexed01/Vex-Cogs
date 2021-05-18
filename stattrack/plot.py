@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.dates import DateFormatter
 from matplotlib.ticker import MaxNLocator
+from redbot.core.utils.chat_formatting import humanize_timedelta
 
 matplotlib.use("agg")
 
@@ -45,11 +46,12 @@ def _plot(
     ret = sr.reindex(expected_index)  # ensure all data is present or set to NaN
     assert isinstance(ret, pandas.Series)
     sr = ret
+    real_delta = now - sr.first_valid_index()
 
     fig = plt.figure(figsize=(7, 5))
     ax = fig.add_subplot(111)
     assert isinstance(ax, Axes)
-    ax.set_title(title)
+    ax.set_title(title + " for the last " + humanize_timedelta(timedelta=real_delta))
     ax.set_xlabel("Time (UTC)")
     ax.set_ylabel(ylabel)
     ax.xaxis.set_major_formatter(_get_date_formatter(delta))
