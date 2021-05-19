@@ -24,17 +24,17 @@ jobs:
       run: |
         pip install gitpython
 
-    - name: Set up git
-      run: |
-        git config user.name "GitHub Actions Bot"
-        git config user.email "<>"
-
     - name: Run script autoapi.py
       run: |
         python autoapi.py
       env:
         LATEST_COMMIT: ${{ github.event.commits[0].message }}
       # this file exists on the branch checked out (gh-pages) but not master
+
+    - name: "Commit and push changes"
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Automated version update
 
   autotag:
     runs-on: ubuntu-latest
