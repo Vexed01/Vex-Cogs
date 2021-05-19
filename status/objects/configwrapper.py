@@ -42,13 +42,13 @@ class ConfigWrapper:
 
         incidentdata = IncidentData(
             fields=deserialised["fields"],
-            time=deserialised["time"],
+            time=deserialised.get("time"),
             title=incident["title"],
             link=incident["link"],
-            actual_time=deserialised["actual_time"],
+            actual_time=deserialised.get("actual_time"),
             description=deserialised.get("description", ""),
             incident_id=incident.get("incident_id", ""),
-            scheduled_for=deserialised["scheduled_for"],
+            scheduled_for=deserialised.get("scheduled_for"),
         )
 
         return incidentdata, extra_info
