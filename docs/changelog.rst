@@ -196,6 +196,14 @@ Status
 ======
 
 *********
+``2.3.4``
+*********
+
+2021-05-19
+
+- Fix KeyError which could occur in edge cases
+
+*********
 ``2.3.3``
 *********
 
