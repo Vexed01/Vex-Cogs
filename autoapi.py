@@ -31,6 +31,7 @@ else:
     data["cogs"][cog] = ver
     with open(VER_FILE_LOCATION, "w") as fp:
         json.dump(data, fp, indent=4)
+    repo.git.add(update=True)
     repo.index.commit("Automated version update")
     repo.remote().push()
     print("Made changes to files.")
