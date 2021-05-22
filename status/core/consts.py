@@ -42,7 +42,7 @@ FEEDS = {
         # c-spell: disable-next-line
         "id": "srhpyqt94yxb",
         "friendly": "Discord",
-        "avatar": _AVATAR_BASE + "813140277367144458/discord.png",
+        "avatar": _AVATAR_BASE + "845703992222416927/dBymBmGq_400x400.png",
     },
     "github": {
         "url": "https://www.githubstatus.com/",
