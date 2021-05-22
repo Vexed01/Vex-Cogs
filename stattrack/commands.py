@@ -156,7 +156,7 @@ class StatTrackCommands(MixinMeta):
         `[p]stattrack status idle 5d`
         `[p]stattrack status idle all`
         """
-        await self.all_in_one(ctx, timespan, "status_online", "Users idle")
+        await self.all_in_one(ctx, timespan, "status_idle", "Users idle")
 
     @group_status.command()
     async def offline(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):

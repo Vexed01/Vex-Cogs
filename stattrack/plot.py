@@ -19,7 +19,7 @@ async def plot(
     sr: pandas.Series, delta: datetime.timedelta, title: str, ylabel: str
 ) -> discord.File:
     """Plot the standard dataframe to the specified parameters. Returns a file ready for Discord"""
-    return await asyncio.get_event_loop().run_in_executor(
+    task = asyncio.get_event_loop().run_in_executor(
         None,
         functools.partial(
             _plot,
@@ -29,6 +29,7 @@ async def plot(
             ylabel=ylabel,
         ),
     )
+    return await asyncio.wait_for(task, timeout=10.0)  # should be around 1 sec
 
 
 def _plot(
