@@ -25,15 +25,15 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 
 | Cog name | Description |
 | --- | --- |
-| [aliases](https://vex-cogs.readthedocs.io/en/latest/cogs/aliases.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Get all the information you could ever need about a command's aliases. |
-| [anotherpingcog](https://vex-cogs.readthedocs.io/en/latest/cogs/anotherpingcog.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Another ping cog... But this one has fancy colours in a customisable embed! |
-| [beautify](https://vex-cogs.readthedocs.io/en/latest/cogs/beautify.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Beautify and minify JSON.
-| [betteruptime](https://vex-cogs.readthedocs.io/en/latest/cogs/betteruptime.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | See your bot's uptime percentages and check when downtime happened. |
-| [cmdlog](https://vex-cogs.readthedocs.io/en/latest/cogs/cmdlog.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Track command usage, searchable by user, server or command name.
-| [github](https://vex-cogs.readthedocs.io/en/latest/cogs/github.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Create, comment, labelify and close GitHub issues, with partial PR support. |
-| [status](https://vex-cogs.readthedocs.io/en/latest/cogs/status.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Recieve automatic status updates from various services, including Discord. |
-| [system](https://vex-cogs.readthedocs.io/en/latest/cogs/system.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Get system metrics of the host device, such as RAM or CPU. |
-| [timechannel](https://vex-cogs.readthedocs.io/en/latest/cogs/timechannel.html?utm_source=github&utm_medium=readme&utm_campaign=cog_table) | Get the time in different timezones in voice channels. |
+| [aliases](https://vex-cogs.readthedocs.io/en/latest/cogs/aliases.html) | Get all the information you could ever need about a command's aliases. |
+| [anotherpingcog](https://vex-cogs.readthedocs.io/en/latest/cogs/anotherpingcog.html) | Another ping cog... But this one has fancy colours in a customisable embed! |
+| [beautify](https://vex-cogs.readthedocs.io/en/latest/cogs/beautify.html) | Beautify and minify JSON.
+| [betteruptime](https://vex-cogs.readthedocs.io/en/latest/cogs/betteruptime.html) | See your bot's uptime percentages and check when downtime happened. |
+| [cmdlog](https://vex-cogs.readthedocs.io/en/latest/cogs/cmdlog.html) | Track command usage, searchable by user, server or command name.
+| [github](https://vex-cogs.readthedocs.io/en/latest/cogs/github.html) | Create, comment, labelify and close GitHub issues, with partial PR support. |
+| [status](https://vex-cogs.readthedocs.io/en/latest/cogs/status.html) | Recieve automatic status updates from various services, including Discord. |
+| [system](https://vex-cogs.readthedocs.io/en/latest/cogs/system.html) | Get system metrics of the host device, such as RAM or CPU. |
+| [timechannel](https://vex-cogs.readthedocs.io/en/latest/cogs/timechannel.html) | Get the time in different timezones in voice channels. |
 
 All these cogs have docs! My docs [are here](https://vex-cogs.readthedocs.io/en/latest/?utm_source=github&utm_medium=readme&utm_campaign=main_link) or click on the cog name to go directly to that cog's docs page.
 

@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-ast
+      - id: check-json
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+  - repo: https://github.com/psf/black
+    rev: "21.5b1"
+    hooks:
+      - id: black
+  - repo: https://github.com/PyCQA/isort
+    rev: "5.8.0"
+    hooks:
+      - id: isort
+  - repo: https://github.com/myint/autoflake
+    rev: "v1.4"
+    hooks:
+      - id: autoflake
+        args: ["--remove-unused-variables", "--remove-all-unused-imports", "--ignore-init-module-imports"]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v0.812"
+    hooks:
+      - id: mypy

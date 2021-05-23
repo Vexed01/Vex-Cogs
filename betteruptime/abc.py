@@ -1,7 +1,7 @@
 import asyncio
 from abc import ABC, ABCMeta
-from typing import Dict
 
+import pandas
 from redbot.core.bot import Red
 from redbot.core.commands import CogMeta
 from redbot.core.config import Config
@@ -29,7 +29,7 @@ class MixinMeta(ABC):
 
     fist_load: float
 
-    cog_loaded_cache: Dict[str, float]
-    connected_cache: Dict[str, float]
+    cog_loaded_cache: pandas.Series
+    connected_cache: pandas.Series
 
     ready: bool

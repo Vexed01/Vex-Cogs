@@ -1,8 +1,10 @@
 import asyncio
 import datetime
+import json
 import logging
 from time import time
 
+import pandas
 from vexcogutils.loop import VexLoop
 
 from .abc import MixinMeta
@@ -36,12 +38,39 @@ class BULoop(MixinMeta):
         _log.debug("Waiting a bit to allow for previous unload to clean up (assuming reload)...")
         await asyncio.sleep(2)  # wait for unloading to be able to clean up properly
         _log.debug("Setting up...")
-        self.cog_loaded_cache = await self.config.cog_loaded()
-        self.connected_cache = await self.config.connected()
+
+        if await self.config.version() != 2:
+            _log.info("Migrating BetterUptime config to new format...")
+            await self.migate_v1_to_v2()
+            await self.config.version.set(2)
+            _log.info("Done.")
+        else:
+            self.cog_loaded_cache = pandas.read_json(
+                json.dumps(await self.config.cog_loaded()), typ="series"
+            )
+            self.connected_cache = pandas.read_json(
+                json.dumps(await self.config.connected()), typ="series"
+            )
 
         _log.info("BetterUptime has been initialised and is now running.")
 
         self.ready = True
+
+    async def migate_v1_to_v2(self):
+        old_cog_loaded = await self.config.cog_loaded()
+        old_connected = await self.config.connected()
+
+        partially_converted = {
+            datetime.datetime.strptime(k, "%Y-%m-%d"): v for k, v in old_cog_loaded.items()
+        }
+        self.cog_loaded_cache = pandas.Series(data=partially_converted)
+
+        partially_converted = {
+            datetime.datetime.strptime(k, "%Y-%m-%d"): v for k, v in old_connected.items()
+        }
+        self.connected_cache = pandas.Series(data=partially_converted)
+
+        await self.write_to_config()
 
     async def betteruptime_main_loop(self):
         while not self.ready:
@@ -74,7 +103,7 @@ class BULoop(MixinMeta):
             _log.debug("Config BetterUptime loop has started next iteration")
             try:
                 self.conf_loop_meta.iter_start()
-                await self.update_uptime()
+                await self.write_to_config()
                 self.conf_loop_meta.iter_finish()
             except Exception as e:
                 self.conf_loop_meta.iter_error(e)
@@ -86,10 +115,12 @@ class BULoop(MixinMeta):
             await self.conf_loop_meta.sleep_until_next()
 
     async def write_to_config(self, final=False) -> None:
-        if self.cog_loaded_cache:  # dont want to write if the cache is empty
-            await self.config.cog_loaded.set(self.cog_loaded_cache)
-        if self.connected_cache:
-            await self.config.connected.set(self.connected_cache)
+        if not self.cog_loaded_cache.empty:
+            data = json.loads(self.cog_loaded_cache.to_json())  # type: ignore
+            await self.config.cog_loaded.set(data)
+        if not self.connected_cache.empty:
+            data = json.loads(self.connected_cache.to_json())  # type: ignore
+            await self.config.connected.set(data)
 
         if final:
             _log.info("BetterUptime is fully unloaded.")

@@ -118,6 +118,22 @@ BetterUptime
 ============
 
 *********
+``1.5.1``
+*********
+
+2021-05-23
+
+- Fix deprecation warning
+
+*********
+``1.5.0``
+*********
+
+2021-05-23
+
+- Move to storing and internally cache data as a Pandas Series
+
+*********
 ``1.4.1``
 *********
 
@@ -194,6 +210,14 @@ GitHub
 ======
 Status
 ======
+
+*********
+``2.3.5``
+*********
+
+2021-05-22
+
+- Update to use Discord's new logo
 
 *********
 ``2.3.4``

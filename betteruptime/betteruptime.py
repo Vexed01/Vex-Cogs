@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import logging
 from time import time
-from typing import Dict, List, Union
+from typing import Union
 
 import discord
 import pandas
@@ -29,13 +29,13 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
     data to become available.
     """
 
-    __version__ = "1.4.1"
+    __version__ = "1.5.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        default: dict = {}  # :dict is pointless but maked mypy happy
+        default: dict = {}  # :dict is pointless but makes mypy happy
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(version=1)
         self.config.register_global(cog_loaded=default)
@@ -47,13 +47,13 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
 
         self.first_load = 0.0
 
-        self.cog_loaded_cache: Dict[str, float] = {}
-        self.connected_cache: Dict[str, float] = {}
+        self.cog_loaded_cache = pandas.Series(dtype="object")  # suppresses deprecation warn
+        self.connected_cache = pandas.Series(dtype="object")  # suppresses deprecation warn
 
         self.ready = False
 
         try:
-            self.bot.add_dev_env_value("bu", lambda x: self)
+            self.bot.add_dev_env_value("bu", lambda _: self)
         except Exception:
             pass
 
@@ -77,10 +77,10 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
                 until_next = (
                     self.main_loop_meta.next_iter - datetime.datetime.now(datetime.timezone.utc)
                 ).total_seconds()  # assume up to now was uptime because the command was invoked
-                utcdatetoday = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+                utcdatetoday = datetime.datetime.now(datetime.timezone.utc)
 
-                self.cog_loaded_cache[utcdatetoday] += until_next
-                self.connected_cache[utcdatetoday] += time() - self.last_ping_change
+                self.cog_loaded_cache[utcdatetoday] += until_next  # type:ignore
+                self.connected_cache[utcdatetoday] += time() - self.last_ping_change  # type:ignore
             except Exception:  # TODO: pos remove
                 pass
 
@@ -130,7 +130,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
             # TODO: implement non-embed version
             return await ctx.send(description)
 
-        while not self.connected_cache:
+        while self.connected_cache.empty:
             await asyncio.sleep(0.2)  # max wait is 2 if command triggerd straight after cog load
 
         embed = discord.Embed(description=description, colour=await ctx.embed_colour())
@@ -148,36 +148,35 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         seconds_cog_loaded = 15 - until_next
         seconds_connected = time() - self.last_ping_change
 
-        conf_cog_loaded = self.cog_loaded_cache
-        conf_connected = self.connected_cache
+        ts_cl = self.cog_loaded_cache.copy(deep=True)
+        ts_con = self.connected_cache.copy(deep=True)
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
-        dates_to_look_for: List[datetime.datetime]
-        dates_to_look_for = pandas.date_range(
+        expected_index = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
             end=datetime.datetime.today(),
             normalize=True,
-        ).tolist()
+        )
 
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
         seconds_since_midnight = float((now - midnight).seconds)
-        if len(dates_to_look_for) >= num_days:
-            dates_to_look_for = dates_to_look_for[: (num_days - 1)]
+        if len(expected_index) >= num_days:
+            expected_index = expected_index[: (num_days - 1)]
             seconds_data_collected = float(
                 (SECONDS_IN_DAY * (num_days - 1)) + seconds_since_midnight
             )
         else:
-            seconds_data_collected = float((len(dates_to_look_for) - 1) * SECONDS_IN_DAY)
+            seconds_data_collected = float((len(expected_index) - 1) * SECONDS_IN_DAY)
 
             if conf_first_loaded > midnight:  # cog was first loaded today
                 seconds_data_collected += (now - conf_first_loaded).total_seconds()
             else:
                 seconds_data_collected += seconds_since_midnight
 
-        for date in dates_to_look_for:
-            str_date = date.strftime("%Y-%m-%d")
-            seconds_cog_loaded += conf_cog_loaded.get(str_date, 0.0)
-            seconds_connected += conf_connected.get(str_date, 0.0)
+        ts_cl = ts_cl.reindex(expected_index)  # type: ignore
+        ts_con = ts_con.reindex(expected_index)  # type: ignore
+        seconds_cog_loaded += ts_cl.sum()
+        seconds_connected += ts_con.sum()
 
         main_downtime = (
             humanize_timedelta(seconds=seconds_data_collected - seconds_connected) or "none"
@@ -218,14 +217,12 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         content: Union[None, str]
         if seconds_since_first_load < 60 * 15:  # 15 mins
             content = "Data tracking only started in the last few minutes. Data may be inaccurate."
-        elif len(dates_to_look_for) == 1:
+        elif len(expected_index) == 1:
             content = None
             embed.set_footer(text="Data is only for today.")
         else:
             content = None
-            embed.set_footer(
-                text=f"Data is for the last {len(dates_to_look_for)} days, and today."
-            )
+            embed.set_footer(text=f"Data is for the last {len(expected_index)} days, and today.")
 
         await ctx.send(content, embed=embed)
 
@@ -241,20 +238,18 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         conf_connected = self.connected_cache
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
-        dates_to_look_for = pandas.date_range(
+        expected_index = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
             end=datetime.datetime.today() - datetime.timedelta(days=1),
             normalize=True,
-        ).tolist()
+        )
 
-        if len(dates_to_look_for) > num_days:
-            dates_to_look_for = dates_to_look_for[: (num_days - 1)]
+        if len(expected_index) > num_days:
+            expected_index = expected_index[: (num_days - 1)]
 
         msg = ""
 
-        for date in dates_to_look_for:
-            date = date.strftime("%Y-%m-%d")
-
+        for date in expected_index:
             cog_loaded = conf_cog_loaded.get(date, 0.0)
             cog_unloaded = SECONDS_IN_DAY - cog_loaded
             connected = conf_connected.get(date, 0.0)
@@ -303,36 +298,29 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         seconds_cog_loaded = until_next
         seconds_connected = time() - self.last_ping_change
 
-        conf_cog_loaded = self.cog_loaded_cache
-        conf_connected = self.connected_cache
+        ts_cl = self.cog_loaded_cache.copy(deep=True)
+        ts_con = self.connected_cache.copy(deep=True)
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
-        dates_to_look_for: List[datetime.datetime]
-        dates_to_look_for = pandas.date_range(
+        expected_index = pandas.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
             end=datetime.datetime.today(),
             normalize=True,
-        ).tolist()
-
-        if len(dates_to_look_for) > 30:
-            dates_to_look_for = dates_to_look_for[:29]
+        )
 
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
         seconds_since_midnight = (now - midnight).seconds
-        if len(dates_to_look_for) >= 30:
-            seconds_data_collected = float((SECONDS_IN_DAY * 29) + seconds_since_midnight)
+        seconds_data_collected = float((len(expected_index) - 1) * SECONDS_IN_DAY)
+
+        if conf_first_loaded > midnight:  # cog was first loaded today
+            seconds_data_collected += (now - conf_first_loaded).total_seconds()
         else:
-            seconds_data_collected = float((len(dates_to_look_for) - 1) * SECONDS_IN_DAY)
+            seconds_data_collected += seconds_since_midnight
 
-            if conf_first_loaded > midnight:  # cog was first loaded today
-                seconds_data_collected += (now - conf_first_loaded).total_seconds()
-            else:
-                seconds_data_collected += seconds_since_midnight
-
-        for date in dates_to_look_for:
-            str_date = date.strftime("%Y-%m-%d")
-            seconds_cog_loaded += conf_cog_loaded.get(str_date, 0.0)
-            seconds_connected += conf_connected.get(str_date, 0.0)
+        ts_cl = ts_cl.reindex(expected_index)  # type: ignore
+        ts_con = ts_con.reindex(expected_index)  # type:ignore
+        seconds_cog_loaded += ts_cl.sum()
+        seconds_connected += ts_con.sum()
 
         await ctx.send(
             f"The cog was first loaded `{(now - conf_first_loaded).total_seconds()}` seconds ago\n"

@@ -2,10 +2,10 @@
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": ["Vexed (Vexed#3211)"],
     "name": "Beautify",
-    "install_msg": "This cog has two commands - `beautify` and `minify`.\n\n**If you would like this cog to support Python dicts as well as normal JSON, please run this command with your prefix ([p]) replaced: `[p]pipinstall pyjson5`. This should work on Linux, but it can error on Windows. It is not required for the cog so don't worry if it does error.**\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/beautify.html?utm_source=cog&utm_medium=install_msg&utm_campaign=cog_level>",
+    "install_msg": "This cog has two commands - `beautify` and `minify`.\n\n**If you would like this cog to support Python dicts as well as normal JSON, please run this command with your prefix ([p]) replaced: `[p]pipinstall pyjson5`. This should work on Linux, but it can error on Windows. It is not required for the cog so don't worry if it does error.**\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/beautify.html>",
     "description": "Beautify and minify JSON. Supports attachments, codeblocks and replies.",
     "short": "Beautify and minify JSON. Supports attachments, codeblocks and replies.",
-    "requirements": ["vex-cog-utils==1.4.1"],
+    "requirements": ["vex-cog-utils==1.4.4"],
     "tags": ["utility", "json"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users."
 }
