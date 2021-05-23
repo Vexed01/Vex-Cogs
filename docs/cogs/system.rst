@@ -241,4 +241,3 @@ and when they logged in.
 Platforms: Windows, Linux, Mac OS
 
 .. note:: PID is not available on Windows. Terminal is usually ``Unknown``
-
