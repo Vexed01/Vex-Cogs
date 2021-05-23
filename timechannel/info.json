@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": ["Vexed (Vexed#3211)"],
     "name": "TimeChannel",
-    "install_msg": "Thanks for installing! You can get started with the `tcset` command, and anything added under can be seen by users in the server with `[p]timezones`\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/timechannel.html?utm_source=cog&utm_medium=install_msg&utm_campaign=cog_level>",
+    "install_msg": "Thanks for installing! You can get started with the `tcset` command, and anything added under can be seen by users in the server with `[p]timezones`\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/timechannel.html>",
     "description": "Get the time in different timezones in voice channels.",
     "short": "Get the time in different timezones in voice channels.",
     "tags": ["utility", "channel", "time", "timezone"],
