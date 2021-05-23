@@ -16,6 +16,18 @@ It will also build the docs.
 
 The config files will let you run all of these without arguments.
 
+## pre-commit
+
+I've set up pre-commit. This will ensure your code conforms to the correct style when you commit changes.
+
+To use it, simply run this:
+
+        pip install pre-commit
+
+        pre-commit install
+
+It will now run on every commit.
+
 > ### **Warning for MyPy**
 >
 > To fully utilise type checking, install these stubs: ``pip install -U discord.py-stubs pandas-stubs``
