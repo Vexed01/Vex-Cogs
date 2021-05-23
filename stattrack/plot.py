@@ -15,6 +15,9 @@ from redbot.core.utils.chat_formatting import humanize_timedelta
 matplotlib.use("agg")
 
 
+ONE_DAY_SECONDS = 86400
+
+
 async def plot(
     sr: pandas.Series, delta: datetime.timedelta, title: str, ylabel: str
 ) -> discord.File:
@@ -68,8 +71,8 @@ def _plot(
 
 
 def _get_date_formatter(delta: datetime.timedelta) -> DateFormatter:
-    if delta.seconds <= 86400:  # 1 day
+    if delta.total_seconds() <= ONE_DAY_SECONDS:
         return DateFormatter("%H:%M")
-    elif delta.days <= 7:
-        return DateFormatter("%d %I%p")
+    elif delta.total_seconds() <= (ONE_DAY_SECONDS * 4):
+        return DateFormatter("%d %b %I%p")
     return DateFormatter("%d %b")
