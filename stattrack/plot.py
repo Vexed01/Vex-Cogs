@@ -2,13 +2,15 @@ import asyncio
 import datetime
 import functools
 import io
+from typing import Any, Union
 
 import discord
 import matplotlib
 import pandas
+from matplotlib import dates
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from matplotlib.dates import DateFormatter
+from matplotlib.dates import AutoDateLocator, DateFormatter
 from matplotlib.ticker import MaxNLocator
 from redbot.core.utils.chat_formatting import humanize_timedelta
 
@@ -58,7 +60,9 @@ def _plot(
     ax.set_title(title + " for the last " + humanize_timedelta(timedelta=real_delta))
     ax.set_xlabel("Time (UTC)")
     ax.set_ylabel(ylabel)
-    ax.xaxis.set_major_formatter(_get_date_formatter(delta))
+    ax.xaxis.set_major_locator(AutoDateLocator(minticks=3, maxticks=6))
+    ax.xaxis.set_minor_locator(AutoDateLocator(minticks=16))
+    ax.xaxis.set_major_formatter(_get_date_formatter(real_delta))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     ax.margins(y=0.05)
     ax.plot(sr.index, sr)
@@ -73,6 +77,6 @@ def _plot(
 def _get_date_formatter(delta: datetime.timedelta) -> DateFormatter:
     if delta.total_seconds() <= ONE_DAY_SECONDS:
         return DateFormatter("%H:%M")
-    elif delta.total_seconds() <= (ONE_DAY_SECONDS * 4):
+    elif delta.total_seconds() <= (ONE_DAY_SECONDS * 5):
         return DateFormatter("%d %b %I%p")
     return DateFormatter("%d %b")
