@@ -118,6 +118,14 @@ BetterUptime
 ============
 
 *********
+``1.5.0``
+*********
+
+2021-05-23
+
+- Move to storing and internally cache data as a Pandas Series
+
+*********
 ``1.4.1``
 *********
 
