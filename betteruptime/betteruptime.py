@@ -29,7 +29,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
     data to become available.
     """
 
-    __version__ = "1.5.0"
+    __version__ = "1.5.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -47,8 +47,8 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
 
         self.first_load = 0.0
 
-        self.cog_loaded_cache = pandas.Series({})
-        self.connected_cache = pandas.Series({})
+        self.cog_loaded_cache = pandas.Series(dtype="object")  # suppresses deprecation warn
+        self.connected_cache = pandas.Series(dtype="object")  # suppresses deprecation warn
 
         self.ready = False
 
