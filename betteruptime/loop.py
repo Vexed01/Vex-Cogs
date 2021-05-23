@@ -116,9 +116,11 @@ class BULoop(MixinMeta):
 
     async def write_to_config(self, final=False) -> None:
         if not self.cog_loaded_cache.empty:
-            await self.config.cog_loaded.set(json.loads(self.cog_loaded_cache.to_json()))
+            data = json.loads(self.cog_loaded_cache.to_json())  # type: ignore
+            await self.config.cog_loaded.set(data)
         if not self.connected_cache.empty:
-            await self.config.connected.set(json.loads(self.connected_cache.to_json()))
+            data = json.loads(self.connected_cache.to_json())  # type: ignore
+            await self.config.connected.set(data)
 
         if final:
             _log.info("BetterUptime is fully unloaded.")

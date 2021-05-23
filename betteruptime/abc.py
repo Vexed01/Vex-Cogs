@@ -1,6 +1,5 @@
 import asyncio
 from abc import ABC, ABCMeta
-from typing import Dict
 
 import pandas
 from redbot.core.bot import Red

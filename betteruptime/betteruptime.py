@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import logging
 from time import time
-from typing import Dict, List, Union
+from typing import Union
 
 import discord
 import pandas
@@ -77,10 +77,10 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
                 until_next = (
                     self.main_loop_meta.next_iter - datetime.datetime.now(datetime.timezone.utc)
                 ).total_seconds()  # assume up to now was uptime because the command was invoked
-                utcdatetoday = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+                utcdatetoday = datetime.datetime.now(datetime.timezone.utc)
 
-                self.cog_loaded_cache[utcdatetoday] += until_next
-                self.connected_cache[utcdatetoday] += time() - self.last_ping_change
+                self.cog_loaded_cache[utcdatetoday] += until_next  # type:ignore
+                self.connected_cache[utcdatetoday] += time() - self.last_ping_change  # type:ignore
             except Exception:  # TODO: pos remove
                 pass
 
@@ -173,8 +173,8 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
             else:
                 seconds_data_collected += seconds_since_midnight
 
-        ts_cl = ts_cl.reindex(expected_index)
-        ts_con = ts_con.reindex(expected_index)
+        ts_cl = ts_cl.reindex(expected_index)  # type: ignore
+        ts_con = ts_con.reindex(expected_index)  # type: ignore
         seconds_cog_loaded += ts_cl.sum()
         seconds_connected += ts_con.sum()
 
@@ -317,8 +317,8 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         else:
             seconds_data_collected += seconds_since_midnight
 
-        ts_cl = ts_cl.reindex(expected_index)
-        ts_con = ts_con.reindex(expected_index)
+        ts_cl = ts_cl.reindex(expected_index)  # type: ignore
+        ts_con = ts_con.reindex(expected_index)  # type:ignore
         seconds_cog_loaded += ts_cl.sum()
         seconds_connected += ts_con.sum()
 
