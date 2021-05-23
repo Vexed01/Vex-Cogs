@@ -3,7 +3,7 @@
     "author": ["Vexed (Vexed#3211)"],
     "name": "Status",
     "install_msg": "Thanks for installing! The auto commands are all in `statusset`, and anyone can check statuses with the `status` command. Make sure to load the cog first.\n\nFor feedback or requests, it's Vexed#3211 on Discord or on the GH repo. This is a new cog, I would certainly appreciate suggestions.\n\nThis cog has docs! Check them out at https://vex-cogs.readthedocs.io/en/latest/cogs/status.html",
-    "requirements": ["markdownify", "vex-cog-utils==1.4.3"],
+    "requirements": ["markdownify", "vex-cog-utils==1.4.4"],
     "description": "This cog can automatically send updates form various services including Discord, Cloudflare and GitHub. Members can also use a command to check incidents on-demand. Support all Statuspage.io which I have added.\n\nIf you think I'm missing a service, contact Vexed#3211 in the main Red server or Cog Support, or my DMs.",
     "short": "Get automatic status updates from various services, and check the latest incidents on-demand. Includes Discord, GitHub and Cloudflare.",
     "tags": ["utility", "statuspage", "trust"],
