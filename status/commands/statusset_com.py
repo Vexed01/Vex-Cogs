@@ -7,7 +7,7 @@ from discord.abc import GuildChannel
 from discord.channel import TextChannel
 from discord.guild import Guild
 from discord.member import Member
-from redbot.core import checks, commands
+from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.predicates import MessagePredicate
 from tabulate import tabulate
@@ -27,7 +27,7 @@ from status.updateloop import SendUpdate, process_json
 
 class StatusSetCom(MixinMeta):
     @commands.guild_only()
-    @checks.admin_or_permissions(manage_guild=True)
+    @commands.admin_or_permissions(manage_guild=True)
     @commands.group(cls=DynamicHelpGroup)
     async def statusset(self, ctx: commands.Context):
         """

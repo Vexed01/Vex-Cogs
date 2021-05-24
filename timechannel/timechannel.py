@@ -5,7 +5,7 @@ from typing import Dict
 import discord
 import pytz
 from discord.channel import DMChannel, GroupChannel
-from redbot.core import checks, commands
+from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from vexcogutils import format_help, format_info
@@ -104,12 +104,12 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
 
         await ctx.send(embed=embed)
 
-    @checks.admin_or_permissions(manage_guild=True)
+    @commands.admin_or_permissions(manage_guild=True)
     @commands.group(aliases=["tcset"])
     async def timechannelset(self, ctx: commands.Context):
         """Manage channels which will show the time for a timezone."""
 
-    @checks.bot_has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(manage_channels=True)
     @timechannelset.command()
     async def create(self, ctx: commands.Context, timezone: TimezoneConverter):
         """
@@ -157,7 +157,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             "**click 'Keep Current Permissions' in the sync permissions dialogue.**"
         )
 
-    @checks.bot_has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(manage_channels=True)
     @timechannelset.command()
     async def remove(self, ctx: commands.Context, channel: discord.VoiceChannel):
         """
@@ -176,7 +176,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             await channel.delete(reason=f"Deleted with `tcset remove` by {ctx.author.name}")
             await ctx.send("Ok, I've deleted that channel and will no longer try to update it.")
 
-    @checks.is_owner()
+    @commands.is_owner()
     @timechannelset.command(hidden=True)
     async def loopstatus(self, ctx: commands.Context):
         await ctx.send(embed=self.loop_meta.get_debug_embed())

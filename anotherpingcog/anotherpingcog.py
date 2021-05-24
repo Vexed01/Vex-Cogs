@@ -6,7 +6,7 @@ from typing import Optional
 import discord
 import tabulate
 from discord.emoji import Emoji
-from redbot.core import Config, checks, commands
+from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 from vexcogutils import format_help, format_info
@@ -178,8 +178,8 @@ class AnotherPingCog(commands.Cog):
 
         return ws_latency_text, m_latency_text
 
-    @checks.is_owner()
     @commands.group()
+    @commands.is_owner()
     async def pingset(self, ctx: commands.Context):
         """Manage settings - emojis, embed colour, and force embed."""
 
