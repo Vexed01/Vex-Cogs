@@ -29,7 +29,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
     data to become available.
     """
 
-    __version__ = "1.5.1"
+    __version__ = "1.5.2"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -120,6 +120,9 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         uptime_str = humanize_timedelta(timedelta=delta) or "Less than one second."
         description = f"Been up for: **{uptime_str}** (since {since} UTC)."
         # END
+
+        # code is very broken and idfk why... needs a rewrite, #23
+        return await ctx.send(description)
 
         if num_days == 0:
             num_days = 9999  # this works, trust me

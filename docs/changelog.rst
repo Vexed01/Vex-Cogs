@@ -118,6 +118,14 @@ BetterUptime
 ============
 
 *********
+``1.5.2``
+*********
+
+2021-05-25
+
+- Remove custom uptime command... There's some broken shit that I can't fix, rewrite was already planned and this will be fixed then (#23 on GitHub)
+
+*********
 ``1.5.1``
 *********
 
