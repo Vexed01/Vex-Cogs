@@ -3,12 +3,13 @@ import datetime
 import json
 import logging
 from time import time
+from typing import Dict
 
 import pandas
 from vexcogutils.loop import VexLoop
 
 from .abc import MixinMeta
-from .consts import INF
+from .consts import INF, SECONDS_IN_DAY
 
 _log = logging.getLogger("red.vex.betteruptime.loop")
 
@@ -39,11 +40,15 @@ class BULoop(MixinMeta):
         await asyncio.sleep(2)  # wait for unloading to be able to clean up properly
         _log.debug("Setting up...")
 
-        if await self.config.version() != 2:
+        # v1 and v3 have the same format
+        if await self.config.version() == 1:
             _log.info("Migrating BetterUptime config to new format...")
-            await self.migate_v1_to_v2()
-            await self.config.version.set(2)
-            _log.info("Done.")
+            await self.migrate_v1_to_v3()
+            await self.config.version.set(3)
+        elif await self.config.version() == 2:
+            _log.info("Migrating BetterUptime config to new format...")
+            await self.migate_v2_to_v3()
+            await self.config.version.set(3)
         else:
             self.cog_loaded_cache = pandas.read_json(
                 json.dumps(await self.config.cog_loaded()), typ="series"
@@ -56,7 +61,7 @@ class BULoop(MixinMeta):
 
         self.ready = True
 
-    async def migate_v1_to_v2(self):
+    async def migrate_v1_to_v3(self):
         old_cog_loaded = await self.config.cog_loaded()
         old_connected = await self.config.connected()
 
@@ -69,6 +74,31 @@ class BULoop(MixinMeta):
             datetime.datetime.strptime(k, "%Y-%m-%d"): v for k, v in old_connected.items()
         }
         self.connected_cache = pandas.Series(data=partially_converted)
+
+        await self.write_to_config()
+
+    async def migate_v2_to_v3(self):
+        # i had bad code when making v2 so config was a mixtre of v1 and v2 format.... congrats me
+        old_cog_loaded = await self.config.cog_loaded()
+        old_connected = await self.config.connected()
+
+        def convert(data: Dict[str, float]) -> pandas.Series:
+            new_data = {}
+            for k, v in data.items():
+                if "-" in k:
+                    time = datetime.datetime.strptime(k, "%Y-%m-%d")
+                else:
+                    time = datetime.datetime.utcfromtimestamp(float(k) / 1000.0)
+
+                if v > (SECONDS_IN_DAY + 30):  # can happen... dont know why
+                    v = SECONDS_IN_DAY
+
+                new_data[time] = v
+
+            return pandas.Series(data=new_data)
+
+        self.cog_loaded_cache = convert(old_cog_loaded)
+        self.connected_cache = convert(old_connected)
 
         await self.write_to_config()
 
@@ -128,11 +158,10 @@ class BULoop(MixinMeta):
             _log.debug("Wrote local cache to config.")
 
     async def update_uptime(self):
-        utcdatetoday = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
-        utcdateyesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
-            days=1
+        utcdatetoday = datetime.datetime.utcnow().replace(
+            microsecond=0, second=0, minute=0, hour=0
         )
-        utcdateyesterday = utcdateyesterday.strftime("%Y-%m-%d")
+        utcdateyesterday = utcdatetoday - datetime.timedelta(days=1)
 
         # === COG LOADED ===
 
@@ -142,9 +171,9 @@ class BULoop(MixinMeta):
         except KeyError:
             # we need to top up both today and yesterday with their respective amounts
 
-            now = datetime.datetime.now(datetime.timezone.utc)
+            now = datetime.datetime.utcnow()
             midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            just_after_midnight = (now - midnight).seconds
+            just_after_midnight = (now - midnight).total_seconds()
 
             if just_after_midnight > 15:
                 self.cog_loaded_cache[utcdatetoday] = 15
