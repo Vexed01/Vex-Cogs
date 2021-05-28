@@ -2,12 +2,10 @@ import asyncio
 import datetime
 import functools
 import io
-from typing import Any, Union
 
 import discord
 import matplotlib
 import pandas
-from matplotlib import dates
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.dates import AutoDateLocator, DateFormatter
