@@ -3,7 +3,7 @@ from typing import List, Mapping
 
 import discord
 from gidgethub import HTTPException
-from redbot.core import Config, checks, commands
+from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.predicates import MessagePredicate
 from vexcogutils import format_help, format_info, inline_hum_list
@@ -117,7 +117,7 @@ class GitHub(commands.Cog):
         await ctx.send(f"{main}{extra}")
 
     @commands.group(aliases=["github"])
-    @checks.is_owner()
+    @commands.is_owner()
     async def gh(self, ctx):
         """
         Command to interact with this cog.

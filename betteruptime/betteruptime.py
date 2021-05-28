@@ -29,7 +29,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
     data to become available.
     """
 
-    __version__ = "1.5.1"
+    __version__ = "1.5.2"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -121,6 +121,8 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         description = f"Been up for: **{uptime_str}** (since {since} UTC)."
         # END
 
+        # code is very broken and idfk why... needs a rewrite, #23
+
         if num_days == 0:
             num_days = 9999  # this works, trust me
         elif num_days < 5:
@@ -159,9 +161,9 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         )
 
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        seconds_since_midnight = float((now - midnight).seconds)
+        seconds_since_midnight = float((now - midnight).total_seconds())
         if len(expected_index) >= num_days:
-            expected_index = expected_index[: (num_days - 1)]
+            expected_index = expected_index[-(num_days):]
             seconds_data_collected = float(
                 (SECONDS_IN_DAY * (num_days - 1)) + seconds_since_midnight
             )
@@ -245,26 +247,33 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         )
 
         if len(expected_index) > num_days:
-            expected_index = expected_index[: (num_days - 1)]
+            expected_index = expected_index[-(num_days - 1) :]
 
         msg = ""
-
+        date: pandas.Timestamp
         for date in expected_index:
             cog_loaded = conf_cog_loaded.get(date, 0.0)
-            cog_unloaded = SECONDS_IN_DAY - cog_loaded
             connected = conf_connected.get(date, 0.0)
             not_connected = SECONDS_IN_DAY - connected
 
             if not_connected > 120:  # from my experience heartbeats are ~41 secs
                 dt_net = cog_loaded - connected
+
                 if dt_net < 45:  # heartbeats are ~41
                     dt_net = 0.0
-                main_downtime = humanize_timedelta(seconds=cog_unloaded) or "none"
+
+                if dt_net > not_connected:  # i broke shit
+                    if not_connected < 0:
+                        continue
+                    dt_net = not_connected
+
+                main_downtime = humanize_timedelta(seconds=not_connected) or "none"
                 dt_due_to_net = humanize_timedelta(seconds=dt_net) or "none"
 
+                date_fmted = date.strftime("%Y-%m-%d")  # type:ignore  # stubs incorrect
                 msg += (
-                    f"\n**{date}**: `{main_downtime}`, of which `{dt_due_to_net}` was due to "
-                    "network issues."
+                    f"\n**{date_fmted}**: `{main_downtime}`, of which `{dt_due_to_net}` was due "
+                    "to network issues."
                 )
 
         if not msg:

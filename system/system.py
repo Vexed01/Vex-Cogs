@@ -2,7 +2,7 @@ import datetime
 
 import discord
 import psutil
-from redbot.core import checks, commands
+from redbot.core import commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info
 
@@ -41,7 +41,7 @@ class System(commands.Cog):
     async def systeminfo(self, ctx: commands.Context):
         await ctx.send(await format_info(self.qualified_name, self.__version__))
 
-    @checks.is_owner()
+    @commands.is_owner()
     @commands.group()
     async def system(self, ctx: commands.Context):
         """

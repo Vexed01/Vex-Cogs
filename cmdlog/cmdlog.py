@@ -7,7 +7,7 @@ from typing import Deque, Union
 
 import discord
 from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
-from redbot.core import checks, commands
+from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.commands import CheckFailure as RedCheckFailure
 from redbot.core.utils.chat_formatting import humanize_number
@@ -76,7 +76,7 @@ class CmdLog(commands.Cog):
         extra = f"\nCache size: {cache_size} with {cache_count} commands."
         await ctx.send(main + extra)
 
-    @checks.is_owner()
+    @commands.is_owner()
     @commands.group(aliases=["cmdlogs"])
     async def cmdlog(self, ctx: commands.Context):
         """
