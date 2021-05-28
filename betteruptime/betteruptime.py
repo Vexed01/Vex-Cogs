@@ -270,7 +270,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
                 main_downtime = humanize_timedelta(seconds=not_connected) or "none"
                 dt_due_to_net = humanize_timedelta(seconds=dt_net) or "none"
 
-                date_fmted = date.strftime("%Y-%m-%d")
+                date_fmted = date.strftime("%Y-%m-%d")  # type:ignore  # stubs incorrect
                 msg += (
                     f"\n**{date_fmted}**: `{main_downtime}`, of which `{dt_due_to_net}` was due "
                     "to network issues."
