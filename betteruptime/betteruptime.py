@@ -272,8 +272,8 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
 
                 date_fmted = date.strftime("%Y-%m-%d")
                 msg += (
-                    f"\n**{date_fmted}**: `{main_downtime}`, of which `{dt_due_to_net}` was due to "
-                    "network issues."
+                    f"\n**{date_fmted}**: `{main_downtime}`, of which `{dt_due_to_net}` was due "
+                    "to network issues."
                 )
 
         if not msg:
