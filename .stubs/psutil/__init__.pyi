@@ -5,7 +5,7 @@
 from collections import namedtuple
 from typing import Dict, Generator, List, Optional, TypedDict
 
-from ._common import sdiskpart, sdiskusage, suser
+from ._common import sdiskpart, sdiskusage, snetio, suser
 
 LINUX: bool
 WINDOWS: bool
@@ -45,3 +45,4 @@ def disk_usage(path: str) -> sdiskusage: ...
 def process_iter(
     attars: Optional[list] = None, ad_value=None
 ) -> Generator[Process, Process, Process]: ...
+def net_io_counters(permic=..., nowrap=...) -> snetio: ...

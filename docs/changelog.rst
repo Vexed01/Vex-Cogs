@@ -411,6 +411,15 @@ System
 ======
 
 *********
+``1.2.0``
+*********
+
+2021-05-30
+
+- Add command ``system net``
+- Use AsyncIter for the process generator
+
+*********
 ``1.1.2``
 *********
 
