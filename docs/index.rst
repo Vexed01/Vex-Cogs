@@ -24,6 +24,7 @@ Docs version: |version|
    cogs/betteruptime
    cogs/cmdlog
    cogs/github
+   cogs/stattrack
    cogs/status
    cogs/statusref
    cogs/system
