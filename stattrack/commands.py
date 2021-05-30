@@ -29,6 +29,8 @@ class StatTrackCommands(MixinMeta):
         if ylabel is None:
             ylabel = title
         sr = self.df_cache[label]
+        if len(sr) < 2:
+            return await ctx.send("I need a little longer to collect data. Try again in a minute.")
         file = await plot(sr, delta, title, ylabel)
         await ctx.send(file=file)
 
@@ -40,15 +42,6 @@ class StatTrackCommands(MixinMeta):
     @stattrack.command(hidden=True)
     async def raw(self, ctx, var):
         await ctx.send(box(str(self.df_cache[var])))
-
-    @stattrack.command()
-    async def storage(self, ctx: commands.Context):
-        """See how much RAM and disk storage this cog is using."""
-        assert self.df_cache is not None
-        print(self.df_cache.memory_usage().sum())
-        ram = humanize_bytes(getsizeof(self.df_cache))
-        disk = humanize_bytes(getsizeof(self.df_cache.to_json(orient="split")))
-        await ctx.send(f"Disk usage: {disk}\nRAM usage: {ram}")
 
     @stattrack.command()
     async def ping(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):

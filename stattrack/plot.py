@@ -2,13 +2,15 @@ import asyncio
 import datetime
 import functools
 import io
+import warnings
 
 import discord
 import matplotlib
 import pandas
+from dateutil.rrule import DAILY
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from matplotlib.dates import AutoDateLocator, DateFormatter
+from matplotlib.dates import HOURLY, AutoDateLocator, DateFormatter
 from matplotlib.ticker import MaxNLocator
 from redbot.core.utils.chat_formatting import humanize_timedelta
 
@@ -53,14 +55,14 @@ def _plot(
     real_delta = now - sr.first_valid_index()
 
     with plt.style.context("dark_background"):
-        fig = plt.figure(figsize=(7, 5))
+        fig = plt.figure(figsize=(8, 5))
         ax = fig.add_subplot(111)
         assert isinstance(ax, Axes)
         ax.set_title(title + " for the last " + humanize_timedelta(timedelta=real_delta))
         ax.set_xlabel("Time (UTC)")
         ax.set_ylabel(ylabel)
-        ax.xaxis.set_major_locator(AutoDateLocator(minticks=3, maxticks=6))
-        ax.xaxis.set_minor_locator(AutoDateLocator(minticks=16))
+        ax.xaxis.set_major_locator(AutoDateLocator(minticks=3, maxticks=7))
+        ax.xaxis.set_minor_locator(AutoDateLocator(minticks=14))
         ax.xaxis.set_major_formatter(_get_date_formatter(real_delta))
         ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         ax.yaxis.get_major_formatter().set_useOffset(False)
@@ -68,7 +70,12 @@ def _plot(
         ax.plot(sr.index, sr)
         ax.ticklabel_format(axis="y", style="plain")
         buffer = io.BytesIO()
-        fig.savefig(buffer, format="png", dpi=200)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"AutoDateLocator was unable to pick an appropriate interval.*",
+            )
+            fig.savefig(buffer, format="png", dpi=200)
         plt.close(fig)
         buffer.seek(0)
         return discord.File(buffer, "plot.png")

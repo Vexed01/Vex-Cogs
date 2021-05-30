@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import time
+from sys import getsizeof
 from typing import Dict, Set
 
 import discord
@@ -11,6 +12,7 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils import AsyncIter
 from vexcogutils import format_help, format_info
+from vexcogutils.chat import humanize_bytes
 from vexcogutils.loop import VexLoop
 
 from stattrack.abc import CompositeMetaClass
@@ -24,7 +26,13 @@ def snapped_utcnow():
 
 
 class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
-    """BETA COG: StatTrack (Stat Tracking)"""
+    """
+    Track your bot's metrics and view them in Discord.
+    Requires no external setup, so uses Red's config. This cog will use around 150KB per day.
+
+    Commands will output as a graph.
+    Data can also be exported with `[p]stattrack export` into a few different formats.
+    """
 
     __version__ = "0.0.0"
     __author__ = "Vexed#3211"
@@ -44,8 +52,8 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
         self.config.register_global(version=1)
         self.config.register_global(main_df={})
 
-        # if 418078199982063626 in bot.owner_ids:  # for main release
-        bot.add_dev_env_value("stattrack", lambda _: self)
+        if 418078199982063626 in bot.owner_ids:
+            bot.add_dev_env_value("stattrack", lambda _: self)
 
         asyncio.create_task(self.async_init())
 
@@ -60,8 +68,10 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
     def cog_unload(self) -> None:
         if self.loop:
             self.loop.cancel()
-        # if 418078199982063626 in self.bot.owner_ids:  # for main release
-        self.bot.remove_dev_env_value("stattrack")
+        try:
+            self.bot.remove_dev_env_value("stattrack")
+        except KeyError:
+            pass
 
     async def async_init(self) -> None:
         await self.bot.wait_until_red_ready()
@@ -77,12 +87,19 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
 
     @commands.command(hidden=True)
     async def stattrackinfo(self, ctx: commands.Context):
+        assert self.df_cache is not None
+        ram = humanize_bytes(getsizeof(self.df_cache))
+        disk = humanize_bytes(getsizeof(self.df_cache.to_json(orient="split")))
         await ctx.send(
             await format_info(
                 self.qualified_name,
                 self.__version__,
                 loops=[self.loop_meta] if self.loop_meta else [],
-                extras={"Loop time": f"{self.last_loop_time} seconds"},  # type:ignore
+                extras={
+                    "Loop time": f"{self.last_loop_time} seconds",
+                    "Disk usage": disk,
+                    "RAM usage": ram,
+                },
             )
         )
 
@@ -91,6 +108,12 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
         if not self.loop_meta:
             return await ctx.send("Loop not running yet")
         await ctx.send(embed=self.loop_meta.get_debug_embed())
+
+    @commands.command(hidden=True)
+    async def stattrackdev(self, ctx: commands.Context):
+        """Add a dev env var called `stattrack`. Will be removed on cog unload."""
+        self.bot.add_dev_env_value("stattrack", lambda _: self)
+        await ctx.send("Added env var `stattrack`. Will be removed on cog unload.")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
