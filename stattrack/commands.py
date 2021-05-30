@@ -1,10 +1,8 @@
 import datetime
-from sys import getsizeof
 
 from discord.ext.commands.cooldowns import BucketType
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box
-from vexcogutils.chat import humanize_bytes
 
 from stattrack.abc import MixinMeta
 from stattrack.converters import TimespanConverter

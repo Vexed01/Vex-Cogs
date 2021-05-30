@@ -7,10 +7,9 @@ import warnings
 import discord
 import matplotlib
 import pandas
-from dateutil.rrule import DAILY
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from matplotlib.dates import HOURLY, AutoDateLocator, DateFormatter
+from matplotlib.dates import AutoDateLocator, DateFormatter
 from matplotlib.ticker import MaxNLocator
 from redbot.core.utils.chat_formatting import humanize_timedelta
 
