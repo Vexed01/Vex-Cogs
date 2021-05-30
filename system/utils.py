@@ -3,6 +3,7 @@ import datetime
 from typing import Dict, TypedDict, Union
 
 import psutil
+from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import box as cf_box
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta
 from tabulate import tabulate
@@ -164,7 +165,7 @@ async def get_proc() -> Dict[str, str]:
     processes = psutil.process_iter(["status", "username"])
     status = {"sleeping": 0, "idle": 0, "running": 0, "stopped": 0}
 
-    for process in processes:
+    async for process in AsyncIter(processes):  # v slow on windows
         try:
             status[process.info["status"]] += 1
         except KeyError:
@@ -187,6 +188,19 @@ async def get_proc() -> Dict[str, str]:
             data["statuses"] += f"[Stopped]  {stopped}\n"
         else:
             data["statuses"] += f"[Total]    {total}\n"
+
+    return data
+
+
+async def get_net() -> Dict[str, str]:
+    """Get network stats. May have reset from zero at some point."""
+    net = psutil.net_io_counters()
+
+    data = {"counters": ""}
+    data["counters"] += f"[Bytes sent]   {humanize_bytes(net.bytes_sent)}\n"
+    data["counters"] += f"[Bytes recv]   {humanize_bytes(net.bytes_recv)}\n"
+    data["counters"] += f"[Packets sent] {net.packets_sent}\n"
+    data["counters"] += f"[Packets recv] {net.packets_recv}\n"
 
     return data
 

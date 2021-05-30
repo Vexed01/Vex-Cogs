@@ -7,7 +7,17 @@ from redbot.core.bot import Red
 from vexcogutils import format_help, format_info
 
 from .command import DynamicHelp
-from .utils import box, get_cpu, get_disk, get_mem, get_proc, get_sensors, get_uptime, get_users
+from .utils import (
+    box,
+    get_cpu,
+    get_disk,
+    get_mem,
+    get_net,
+    get_proc,
+    get_sensors,
+    get_uptime,
+    get_users,
+)
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"
@@ -23,7 +33,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.1.2"
+    __version__ = "1.2.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -230,6 +240,27 @@ class System(commands.Cog):
         else:
             msg = "**Processes**\n"
             msg += box(f"CPU\n{proc}\n")
+            await ctx.send(msg)
+
+    @system.command(
+        name="network", aliases=["net"], cls=DynamicHelp, supported_sys=True
+    )  # all systems
+    async def system_net(self, ctx: commands.Context):
+        """
+        Get network stats. They may have overflowed and reset at some point.
+
+        Platforms: Windows, Linux, Mac OS
+        """
+        stats = (await get_net())["counters"]
+
+        if await ctx.embed_requested():
+            now = datetime.datetime.utcnow()
+            embed = discord.Embed(title="Network", colour=await ctx.embed_colour(), timestamp=now)
+            embed.add_field(name="Network Stats", value=box(stats))
+            await ctx.send(embed=embed)
+        else:
+            msg = "**Network**\n"
+            msg += box(f"Network Stats\n{stats}\n")
             await ctx.send(msg)
 
     @system.command(
