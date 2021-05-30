@@ -52,7 +52,7 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
         self.config.register_global(version=1)
         self.config.register_global(main_df={})
 
-        if 418078199982063626 in bot.owner_ids:
+        if 418078199982063626 in bot.owner_ids:  # type:ignore
             bot.add_dev_env_value("stattrack", lambda _: self)
 
         asyncio.create_task(self.async_init())
