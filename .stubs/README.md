@@ -10,12 +10,17 @@ Bellow is a list of libraries used, not in the standard lib.
 
 ## To do
 
+*None*
+
+## Not doing
+
+- matplotlib
+
 ## Done
 
 #### Present in this folder (.stubs):
 
 - markdownify
-- matplotlib
 - rapidfuzz
 - psutil
 - pyjson5
