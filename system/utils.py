@@ -5,13 +5,16 @@ from typing import Dict, TypedDict, Union
 import psutil
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import box as cf_box
-from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta
+from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta, pagify
 from tabulate import tabulate
 from vexcogutils.chat import humanize_bytes
 
 
 def box(text: str) -> str:
-    """Box up text as toml. May return over 2k chars"""
+    """Box up text as toml. Will not return more than 1024 chars (embed value limit)"""
+    if len(text) > 1010:
+        text = list(pagify(text, page_length=1024, shorten_by=12))[0]
+        text += "\n..."
     return cf_box(text, "toml")
 
 

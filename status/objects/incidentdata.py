@@ -1,4 +1,5 @@
 import datetime
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from redbot.core.utils import deduplicate_iterables
@@ -18,35 +19,24 @@ class UpdateField:
         )
 
 
+@dataclass
 class IncidentData:
     """An object representing a fully parsed service status."""
 
-    def __init__(
-        self,
-        title: str,
-        link: str,
-        incident_id: str,
-        description: str,
-        fields: List[UpdateField] = [],
-        time: Optional[datetime.datetime] = None,
-        actual_time: Optional[datetime.datetime] = None,
-        *,
-        scheduled_for: Optional[datetime.datetime] = None,
-    ):
-        self.fields = fields
-        self.time = time
-        self.title = title
-        self.link = link
-        self.actual_time = actual_time
-        self.description = description
-        self.incident_id = incident_id
-
-        self.scheduled_for = scheduled_for
+    title: str
+    link: str
+    incident_id: str
+    description: str
+    fields: List[UpdateField] = field(default_factory=list)
+    time: Optional[datetime.datetime] = None
+    actual_time: Optional[datetime.datetime] = None
+    scheduled_for: Optional[datetime.datetime] = None
 
     def __repr__(self):
         return (
             f'IncidentData({self.fields}, {self.time}, "{self.title}", "{self.link}", '
-            f'{self.actual_time}, "{self.description}", "{self.incident_id}")'
+            f'{self.actual_time}, "{self.description}", "{self.incident_id}", '
+            f'"{self.scheduled_for}")'
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -71,9 +61,9 @@ class IncidentData:
         return deduplicate_iterables([field.update_id for field in self.fields])
 
 
+@dataclass
 class Update:
     """Has the IncidentData of the valid update and the new field(s)."""
 
-    def __init__(self, incidentdata: IncidentData, new_fields: List[UpdateField]):
-        self.incidentdata = incidentdata
-        self.new_fields = new_fields
+    incidentdata: IncidentData
+    new_fields: List[UpdateField]

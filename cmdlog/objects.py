@@ -1,4 +1,5 @@
 import datetime
+from dataclasses import dataclass
 from sys import getsizeof
 from typing import Optional
 
@@ -8,10 +9,10 @@ from redbot.core import commands
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
+@dataclass
 class IDFKWhatToNameThis:
-    def __init__(self, id: int, name: str) -> None:
-        self.id = id
-        self.name = name
+    id: int
+    name: str
 
     def __sizeof__(self) -> int:
         # using getsizeof includes things like garbage

@@ -29,6 +29,7 @@ Docs version: |version|
    cogs/statusref
    cogs/system
    cogs/timechannel
+   cogs/wol
 
 .. toctree::
    :maxdepth: 1
