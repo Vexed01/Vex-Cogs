@@ -60,4 +60,5 @@ Cog name                              Summary
 :ref:`status<status>`                 Recieve automatic status updates from various services, including Discord.
 :ref:`system<system>`                 Get system metrics of the host device, such as RAM or CPU.
 :ref:`timechannel<timechannel>`       Get the time in different timezones in voice channels.
+:ref:`wol<wol>`                       Use Wake on LAN from Discord! Sends magic packets on the local network.
 ===================================== ===========================================================================
