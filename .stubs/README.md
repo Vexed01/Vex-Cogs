@@ -10,7 +10,7 @@ Bellow is a list of libraries used, not in the standard lib.
 
 ## To do
 
-*None*
+- matplotlib
 
 ## Done
 
@@ -28,9 +28,6 @@ Bellow is a list of libraries used, not in the standard lib.
 
 - discord (discord.py-stubs)
 - pandas (pandas-stubs)
-- matplotlib (data-science-types)
-
-_Technically data-science-types includes pandas, but it's not very complete._
 
 ##### via py.typed
 
