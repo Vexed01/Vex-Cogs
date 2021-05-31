@@ -27,8 +27,10 @@ Bellow is a list of libraries used, not in the standard lib.
 ##### via PyPi stubs
 
 - discord (discord.py-stubs)
-- pandas (data-science-types)
+- pandas (pandas-stubs)
 - matplotlib (data-science-types)
+
+_Technically data-science-types includes pandas, but it's not very complete._
 
 ##### via py.typed
 
