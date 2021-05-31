@@ -2,7 +2,7 @@ import datetime
 
 from discord.ext.commands.cooldowns import BucketType
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.chat_formatting import box, text_to_file
 
 from stattrack.abc import MixinMeta
 from stattrack.converters import TimespanConverter
@@ -40,6 +40,24 @@ class StatTrackCommands(MixinMeta):
     @stattrack.command(hidden=True)
     async def raw(self, ctx, var):
         await ctx.send(box(str(self.df_cache[var])))
+
+    @stattrack.group()
+    async def export(self, ctx: commands.Context):
+        """Export stattrack data."""
+
+    @export.command(name="json")
+    async def export_json(self, ctx: commands.Context):
+        """Export as JSON with pandas orient "split" """
+        assert self.df_cache is not None
+        data = self.df_cache.to_json(orient="split")
+        await ctx.send("Here is your file.", file=text_to_file(data, "stattrack.json"))
+
+    @export.command(name="csv")
+    async def export_csv(self, ctx: commands.Context):
+        """Export as CSV"""
+        assert self.df_cache is not None
+        data = self.df_cache.to_csv()
+        await ctx.send("Here is your file.", file=text_to_file(data, "stattrack.csv"))
 
     @stattrack.command()
     async def ping(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
