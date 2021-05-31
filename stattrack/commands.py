@@ -50,6 +50,7 @@ class StatTrackCommands(MixinMeta):
         """Export as JSON with pandas orient "split" """
         assert self.df_cache is not None
         data = self.df_cache.to_json(orient="split")
+        assert data is not None
         await ctx.send("Here is your file.", file=text_to_file(data, "stattrack.json"))
 
     @export.command(name="csv")
@@ -57,6 +58,7 @@ class StatTrackCommands(MixinMeta):
         """Export as CSV"""
         assert self.df_cache is not None
         data = self.df_cache.to_csv()
+        assert data is not None
         await ctx.send("Here is your file.", file=text_to_file(data, "stattrack.csv"))
 
     @stattrack.command()
