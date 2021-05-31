@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Literal, Optional, TypedDict, Union
 
 from discord import Emoji
@@ -24,19 +25,16 @@ DEFAULTS = Defaults(
 )
 
 
+@dataclass
 class Settings:
-    def __init__(self, emoji: Optional[int], colour: Optional[int]) -> None:
-        self.emoji = emoji
-        self.colour = colour
-
-    def __repr__(self):
-        return f"Cache({self.emoji}, {self.colour})"
+    emoji: Optional[int]
+    colour: Optional[int]
 
 
+@dataclass
 class FullSettings:
-    def __init__(self, emoji: Union[str, Emoji], colour: int) -> None:
-        self.emoji = emoji
-        self.colour = colour
+    emoji: Union[str, Emoji]
+    colour: int
 
     def __repr__(self) -> str:
         emoji = f'"{self.emoji}"' if isinstance(self.emoji, str) else self.emoji

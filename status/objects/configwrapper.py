@@ -87,3 +87,6 @@ class ConfigWrapper:
                 feeds[service]["edit_id"] = {incident_id: msg_id}
             else:
                 feeds[service]["edit_id"][incident_id] = msg_id
+
+    def __repr__(self) -> str:
+        return f"ConfigWrapper(config={self.config}, last_checked={self.last_checked}"
