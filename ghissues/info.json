@@ -1,11 +1,11 @@
 {
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": ["Vexed (Vexed#3211)"],
-    "name": "GitHub",
-    "install_msg": "Thanks for installing! This cog was made for bot owners to manage issues on a specific repo. Get started with `gh howtoken` and `gh setrepo`.\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/github.html>",
+    "name": "GHIssues",
+    "install_msg": "⚠️ **Requires discord.py 2.0 which is not in a stable version of Red and will break most cogs** ⚠️",
     "requirements": ["gidgethub>=5.0.0", "vex-cog-utils==1.4.5"],
-    "description": "Create, comment, labelify and close GitHub issues, with partial PR support.",
-    "short": "Create, comment, labelify and close GitHub issues.",
+    "description": "Create, comment, labelify and close GitHub issues, with partial PR support.\n\n⚠️ Requires discord.py 2.0 which is not in a stable version of Red and will break most other cogs ⚠️",
+    "short": "Create, comment, labelify and close GitHub issues. ⚠️ Requires discord.py 2.0 which is not in a stable version of Red and will break most other cogs ⚠️",
     "tags": ["utility", "github", "issues"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users."
 }
