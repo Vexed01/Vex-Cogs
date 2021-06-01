@@ -82,6 +82,3 @@ class GitHubAPI:
             return await gh.put(
                 f"/repos/{self.repo}/pulls/{issue}/merge", data={"commit_title": commit_msg}
             )
-
-    async def make_draft(self, issue: int) -> dict:
-        gh

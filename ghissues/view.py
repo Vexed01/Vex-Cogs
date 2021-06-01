@@ -5,7 +5,7 @@ from discord import ButtonStyle, Interaction
 from discord.partial_emoji import PartialEmoji
 from discord.ui import Button
 from discord.ui.view import View
-from redbot.core.utils.chat_formatting import humanize_list, pagify
+from redbot.core.utils.chat_formatting import pagify
 from vexcogutils.chat import inline_hum_list
 
 from .api import GitHubAPI
