@@ -70,3 +70,18 @@ class GitHubAPI:
         async with aiohttp.ClientSession() as session:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
             return await gh.post(f"/repos/{self.repo}/issues/{issue}", data={"state": "closed"})
+
+    async def open(self, issue: int) -> dict:
+        async with aiohttp.ClientSession() as session:
+            gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
+            return await gh.post(f"/repos/{self.repo}/issues/{issue}", data={"state": "open"})
+
+    async def merge(self, issue: int, commit_msg: str) -> dict:
+        async with aiohttp.ClientSession() as session:
+            gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
+            return await gh.put(
+                f"/repos/{self.repo}/pulls/{issue}/merge", data={"commit_title": commit_msg}
+            )
+
+    async def make_draft(self, issue: int) -> dict:
+        gh
