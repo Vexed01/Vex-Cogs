@@ -119,9 +119,10 @@ class GHIssues(commands.Cog):
             - `[p]ghi howtoken`
             - `[p]ghi create`
         """
-        assert self.api is not None
-        issue_info = await self.api.get_issue(issue)
-        embed = format_embed(issue_info)
+        async with ctx.typing():
+            assert self.api is not None
+            issue_info = await self.api.get_issue(issue)
+            embed = format_embed(issue_info)
         await ctx.send(embed=embed, view=GHView(issue_info, self.api, ctx.author.id))
 
     @ghi.command()

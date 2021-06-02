@@ -34,7 +34,13 @@ class GHView(ui.View):
             self.btn_merge.disabled = not mergeable
 
     async def interaction_check(self, interaction: Interaction) -> bool:
-        return interaction.user.id == self.author_id
+        if interaction.user.id == self.author_id:
+            return True
+
+        await interaction.response.send_message(
+            "You don't have have permission to do this.", ephemeral=True
+        )
+        return False
 
     async def regen_viw(self, interaction: Interaction):
         """Get the latest version and update the view."""
