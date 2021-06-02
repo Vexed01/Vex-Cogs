@@ -1,10 +1,7 @@
-from typing import Optional, Union
-
 import discord
-from discord import ButtonStyle, Interaction
-from discord.partial_emoji import PartialEmoji
+from discord import ButtonStyle, Interaction, ui
 from discord.ui import Button
-from discord.ui.view import View
+from discord.ui.button import button
 from redbot.core.utils.chat_formatting import pagify
 from vexcogutils.chat import inline_hum_list
 
@@ -12,6 +9,7 @@ from .api import GitHubAPI
 
 
 def format_embed(issue_data: dict) -> discord.Embed:
+    # thanks Kowlin
     embed = discord.Embed(
         title=issue_data["state"].upper()
         + ": "
@@ -45,114 +43,15 @@ def format_embed(issue_data: dict) -> discord.Embed:
     return embed
 
 
-class GHButton(Button):
-    def __init__(
-        self,
-        issue_data: dict,
-        api: GitHubAPI,
-        style: ButtonStyle,
-        label: Optional[str],
-        emoji: Optional[Union[str, PartialEmoji]],
-        row: Optional[int],
-        disabled: Optional[bool],
-    ):
-        super().__init__(style=style, label=label, emoji=emoji, row=row, disabled=disabled)
-        self.issue_data = issue_data
-        self.api = api
-
-    async def regen_viw(self, interaction: Interaction, view: View):
-        """Get the latest version and update the view."""
-        data = await self.api.get_issue(self.issue_data["number"])
-        embed = format_embed(data)
-        await interaction.response.edit_message(embed=embed, view=view)
-
-
-# CHILD 0
-class MilestoneButton(GHButton):
-    def __init__(self, issue_data: dict, api: GitHubAPI):
-        super().__init__(issue_data, api, ButtonStyle.green, "Milestone", None, 1, False)
-
-    async def callback(self, interaction: Interaction):
-        assert isinstance(self.view, GHView)
-        await interaction.response.send_message("Not implemented.")
-
-
-# CHILD 1
-class AddLabelsButton(GHButton):
-    def __init__(self, issue_data: dict, api: GitHubAPI):
-        super().__init__(issue_data, api, ButtonStyle.green, "Add Labels", None, 1, False)
-
-    async def callback(self, interaction: Interaction):
-        assert isinstance(self.view, GHView)
-        await interaction.response.send_message("Not implemented.")
-
-
-# CHILD 2
-class RemoveLabelsButton(GHButton):
-    def __init__(self, issue_data: dict, api: GitHubAPI):
-        super().__init__(issue_data, api, ButtonStyle.red, "Remove Labels", None, 1, False)
-
-    async def callback(self, interaction: Interaction):
-        assert isinstance(self.view, GHView)
-        await interaction.response.send_message("Not implemented.")
-
-
-# CHILD 3
-class CloseButton(GHButton):
-    def __init__(self, issue_data: dict, api: GitHubAPI, disabled: bool):
-        super().__init__(issue_data, api, ButtonStyle.red, "Close", None, 2, disabled)
-
-    async def callback(self, interaction: Interaction):
-        assert isinstance(self.view, GHView)
-        await self.api.close(self.issue_data["number"])
-        self.disabled = True
-        self.view.children[4].disabled = False
-        if len(self.view.children) == 6:
-            self.view.children[5].disabled = True
-        await self.regen_viw(interaction, self.view)
-
-
-# CHILD 4
-class OpenButton(GHButton):
-    def __init__(self, issue_data: dict, api: GitHubAPI, disabled: bool):
-        super().__init__(issue_data, api, ButtonStyle.green, "Open", None, 2, disabled)
-
-    async def callback(self, interaction: Interaction):
-        assert isinstance(self.view, GHView)
-        await self.api.open(self.issue_data["number"])
-        self.disabled = True
-        self.view.children[3].disabled = False
-        if len(self.view.children) == 6:
-            self.view.children[5].disabled = False
-        await self.regen_viw(interaction, self.view)
-
-
-# CHILD 5 (PR only)
-class MergeButton(GHButton):
-    def __init__(self, issue_data: dict, api: GitHubAPI, disabled: bool):
-        super().__init__(issue_data, api, ButtonStyle.blurple, "Merge", None, 2, disabled)
-
-    async def callback(self, interaction: Interaction):
-        assert isinstance(self.view, GHView)
-        # TODO: let them pick commit msg and merge method
-        await self.api.merge(self.issue_data["number"], self.issue_data["title"])
-        self.disabled = True
-        self.view.children[3].disabled = True
-        self.view.children[4].disabled = True
-        await self.regen_viw(interaction, self.view)
-
-
-class GHView(discord.ui.View):
+class GHView(ui.View):
     def __init__(
         self, issue_data: dict, api: GitHubAPI, author_id: int, timeout: float = 300.0
     ):  # 5 min
         super().__init__(timeout=timeout)
         self.issue_data = issue_data
+        self.api = api
         self.author_id = author_id
-
-        self.add_item(MilestoneButton(issue_data, api))
-        self.add_item(AddLabelsButton(issue_data, api))
-        self.add_item(RemoveLabelsButton(issue_data, api))
+        self.is_pr = True if issue_data.get("mergeable_state") else False
 
         if issue_data.get("merged"):
             openable = False
@@ -163,15 +62,61 @@ class GHView(discord.ui.View):
             closeable = issue_data["state"] == "open"
             mergeable = issue_data.get("mergeable_state") == "clean"
 
-        self.add_item(CloseButton(issue_data, api, not closeable))
-        self.add_item(OpenButton(issue_data, api, not openable))
+        self.btn_open.disabled = not openable
+        self.btn_close.disabled = not closeable
 
-        state = issue_data.get("mergeable_state")
-        if state:  # if its a PR
-            self.add_item(MergeButton(issue_data, api, not mergeable))
+        if not self.is_pr:
+            self.remove_item(self.btn_merge)
+        else:
+            self.btn_merge.disabled = not mergeable
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         return interaction.user.id == self.author_id
+
+    async def regen_viw(self, interaction: Interaction):
+        """Get the latest version and update the view."""
+        data = await self.api.get_issue(self.issue_data["number"])
+        embed = format_embed(data)
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @button(label="Set milestone", style=ButtonStyle.green, row=0)
+    async def btn_milestone(self, button: Button, interaction: Interaction):
+        await interaction.response.send_message("Not implemented.")
+
+    @button(label="Add labels", style=ButtonStyle.green, row=0)
+    async def btn_add_label(self, button: Button, interaction: Interaction):
+        await interaction.response.send_message("Not implemented.")
+
+    @button(label="Remove labels", style=ButtonStyle.red, row=0)
+    async def btn_remove_label(self, button: Button, interaction: Interaction):
+        await interaction.response.send_message("Not implemented.")
+
+    @button(label="Close", style=ButtonStyle.red, row=1)
+    async def btn_close(self, button: Button, interaction: Interaction):
+        await self.api.close(self.issue_data["number"])
+        button.disabled = True
+        self.btn_open.disabled = False
+        if self.is_pr:
+            self.btn_merge.disabled = True
+        await self.regen_viw(interaction)
+
+    @button(label="Open", style=ButtonStyle.green, row=1)
+    async def btn_open(self, button: Button, interaction: Interaction):
+        await self.api.open(self.issue_data["number"])
+        button.disabled = True
+        self.btn_close.disabled = False
+        if self.is_pr:
+            self.btn_merge.disabled = False
+        await self.regen_viw(interaction)
+
+    @button(label="Merge", style=ButtonStyle.blurple, row=1)
+    async def btn_merge(self, button: Button, interaction: Interaction):
+        # TODO: let them pick commit msg and merge method
+        await self.api.merge(self.issue_data["number"], self.issue_data["title"])
+        button.disabled = True
+        self.btn_close.disabled = True
+        self.btn_open.disabled = True
+        await self.regen_viw(interaction)
 
 
 # await ctx.send(embed=embed, view=GHView(...))
