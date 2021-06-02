@@ -51,7 +51,7 @@ class GHView(ui.View):
         self.issue_data = issue_data
         self.api = api
         self.author_id = author_id
-        self.is_pr = True if issue_data.get("mergeable_state") else False
+        self.is_pr = bool(issue_data.get("mergeable_state"))
 
         if issue_data.get("merged"):
             openable = False
