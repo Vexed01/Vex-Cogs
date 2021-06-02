@@ -9,6 +9,7 @@
         "status": "2.3.5",
         "system": "1.2.1",
         "timechannel": "1.1.0",
-        "wol": "1.0.0"
+        "wol": "1.0.0",
+        "stattrack": "1.0.0"
     }
 }
