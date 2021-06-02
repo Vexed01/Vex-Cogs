@@ -1,46 +1,9 @@
-import discord
 from discord import ButtonStyle, Interaction, ui
 from discord.ui import Button
 from discord.ui.button import button
-from redbot.core.utils.chat_formatting import pagify
-from vexcogutils.chat import inline_hum_list
 
 from .api import GitHubAPI
-
-
-def format_embed(issue_data: dict) -> discord.Embed:
-    # thanks Kowlin
-    embed = discord.Embed(
-        title=issue_data["state"].upper()
-        + ": "
-        + issue_data["title"]
-        + " #"
-        + str(issue_data["number"]),
-        url=issue_data["html_url"],
-        # TODO: colour and dont shove state in title, title length limit
-    )
-    embed.set_author(name=issue_data["user"]["login"], icon_url=issue_data["user"]["avatar_url"])
-    if issue_data["body"]:
-        embed.description = list(pagify(issue_data["body"], page_length=500))[0]
-    labels = issue_data.get("labels", [])
-    if labels:  # want a lot
-        if len(labels) > 15:
-            labels = labels[0:13]
-            extra = "..."
-        else:
-            extra = ""
-        embed.add_field(name="Labels", value=inline_hum_list([i["name"] for i in labels]) + extra)
-    milestone = issue_data.get("milestone")
-    if milestone:
-        embed.add_field(name="Milestone", value=milestone)
-    merge_state = issue_data.get("mergeable_state")
-    if merge_state:  # its a PR
-        if issue_data["merged"]:
-            merge_state = "merged"
-        elif merge_state == "clean":
-            merge_state = "mergeable"
-        embed.add_field(name="State", value=merge_state.capitalize())
-    return embed
+from .format import format_embed
 
 
 class GHView(ui.View):
