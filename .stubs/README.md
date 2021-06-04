@@ -12,6 +12,10 @@ Bellow is a list of libraries used, not in the standard lib.
 
 *None*
 
+## Not doing
+
+- matplotlib
+
 ## Done
 
 #### Present in this folder (.stubs):
@@ -20,13 +24,14 @@ Bellow is a list of libraries used, not in the standard lib.
 - rapidfuzz
 - psutil
 - pyjson5
+- wakeonlan
 
 #### Others:
 
 ##### via PyPi stubs
 
-- discord
-- pandas
+- discord (discord.py-stubs)
+- pandas (pandas-stubs)
 
 ##### via py.typed
 
