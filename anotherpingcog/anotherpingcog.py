@@ -296,7 +296,7 @@ class AnotherPingCog(commands.Cog):
             `<emoji>`
             Just send the emoji as you normally would. It must be a custom emoji and I must
             be in the sever the emoji is in.
-            You can also put `default` to use \N{LARGE RED CIRCLE}
+            You can also put `default` to use \N{LARGE ORANGE CIRCLE}
 
             `[hex_colour]` (optional)
             The hex code you want the colour for Red to be. It looks best when this is the
@@ -367,7 +367,7 @@ class AnotherPingCog(commands.Cog):
             `<emoji>`
             Just send the emoji as you normally would. It must be a custom emoji and I must
             be in the sever the emoji is in.
-            You can also put `default` to use \N{LARGE RED CIRCLE}
+            You can also put `default` to use \N{LARGE GREEN CIRCLE}
 
             `[hex_colour]` (optional)
             The hex code you want the colour for Red to be. It looks best when this is the
