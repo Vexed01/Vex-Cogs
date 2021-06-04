@@ -223,16 +223,22 @@ class AnotherPingCog(commands.Cog):
         If you want to go back to the defaults, just do `[p]pingset red default default`.
 
         **Arguments:**
+            `<emoji>`
+            Just send the emoji as you normally would. It must be a custom emoji and I must
+            be in the sever the emoji is in.
+            You can also put `default` to use \N{LARGE RED CIRCLE}
 
-        `<emoji>`
-        Just send the emoji as you normally would. It must be a custom emoji and I must
-        be in the sever the emoji is in.
-        You can also put `default` to use \N{LARGE RED CIRCLE}
+            `[hex_colour]` (optional)
+            The hex code you want the colour for Red to be. It looks best when this is the
+            same colour as the emoji. Google "hex colour" if you need help with this.
 
-        `[hex_colour]` (optional)
-        The hex code you want the colour for Red to be. It looks best when this is the
-        same colour as the emoji. Google "hex colour" if you need help with this.
+        **Examples:**
+            - `[p]pingset red :emoji: #F04747`
+            - `[p]pingset red :emoji: default`
+            - `[p]pingset red default #F04747`
+            - `[p]pingset red default default`
         """
+
         if emoji.casefold() == "default":
             await self.config.custom_settings.set_raw("red", "emoji", value=None)  # type:ignore
             emoji_toset = None
@@ -252,6 +258,7 @@ class AnotherPingCog(commands.Cog):
             await self.config.custom_settings.set_raw("red", "colour", value=None)  # type:ignore
             hex = None
         else:
+            hex_colour = hex_colour.lstrip("#")
             try:
                 int_colour = int(hex_colour, 16)
             except ValueError:  # not base 16
@@ -286,15 +293,20 @@ class AnotherPingCog(commands.Cog):
         If you want to go back to the defaults, just do `[p]pingset orange default default`.
 
         **Arguments:**
+            `<emoji>`
+            Just send the emoji as you normally would. It must be a custom emoji and I must
+            be in the sever the emoji is in.
+            You can also put `default` to use \N{LARGE ORANGE CIRCLE}
 
-        `<emoji>`
-        Just send the emoji as you normally would. It must be a custom emoji and I must
-        be in the sever the emoji is in.
-        You can also put `default` to use \N{LARGE ORANGE CIRCLE}
+            `[hex_colour]` (optional)
+            The hex code you want the colour for Red to be. It looks best when this is the
+            same colour as the emoji. Google "hex colour" if you need help with this.
 
-        `[hex_colour]` (optional)
-        The hex code you want the colour for Red to be. It looks best when this is the
-        same colour as the emoji. Google "hex colour" if you need help with this.
+        **Examples:**
+            - `[p]pingset orange :emoji: #FAA61A`
+            - `[p]pingset orange :emoji: default`
+            - `[p]pingset orange default #FAA61A`
+            - `[p]pingset orange default default`
         """
         if emoji.casefold() == "default":
             await self.config.custom_settings.set_raw("orange", "emoji", value=None)  # type:ignore
@@ -317,6 +329,7 @@ class AnotherPingCog(commands.Cog):
             )
             hex = None
         else:
+            hex_colour = hex_colour.lstrip("#")
             try:
                 int_colour = int(hex_colour, 16)
             except ValueError:  # not base 16
@@ -351,15 +364,20 @@ class AnotherPingCog(commands.Cog):
         If you want to go back to the defaults, just do `[p]pingset green default default`.
 
         **Arguments:**
+            `<emoji>`
+            Just send the emoji as you normally would. It must be a custom emoji and I must
+            be in the sever the emoji is in.
+            You can also put `default` to use \N{LARGE GREEN CIRCLE}
 
-        `<emoji>`
-        Just send the emoji as you normally would. It must be a custom emoji and I must
-        be in the sever the emoji is in.
-        You can also put `default` to use \N{LARGE GREEN CIRCLE}
+            `[hex_colour]` (optional)
+            The hex code you want the colour for Red to be. It looks best when this is the
+            same colour as the emoji. Google "hex colour" if you need help with this.
 
-        `[hex_colour]` (optional)
-        The hex code you want the colour for Red to be. It looks best when this is the
-        same colour as the emoji. Google "hex colour" if you need help with this.
+        **Examples:**
+            - `[p]pingset green :emoji: #43B581`
+            - `[p]pingset green :emoji: default`
+            - `[p]pingset green default #43B581`
+            - `[p]pingset green default default`
         """
         if emoji.casefold() == "default":
             await self.config.custom_settings.set_raw("green", "emoji", value=None)  # type:ignore
@@ -380,6 +398,7 @@ class AnotherPingCog(commands.Cog):
             await self.config.custom_settings.set_raw("green", "colour", value=None)  # type:ignore
             hex = None
         else:
+            hex_colour = hex_colour.lstrip("#")
             try:
                 int_colour = int(hex_colour, 16)
             except ValueError:  # not base 16

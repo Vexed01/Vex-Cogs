@@ -59,9 +59,7 @@ class CmdLog(commands.Cog):
     async def on_command(self, ctx: commands.Context):
         if ctx.guild:
             assert not isinstance(ctx.channel, discord.DMChannel)
-            self.log_com(ctx)
-        else:
-            self.log_com(ctx)
+        self.log_com(ctx)
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -106,7 +104,12 @@ class CmdLog(commands.Cog):
 
     @cmdlog.command()
     async def user(self, ctx: commands.Context, user_id: int):
-        """Upload all the logs that are stored for a specific User ID in the cache."""
+        """
+        Upload all the logs that are stored for a specific User ID in the cache.
+
+        **Example:**
+            - `[p]cmdlog user 418078199982063626`
+        """
         now = datetime.datetime.now().strftime(TIME_FORMAT)
         logs = [f"[{i.time}] {str(i)}" for i in self.log_cache if i.user.id == user_id]
         log_str = f"Generated at {now} for user {user_id}.\n" + (
@@ -121,7 +124,12 @@ class CmdLog(commands.Cog):
 
     @cmdlog.command(aliases=["guild"])
     async def server(self, ctx: commands.Context, server_id: int):
-        """Upload all the logs that are stored for for a specific server ID in the cache."""
+        """
+        Upload all the logs that are stored for for a specific server ID in the cache.
+
+        **Example:**
+            - `[p]cmdlog server 527961662716772392`
+        """
         now = datetime.datetime.now().strftime(TIME_FORMAT)
         logs = [
             f"[{i.time}] {str(i)}" for i in self.log_cache if i.guild and i.guild.id == server_id
@@ -146,6 +154,11 @@ class CmdLog(commands.Cog):
 
         You can search for a group command (eg `cmdlog`) or a full command (eg `cmdlog user`).
         As arguments are not stored, you cannot search for them.
+
+        **Examples:**
+            - `[p]cmdlog command ping`
+            - `[p]cmdlog command playlist`
+            - `[p]cmdlog command playlist create`
         """
         # not checking if a command exists because want to allow for this to find it if it was
         # unloaded (eg if com was found to be intensive, see if it was one user spamming it)

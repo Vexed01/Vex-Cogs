@@ -189,8 +189,8 @@ class System(commands.Cog):
             await ctx.send(msg)
 
     @system.command(
-        name="disk", aliases=["df"], cls=DynamicHelp, supported_sys=True
-    )  # all systems
+        name="disk", aliases=["df"], cls=DynamicHelp, supported_sys=True  # all systems
+    )
     async def system_disk(self, ctx: commands.Context):
         """
         Get infomation about disks connected to the system.
@@ -219,8 +219,8 @@ class System(commands.Cog):
             await ctx.send(msg)
 
     @system.command(
-        name="processes", aliases=["proc"], cls=DynamicHelp, supported_sys=True
-    )  # all systems
+        name="processes", aliases=["proc"], cls=DynamicHelp, supported_sys=True  # all systems
+    )
     async def system_processes(self, ctx: commands.Context):
         """
         Get an overview of the status of currently running processes.
@@ -243,8 +243,8 @@ class System(commands.Cog):
             await ctx.send(msg)
 
     @system.command(
-        name="network", aliases=["net"], cls=DynamicHelp, supported_sys=True
-    )  # all systems
+        name="network", aliases=["net"], cls=DynamicHelp, supported_sys=True  # all systems
+    )
     async def system_net(self, ctx: commands.Context):
         """
         Get network stats. They may have overflowed and reset at some point.
@@ -264,8 +264,8 @@ class System(commands.Cog):
             await ctx.send(msg)
 
     @system.command(
-        name="uptime", aliases=["up"], cls=DynamicHelp, supported_sys=True
-    )  # all systems
+        name="uptime", aliases=["up"], cls=DynamicHelp, supported_sys=True  # all systems
+    )
     async def system_uptime(self, ctx: commands.Context):
         """
         Get the system boot time and how long ago it was.
@@ -285,8 +285,8 @@ class System(commands.Cog):
             await ctx.send(msg)
 
     @system.command(
-        name="top", aliases=["overview", "all"], cls=DynamicHelp, supported_sys=True
-    )  # all systems
+        name="top", aliases=["overview", "all"], cls=DynamicHelp, supported_sys=True  # all systems
+    )
     async def system_all(self, ctx: commands.Context):
         """
         Get an overview of the current system metrics, similar to `top`.

@@ -23,6 +23,12 @@ except ImportError:
 class Beautify(commands.Cog):
     """
     Beautify and minify JSON.
+
+    This cog has two commands, `[p]beautify` and `[p]minify`. Both of which behave in similar ways.
+
+    They are very flexible and accept inputs in many ways,
+    for example replies or uploading - or just simply putting it after the command.
+
     """
 
     __author__ = "Vexed#3211"
@@ -71,6 +77,11 @@ class Beautify(commands.Cog):
         ​ ​ ​ ​ - You send it raw, in inline code or a codeblock
         ​3. Reply to a message with JSON
         ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message
+
+        **Examples:**
+            - `[p]beautify {"1": "One", "2": "Two"}`
+            - `[p]beautify` (with file uploaded)
+            - `[p]beautify` (while replying to a messsage)
         """
         try:
             raw_json = await get_data(ctx, data)
@@ -99,6 +110,11 @@ class Beautify(commands.Cog):
         ​ ​ ​ ​ - You send it raw, in inline code or a codeblock
         ​3. Reply to a message with JSON
         ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message
+
+        **Examples:**
+            - `[p]minify {"1": "One", "2": "Two"}`
+            - `[p]minify` (with file uploaded)
+            - `[p]minify` (while replying to a messsage)
         """
         try:
             raw_json = await get_data(ctx, data)
