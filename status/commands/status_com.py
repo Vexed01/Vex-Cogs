@@ -51,6 +51,9 @@ class StatusCom(MixinMeta):
     async def status(self, ctx: commands.Context, service: ServiceConverter):
         """
         Check for the status of a variety of services, eg Discord.
+
+        **Example:**
+            - `[p]status discord`
         """
         if time_until := self.service_cooldown.handle(ctx.author.id, service.name):
             message = "Status updates for {} are on cooldown. Try again in {}.".format(

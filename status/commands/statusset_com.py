@@ -203,6 +203,10 @@ class StatusSetCom(MixinMeta):
         Stop status updates for a specific service in this server.
 
         If you don't specify a channel, I will use the current channel.
+
+        **Examples:**
+            - `[p]statusset remove discord #testing`
+            - `[p]statusset remove discord` (for using current channel)
         """
         if TYPE_CHECKING:
             channel = GuildChannel()
@@ -237,6 +241,10 @@ class StatusSetCom(MixinMeta):
 
         Optionally add a service at the end of the command to view detailed settings for that
         service.
+
+        **Examples:**
+            - `[p]statusset list discord`
+            - `[p]statusset list`
         """
         # this needs refactoring
         # i basically copied and pasted in rewrite
@@ -346,6 +354,10 @@ class StatusSetCom(MixinMeta):
             Using a webhook means that the status updates will be sent with the avatar
             as the service's logo and the name will be `[service] Status Update`, instead
             of my avatar and name.
+
+        **Examples:**
+            - `[p]statusset preview discord all true`
+            - `[p]statusset preview discord latest false`
         """
         if TYPE_CHECKING:
             me = Member()
@@ -414,6 +426,10 @@ class StatusSetCom(MixinMeta):
         status channel.
 
         If you don't specify a channel, I will use the current channel.
+
+        **Examples:**
+            - `[p]statusset edit mode #testing discord latest`
+            - `[p]statusset edit mode discord edit` (for current channel)
         """
         if TYPE_CHECKING:
             channel = GuildChannel()
@@ -456,6 +472,10 @@ class StatusSetCom(MixinMeta):
         logo and the name will be `[service] Status Update`, instead of my avatar and name.
 
         If you don't specify a channel, I will use the current channel.
+
+        **Examples:**
+            - `[p]statusset edit webhook #testing discord true`
+            - `[p]statusset edit webhook discord false` (for current channel)
         """
         if TYPE_CHECKING:
             channel = GuildChannel()
@@ -506,6 +526,10 @@ class StatusSetCom(MixinMeta):
         Enabling this will reduce spam. Instead of sending the whole update
         (if there's an incident) members will instead be redirected to channels
         that automatically receive the status updates, that they have permission to to view.
+
+        **Examples:**
+            - `[p]statusset edit restrict #testing discord true`
+            - `[p]statusset edit restrict discord false` (for current channel)
         """
         if TYPE_CHECKING:
             channel = GuildChannel()
