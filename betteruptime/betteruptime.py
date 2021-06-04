@@ -20,6 +20,9 @@ old_ping = None
 _log = logging.getLogger("red.vex.betteruptime")
 
 
+# THIS COG WILL BE REWRITTEN/REFACTORED AT SOME POINT (#23)
+
+
 class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
     """
     Replaces the core `uptime` command to show the uptime
@@ -113,6 +116,11 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
 
         The default value for `num_days` is `30`. You can put `0` days for all-time data.
         Otherwise, it needs to be `5` or more.
+
+        **Examples:**
+            - `[p]uptime`
+            - `[p]uptime 0` (for all-time data)
+            - `[p]uptime 7`
         """
         # START OF CODE FROM RED'S CORE uptime COMMAND
         since = ctx.bot.uptime.strftime("%Y-%m-%d %H:%M:%S")
@@ -235,6 +243,11 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
 
         The default value for `num_days` is `30`. You can put `0` days for all-time data.
         Otherwise, it needs to be `5` or more.
+
+        **Examples:**
+            - `[p]uptime`
+            - `[p]uptime 0` (for all-time data)
+            - `[p]uptime 7`
         """
         conf_cog_loaded = self.cog_loaded_cache
         conf_connected = self.connected_cache
