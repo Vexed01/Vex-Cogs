@@ -126,10 +126,10 @@ If you want to go back to the defaults, just do ``[p]pingset green default defau
     same colour as the emoji. Google "hex colour" if you need help with this.
 
 **Examples:**
-    - ``[p]pingset green :emoji: #43B581
-    - ``[p]pingset green :emoji: default
-    - ``[p]pingset green default #43B581
-    - ``[p]pingset green default default
+    - ``[p]pingset green :emoji: #43B581``
+    - ``[p]pingset green :emoji: default``
+    - ``[p]pingset green default #43B581``
+    - ``[p]pingset green default default``
 
 .. _anotherpingcog-command-pingset-orange:
 
@@ -161,10 +161,10 @@ If you want to go back to the defaults, just do ``[p]pingset orange default defa
     same colour as the emoji. Google "hex colour" if you need help with this.
 
 **Examples:**
-    - ``[p]pingset orange :emoji: #FAA61A
-    - ``[p]pingset orange :emoji: default
-    - ``[p]pingset orange default #FAA61A
-    - ``[p]pingset orange default default
+    - ``[p]pingset orange :emoji: #FAA61A``
+    - ``[p]pingset orange :emoji: default``
+    - ``[p]pingset orange default #FAA61A``
+    - ``[p]pingset orange default default``
 
 .. _anotherpingcog-command-pingset-red:
 
@@ -196,10 +196,10 @@ If you want to go back to the defaults, just do ``[p]pingset red default default
     same colour as the emoji. Google "hex colour" if you need help with this.
 
 **Examples:**
-    - ``[p]pingset red :emoji: #F04747
-    - ``[p]pingset red :emoji: default
-    - ``[p]pingset red default #F04747
-    - ``[p]pingset red default default
+    - ``[p]pingset red :emoji: #F04747``
+    - ``[p]pingset red :emoji: default``
+    - ``[p]pingset red default #F04747``
+    - ``[p]pingset red default default``
 
 .. _anotherpingcog-command-pingset-settings:
 
