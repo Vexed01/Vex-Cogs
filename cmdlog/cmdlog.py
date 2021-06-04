@@ -59,9 +59,7 @@ class CmdLog(commands.Cog):
     async def on_command(self, ctx: commands.Context):
         if ctx.guild:
             assert not isinstance(ctx.channel, discord.DMChannel)
-            self.log_com(ctx)
-        else:
-            self.log_com(ctx)
+        self.log_com(ctx)
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
