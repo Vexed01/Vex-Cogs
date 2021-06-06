@@ -117,7 +117,7 @@ wolset list
 
 See your added addresses.
 
-This will send your MAC addresses to the current channel.
+This will send your MAC addresses to current channel.
 
 .. _wol-command-wolset-remove:
 

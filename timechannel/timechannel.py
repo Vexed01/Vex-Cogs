@@ -124,11 +124,10 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         permissions dialogue.**
 
         **Examples:**
-
-        `[p]tcset create New York`
-        `[p]tcset create UTC`
-        `[p]tcset create London`
-        `[p]tcset create Europe/London`
+            - `[p]tcset create New York`
+            - `[p]tcset create UTC`
+            - `[p]tcset create London`
+            - `[p]tcset create Europe/London`
         """
         assert ctx.guild is not None
 
@@ -164,6 +163,10 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         Delete and stop updating a channel.
 
         For the <channel> argument, you can use its ID or mention (type #!channelname)
+
+        **Example:**
+            - `[p]tcset remove #!channelname` (the ! is how to mention voice channels)
+            - `[p]tcset remove 834146070094282843`
         """
         assert ctx.guild is not None
         async with self.config.guild(ctx.guild).timechannels() as data:

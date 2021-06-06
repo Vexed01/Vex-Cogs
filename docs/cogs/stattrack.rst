@@ -21,7 +21,11 @@ find detailed docs about usage and commands.
 Usage
 -----
 
-BETA COG: StatTrack (Stat Tracking)
+Track your bot's metrics and view them in Discord.
+Requires no external setup, so uses Red's config. This cog will use around 150KB per day.
+
+Commands will output as a graph.
+Data can also be exported with ``[p]stattrack export`` into a few different formats.
 
 
 .. _stattrack-commands:
@@ -84,10 +88,9 @@ Get categories stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack channels categories 3w2d``
-``[p]stattrack channels categories 5d``
-``[p]stattrack channels categories all``
+    - ``[p]stattrack channels categories 3w2d``
+    - ``[p]stattrack channels categories 5d``
+    - ``[p]stattrack channels categories all``
 
 .. _stattrack-command-stattrack-channels-stage:
 
@@ -111,10 +114,9 @@ Get stage channel stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack channels stage 3w2d``
-``[p]stattrack channels stage 5d``
-``[p]stattrack channels stage all``
+    - ``[p]stattrack channels stage 3w2d``
+    - ``[p]stattrack channels stage 5d``
+    - ``[p]stattrack channels stage all``
 
 .. _stattrack-command-stattrack-channels-text:
 
@@ -138,10 +140,9 @@ Get text channel stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack channels text 3w2d``
-``[p]stattrack channels text 5d``
-``[p]stattrack channels text all``
+    - ``[p]stattrack channels text 3w2d``
+    - ``[p]stattrack channels text 5d``
+    - ``[p]stattrack channels text all``
 
 .. _stattrack-command-stattrack-channels-total:
 
@@ -165,10 +166,9 @@ Get total channel stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack channels total 3w2d``
-``[p]stattrack channels total 5d``
-``[p]stattrack channels total all``
+    - ``[p]stattrack channels total 3w2d``
+    - ``[p]stattrack channels total 5d``
+    - ``[p]stattrack channels total all``
 
 .. _stattrack-command-stattrack-channels-voice:
 
@@ -192,10 +192,9 @@ Get voice channel stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack channels voice 3w2d``
-``[p]stattrack channels voice 5d``
-``[p]stattrack channels voice all``
+    - ``[p]stattrack channels voice 3w2d``
+    - ``[p]stattrack channels voice 5d``
+    - ``[p]stattrack channels voice all``
 
 .. _stattrack-command-stattrack-commands:
 
@@ -219,10 +218,57 @@ Get command usage stats.
 at least 1 hour.
 
 **Examples:**
+    - ``[p]stattrack commands 3w2d``
+    - ``[p]stattrack commands 5d``
+    - ``[p]stattrack commands all``
 
-``[p]stattrack commands 3w2d``
-``[p]stattrack commands 5d``
-``[p]stattrack commands all``
+.. _stattrack-command-stattrack-export:
+
+""""""""""""""""
+stattrack export
+""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]stattrack export 
+
+**Description**
+
+Export stattrack data.
+
+.. _stattrack-command-stattrack-export-csv:
+
+""""""""""""""""""""
+stattrack export csv
+""""""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]stattrack export csv 
+
+**Description**
+
+Export as CSV
+
+.. _stattrack-command-stattrack-export-json:
+
+"""""""""""""""""""""
+stattrack export json
+"""""""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]stattrack export json 
+
+**Description**
+
+Export as JSON with pandas orient "split" 
 
 .. _stattrack-command-stattrack-messages:
 
@@ -246,10 +292,9 @@ Get message stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack messages 3w2d``
-``[p]stattrack messages 5d``
-``[p]stattrack messages all``
+    - ``[p]stattrack messages 3w2d``
+    - ``[p]stattrack messages 5d``
+    - ``[p]stattrack messages all``
 
 .. _stattrack-command-stattrack-ping:
 
@@ -275,10 +320,9 @@ Get command usage stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack ping 3w2d``
-``[p]stattrack ping 5d``
-``[p]stattrack ping all``
+    - ``[p]stattrack ping 3w2d``
+    - ``[p]stattrack ping 5d``
+    - ``[p]stattrack ping all``
 
 .. _stattrack-command-stattrack-servers:
 
@@ -304,10 +348,9 @@ Get server stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack servers 3w2d``
-``[p]stattrack servers 5d``
-``[p]stattrack servers all``
+    - ``[p]stattrack servers 3w2d``
+    - ``[p]stattrack servers 5d``
+    - ``[p]stattrack servers all``
 
 .. _stattrack-command-stattrack-status:
 
@@ -347,10 +390,9 @@ Get dnd stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack status dnd 3w2d``
-``[p]stattrack status dnd 5d``
-``[p]stattrack status dnd all``
+    - ``[p]stattrack status dnd 3w2d``
+    - ``[p]stattrack status dnd 5d``
+    - ``[p]stattrack status dnd all``
 
 .. _stattrack-command-stattrack-status-idle:
 
@@ -374,10 +416,9 @@ Get idle stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack status idle 3w2d``
-``[p]stattrack status idle 5d``
-``[p]stattrack status idle all``
+    - ``[p]stattrack status idle 3w2d``
+    - ``[p]stattrack status idle 5d``
+    - ``[p]stattrack status idle all``
 
 .. _stattrack-command-stattrack-status-offline:
 
@@ -401,10 +442,9 @@ Get offline stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack status offline 3w2d``
-``[p]stattrack status offline 5d``
-``[p]stattrack status offline all``
+    - ``[p]stattrack status offline 3w2d``
+    - ``[p]stattrack status offline 5d``
+    - ``[p]stattrack status offline all``
 
 .. _stattrack-command-stattrack-status-online:
 
@@ -428,26 +468,9 @@ Get online stats.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack status online 3w2d``
-``[p]stattrack status online 5d``
-``[p]stattrack status online all``
-
-.. _stattrack-command-stattrack-storage:
-
-"""""""""""""""""
-stattrack storage
-"""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack storage 
-
-**Description**
-
-See how much RAM and disk storage this cog is using.
+    - ``[p]stattrack status online 3w2d``
+    - ``[p]stattrack status online 5d``
+    - ``[p]stattrack status online all``
 
 .. _stattrack-command-stattrack-users:
 
@@ -490,10 +513,9 @@ they share with me.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack users bots 3w2d``
-``[p]stattrack users bots 5d``
-``[p]stattrack users bots all``
+    - ``[p]stattrack users bots 3w2d``
+    - ``[p]stattrack users bots 5d``
+    - ``[p]stattrack users bots all``
 
 .. _stattrack-command-stattrack-users-humans:
 
@@ -520,10 +542,9 @@ they share with me.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack users humans 3w2d``
-``[p]stattrack users humans 5d``
-``[p]stattrack users humans all``
+    - ``[p]stattrack users humans 3w2d``
+    - ``[p]stattrack users humans 5d``
+    - ``[p]stattrack users humans all``
 
 .. _stattrack-command-stattrack-users-total:
 
@@ -549,10 +570,9 @@ This includes humans and bots and counts users/bots once per server they share w
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack users total 3w2d``
-``[p]stattrack users total 5d``
-``[p]stattrack users total all``
+    - ``[p]stattrack users total 3w2d``
+    - ``[p]stattrack users total 5d``
+    - ``[p]stattrack users total all``
 
 .. _stattrack-command-stattrack-users-unique:
 
@@ -579,7 +599,6 @@ share with me.
 at least 1 hour.
 
 **Examples:**
-
-``[p]stattrack users unique 3w2d``
-``[p]stattrack users unique 5d``
-``[p]stattrack users unique all``
+    - ``[p]stattrack users unique 3w2d``
+    - ``[p]stattrack users unique 5d``
+    - ``[p]stattrack users unique all``

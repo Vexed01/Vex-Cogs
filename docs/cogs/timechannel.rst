@@ -23,8 +23,10 @@ Usage
 
 Allocate a Discord voice channel to show the time in specific timezones. Updates every hour.
 
-A list of timezones can be found here, though you should be able to enter any major city.
-"TZ database name" column at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
+A list of timezones can be found here, though you should be able to enter any
+major city: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
+
+There is a fuzzy search so you don't need to put the region in, only the city.
 
 This cog will shrink down from the proper region names, for example ``America/New_York``
 will become ``New York``.
@@ -77,18 +79,16 @@ Set up a time channel in this server.
 The list of acceptable timezones is here (the "TZ database name" column):
 https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
 
+There is a fuzzy search, so you shouldn't need to enter the region.
+
 If you move the channel into a category, **click 'Keep Current Permissions' in the sync
 permissions dialogue.**
 
 **Examples:**
-
-``[p]tcset create New York``
-
-``[p]tcset create UTC``
-
-``[p]tcset create London``
-
-``[p]tcset create Europe/London``
+    - ``[p]tcset create New York``
+    - ``[p]tcset create UTC``
+    - ``[p]tcset create London``
+    - ``[p]tcset create Europe/London``
 
 .. _timechannel-command-timechannelset-remove:
 
@@ -107,6 +107,10 @@ timechannelset remove
 Delete and stop updating a channel.
 
 For the <channel> argument, you can use its ID or mention (type #!channelname)
+
+**Example:**
+    - ``[p]tcset remove #!channelname`` (the ! is how to mention voice channels)
+    - ``[p]tcset remove 834146070094282843``
 
 .. _timechannel-command-timezones:
 

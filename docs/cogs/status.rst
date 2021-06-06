@@ -53,13 +53,10 @@ status
 
 **Description**
 
-Check for incidents for a variety of services, eg Discord.
+Check for the status of a variety of services, eg Discord.
 
-**Available Services:**
-
-discord, github, zoom, reddit, epic_games, cloudflare, statuspage,
-python, twitter_api, oracle_cloud, twitter, digitalocean, sentry,
-geforcenow
+**Example:**
+    - ``[p]status discord``
 
 .. _status-command-statusset:
 
@@ -81,11 +78,6 @@ Get automatic status updates in a channel, eg Discord.
 
 Get started with ``[p]statusset preview`` to see what they look like,
 then ``[p]statusset add`` to set up automatic updates.
-
-**Available services:**
-discord, github, zoom, reddit, epic_games, cloudflare, statuspage,
-python, twitter_api, oracle_cloud, twitter, digitalocean, sentry,
-geforcenow
 
 .. _status-command-statusset-add:
 
@@ -157,6 +149,10 @@ status channel.
 
 If you don't specify a channel, I will use the current channel.
 
+**Examples:**
+    - ``[p]statusset edit mode #testing discord latest``
+    - ``[p]statusset edit mode discord edit`` (for current channel)
+
 .. _status-command-statusset-edit-restrict:
 
 """""""""""""""""""""""
@@ -176,6 +172,10 @@ Restrict access to the service in the ``status`` command.
 Enabling this will reduce spam. Instead of sending the whole update
 (if there's an incident) members will instead be redirected to channels
 that automatically receive the status updates, that they have permission to to view.
+
+**Examples:**
+    - ``[p]statusset edit restrict #testing discord true``
+    - ``[p]statusset edit restrict discord false`` (for current channel)
 
 .. _status-command-statusset-edit-webhook:
 
@@ -198,6 +198,10 @@ logo and the name will be ``[service] Status Update``, instead of my avatar and 
 
 If you don't specify a channel, I will use the current channel.
 
+**Examples:**
+    - ``[p]statusset edit webhook #testing discord true``
+    - ``[p]statusset edit webhook discord false`` (for current channel)
+
 .. _status-command-statusset-list:
 
 """"""""""""""
@@ -218,6 +222,10 @@ List that available services and ones are used in this server.
 
 Optionally add a service at the end of the command to view detailed settings for that
 service.
+
+**Examples:**
+    - ``[p]statusset list discord``
+    - ``[p]statusset list``
 
 .. _status-command-statusset-preview:
 
@@ -264,6 +272,10 @@ You can also see this at https://vex-cogs.rtfd.io/en/latest/cogs/statusref.html
     as the service's logo and the name will be ``[service] Status Update``, instead
     of my avatar and name.
 
+**Examples:**
+    - ``[p]statusset preview discord all true``
+    - ``[p]statusset preview discord latest false``
+
 .. _status-command-statusset-remove:
 
 """"""""""""""""
@@ -283,3 +295,7 @@ statusset remove
 Stop status updates for a specific service in this server.
 
 If you don't specify a channel, I will use the current channel.
+
+**Examples:**
+    - ``[p]statusset remove discord #testing``
+    - ``[p]statusset remove discord`` (for using current channel)
