@@ -29,7 +29,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
     data to become available.
     """
 
-    __version__ = "1.5.2"
+    __version__ = "1.6.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -49,6 +49,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
 
         self.cog_loaded_cache = pandas.Series(dtype="object")  # suppresses deprecation warn
         self.connected_cache = pandas.Series(dtype="object")  # suppresses deprecation warn
+        self.unload_write = True
 
         self.ready = False
 
@@ -65,14 +66,15 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    def cog_unload(self, final_write: bool = True) -> None:
         _log.info("BetterUptime is now unloading. Cleaning up...")
         self.main_loop.cancel()
         self.conf_loop.cancel()
 
-        # it should be pretty safe to assume the bot's online when unloading
-        # and if not it's only a few seconds of "mistake"
-        if self.main_loop_meta.next_iter:  # could be None
+        if self.ready and self.main_loop_meta.next_iter:
+            # lets not overwrite anything if we're not set up yet
+            # it should be pretty safe to assume the bot's online when unloading
+            # and if not it's only a few seconds of "mistake"
             try:
                 until_next = (
                     self.main_loop_meta.next_iter - datetime.datetime.now(datetime.timezone.utc)
@@ -84,7 +86,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
             except Exception:  # TODO: pos remove
                 pass
 
-        asyncio.create_task(self.write_to_config())
+            asyncio.create_task(self.write_to_config())
 
         global old_ping
         if old_ping:
@@ -132,7 +134,7 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
             # TODO: implement non-embed version
             return await ctx.send(description)
 
-        while self.connected_cache.empty:
+        while not self.ready:
             await asyncio.sleep(0.2)  # max wait is 2 if command triggerd straight after cog load
 
         embed = discord.Embed(description=description, colour=await ctx.embed_colour())
@@ -288,6 +290,33 @@ class BetterUptime(commands.Cog, BULoop, metaclass=CompositeMetaClass):
             )
             paged = pagify(full, page_length=1000)
             await ctx.send_interactive(paged)
+
+    # mainly for users who installed, then uninstalled and found that uptime
+    # was very low. main reason is first_load is tracked so this would skew everything
+    @commands.is_owner()
+    @commands.command(usage="")
+    async def resetbu(self, ctx: commands.Context, confirm: bool = False):
+        """Reset the cog's data."""
+        p = ctx.clean_prefix
+        if confirm is False:
+            return await ctx.send(
+                "⚠ This will reset the all your uptime data. This action is **irreversible**. "
+                "All the uptime data will be **lost forever** ⚠\n"
+                f"To proceed, please run **`{p}resetbu 1`**"
+            )
+
+        self.main_loop.cancel()
+        self.conf_loop.cancel()
+        await self.config.version.clear()
+        await self.config.cog_loaded.clear()
+        await self.config.connected.clear()
+        await self.config.first_load.clear()
+
+        self.ready = False
+
+        await ctx.send(
+            f"Data has been reset. **Please run `{p}reload betteruptime` to finish the process.**"
+        )
 
     @commands.command(name="updev", hidden=True)
     async def _dev_com(self, ctx: commands.Context):

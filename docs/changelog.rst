@@ -121,6 +121,14 @@ BetterUptime
 ``1.6.0``
 *********
 
+2021-06-06
+
+- Add `resetbu` command to reset all uptime data
+
+*********
+``1.6.0``
+*********
+
 2021-05-28
 
 - Fix commands
