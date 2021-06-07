@@ -8,6 +8,7 @@ import discord
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
+from vexcogutils import format_help, format_info
 
 from .langs import LANGS
 
@@ -60,11 +61,23 @@ class MadTranslate(commands.Cog):
     This will defiantly have some funny moments... Take everything with a pinch of salt!
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red):
         self.bot = bot
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad."""
+        return format_help(self, ctx)
+
+    async def red_delete_data_for_user(self, **kwargs) -> None:
+        """Nothing to delete"""
+        return
+
+    @commands.command(hidden=True)
+    async def madtranslateinfo(self, ctx: commands.Context):
+        await ctx.send(await format_info(self.qualified_name, self.__version__))
 
     @commands.command(aliases=["mtranslate", "mtrans"])
     async def madtranslate(
