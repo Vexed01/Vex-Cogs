@@ -232,6 +232,30 @@ GitHub
 
 *No updates since changelogs started*
 
+============
+MadTranslate
+============
+
+*********
+``1.0.0``
+*********
+
+2021-06-07
+
+- Initial release
+
+=========
+StatTrack
+=========
+
+*********
+``1.0.0``
+*********
+
+2021-06-02
+
+- Initial release
+
 ======
 Status
 ======
@@ -487,6 +511,18 @@ TimeChannel
 *********
 
 2021-05-01
+
+- Initial release
+
+===
+WOL
+===
+
+*********
+``1.0.0``
+*********
+
+2021-05-31
 
 - Initial release
 
