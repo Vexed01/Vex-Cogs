@@ -32,7 +32,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     The `[p]timezones` command (runnable by anyone) will show the full location name.
     """
 
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -132,16 +132,17 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         assert ctx.guild is not None
 
         time = datetime.datetime.now(pytz.timezone(timezone)).strftime("%I%p").lstrip("0")
-        short_tz = timezone.split("/")[-1]  # full one usually is too long
-        name = f"{time} {short_tz}"
+        short_tz = timezone.split("/")[-1]  # full one usually is too long to fit
+        name = f"{short_tz}: {time}"
 
         # thanks boboly
         overwrites = {
             ctx.guild.default_role: discord.PermissionOverwrite(connect=False),
             ctx.guild.me: discord.PermissionOverwrite(manage_channels=True, connect=True),
         }
+        reason = "Edited for timechannel - disable with `tcset remove`"
         channel = await ctx.guild.create_voice_channel(
-            name=name, overwrites=overwrites  # type:ignore
+            name=name, overwrites=overwrites, reason=reason  # type:ignore
         )
 
         assert not isinstance(channel, DMChannel) and not isinstance(channel, GroupChannel)

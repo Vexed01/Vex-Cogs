@@ -87,5 +87,5 @@ class TCLoop(MixinMeta):
                     )
                     _log.debug(f"Edited channel {c_id} to {new_name}")
                 except HTTPException:
-                    _log.debug(f"Unable to edit channel ID {c_id} - removing from config")
+                    _log.debug(f"Unable to edit channel ID {c_id}")
                     continue
