@@ -133,6 +133,9 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
     else:
         scheduled_for = None
 
+    if len(desc) > 2048:
+        desc = desc[0:2040] + "\n..."  # v unlikely to happen... so im being lazy
+
     return IncidentData(
         fields=fields,
         time=parse_time(incident["updated_at"]),  # when statuspage claims it was updated

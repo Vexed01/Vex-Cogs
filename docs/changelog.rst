@@ -269,6 +269,15 @@ Status
 ======
 
 *********
+``2.3.6``
+*********
+
+2021-06-08
+
+- New service - Fastly
+- Handle embed description limits
+
+*********
 ``2.3.5``
 *********
 
