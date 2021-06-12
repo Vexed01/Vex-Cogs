@@ -1,13 +1,16 @@
+import datetime
+from typing import List
+
 import discord
 import psutil
 from redbot.core import commands
 from redbot.core.bot import Red
+from redbot.core.utils.chat_formatting import humanize_timedelta
 from vexcogutils import format_help, format_info
 
 from .command import DynamicHelp
 from .utils import (
     box,
-    finalise_embed,
     get_cpu,
     get_disk,
     get_mem,
@@ -16,9 +19,11 @@ from .utils import (
     get_sensors,
     get_uptime,
     get_users,
+    up_for,
 )
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
+ZERO_WIDTH = "\u200b"
 
 # cspell:ignore psutil shwtemp tablefmt sfan suser sdiskpart sdiskusage fstype proc procs
 
@@ -31,7 +36,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.2.2"
+    __version__ = "1.2.3"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -48,6 +53,45 @@ class System(commands.Cog):
     @commands.command(hidden=True)
     async def systeminfo(self, ctx: commands.Context):
         await ctx.send(await format_info(self.qualified_name, self.__version__))
+
+    def finalise_embed(self, e: discord.Embed) -> discord.Embed:
+        """Make embeds look nicer - limit to two columns and set the footer to boot time"""
+        # needed because otherwise they are otherwise too squashed together so tabulate breaks
+        # doesn't look great on mobile but is fully bearable, more than ugly text wrapping
+
+        # oh, don't mention the ugly code please :P
+        # it works...
+        emb = e.to_dict()
+        fields: List[dict] = emb["fields"]
+        if len(fields) > 2:  # needs multi rows
+            data: List[List[dict]] = []
+            temp = []
+            for field in fields:
+                temp.append(field)
+                if len(temp) == 2:
+                    data.append(temp)
+                    temp = []
+            if len(temp) != 0:  # clear up stragglers
+                data.append(temp)
+
+            empty_field = {"inline": True, "name": ZERO_WIDTH, "value": ZERO_WIDTH}
+            fields = []
+            row: List[dict]
+            for row in data:
+                while len(row) < 3:
+                    row.append(empty_field)
+                fields.extend(row)
+
+        # else it's 2 or less columns so doesn't need special treatment
+        emb["fields"] = fields
+        e = discord.Embed.from_dict(emb)
+
+        # and footer is just a nice touch, thanks max for the idea of uptime there
+        sys_uptime = humanize_timedelta(seconds=up_for())
+        bot_uptime = humanize_timedelta(timedelta=datetime.datetime.now() - self.bot.uptime)
+        e.set_footer(text=f"System Uptime: {sys_uptime}\nBot uptime: {bot_uptime}")
+
+        return e
 
     @commands.is_owner()
     @commands.group()
@@ -83,7 +127,7 @@ class System(commands.Cog):
                 embed.add_field(name="CPU Times", value=box(time))
                 extra = data["freq_note"]
                 embed.add_field(name=f"CPU Frequency{extra}", value=box(freq), inline=False)
-                await ctx.send(embed=finalise_embed(embed))
+                await ctx.send(embed=self.finalise_embed(embed))
             else:
                 msg = "**CPU Metrics**\n"
                 to_box = f"CPU Usage\n{percent}\n"
@@ -112,7 +156,7 @@ class System(commands.Cog):
             embed = discord.Embed(title="Memory", colour=await ctx.embed_colour())
             embed.add_field(name="Physical Memory", value=box(physical))
             embed.add_field(name="SWAP Memory", value=box(swap))
-            await ctx.send(embed=finalise_embed(embed))
+            await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Memory**\n"
             to_box = f"Physical Memory\n{physical}\n"
@@ -146,7 +190,7 @@ class System(commands.Cog):
             embed = discord.Embed(title="Sensors", colour=await ctx.embed_colour())
             embed.add_field(name="Temperatures", value=box(temp))
             embed.add_field(name="Fans", value=box(fans))
-            await ctx.send(embed=finalise_embed(embed))
+            await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Temperature**\n"
             to_box = f"Temperatures\n{temp}\n"
@@ -173,7 +217,7 @@ class System(commands.Cog):
             embed = discord.Embed(title="Users", colour=await ctx.embed_colour())
             for name, userdata in data.items():
                 embed.add_field(name=name, value=box(userdata))
-            await ctx.send(embed=finalise_embed(embed))
+            await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Users**\n"
             to_box = "".join(f"{name}\n{userdata}" for name, userdata in data.items())
@@ -202,7 +246,7 @@ class System(commands.Cog):
             embed = discord.Embed(title="Disks", colour=await ctx.embed_colour())
             for name, diskdata in data.items():
                 embed.add_field(name=name, value=box(diskdata))
-            await ctx.send(embed=finalise_embed(embed))
+            await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Disks**\n"
             to_box = "".join(f"{name}\n{diskdata}" for name, diskdata in data.items())
@@ -224,7 +268,7 @@ class System(commands.Cog):
         if await ctx.embed_requested():
             embed = discord.Embed(title="Processes", colour=await ctx.embed_colour())
             embed.add_field(name="Status", value=box(proc))
-            await ctx.send(embed=finalise_embed(embed))
+            await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Processes**\n"
             msg += box(f"CPU\n{proc}\n")
@@ -244,7 +288,7 @@ class System(commands.Cog):
         if await ctx.embed_requested():
             embed = discord.Embed(title="Network", colour=await ctx.embed_colour())
             embed.add_field(name="Network Stats", value=box(stats))
-            await ctx.send(embed=finalise_embed(embed))
+            await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Network**\n"
             msg += box(f"Network Stats\n{stats}\n")
@@ -264,7 +308,7 @@ class System(commands.Cog):
         if await ctx.embed_requested():
             embed = discord.Embed(title="Uptime", colour=await ctx.embed_colour())
             embed.add_field(name="Uptime", value=box(uptime))
-            await ctx.send(embed=finalise_embed(embed))
+            await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Utime**\n"
             msg += box(f"Uptime\n{uptime}\n")
@@ -301,7 +345,7 @@ class System(commands.Cog):
             embed.add_field(name="Physical Memory", value=box(physical))
             embed.add_field(name="SWAP Memory", value=box(swap))
             embed.add_field(name="Processes", value=box(procs))
-            await ctx.send(embed=finalise_embed(embed))
+            await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Overview**\n"
             to_box = f"CPU\n{cpu}\n\n"

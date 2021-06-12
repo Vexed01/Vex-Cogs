@@ -1,16 +1,13 @@
 import asyncio
 import datetime
-from typing import Dict, List, TypedDict, Union
+from typing import Dict, TypedDict, Union
 
-import discord
 import psutil
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import box as cf_box
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta, pagify
 from tabulate import tabulate
 from vexcogutils.chat import humanize_bytes
-
-ZERO_WIDTH = "\u200b"
 
 
 def box(text: str) -> str:
@@ -29,47 +26,6 @@ def up_for() -> float:
 def _hum(num: Union[int, float]) -> str:
     """Round a number, then humanize."""
     return humanize_number(round(num))
-
-
-def finalise_embed(e: discord.Embed) -> discord.Embed:
-    """Make embeds look nicer - limit to two columns and set the footer to boot time"""
-    # needed because otherwise they are otherwise too squashed together so tabulate doesn't work
-    # doesn't look great on mobile but is fully bearable, more than ugly text wrapping
-
-    # oh, don't mention the ugly code please :P
-    # it works...
-    emb = e.to_dict()
-    fields: List[dict] = emb["fields"]
-    if len(fields) > 2:  # needs multi rows
-        data: List[List[dict]] = []
-        temp = []
-        for field in fields:
-            temp.append(field)
-            if len(temp) == 2:
-                data.append(temp)
-                temp = []
-        if len(temp) != 0:  # clear up stragglers
-            data.append(temp)
-
-        empty_field = {"inline": True, "name": ZERO_WIDTH, "value": ZERO_WIDTH}
-        fields = []
-        row: List[dict]
-        for row in data:
-            while len(row) < 3:
-                row.append(empty_field)
-            fields.extend(row)
-
-    # else it's 2 or less columns so doesn't need special treatment
-    emb["fields"] = fields
-    e = discord.Embed.from_dict(emb)
-
-    # and footer is just a nice touch, thanks max for the idea of uptime there
-    uptime = humanize_timedelta(seconds=up_for())
-    boot_time = datetime.datetime.utcfromtimestamp(psutil.boot_time())
-    e.set_footer(text=f"Uptime: {uptime} | Up since:")
-    e.timestamp = boot_time
-
-    return e
 
 
 async def get_cpu() -> Dict[str, str]:
