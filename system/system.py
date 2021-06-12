@@ -1,5 +1,3 @@
-import datetime
-
 import discord
 import psutil
 from redbot.core import commands
@@ -9,6 +7,7 @@ from vexcogutils import format_help, format_info
 from .command import DynamicHelp
 from .utils import (
     box,
+    finalise_embed,
     get_cpu,
     get_disk,
     get_mem,
@@ -20,7 +19,6 @@ from .utils import (
 )
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
-ZERO_WIDTH = "\u200b"
 
 # cspell:ignore psutil shwtemp tablefmt sfan suser sdiskpart sdiskusage fstype proc procs
 
@@ -33,7 +31,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.2.1"
+    __version__ = "1.2.2"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -80,15 +78,12 @@ class System(commands.Cog):
             time = data["time"]
             freq = data["freq"]
             if await ctx.embed_requested():
-                now = datetime.datetime.utcnow()
-                embed = discord.Embed(
-                    title="CPU Metrics", colour=await ctx.embed_colour(), timestamp=now
-                )
+                embed = discord.Embed(title="CPU Metrics", colour=await ctx.embed_colour())
                 embed.add_field(name="CPU Usage", value=box(percent))
                 embed.add_field(name="CPU Times", value=box(time))
                 extra = data["freq_note"]
                 embed.add_field(name=f"CPU Frequency{extra}", value=box(freq), inline=False)
-                await ctx.send(embed=embed)
+                await ctx.send(embed=finalise_embed(embed))
             else:
                 msg = "**CPU Metrics**\n"
                 to_box = f"CPU Usage\n{percent}\n"
@@ -99,8 +94,8 @@ class System(commands.Cog):
                 await ctx.send(msg)
 
     @system.command(
-        name="mem", aliases=["memory", "ram"], cls=DynamicHelp, supported_sys=True
-    )  # all systems
+        name="mem", aliases=["memory", "ram"], cls=DynamicHelp, supported_sys=True  # all systems
+    )
     async def system_mem(self, ctx: commands.Context):
         """
         Get infomation about memory usage.
@@ -114,11 +109,10 @@ class System(commands.Cog):
         physical = data["physical"]
         swap = data["swap"]
         if await ctx.embed_requested():
-            now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Memory", colour=await ctx.embed_colour(), timestamp=now)
+            embed = discord.Embed(title="Memory", colour=await ctx.embed_colour())
             embed.add_field(name="Physical Memory", value=box(physical))
             embed.add_field(name="SWAP Memory", value=box(swap))
-            await ctx.send(embed=embed)
+            await ctx.send(embed=finalise_embed(embed))
         else:
             msg = "**Memory**\n"
             to_box = f"Physical Memory\n{physical}\n"
@@ -149,11 +143,10 @@ class System(commands.Cog):
         temp = data["temp"]
         fans = data["fans"]
         if await ctx.embed_requested():
-            now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Sensors", colour=await ctx.embed_colour(), timestamp=now)
+            embed = discord.Embed(title="Sensors", colour=await ctx.embed_colour())
             embed.add_field(name="Temperatures", value=box(temp))
             embed.add_field(name="Fans", value=box(fans))
-            await ctx.send(embed=embed)
+            await ctx.send(embed=finalise_embed(embed))
         else:
             msg = "**Temperature**\n"
             to_box = f"Temperatures\n{temp}\n"
@@ -177,11 +170,10 @@ class System(commands.Cog):
         if not data:
             return await ctx.send("It looks like no one is logged in.")
         if embed:
-            now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Users", colour=await ctx.embed_colour(), timestamp=now)
+            embed = discord.Embed(title="Users", colour=await ctx.embed_colour())
             for name, userdata in data.items():
                 embed.add_field(name=name, value=box(userdata))
-            await ctx.send(embed=embed)
+            await ctx.send(embed=finalise_embed(embed))
         else:
             msg = "**Users**\n"
             to_box = "".join(f"{name}\n{userdata}" for name, userdata in data.items())
@@ -207,11 +199,10 @@ class System(commands.Cog):
         data = await get_disk(embed)
 
         if embed:
-            now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Disks", colour=await ctx.embed_colour(), timestamp=now)
+            embed = discord.Embed(title="Disks", colour=await ctx.embed_colour())
             for name, diskdata in data.items():
                 embed.add_field(name=name, value=box(diskdata))
-            await ctx.send(embed=embed)
+            await ctx.send(embed=finalise_embed(embed))
         else:
             msg = "**Disks**\n"
             to_box = "".join(f"{name}\n{diskdata}" for name, diskdata in data.items())
@@ -231,12 +222,9 @@ class System(commands.Cog):
             proc = (await get_proc())["statuses"]
 
         if await ctx.embed_requested():
-            now = datetime.datetime.utcnow()
-            embed = discord.Embed(
-                title="Processes", colour=await ctx.embed_colour(), timestamp=now
-            )
+            embed = discord.Embed(title="Processes", colour=await ctx.embed_colour())
             embed.add_field(name="Status", value=box(proc))
-            await ctx.send(embed=embed)
+            await ctx.send(embed=finalise_embed(embed))
         else:
             msg = "**Processes**\n"
             msg += box(f"CPU\n{proc}\n")
@@ -254,10 +242,9 @@ class System(commands.Cog):
         stats = (await get_net())["counters"]
 
         if await ctx.embed_requested():
-            now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Network", colour=await ctx.embed_colour(), timestamp=now)
+            embed = discord.Embed(title="Network", colour=await ctx.embed_colour())
             embed.add_field(name="Network Stats", value=box(stats))
-            await ctx.send(embed=embed)
+            await ctx.send(embed=finalise_embed(embed))
         else:
             msg = "**Network**\n"
             msg += box(f"Network Stats\n{stats}\n")
@@ -275,10 +262,9 @@ class System(commands.Cog):
         uptime = (await get_uptime())["uptime"]
 
         if await ctx.embed_requested():
-            now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Uptime", colour=await ctx.embed_colour(), timestamp=now)
+            embed = discord.Embed(title="Uptime", colour=await ctx.embed_colour())
             embed.add_field(name="Uptime", value=box(uptime))
-            await ctx.send(embed=embed)
+            await ctx.send(embed=finalise_embed(embed))
         else:
             msg = "**Utime**\n"
             msg += box(f"Uptime\n{uptime}\n")
@@ -309,16 +295,13 @@ class System(commands.Cog):
             procs = proc["statuses"]
 
         if await ctx.embed_requested():
-            now = datetime.datetime.utcnow()
-            embed = discord.Embed(title="Overview", colour=await ctx.embed_colour(), timestamp=now)
+            embed = discord.Embed(title="Overview", colour=await ctx.embed_colour())
             embed.add_field(name="CPU Usage", value=box(percent))
             embed.add_field(name="CPU Times", value=box(times))
-            embed.add_field(name=ZERO_WIDTH, value=ZERO_WIDTH)
             embed.add_field(name="Physical Memory", value=box(physical))
             embed.add_field(name="SWAP Memory", value=box(swap))
-            embed.add_field(name=ZERO_WIDTH, value=ZERO_WIDTH)
             embed.add_field(name="Processes", value=box(procs))
-            await ctx.send(embed=embed)
+            await ctx.send(embed=finalise_embed(embed))
         else:
             msg = "**Overview**\n"
             to_box = f"CPU\n{cpu}\n\n"

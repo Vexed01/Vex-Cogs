@@ -460,6 +460,15 @@ System
 ======
 
 *********
+``1.2.2``
+*********
+
+2021-06-12
+
+- Show uptime in footer for all commands
+- Make embed formatting to two columns dynamic
+
+*********
 ``1.2.1``
 *********
 
