@@ -34,7 +34,7 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -96,9 +96,9 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
                 self.__version__,
                 loops=[self.loop_meta] if self.loop_meta else [],
                 extras={
-                    "Loop time": f"{self.last_loop_time} seconds",
+                    "Loop time": f"{self.last_loop_time}",
                     "Disk usage": disk,
-                    "RAM usage": ram,
+                    "RAM usage": f"At least {ram}",
                 },
             )
         )
@@ -199,11 +199,43 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
             df[k] = v
 
         self.df_cache = self.df_cache.append(df)
-        await self.config.main_df.set(json.loads(self.df_cache.to_json(orient="split")))
-
         end = time.monotonic()
+        main_time = round(end - start, 1)
+        _log.debug(f"Loop finished in {main_time} seconds")
 
-        looptime = round(end - start, 1)
+        start = time.monotonic()
+        await self.config.main_df.set(json.loads(self.df_cache.to_json(orient="split")))
+        end = time.monotonic()
+        save_time = round(end - start, 1)
+        _log.debug(f"Config saved in {save_time} seconds")
 
-        _log.debug(f"Loop finished in {looptime} seconds")
-        self.last_loop_time = looptime
+        total_time = main_time + save_time
+
+        if True:
+            # if purging will make a difference (ie make save time shorter)
+            if save_time > 10:
+                # if it's over 50MB (~1 year)
+                # purge_worthwhile = getsizeof(self.df_cache.to_json(orient="split")) > 50_000_000
+
+                # purging not implemented yet
+                # if purge_worthwhile:
+                #     purge = (
+                #         "\nYou may want to consider deleting old data with the Discord command "
+                #         "`stattrack purge`. This will shorten the loop because less data has to "
+                #         "be saved each time"
+                #     )
+                purge = ""
+            else:
+                purge = ""
+
+            # TODO: only warn once + send to owners
+            _log.warning(
+                "StatTrack loop took a while. This means that it's using lots of resources on "
+                "this machine. You might want to consider unloading or removing the cog. There "
+                "is also a high chance of some datapoints on the graphs being skipped."
+                + purge
+                + f"\nMain loop: {main_time}s, Data saving: {save_time}s so total time is "
+                + total_time
+            )
+
+        self.last_loop_time = f"{total_time} seconds ({main_time}, {save_time}"
