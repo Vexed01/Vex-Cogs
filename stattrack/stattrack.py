@@ -211,7 +211,7 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
 
         total_time = main_time + save_time
 
-        if True:
+        if total_time > 30.0:
             # if purging will make a difference (ie make save time shorter)
             if save_time > 10:
                 # if it's over 50MB (~1 year)
