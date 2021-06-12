@@ -238,4 +238,4 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
                 + total_time
             )
 
-        self.last_loop_time = f"{total_time} seconds ({main_time}, {save_time}"
+        self.last_loop_time = f"{total_time} seconds ({main_time}, {save_time})"
