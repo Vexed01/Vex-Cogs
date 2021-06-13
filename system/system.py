@@ -89,7 +89,7 @@ class System(commands.Cog):
         # and footer is just a nice touch, thanks max for the idea of uptime there
         sys_uptime = humanize_timedelta(seconds=up_for())
         bot_uptime = humanize_timedelta(timedelta=datetime.datetime.now() - self.bot.uptime)
-        e.set_footer(text=f"System Uptime: {sys_uptime}\nBot uptime: {bot_uptime}")
+        e.set_footer(text=f"System uptime: {sys_uptime}\nBot uptime: {bot_uptime}")
 
         return e
 
