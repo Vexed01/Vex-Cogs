@@ -36,7 +36,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.2.3"
+    __version__ = "1.2.4"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -126,7 +126,7 @@ class System(commands.Cog):
                 embed.add_field(name="CPU Usage", value=box(percent))
                 embed.add_field(name="CPU Times", value=box(time))
                 extra = data["freq_note"]
-                embed.add_field(name=f"CPU Frequency{extra}", value=box(freq), inline=False)
+                embed.add_field(name=f"CPU Frequency{extra}", value=box(freq))
                 await ctx.send(embed=self.finalise_embed(embed))
             else:
                 msg = "**CPU Metrics**\n"
