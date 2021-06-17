@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from discord import ButtonStyle, Interaction, ui
 from discord.ui import Button
 from discord.ui.button import button
@@ -50,14 +52,39 @@ class GHView(ui.View):
 
     @button(label="Set milestone", style=ButtonStyle.green, row=0)
     async def btn_milestone(self, button: Button, interaction: Interaction):
-        await interaction.response.send_message("Not implemented.")
+        await interaction.response.send_message(
+            content=(
+                "Click a label to toggle it. Labels in GREEN are on the issue, labels in GREY "
+                "are not on the issue."
+            ),
+            ephemeral=True,
+        )
 
-    @button(label="Add labels", style=ButtonStyle.green, row=0)
+        repo_labels = await self.api.get_repo_labels()
+        issue_labels = await self.api.get_issue_labels(self.issue_data["number"])
+
+        rl_names: List[str] = [label["name"] for label in repo_labels]
+        il_names: List[str] = [label["name"] for label in issue_labels]
+
+        raw_labels = list({label: label in il_names for label in rl_names}.items())
+        # label_name: on_issue
+
+        def get_labels():
+            # partially from a sketchy site
+            for i in range(0, len(raw_labels), 25):
+                yield raw_labels.items()[i : i + 25]
+
+        labels = await get_labels()
+        label_set: List[Tuple[str, bool]]
+        for label_set in labels:
+            view = ui.View()
+            for label, on_issue in label_set:
+                btn = LabelButton(self, label, on_issue)
+                view.add_item(btn)
+            await interaction.response.send_message("_ _", view=view)
+
+    @button(label="Manage labels", style=ButtonStyle.green, row=0)
     async def btn_add_label(self, button: Button, interaction: Interaction):
-        await interaction.response.send_message("Not implemented.")
-
-    @button(label="Remove labels", style=ButtonStyle.red, row=0)
-    async def btn_remove_label(self, button: Button, interaction: Interaction):
         await interaction.response.send_message("Not implemented.")
 
     @button(label="Close", style=ButtonStyle.red, row=1)
@@ -88,4 +115,19 @@ class GHView(ui.View):
         await self.regen_viw(interaction)
 
 
-# await ctx.send(embed=embed, view=GHView(...))
+class LabelButton(Button):
+    def __init__(self, master: GHView, name: str, on_issue: bool):
+        super().__init__(label=name, style=ButtonStyle.green if on_issue else ButtonStyle.grey)
+
+        self.master = master
+        self.on_issue = on_issue
+
+    async def callback(self, interaction: Interaction):
+        # TODO: this
+        # - toggle label on issue
+        # - switch button colour
+        # - regen this message
+        # - and regen master:
+        #   await self.master.regen_viw(interaction)
+
+        ...
