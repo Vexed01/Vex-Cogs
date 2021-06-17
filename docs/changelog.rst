@@ -121,6 +121,14 @@ BetterUptime
 ``1.6.0``
 *********
 
+2021-06-06
+
+- Add `resetbu` command to reset all uptime data
+
+*********
+``1.6.0``
+*********
+
 2021-05-28
 
 - Fix commands
@@ -224,9 +232,66 @@ GitHub
 
 *No updates since changelogs started*
 
+============
+MadTranslate
+============
+
+*********
+``1.0.1``
+*********
+
+2021-06-07
+
+- Add Vex-Cog-Utils stuff
+
+*********
+``1.0.0``
+*********
+
+2021-06-07
+
+- Initial release
+
+=========
+StatTrack
+=========
+
+*********
+``1.0.1``
+*********
+
+2021-06-12
+
+- Count time to save to config seperatleu
+
+*********
+``1.0.0``
+*********
+
+2021-06-02
+
+- Initial release
+
 ======
 Status
 ======
+
+*********
+``2.3.7``
+*********
+
+2021-06-17
+
+- Fix edge case KeyError with service restrictions
+
+*********
+``2.3.6``
+*********
+
+2021-06-08
+
+- New service - Fastly
+- Handle embed description limits
 
 *********
 ``2.3.5``
@@ -411,6 +476,31 @@ System
 ======
 
 *********
+``1.2.4``
+*********
+
+2021-06-13
+
+- Fix formatting of cpu
+
+*********
+``1.2.3``
+*********
+
+2021-06-12
+
+- Add bot uptime to footer
+
+*********
+``1.2.2``
+*********
+
+2021-06-12
+
+- Show uptime in footer for all commands
+- Make embed formatting to two columns dynamic
+
+*********
 ``1.2.1``
 *********
 
@@ -459,6 +549,14 @@ TimeChannel
 ===========
 
 *********
+``1.1.1``
+*********
+
+2021-06-07
+
+- Fix inconsistencies
+
+*********
 ``1.1.0``
 *********
 
@@ -471,6 +569,18 @@ TimeChannel
 *********
 
 2021-05-01
+
+- Initial release
+
+===
+WOL
+===
+
+*********
+``1.0.0``
+*********
+
+2021-05-31
 
 - Initial release
 

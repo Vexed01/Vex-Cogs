@@ -31,6 +31,8 @@ class UsedFeeds:
         return [k for k, v in self.__data.items() if v]
 
 
+# god why did implement this shit feature
+# this cache needs quite a rewrite...
 class ServiceRestrictionsCache:
     """Holds channel restrictions (for members) for when automatic updates are configured."""
 
@@ -48,7 +50,11 @@ class ServiceRestrictionsCache:
             self.__data[guild_id]
         except KeyError:
             self.__data[guild_id] = dict.fromkeys(FEEDS.keys(), [])
-        self.__data[guild_id][service].append(channel_id)
+
+        try:
+            self.__data[guild_id][service].append(channel_id)
+        except KeyError:
+            self.__data[guild_id][service] = [channel_id]
 
     def remove_restriction(self, guild_id: int, service: str, channel_id: int) -> None:
         """Remove a channel from the restriction cache."""

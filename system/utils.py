@@ -18,14 +18,14 @@ def box(text: str) -> str:
     return cf_box(text, "toml")
 
 
+def up_for() -> float:
+    now = datetime.datetime.utcnow().timestamp()
+    return now - psutil.boot_time()
+
+
 def _hum(num: Union[int, float]) -> str:
     """Round a number, then humanize."""
     return humanize_number(round(num))
-
-
-def _up_since() -> float:
-    now = datetime.datetime.utcnow().timestamp()
-    return now - psutil.boot_time()
 
 
 async def get_cpu() -> Dict[str, str]:
@@ -56,7 +56,7 @@ async def get_cpu() -> Dict[str, str]:
     data["time"] += f"[Idle]   {_hum(time.idle)} seconds\n"
     data["time"] += f"[User]   {_hum(time.user)} seconds\n"
     data["time"] += f"[System] {_hum(time.system)} seconds\n"
-    data["time"] += f"[Uptime] {_hum(_up_since())} seconds\n"
+    data["time"] += f"[Uptime] {_hum(up_for())} seconds\n"
 
     return data
 

@@ -74,10 +74,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack ping 3w2d`
-        `[p]stattrack ping 5d`
-        `[p]stattrack ping all`
+            - `[p]stattrack ping 3w2d`
+            - `[p]stattrack ping 5d`
+            - `[p]stattrack ping all`
         """
         await self.all_in_one(ctx, timespan, "ping", "Ping", "Ping (ms)")
 
@@ -92,10 +91,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack commands 3w2d`
-        `[p]stattrack commands 5d`
-        `[p]stattrack commands all`
+            - `[p]stattrack commands 3w2d`
+            - `[p]stattrack commands 5d`
+            - `[p]stattrack commands all`
         """
         await self.all_in_one(
             ctx,
@@ -115,10 +113,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack messages 3w2d`
-        `[p]stattrack messages 5d`
-        `[p]stattrack messages all`
+            - `[p]stattrack messages 3w2d`
+            - `[p]stattrack messages 5d`
+            - `[p]stattrack messages all`
         """
         await self.all_in_one(ctx, timespan, "message_count", "Messages per minute")
 
@@ -133,10 +130,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack servers 3w2d`
-        `[p]stattrack servers 5d`
-        `[p]stattrack servers all`
+            - `[p]stattrack servers 3w2d`
+            - `[p]stattrack servers 5d`
+            - `[p]stattrack servers all`
         """
         await self.all_in_one(ctx, timespan, "guilds", "Server count")
 
@@ -155,10 +151,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack status online 3w2d`
-        `[p]stattrack status online 5d`
-        `[p]stattrack status online all`
+            - `[p]stattrack status online 3w2d`
+            - `[p]stattrack status online 5d`
+            - `[p]stattrack status online all`
         """
         await self.all_in_one(ctx, timespan, "status_online", "Users online")
 
@@ -173,10 +168,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack status idle 3w2d`
-        `[p]stattrack status idle 5d`
-        `[p]stattrack status idle all`
+            - `[p]stattrack status idle 3w2d`
+            - `[p]stattrack status idle 5d`
+            - `[p]stattrack status idle all`
         """
         await self.all_in_one(ctx, timespan, "status_idle", "Users idle")
 
@@ -191,10 +185,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack status offline 3w2d`
-        `[p]stattrack status offline 5d`
-        `[p]stattrack status offline all`
+            - `[p]stattrack status offline 3w2d`
+            - `[p]stattrack status offline 5d`
+            - `[p]stattrack status offline all`
         """
         await self.all_in_one(ctx, timespan, "status_offline", "Users offline")
 
@@ -209,10 +202,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack status dnd 3w2d`
-        `[p]stattrack status dnd 5d`
-        `[p]stattrack status dnd all`
+            - `[p]stattrack status dnd 3w2d`
+            - `[p]stattrack status dnd 5d`
+            - `[p]stattrack status dnd all`
         """
         await self.all_in_one(ctx, timespan, "status_dnd", "Users dnd")
 
@@ -235,10 +227,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack users total 3w2d`
-        `[p]stattrack users total 5d`
-        `[p]stattrack users total all`
+            - `[p]stattrack users total 3w2d`
+            - `[p]stattrack users total 5d`
+            - `[p]stattrack users total all`
         """
         await self.all_in_one(ctx, timespan, "users_total", "Total users")
 
@@ -256,10 +247,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack users unique 3w2d`
-        `[p]stattrack users unique 5d`
-        `[p]stattrack users unique all`
+            - `[p]stattrack users unique 3w2d`
+            - `[p]stattrack users unique 5d`
+            - `[p]stattrack users unique all`
         """
         await self.all_in_one(ctx, timespan, "users_unique", "Unique users")
 
@@ -277,10 +267,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack users humans 3w2d`
-        `[p]stattrack users humans 5d`
-        `[p]stattrack users humans all`
+            - `[p]stattrack users humans 3w2d`
+            - `[p]stattrack users humans 5d`
+            - `[p]stattrack users humans all`
         """
         await self.all_in_one(ctx, timespan, "users_humans", "Humans")
 
@@ -298,10 +287,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack users bots 3w2d`
-        `[p]stattrack users bots 5d`
-        `[p]stattrack users bots all`
+            - `[p]stattrack users bots 3w2d`
+            - `[p]stattrack users bots 5d`
+            - `[p]stattrack users bots all`
         """
         await self.all_in_one(ctx, timespan, "users_bots", "Bots")
 
@@ -320,10 +308,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack channels total 3w2d`
-        `[p]stattrack channels total 5d`
-        `[p]stattrack channels total all`
+            - `[p]stattrack channels total 3w2d`
+            - `[p]stattrack channels total 5d`
+            - `[p]stattrack channels total all`
         """
         await self.all_in_one(ctx, timespan, "channels_total", "Total channels")
 
@@ -338,10 +325,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack channels text 3w2d`
-        `[p]stattrack channels text 5d`
-        `[p]stattrack channels text all`
+            - `[p]stattrack channels text 3w2d`
+            - `[p]stattrack channels text 5d`
+            - `[p]stattrack channels text all`
         """
         await self.all_in_one(ctx, timespan, "channels_text", "Text channels")
 
@@ -356,10 +342,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack channels voice 3w2d`
-        `[p]stattrack channels voice 5d`
-        `[p]stattrack channels voice all`
+            - `[p]stattrack channels voice 3w2d`
+            - `[p]stattrack channels voice 5d`
+            - `[p]stattrack channels voice all`
         """
         await self.all_in_one(ctx, timespan, "channels_voice", "Voice channels")
 
@@ -374,10 +359,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack channels categories 3w2d`
-        `[p]stattrack channels categories 5d`
-        `[p]stattrack channels categories all`
+            - `[p]stattrack channels categories 3w2d`
+            - `[p]stattrack channels categories 5d`
+            - `[p]stattrack channels categories all`
         """
         await self.all_in_one(ctx, timespan, "channels_cat", "Categories")
 
@@ -392,9 +376,8 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-
-        `[p]stattrack channels stage 3w2d`
-        `[p]stattrack channels stage 5d`
-        `[p]stattrack channels stage all`
+            - `[p]stattrack channels stage 3w2d`
+            - `[p]stattrack channels stage 5d`
+            - `[p]stattrack channels stage all`
         """
         await self.all_in_one(ctx, timespan, "channels_stage", "Stage channels")

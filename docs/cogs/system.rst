@@ -130,6 +130,26 @@ as the total amount. Data is provided for both physical and SWAP RAM.
 
 Platforms: Windows, Linux, Mac OS
 
+.. _system-command-system-network:
+
+""""""""""""""
+system network
+""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]system network 
+
+.. tip:: Alias: ``system net``
+
+**Description**
+
+Get network stats. They may have overflowed and reset at some point.
+
+Platforms: Windows, Linux, Mac OS
+
 .. _system-command-system-processes:
 
 """"""""""""""""

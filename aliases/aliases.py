@@ -43,6 +43,10 @@ class Aliases(commands.Cog):
 
         This will show the main command, built-in aliases, global aliases and
         server aliases.
+
+        **Examples:**
+            - `[p]aliases foo`
+            - `[p]aliases foo bar`
         """
         command = self.bot.get_command(strcommand)
 

@@ -10,9 +10,12 @@ COGS = [
     "betteruptime",
     "cmdlog",
     "github",
+    "madtranslate",
+    "stattrack",
     "status",
     "system",
     "timechannel",
+    "wol",
 ]
 
 UPDATE_LEVELS = ["major", "minor", "patch"]

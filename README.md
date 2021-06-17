@@ -31,13 +31,14 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | [betteruptime](https://vex-cogs.readthedocs.io/en/latest/cogs/betteruptime.html) | See your bot's uptime percentages and check when downtime happened. |
 | [cmdlog](https://vex-cogs.readthedocs.io/en/latest/cogs/cmdlog.html) | Track command usage, searchable by user, server or command name.
 | [github](https://vex-cogs.readthedocs.io/en/latest/cogs/github.html) | Create, comment, labelify and close GitHub issues, with partial PR support. |
+| [madtranslate](https://vex-cogs.readthedocs.io/en/latest/cogs/madtranslate.html) | Translate text through lots of languages. Get some funny results! |
 | [stattrack](https://vex-cogs.readthedocs.io/en/latest/cogs/stattrack.html) | Track metrics about your bot and view them in Discord. |
 | [status](https://vex-cogs.readthedocs.io/en/latest/cogs/status.html) | Recieve automatic status updates from various services, including Discord. |
 | [system](https://vex-cogs.readthedocs.io/en/latest/cogs/system.html) | Get system metrics of the host device, such as RAM or CPU. |
 | [timechannel](https://vex-cogs.readthedocs.io/en/latest/cogs/timechannel.html) | Get the time in different timezones in voice channels. |
 | [wol](https://vex-cogs.readthedocs.io/en/latest/cogs/wol.html) | Use Wake on LAN from Discord! This cog sends magic packets on the local network.
 
-All these cogs have docs! My docs [are here](https://vex-cogs.readthedocs.io/en/latest/?utm_source=github&utm_medium=readme&utm_campaign=main_link) or click on the cog name to go directly to that cog's docs page.
+All these cogs have docs! My docs [are here](https://vex-cogs.readthedocs.io/en/latest) or click on the cog name to go directly to that cog's docs page.
 
 ---
 

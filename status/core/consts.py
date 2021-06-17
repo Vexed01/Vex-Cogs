@@ -20,6 +20,7 @@ SERVICE_LITERAL = Literal[  # we love DRY
     "reddit",
     "sentry",
     "geforcenow",
+    "fastly",
 ]
 
 
@@ -127,6 +128,13 @@ FEEDS = {
         "id": "2bdwmtrb0hg9",
         "friendly": "GeForce NOW",
         "avatar": _AVATAR_BASE + "827981724926345226/unknown.png",
+    },
+    "fastly": {
+        "url": "https://status.fastly.com/",
+        # c-spell: disable-next-line
+        "id": "889dh1w1xtt0",
+        "friendly": "Fastly",
+        "avatar": _AVATAR_BASE + "851841069926711336/777070.png",
     },
 }
 

@@ -21,8 +21,10 @@ class MixinMeta(ABC):
     bot: Red
     config: Config
 
-    loop_meta: VexLoop
-    loop: asyncio.Task
+    conf_loop_meta: VexLoop
+    conf_loop: asyncio.Task
+    main_loop_meta: VexLoop
+    main_loop: asyncio.Task
 
     last_known_ping: float
     last_ping_change: float
