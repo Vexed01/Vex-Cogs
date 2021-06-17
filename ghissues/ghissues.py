@@ -123,7 +123,9 @@ class GHIssues(commands.Cog):
             assert self.api is not None
             issue_info = await self.api.get_issue(issue)
             embed = format_embed(issue_info)
-        await ctx.send(embed=embed, view=GHView(issue_info, self.api, ctx.author.id))
+        view = GHView(issue_info, self.api, ctx.author.id)
+        msg = await ctx.send(embed=embed, view=view)
+        view.master_msg = msg
 
     @ghi.command()
     async def howtoken(self, ctx: commands.Context):
