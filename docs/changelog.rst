@@ -277,6 +277,14 @@ Status
 ======
 
 *********
+``2.3.7``
+*********
+
+2021-06-17
+
+- Fix edge case KeyError with service restrictions
+
+*********
 ``2.3.6``
 *********
 
