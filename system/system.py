@@ -36,7 +36,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.2.6"
+    __version__ = "1.2.7"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -62,6 +62,15 @@ class System(commands.Cog):
         # oh, don't mention the ugly code please :P
         # it works...
         emb = e.to_dict()
+        if not emb.get("fields"):  # mainly focused at WSL
+            emb["fields"] = [
+                {
+                    "inline": True,
+                    "name": "Nothing found",
+                    "value": "You're probably using WSL",
+                }
+            ]
+
         fields: List[dict] = emb["fields"]
         if len(fields) > 2:  # needs multi rows
             data: List[List[dict]] = []
@@ -211,15 +220,30 @@ class System(commands.Cog):
         """
         embed = await ctx.embed_requested()
         data = await get_users(embed)
-        if not data:
-            return await ctx.send("It looks like no one is logged in.")
+
         if embed:
             embed = discord.Embed(title="Users", colour=await ctx.embed_colour())
+            if not data:
+                embed.add_field(
+                    name="No one's logged in",
+                    value=(
+                        "If you're expecting data here, you're probably using WSL or other "
+                        "virtualisation technology"
+                    ),
+                )
+
             for name, userdata in data.items():
                 embed.add_field(name=name, value=box(userdata))
             await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Users**\n"
+            if not data:
+                data = {
+                    "No one's logged in": (
+                        "If you're expecting data here, you're probably using WSL or other "
+                        "virtualisation technology"
+                    )
+                }
             to_box = "".join(f"{name}\n{userdata}" for name, userdata in data.items())
             msg += box(to_box)
             await ctx.send(msg)
@@ -244,11 +268,26 @@ class System(commands.Cog):
 
         if embed:
             embed = discord.Embed(title="Disks", colour=await ctx.embed_colour())
+            if not data:
+                embed.add_field(
+                    name="No disks found",
+                    value=(
+                        "That's not something you see very often! You're probably using WSL or "
+                        "other virtualisation technology"
+                    ),
+                )
             for name, diskdata in data.items():
                 embed.add_field(name=name, value=box(diskdata))
             await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Disks**\n"
+            if not data:
+                data = {
+                    "No one's logged in": (
+                        "That's not something you see very often! You're probably using WSL or "
+                        "other virtualisation technology"
+                    )
+                }
             to_box = "".join(f"{name}\n{diskdata}" for name, diskdata in data.items())
             msg += box(to_box)
             await ctx.send(msg)

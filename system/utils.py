@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-from typing import Dict, TypedDict, Union
+from typing import Dict, List, TypedDict, Union
 
 import psutil
 from redbot.core.utils import AsyncIter
@@ -34,9 +34,14 @@ async def get_cpu() -> Dict[str, str]:
     await asyncio.sleep(1)
     percent = psutil.cpu_percent(percpu=True)
     time = psutil.cpu_times()
-    freq = psutil.cpu_freq(percpu=True)
+    try:
+        freq = psutil.cpu_freq(percpu=True)
+    except NotImplementedError:  # happens on WSL
+        freq = []
     cores = psutil.cpu_count()
-    # some systems dont seen to expose any cpu frequency data
+
+    # freq could be [] because of WSL totally failing, and some other systems seem to give no
+    # frequency data at all.
 
     if psutil.LINUX:
         do_frequ = len(freq) == cores
@@ -117,7 +122,7 @@ async def get_sensors(fahrenheit: bool) -> Dict[str, str]:
 
 async def get_users(embed: bool) -> Dict[str, str]:
     """Get users connected"""
-    users = psutil.users()
+    users: List[psutil._common.suser] = psutil.users()
 
     e = "`" if embed else ""
 
