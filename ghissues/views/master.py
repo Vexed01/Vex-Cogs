@@ -1,35 +1,15 @@
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import List, Optional
 
 from discord import ButtonStyle, Interaction, ui
 from discord.message import Message
 from discord.ui import Button
 from discord.ui.button import button
 
-from .api import GitHubAPI
-from .format import format_embed
+from ghissues.api import GitHubAPI
+from ghissues.format import format_embed
 
-
-def make_label_content(page: int = 0, total_pages: int = 0):
-    base = (
-        "Click a label to toggle it. Labels in GREEN are on the issue, labels in GREY "
-        "are not on the issue."
-    )
-    page_info = (
-        "\nAs you've got lots of labels, click the bottons at the bottom to change "
-        f"pages.\n\nPage {page + 1} of {total_pages}"
-        if total_pages > 1
-        else ""
-    )
-
-    return base + page_info
-
-
-def get_label_sets(raw_labels: Dict[str, bool]) -> Generator[List[Tuple[str, bool]], None, None]:
-    sorted_labels = {k: v for k, v in sorted(raw_labels.items(), key=lambda item: not item[1])}
-    labels = list(sorted_labels.items())
-    # partially from a sketchy site
-    for i in range(0, len(labels), 20):
-        yield labels[i : i + 20]
+from .label import BaseLabelView
+from .utils import get_menu_sets, make_label_content
 
 
 class GHView(ui.View):
@@ -97,7 +77,7 @@ class GHView(ui.View):
 
         view = BaseLabelView(self, raw_labels)
         await interaction.response.send_message(
-            content=make_label_content(0, len(list(get_label_sets(raw_labels)))), view=view
+            content=make_label_content(0, len(list(get_menu_sets(raw_labels)))), view=view
         )
 
     @button(label="Close", style=ButtonStyle.red, row=1)
@@ -131,84 +111,3 @@ class GHView(ui.View):
         self.btn_close.disabled = True
         self.btn_open.disabled = True
         await self.regen_viw()
-
-
-class BaseLabelView(ui.View):
-    def __init__(self, master: GHView, raw_labels: Dict[str, bool]):
-        super().__init__()
-        self.master = master
-        self.page = 0
-        self.raw_labels = raw_labels
-
-        self.current_label_buttons: List[LabelButton] = []
-
-        self.remake_buttons(0)
-
-    async def interaction_check(self, interaction: Interaction) -> bool:
-        if interaction.user.id == self.master.author_id:
-            return True
-
-        await interaction.response.send_message(
-            "You don't have have permission to do this.", ephemeral=True
-        )
-        return False
-
-    def remake_buttons(self, page: int):
-        for btn in self.current_label_buttons:
-            self.remove_item(btn)
-        self.current_label_buttons = []
-
-        labels = list(get_label_sets(self.raw_labels))
-        for label, on_issue in labels[page]:
-            btn = LabelButton(self.master, label, on_issue)
-            self.add_item(btn)
-            self.current_label_buttons.append(btn)
-
-    async def regen(self, page: int, interaction: Interaction):
-        self.remake_buttons(page)
-        await interaction.response.edit_message(
-            content=make_label_content(page, len(list(get_label_sets(self.raw_labels)))),
-            view=self,
-        )
-
-    @button(emoji="◀", style=ButtonStyle.blurple, row=4)
-    async def page_left(self, button: Button, interaction: Interaction):
-        # pages start from 0
-        if self.page == 0:
-            return
-
-        self.page -= 1
-        await self.regen(self.page, interaction)
-
-    @button(emoji="▶", style=ButtonStyle.blurple, row=4)
-    async def page_right(self, button: Button, interaction: Interaction):
-        max_pages = len(list(get_label_sets(self.raw_labels)))
-        # pages start from 0
-        if self.page + 1 >= max_pages:
-            return
-
-        self.page += 1
-        await self.regen(self.page, interaction)
-
-
-class LabelButton(Button):
-    def __init__(self, master: GHView, name: str, on_issue: bool):
-        super().__init__(label=name, style=ButtonStyle.green if on_issue else ButtonStyle.grey)
-        self.master = master
-        self.name = name
-        self.on_issue = on_issue
-
-    async def callback(self, interaction: Interaction):
-        # dont need to worry about fixing this buttons on_issue/colour, full regen happens
-        if self.on_issue:
-            await self.master.api.remove_label(self.master.issue_data["number"], self.name)
-        else:
-            await self.master.api.add_labels(self.master.issue_data["number"], [self.name])
-
-        await self.master.regen_viw()
-
-        assert isinstance(self.view, BaseLabelView)
-
-        view: BaseLabelView = self.view
-        view.raw_labels[self.name] = not self.on_issue
-        await view.regen(view.page, interaction)

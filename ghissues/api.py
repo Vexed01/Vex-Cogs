@@ -33,12 +33,12 @@ class GitHubAPI:
     async def get_repo_labels(self) -> dict:
         async with aiohttp.ClientSession() as session:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
-            return await gh.getitem(f"/repos/{self.repo}/labels")
+            return await gh.getitem(f"/repos/{self.repo}/labels?per_page=100")
 
     async def get_issue_labels(self, issue: int) -> dict:
         async with aiohttp.ClientSession() as session:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
-            return await gh.getitem(f"/repos/{self.repo}/issues/{issue}/labels")
+            return await gh.getitem(f"/repos/{self.repo}/issues/{issue}/labels?per_page=100")
 
     async def add_labels(self, issue: int, labels: list) -> dict:
         async with aiohttp.ClientSession() as session:
