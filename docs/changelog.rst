@@ -476,6 +476,14 @@ System
 ======
 
 *********
+``1.2.5``
+*********
+
+2021-06-18
+
+- Handle no CPU frequency data being avalible
+
+*********
 ``1.2.4``
 *********
 

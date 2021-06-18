@@ -36,22 +36,30 @@ async def get_cpu() -> Dict[str, str]:
     time = psutil.cpu_times()
     freq = psutil.cpu_freq(percpu=True)
     cores = psutil.cpu_count()
+    # some systems dont seen to expose any cpu frequency data
 
     if psutil.LINUX:
+        do_frequ = len(freq) == cores
         data = {"percent": "", "freq": "", "freq_note": "", "time": ""}
         for i in range(cores):
             data["percent"] += f"[Core {i}] {percent[i]} %\n"
-            ghz = round((freq[i].current / 1000), 2)
-            data["freq"] += f"[Core {i}] {ghz} GHz\n"
+            if do_frequ:
+                ghz = round((freq[i].current / 1000), 2)
+                data["freq"] += f"[Core {i}] {ghz} GHz\n"
     else:
+        do_frequ = len(freq) == 1
         data = {"percent": "", "freq": "", "freq_note": " (nominal)", "time": ""}
         for i in range(cores):
             data[
                 "percent"
             ] += f"[Core {i}] {percent[i]} % \n"  # keep extra space here, for special case,
             # tabulate removes it
-        ghz = round((freq[0].current / 1000), 2)
-        data["freq"] = f"{ghz} GHz\n"  # blame windows
+        if freq:
+            ghz = round((freq[0].current / 1000), 2)
+            data["freq"] = f"{ghz} GHz\n"  # blame windows
+
+    if not do_frequ:
+        data["freq"] = "Not available"
 
     data["time"] += f"[Idle]   {_hum(time.idle)} seconds\n"
     data["time"] += f"[User]   {_hum(time.user)} seconds\n"
