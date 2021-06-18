@@ -225,7 +225,7 @@ class StatusSetCom(MixinMeta):
         async with self.config.guild(channel.guild).service_restrictions() as sr:
             try:
                 sr[service.name].remove(channel.id)
-            except ValueError:
+            except (ValueError, KeyError):
                 pass
 
             self.service_restrictions_cache.remove_restriction(
