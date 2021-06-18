@@ -62,14 +62,6 @@ class System(commands.Cog):
         # oh, don't mention the ugly code please :P
         # it works...
         emb = e.to_dict()
-        if not emb.get("fields"):  # mainly focused at WSL
-            emb["fields"] = [
-                {
-                    "inline": True,
-                    "name": "Nothing found",
-                    "value": "You're probably using WSL",
-                }
-            ]
 
         fields: List[dict] = emb["fields"]
         if len(fields) > 2:  # needs multi rows
