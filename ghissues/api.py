@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 import aiohttp
 import gidgethub.aiohttp
@@ -76,9 +76,16 @@ class GitHubAPI:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
             return await gh.post(f"/repos/{self.repo}/issues/{issue}", data={"state": "open"})
 
-    async def merge(self, issue: int, commit_msg: str) -> dict:
+    async def merge(
+        self, issue: int, commit_title: str, commit_message: Optional[str], merge_method: str
+    ) -> dict:
+        data = {
+            "commit_title": commit_title,
+            "merge_method": merge_method,
+        }
+        if commit_message:
+            data["commit_message"] = commit_message
+
         async with aiohttp.ClientSession() as session:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
-            return await gh.put(
-                f"/repos/{self.repo}/pulls/{issue}/merge", data={"commit_title": commit_msg}
-            )
+            return await gh.put(f"/repos/{self.repo}/pulls/{issue}/merge", data=data)

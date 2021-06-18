@@ -4,9 +4,11 @@ from discord import ButtonStyle, Interaction, ui
 from discord.message import Message
 from discord.ui import Button
 from discord.ui.button import button
+from redbot.core.bot import Red
 
 from ghissues.api import GitHubAPI
 from ghissues.format import format_embed
+from ghissues.views.merge import MergeView
 
 from .label import BaseLabelView
 from .utils import get_menu_sets, make_label_content
@@ -14,11 +16,12 @@ from .utils import get_menu_sets, make_label_content
 
 class GHView(ui.View):
     def __init__(
-        self, issue_data: dict, api: GitHubAPI, author_id: int, timeout: float = 300.0
+        self, issue_data: dict, api: GitHubAPI, bot: Red, author_id: int, timeout: float = 300.0
     ):  # 5 min
         super().__init__(timeout=timeout)
         self.issue_data = issue_data
         self.api = api
+        self.bot = bot
         self.author_id = author_id
         self.is_pr = bool(issue_data.get("mergeable_state"))
 
@@ -54,19 +57,11 @@ class GHView(ui.View):
         """Get the latest version and update the view."""
         data = await self.api.get_issue(self.issue_data["number"])
         embed = format_embed(data)
-        assert self.master_id is not None, self.inter_channel is not None
+        assert self.master_msg is not None
         await self.master_msg.edit(embed=embed, view=self)
 
-    @button(label="Set milestone", style=ButtonStyle.grey, row=0)
-    async def btn_milestone(self, button: Button, interaction: Interaction):
-        self.master_id = interaction.id
-        self.inter_channel = interaction.channel
-        await interaction.response.send_message("Not implemented.")
-
-    @button(label="Manage labels", style=ButtonStyle.grey, row=0)
+    @button(label="Manage labels", style=ButtonStyle.grey)
     async def btn_add_label(self, button: Button, interaction: Interaction):
-        self.master_id = interaction.id
-        self.inter_channel = interaction.channel
         repo_labels = await self.api.get_repo_labels()
         issue_labels = await self.api.get_issue_labels(self.issue_data["number"])
 
@@ -80,10 +75,8 @@ class GHView(ui.View):
             content=make_label_content(0, len(list(get_menu_sets(raw_labels)))), view=view
         )
 
-    @button(label="Close", style=ButtonStyle.red, row=1)
+    @button(label="Close", style=ButtonStyle.red)
     async def btn_close(self, button: Button, interaction: Interaction):
-        self.master_id = interaction.id
-        self.inter_channel = interaction.channel
         await self.api.close(self.issue_data["number"])
         button.disabled = True
         self.btn_open.disabled = False
@@ -91,10 +84,8 @@ class GHView(ui.View):
             self.btn_merge.disabled = True
         await self.regen_viw()
 
-    @button(label="Open", style=ButtonStyle.green, row=1)
+    @button(label="Open", style=ButtonStyle.green)
     async def btn_open(self, button: Button, interaction: Interaction):
-        self.master_id = interaction.id
-        self.inter_channel = interaction.channel
         await self.api.open(self.issue_data["number"])
         button.disabled = True
         self.btn_close.disabled = False
@@ -102,12 +93,9 @@ class GHView(ui.View):
             self.btn_merge.disabled = False
         await self.regen_viw()
 
-    @button(label="Merge", style=ButtonStyle.blurple, row=1)
+    @button(label="Merge", style=ButtonStyle.blurple)
     async def btn_merge(self, button: Button, interaction: Interaction):
-        self.master_id = interaction.id
-        # TODO: let them pick commit msg and merge method
-        await self.api.merge(self.issue_data["number"], self.issue_data["title"])
-        button.disabled = True
-        self.btn_close.disabled = True
-        self.btn_open.disabled = True
-        await self.regen_viw()
+        await interaction.response.send_message(
+            "Please choose the merge method. You'll be able to choose a commit message later.",
+            view=MergeView(self),
+        )

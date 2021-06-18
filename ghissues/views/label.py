@@ -1,14 +1,16 @@
-from typing import Dict, List
+from typing import TYPE_CHECKING, Dict, List
 
-from discord import Button, ButtonStyle, Interaction, ui
-from discord.ui.button import button
+from discord import ButtonStyle, Interaction, ui
+from discord.ui.button import Button, button
 
-from .master import GHView
 from .utils import get_menu_sets, make_label_content
+
+if TYPE_CHECKING:
+    from .master import GHView
 
 
 class BaseLabelView(ui.View):
-    def __init__(self, master: GHView, raw_labels: Dict[str, bool]):
+    def __init__(self, master: "GHView", raw_labels: Dict[str, bool]):
         super().__init__()
         self.master = master
         self.page = 0
@@ -66,7 +68,7 @@ class BaseLabelView(ui.View):
 
 
 class LabelButton(Button):
-    def __init__(self, master: GHView, name: str, on_issue: bool):
+    def __init__(self, master: "GHView", name: str, on_issue: bool):
         super().__init__(label=name, style=ButtonStyle.green if on_issue else ButtonStyle.grey)
         self.master = master
         self.name = name

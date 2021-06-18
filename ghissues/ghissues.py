@@ -9,11 +9,12 @@ from redbot.core.bot import Red
 from redbot.core.utils.predicates import MessagePredicate
 from vexcogutils import format_help, format_info, inline_hum_list
 
-from ghissues.view import GHView, format_embed
+from ghissues.views.master import GHView
 
 from .api import GitHubAPI
 from .consts import CROSS, EXCEPTIONS
 from .errors import CustomError
+from .format import format_embed
 
 # cspell:ignore labelify kowlin's resp
 
@@ -123,7 +124,7 @@ class GHIssues(commands.Cog):
             assert self.api is not None
             issue_info = await self.api.get_issue(issue)
             embed = format_embed(issue_info)
-        view = GHView(issue_info, self.api, ctx.author.id)
+        view = GHView(issue_info, self.api, self.bot, ctx.author.id)
         msg = await ctx.send(embed=embed, view=view)
         view.master_msg = msg
 
