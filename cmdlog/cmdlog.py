@@ -101,6 +101,7 @@ class CmdLog(commands.Cog):
         logs_bytes = BytesIO(log_str.encode())
 
         await ctx.send("Here is the command log.", file=discord.File(logs_bytes, "cmdlog.txt"))
+        logs_bytes.close()
 
     @cmdlog.command()
     async def user(self, ctx: commands.Context, user_id: int):
@@ -121,6 +122,7 @@ class CmdLog(commands.Cog):
             f"Here is the command log for user {user_id}.",
             file=discord.File(logs_bytes, f"cmdlog_{user_id}.txt"),
         )
+        logs_bytes.close()
 
     @cmdlog.command(aliases=["guild"])
     async def server(self, ctx: commands.Context, server_id: int):
@@ -143,6 +145,7 @@ class CmdLog(commands.Cog):
             f"Here is the command log for server {server_id}.",
             file=discord.File(logs_bytes, f"cmdlog_{server_id}.txt"),
         )
+        logs_bytes.close()
 
     @cmdlog.command()
     async def command(self, ctx: commands.Context, *, command: str):
@@ -173,3 +176,4 @@ class CmdLog(commands.Cog):
             f"Here is the command log for command '{command}'.",
             file=discord.File(logs_bytes, f"cmdlog_{command.replace(' ', '_')}.txt"),
         )
+        logs_bytes.close()

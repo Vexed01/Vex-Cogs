@@ -77,7 +77,9 @@ def _plot(
             fig.savefig(buffer, format="png", dpi=200)
         plt.close(fig)
         buffer.seek(0)
-        return discord.File(buffer, "plot.png")
+        file = discord.File(buffer, "plot.png")
+        buffer.close()
+        return file
 
 
 def _get_date_formatter(delta: datetime.timedelta) -> DateFormatter:
