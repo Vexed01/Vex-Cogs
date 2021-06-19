@@ -118,6 +118,7 @@ class StatusSetCom(MixinMeta):
                 return await ctx.send("Timed out. Cancelling.")
 
             if webhook:
+                # maybe creating a webhook so users feel it worked
                 existing_webhook = any(
                     hook.name == ctx.me.name for hook in await channel.webhooks()
                 )
@@ -195,6 +196,7 @@ class StatusSetCom(MixinMeta):
             - `[p]statusset remove discord #testing`
             - `[p]statusset remove discord` (for using current channel)
         """
+        assert isinstance(ctx.guild, Guild)
         assert isinstance(ctx.channel, TextChannel)
         channel = chan or ctx.channel
 
@@ -207,7 +209,7 @@ class StatusSetCom(MixinMeta):
         self.used_feeds.remove_feed(service.name)
 
         sr: Dict[str, List[int]]
-        async with self.config.guild(channel.guild).service_restrictions() as sr:
+        async with self.config.guild(ctx.guild).service_restrictions() as sr:
             try:
                 sr[service.name].remove(channel.id)
             except (ValueError, KeyError):
@@ -502,6 +504,7 @@ class StatusSetCom(MixinMeta):
             - `[p]statusset edit restrict #testing discord true`
             - `[p]statusset edit restrict discord false` (for current channel)
         """
+        assert isinstance(ctx.guild, Guild)
         assert isinstance(ctx.channel, TextChannel)
         channel = chan or ctx.channel
 
@@ -512,7 +515,7 @@ class StatusSetCom(MixinMeta):
                 f"{channel.mention}"
             )
 
-        old_conf = (await self.config.guild(channel.guild).service_restrictions()).get(
+        old_conf = (await self.config.guild(ctx.guild).service_restrictions()).get(
             service.name, []
         )
         old_bool = channel.id in old_conf
@@ -523,19 +526,19 @@ class StatusSetCom(MixinMeta):
                 "the `status` command."
             )
 
-        async with self.config.guild(channel.guild).service_restrictions() as sr:
+        async with self.config.guild(ctx.guild).service_restrictions() as sr:
             if restrict:
                 try:
                     sr[service.name].append(channel.id)
                 except KeyError:
                     sr[service.name] = [channel.id]
                 self.service_restrictions_cache.add_restriction(
-                    channel.guild.id, service.name, channel.id
+                    ctx.guild.id, service.name, channel.id
                 )
             else:
                 sr[service.name].remove(channel.id)
                 self.service_restrictions_cache.remove_restriction(
-                    channel.guild.id, service.name, channel.id
+                    ctx.guild.id, service.name, channel.id
                 )
 
         word = "" if restrict else "not "
