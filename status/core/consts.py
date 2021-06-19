@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Dict, Literal
 
 ALL = "all"
 LATEST = "latest"
@@ -37,7 +37,7 @@ UPDATE_NAME = "{} Status Update"
 _AVATAR_BASE = "https://cdn.discordapp.com/attachments/813140082989989918/"
 # used to keep line length down
 
-FEEDS = {
+FEEDS: Dict[SERVICE_LITERAL, Dict[str, str]] = {
     "discord": {
         "url": "https://discordstatus.com/",
         # c-spell: disable-next-line

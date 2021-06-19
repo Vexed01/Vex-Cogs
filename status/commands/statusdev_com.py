@@ -6,9 +6,8 @@ from discord.ext.commands.errors import CheckFailure
 from discord.guild import Guild
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, pagify, warning
-from redbot.core.utils.menus import start_adding_reactions
-from redbot.core.utils.predicates import ReactionPredicate
 
+from status.commands.button_pred import wait_for_yes_no
 from status.commands.converters import ModeConverter, ServiceConverter
 from status.core.abc import MixinMeta
 from status.objects import SendCache, Update
@@ -28,30 +27,26 @@ class StatusDevCom(MixinMeta):
         # TypeError when its outside the class...
         # mypy thinks its wrong when its inside the class...
 
-        async def unsupported(_: Any) -> bool:
+        async def unsupported(ctx: Any) -> bool:
             ...
 
     else:
 
         async def unsupported(self, ctx: commands.Context) -> None:
-            if ctx.author.id == 418078199982063626:  # vexed (my) id
-                return
+            # if ctx.author.id == 418078199982063626:  # vexed (my) id
+            #     return
 
-            msg = await ctx.send(
-                warning(
-                    "\nTHIS COMMAND IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended "
-                    "things can happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure "
-                    "you want to continue?"
-                )
+            msg = warning(
+                "\nTHIS COMMAND IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended "
+                "things can happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure "
+                "you want to continue?"
             )
-            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
-                await ctx.bot.wait_for("reaction_add", check=pred, timeout=15)
+                result = await wait_for_yes_no(ctx, msg, timeout=10)
             except asyncio.TimeoutError:
                 await ctx.send("Timeout, aborting.")
                 raise CheckFailure("Reactions timed out")
-            if pred.result is not True:
+            if result is not True:
                 await ctx.send("Aborting.")
                 raise CheckFailure("User choose no.")
 
@@ -182,7 +177,7 @@ class StatusDevCom(MixinMeta):
     async def refreshincidentids(self, ctx: commands.Context):
         """Regenerate the cache of past incident IDs."""
         await ctx.send("Starting.")
-        await self._get_initial_data()  # type:ignore
+        await self.get_initial_data()
         await ctx.send("Done.")
 
     @commands.before_invoke(unsupported)

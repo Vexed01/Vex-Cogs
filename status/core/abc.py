@@ -1,5 +1,6 @@
 import asyncio
 from abc import ABC, ABCMeta, abstractmethod
+from typing import Optional
 
 from aiohttp import ClientSession
 from discord.ext.commands.cog import CogMeta
@@ -7,6 +8,7 @@ from redbot.core.bot import Red
 from redbot.core.config import Config
 from vexcogutils.loop import VexLoop
 
+from status.core.consts import SERVICE_LITERAL
 from status.core.statusapi import StatusAPI
 from status.objects import (
     ConfigWrapper,
@@ -46,5 +48,5 @@ class MixinMeta(ABC):
     ready: bool
 
     @abstractmethod
-    async def get_initial_data(self) -> None:
+    async def get_initial_data(self, specific_service: Optional[SERVICE_LITERAL] = None) -> None:
         raise NotImplementedError()

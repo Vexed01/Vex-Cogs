@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from copy import deepcopy
+from typing import Optional
 
 import aiohttp
 from redbot.core import Config, commands
@@ -12,6 +13,7 @@ from status.commands.statusdev_com import StatusDevCom
 from status.commands.statusset_com import StatusSetCom
 from status.core import FEEDS
 from status.core.abc import CompositeMetaClass
+from status.core.consts import SERVICE_LITERAL
 from status.core.statusapi import StatusAPI
 from status.objects import (
     ConfigWrapper,
@@ -121,10 +123,14 @@ class Status(
 
         _log.info("Status cog has been successfully initialized.")
 
-    async def get_initial_data(self) -> None:
+    async def get_initial_data(self, specific_service: Optional[SERVICE_LITERAL] = None) -> None:
         """Start with initial data from services."""
         old_ids = []
-        for service, settings in FEEDS.items():
+        if specific_service is not None:
+            services = {specific_service: FEEDS[specific_service]}
+        else:
+            services = FEEDS
+        for service, settings in services.items():
             _log.debug(f"Starting {service}.")
             try:
                 incidents, etag, status = await self.statusapi.incidents(settings["id"])

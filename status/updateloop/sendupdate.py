@@ -8,6 +8,7 @@ from discord import Embed, Message, TextChannel
 from redbot.core.bot import Red
 
 from status.core import FEEDS, UPDATE_NAME
+from status.core.consts import SERVICE_LITERAL
 from status.objects import (
     ChannelData,
     ConfChannelSettings,
@@ -30,7 +31,7 @@ class SendUpdate:
         bot: Red,
         config_wrapper: ConfigWrapper,
         update: Update,
-        service: str,
+        service: SERVICE_LITERAL,
         sendcache: SendCache,
         dispatch: bool = True,
         force: bool = False,

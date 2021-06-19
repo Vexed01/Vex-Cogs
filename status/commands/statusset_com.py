@@ -5,14 +5,15 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 import discord
 from discord.abc import GuildChannel
 from discord.channel import TextChannel
+from discord.enums import ButtonStyle
 from discord.guild import Guild
 from discord.member import Member
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, humanize_list
-from redbot.core.utils.predicates import MessagePredicate
 from tabulate import tabulate
 from vexcogutils import inline_hum_list
 
+from status.commands.button_pred import PredItem, wait_for_press, wait_for_yes_no
 from status.commands.command import DynamicHelp, DynamicHelpGroup
 from status.commands.converters import ModeConverter, ServiceConverter
 from status.core import FEEDS, SPECIAL_INFO
@@ -86,46 +87,40 @@ class StatusSetCom(MixinMeta):
 
         # === MODE ===
 
-        await ctx.send(
-            "This is an interactive configuration. You have 2 minutes to answer each question.\n"
-            "If you aren't sure what to choose, just say `cancel` and take a look at the "
-            f"**`{ctx.clean_prefix}statusset preview`** command.\n\n**What mode do you want to "
-            f"use?**\n\n{modes}"
+        msg = (
+            "You have 3 minutes to answer each question.\nIf you aren't sure what to choose, take "
+            f"a look at the **`{ctx.clean_prefix}statusset preview`** command.\n\n**What mode do "
+            f"you want to use?**\n\n{modes}"
         )
 
         try:
-            # really shouldn't monkey patch this
-            mode = await ModeConverter.convert(  # type:ignore
-                None,
+            mode = await wait_for_press(
                 ctx,
-                (
-                    await self.bot.wait_for(
-                        "message", check=MessagePredicate.same_context(ctx), timeout=120
-                    )
-                ).content,
+                [
+                    PredItem("all", ButtonStyle.blurple, "All"),
+                    PredItem("latest", ButtonStyle.blurple, "Latest"),
+                    PredItem("edit", ButtonStyle.blurple, "Edit"),
+                ],
+                content=msg,
             )
         except asyncio.TimeoutError:
             return await ctx.send("Timed out. Cancelling.")
-        except commands.BadArgument as e:
-            return await ctx.send(e)
 
         # === WEBHOOK ===
 
         if channel.permissions_for(ctx.me).manage_webhooks:  # type:ignore
-            await ctx.send(
+            msg = ctx.send(
                 "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means "
                 f"that the status updates will be sent with the avatar as {service.friendly}'s "
                 f"logo and the name will be `{service.friendly} Status Update`, instead of my "
                 "avatar and name."
             )
 
-            pred = MessagePredicate.yes_or_no(ctx)
             try:
-                await self.bot.wait_for("message", check=pred, timeout=120)
+                webhook = await wait_for_yes_no(ctx, msg)
             except asyncio.TimeoutError:
                 return await ctx.send("Timed out. Cancelling.")
 
-            webhook = pred.result
             if webhook:
                 # already checked for perms to create
                 # thanks flare for your webhook logic (redditpost) (or trusty?)
@@ -150,7 +145,7 @@ class StatusSetCom(MixinMeta):
 
         # === RESTRICT ===
 
-        await ctx.send(
+        msg = (
             f"**Would you like to restrict access to {service.friendly} in the "  # type:ignore
             f"`{ctx.clean_prefix}status` command?** (yes or no answer)\nThis will reduce spam. If "
             f"there's an incident, members will instead be redirected to {channel.mention} and "
@@ -158,13 +153,12 @@ class StatusSetCom(MixinMeta):
             "which have restrict enabled."
         )
 
-        pred = MessagePredicate.yes_or_no(ctx)
         try:
-            await self.bot.wait_for("message", check=pred, timeout=120)
+            restrict = await wait_for_yes_no(ctx, msg)
         except asyncio.TimeoutError:
             return await ctx.send("Timed out. Cancelling.")
 
-        if pred.result is True:
+        if restrict is True:
             async with self.config.guild(ctx.guild).service_restrictions() as sr:
                 try:
                     sr[service.name].append(channel.id)
@@ -176,6 +170,10 @@ class StatusSetCom(MixinMeta):
                 )
 
         # === FINISH ===
+
+        if service.name not in self.used_feeds.get_list():
+            # need to get it up to date so no mass sending on add
+            await self.get_initial_data(service.name)
 
         settings = {"mode": mode, "webhook": webhook, "edit_id": {}}
         await self.config.channel(channel).feeds.set_raw(  # type:ignore
