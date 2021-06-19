@@ -53,6 +53,7 @@ class StatusSetCom(MixinMeta):
 
         If you don't specify a specific channel, I will use the current channel.
         """
+        assert isinstance(ctx.guild, Guild)
         assert isinstance(ctx.channel, TextChannel)
         assert isinstance(ctx.me, Member)
         channel = chan or ctx.channel
@@ -117,19 +118,12 @@ class StatusSetCom(MixinMeta):
                 return await ctx.send("Timed out. Cancelling.")
 
             if webhook:
-                # already checked for perms to create
-                # thanks flare for your webhook logic (redditpost) (or trusty?)
-
-                # i know this makes the webhook in the wrong channel if a specific one is chosen...
-                # its remade later, mypy makes this annoying to fix
-                # TODO: ^
-                existing_webhook = False
-                for hook in await ctx.channel.webhooks():
-                    if hook.name == channel.guild.me.name:
-                        existing_webhook = True
+                existing_webhook = any(
+                    hook.name == ctx.me.name for hook in await channel.webhooks()
+                )
                 if not existing_webhook:
-                    await ctx.channel.create_webhook(
-                        name=channel.guild.me.name, reason="Created for status updates."
+                    await channel.create_webhook(
+                        name=ctx.me.name, reason="Created for status updates."
                     )
         else:
             await ctx.send(
@@ -356,8 +350,8 @@ class StatusSetCom(MixinMeta):
         if (
             incidentdata is None
             or extra_info is None
-            or (time() - extra_info.get("checked", 0) > 300)
-        ):  # its older than 3 mins
+            or (time() - extra_info.get("checked", 0) > 300)  # its older than 3 mins
+        ):
             try:
                 json_resp, etag, status = await self.statusapi.incidents(service.id)
             except Exception:
