@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from discord.ext.commands.errors import CheckFailure
 from discord.guild import Guild
@@ -24,10 +24,8 @@ class StatusDevCom(MixinMeta):
         """Don't use this; hidden for a reason; stuff _might_ break."""
 
     if TYPE_CHECKING:
-        # TypeError when its outside the class...
-        # mypy thinks its wrong when its inside the class...
 
-        async def unsupported(ctx: Any) -> bool:
+        async def unsupported(self, ctx: commands.Context) -> bool:
             ...
 
     else:
@@ -166,11 +164,8 @@ class StatusDevCom(MixinMeta):
     @statusdev.command(aliases=["cgr"], hidden=True)
     async def checkguildrestrictions(self, ctx: commands.Context):
         """Check guild restrictins for current guild"""
-        if TYPE_CHECKING:
-            guild = Guild()
-        else:
-            guild = ctx.guild
-        await ctx.send(box(str(self.service_restrictions_cache.get_guild(guild.id))))
+        assert isinstance(ctx.guild, Guild)
+        await ctx.send(box(str(self.service_restrictions_cache.get_guild(ctx.guild.id))))
 
     @commands.before_invoke(unsupported)
     @statusdev.command(aliases=["ri"], hidden=True)

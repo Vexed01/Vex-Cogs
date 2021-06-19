@@ -1,6 +1,6 @@
 import asyncio
 from time import time
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import discord
 from discord.abc import GuildChannel
@@ -20,10 +20,6 @@ from status.core import FEEDS, SPECIAL_INFO
 from status.core.abc import MixinMeta
 from status.objects import SendCache, Update
 from status.updateloop import SendUpdate, process_json
-
-# NOTE:
-# Not using ctx.guild because mypy goes mad, using channel.guild - it'll make sense when you see it
-# ... i hope
 
 
 class StatusSetCom(MixinMeta):
@@ -57,20 +53,19 @@ class StatusSetCom(MixinMeta):
 
         If you don't specify a specific channel, I will use the current channel.
         """
-        if TYPE_CHECKING:
-            channel = GuildChannel()
-        else:
-            channel = chan or ctx.channel
+        assert isinstance(ctx.channel, TextChannel)
+        assert isinstance(ctx.me, Member)
+        channel = chan or ctx.channel
 
-        if not channel.permissions_for(ctx.me).send_messages:  # type:ignore
+        if not channel.permissions_for(ctx.me).send_messages:
             return await ctx.send(
                 f"I don't have permissions to send messages in {channel.mention}"
             )
 
-        existing_feeds = await self.config.channel(channel).feeds()  # type:ignore
+        existing_feeds = await self.config.channel(channel).feeds()
         if service in existing_feeds.keys():
             return await ctx.send(
-                f"{channel.mention} already receives {service.friendly} status "  # type:ignore
+                f"{channel.mention} already receives {service.friendly} status "
                 f"updates. You can edit it with `{ctx.clean_prefix}statusset edit`."
             )
 
@@ -108,7 +103,7 @@ class StatusSetCom(MixinMeta):
 
         # === WEBHOOK ===
 
-        if channel.permissions_for(ctx.me).manage_webhooks:  # type:ignore
+        if channel.permissions_for(ctx.me).manage_webhooks:
             msg = ctx.send(
                 "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means "
                 f"that the status updates will be sent with the avatar as {service.friendly}'s "
@@ -206,10 +201,8 @@ class StatusSetCom(MixinMeta):
             - `[p]statusset remove discord #testing`
             - `[p]statusset remove discord` (for using current channel)
         """
-        if TYPE_CHECKING:
-            channel = GuildChannel()
-        else:
-            channel = chan or ctx.channel
+        assert isinstance(ctx.channel, TextChannel)
+        channel = chan or ctx.channel
 
         async with self.config.channel(channel).feeds() as feeds:
             if not feeds.pop(service.name, None):
@@ -248,27 +241,22 @@ class StatusSetCom(MixinMeta):
         # i basically copied and pasted in rewrite
         # maybe stick the two sections in .utils
 
-        if TYPE_CHECKING:
-            guild = Guild()
-        else:
-            guild = ctx.guild
+        assert isinstance(ctx.guild, Guild)
+        channel: GuildChannel
 
         unused_feeds = list(FEEDS.keys())
 
         if service:
             data = []
-            for channel in guild.channels:
+            for channel in ctx.guild.channels:
                 feeds = await self.config.channel(channel).feeds()
-                restrictions = await self.config.guild(guild).service_restrictions()
+                restrictions = await self.config.guild(ctx.guild).service_restrictions()
                 for name, settings in feeds.items():
                     if name != service.name:
                         continue
                     mode = settings["mode"]
                     webhook = settings["webhook"]
-                    if channel.id in restrictions.get(service, []):
-                        restrict = True
-                    else:
-                        restrict = False
+                    restrict = channel.id in restrictions.get(service, [])
                     data.append([f"#{channel.name}", mode, webhook, restrict])
 
             table = box(
@@ -282,7 +270,7 @@ class StatusSetCom(MixinMeta):
 
         else:
             guild_feeds: Dict[str, List[str]] = {}
-            for channel in guild.channels:
+            for channel in ctx.guild.channels:
                 feeds = await self.config.channel(channel).feeds()
                 for feed in feeds.keys():
                     try:
@@ -357,14 +345,10 @@ class StatusSetCom(MixinMeta):
             - `[p]statusset preview discord all true`
             - `[p]statusset preview discord latest false`
         """
-        if TYPE_CHECKING:
-            me = Member()
-            channel = TextChannel()
-        else:
-            me = ctx.me
-            channel = ctx.channel
+        assert isinstance(ctx.me, Member)
+        assert isinstance(ctx.channel, TextChannel)
 
-        if webhook and not channel.permissions_for(me).manage_messages:
+        if webhook and not ctx.channel.permissions_for(ctx.me).manage_messages:
             return await ctx.send("I don't have permission to manage webhook.")
 
         incidentdata, extra_info = await self.config_wrapper.get_latest(service.name)
@@ -429,10 +413,8 @@ class StatusSetCom(MixinMeta):
             - `[p]statusset edit mode #testing discord latest`
             - `[p]statusset edit mode discord edit` (for current channel)
         """
-        if TYPE_CHECKING:
-            channel = GuildChannel()
-        else:
-            channel = chan or ctx.channel
+        assert isinstance(ctx.channel, TextChannel)
+        channel = chan or ctx.channel
 
         old_conf = await self.config.channel(channel).feeds()
         if service.name not in old_conf.keys():
@@ -475,12 +457,9 @@ class StatusSetCom(MixinMeta):
             - `[p]statusset edit webhook #testing discord true`
             - `[p]statusset edit webhook discord false` (for current channel)
         """
-        if TYPE_CHECKING:
-            channel = GuildChannel()
-            me = Member()
-        else:
-            channel = chan or ctx.channel
-            me = ctx.me
+        assert isinstance(ctx.me, Member)
+        assert isinstance(ctx.channel, TextChannel)
+        channel = chan or ctx.channel
 
         old_conf = await self.config.channel(channel).feeds()
         if service.name not in old_conf.keys():
@@ -496,7 +475,7 @@ class StatusSetCom(MixinMeta):
                 f"in {channel.mention}"
             )
 
-        if webhook and not channel.permissions_for(me).manage_webhooks:
+        if webhook and not channel.permissions_for(ctx.me).manage_webhooks:
             return await ctx.send("I don't have manage webhook permissions so I can't do that.")
 
         old_conf[service.name]["edit_id"] = {}
@@ -529,10 +508,8 @@ class StatusSetCom(MixinMeta):
             - `[p]statusset edit restrict #testing discord true`
             - `[p]statusset edit restrict discord false` (for current channel)
         """
-        if TYPE_CHECKING:
-            channel = GuildChannel()
-        else:
-            channel = chan or ctx.channel
+        assert isinstance(ctx.channel, TextChannel)
+        channel = chan or ctx.channel
 
         feed_settings = await self.config.channel(channel).feeds()
         if service.name not in feed_settings.keys():
