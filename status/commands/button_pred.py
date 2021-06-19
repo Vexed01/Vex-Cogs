@@ -96,7 +96,7 @@ async def wait_for_press(
     asyncio.TimeoutError
         A button was not pressed in time.
     """
-    if len(items) == 0:
+    if not items:
         raise ValueError("The `items` argument cannot contain an empty list.")
 
     view = _PredView(timeout, ctx.author.id)
