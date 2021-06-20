@@ -52,12 +52,10 @@ class GitHubAPI:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
             return await gh.delete(f"/repos/{self.repo}/issues/{issue}/labels/{label}")
 
-    async def create_issue(self, title: str, body: str, labels: list) -> dict:
+    async def create_issue(self, title: str, body: str) -> dict:
         async with aiohttp.ClientSession() as session:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
-            return await gh.post(
-                f"/repos/{self.repo}/issues", data={"title": title, "body": body, "labels": labels}
-            )
+            return await gh.post(f"/repos/{self.repo}/issues", data={"title": title, "body": body})
 
     async def comment(self, issue: int, body: str) -> dict:
         async with aiohttp.ClientSession() as session:

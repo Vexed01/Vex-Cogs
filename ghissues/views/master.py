@@ -25,6 +25,12 @@ class GHView(ui.View):
         self.author_id = author_id
         self.is_pr = bool(issue_data.get("mergeable_state"))
 
+        self.add_item(
+            Button(
+                style=ButtonStyle.link, label="View on GitHub", url=issue_data["html_url"], row=1
+            )
+        )
+
         if issue_data.get("merged"):
             openable = False
             closeable = False
@@ -75,7 +81,7 @@ class GHView(ui.View):
             content=make_label_content(0, len(list(get_menu_sets(raw_labels)))), view=view
         )
 
-    @button(label="Close", style=ButtonStyle.red)
+    @button(label="Close issue", style=ButtonStyle.red)
     async def btn_close(self, button: Button, interaction: Interaction):
         await self.api.close(self.issue_data["number"])
         button.disabled = True
@@ -84,7 +90,7 @@ class GHView(ui.View):
             self.btn_merge.disabled = True
         await self.regen_viw()
 
-    @button(label="Open", style=ButtonStyle.green)
+    @button(label="Reopen issue", style=ButtonStyle.green)
     async def btn_open(self, button: Button, interaction: Interaction):
         await self.api.open(self.issue_data["number"])
         button.disabled = True
@@ -99,3 +105,8 @@ class GHView(ui.View):
             "Please choose the merge method. You'll be able to choose a commit message later.",
             view=MergeView(self),
         )
+
+    @button(emoji="❌", row=1, style=ButtonStyle.grey)
+    async def btn_del(self, button: Button, interaction: Interaction):
+        assert self.master_msg is not None
+        await self.master_msg.delete()

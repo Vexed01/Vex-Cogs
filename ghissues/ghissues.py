@@ -1,14 +1,15 @@
 import asyncio
 from asyncio import TimeoutError
-from typing import List, Mapping
+from typing import Mapping
 
 import discord
 from gidgethub import HTTPException
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.predicates import MessagePredicate
-from vexcogutils import format_help, format_info, inline_hum_list
+from vexcogutils import format_help, format_info
 
+from ghissues.button_pred import wait_for_yes_no
 from ghissues.views.master import GHView
 
 from .api import GitHubAPI
@@ -118,7 +119,7 @@ class GHIssues(commands.Cog):
         **Examples:**
             - `[p]ghi 11`
             - `[p]ghi howtoken`
-            - `[p]ghi create`
+            - `[p]ghi newissue`
         """
         async with ctx.typing():
             assert self.api is not None
@@ -158,220 +159,43 @@ class GHIssues(commands.Cog):
         await self.config.repo.set(slug)
         await ctx.send(f"Set the repo to use as `{slug}`")
 
-    # @ghi.command(aliases=["addlabel"])
-    # async def addlabels(self, ctx: commands.Context, issue: int):
-    #     """Interactive command to add labels to an issue or PR."""
-    #     try:
-    #         repo_labels = await GitHubAPI.get_repo_labels()
-    #         issue_labels = await GitHubAPI.get_issue_labels(issue)
-    #     except EXCEPTIONS as e:
-    #         return await self._handle_error(ctx, e)
-
-    #     rl_names = []
-    #     for label in repo_labels:
-    #         rl_names.append(label["name"])
-
-    #     il_names = []
-    #     for label in issue_labels:
-    #         il_names.append(label["name"])
-
-    #     avaliable_labels = inline_hum_list([l for l in rl_names if l not in il_names])
-    #     used_labels = inline_hum_list(il_names)
-    #     await ctx.send(
-    #         "You have 30 seconds, please say what label you want to add. Any invalid input will "
-    #         "be ignored. This is case sensitive.\n\n"
-    #         f"Available labels: {avaliable_labels}\nLabels currently on issue: {used_labels}"
-    #     )
-
-    #     def check(msg):
-    #         return (
-    #             msg.author == ctx.author
-    #             and msg.channel == ctx.channel
-    #             and (msg.content in rl_names or msg.content.casefold() in ["save", "exit"])
-    #         )
-
-    #     to_add: List[str] = []
-    #     while True:
-    #         try:
-    #             answer: discord.Message = await self.bot.wait_for(
-    #                 "message", check=check, timeout=30.0
-    #             )
-    #         except TimeoutError:
-    #             return await ctx.send("Timeout. No changes were saved.")
-    #         if answer.content.casefold() == "save":
-    #             break
-    #         elif answer.content.casefold() == "exit":
-    #             to_add = []
-    #             break
-    #         elif answer.content in il_names:
-    #             await ctx.send(
-    #                 "It looks like that label's already on the issue. Choose another, 30 seconds"
-    #             )
-    #             continue
-    #         to_add.append(answer.content)
-    #         il_names.append(answer.content)
-    #         rl_names.remove(answer.content)
-
-    #         avaliable_labels = inline_hum_list(
-    #             [label for label in rl_names if label not in il_names]
-    #         )
-    #         used_labels = inline_hum_list(il_names)
-    #         await ctx.send(
-    #             "Label added. Again, 30 seconds. Say another label name if you want to add more,"
-    #             "**`save` to save your changes** or **`exit` to exit without saving.**\n\n"
-    #             f"Available labels: {avaliable_labels}\nLabels currently on issue: {used_labels}"
-    #         )
-    #     if to_add:
-    #         try:
-    #             await GitHubAPI.add_labels(issue, to_add)
-    #             issue_info = await GitHubAPI.get_issue(issue)
-    #         except EXCEPTIONS as e:
-    #             return await self._handle_error(ctx, e)
-    #         await ctx.send(
-    #             "Added labels to issue `{}` by `{}`".format(
-    #                 issue_info.get("title"), issue_info.get("user", {}).get("login")
-    #             )
-    #         )
-    #     else:
-    #         await ctx.send("No changes were saved.")
-
-    # @ghi.command(aliases=["removelabel"])
-    # async def removelabels(self, ctx: commands.Context, issue: int):
-    #     """Interactive command to remove labels from an issue or PR."""
-    #     try:
-    #         issue_labels = await GitHubAPI.get_issue_labels(issue)
-    #     except EXCEPTIONS as e:
-    #         return await self._handle_error(ctx, e)
-
-    #     il_names = []
-    #     for label in issue_labels:
-    #         il_names.append(label["name"])
-
-    #     used_labels = inline_hum_list(il_names)
-    #     await ctx.send(
-    #         "You have 30 seconds, please say what label you want to add. Any invalid input will "
-    #         "be ignored. This is case sensitive.\n\n"
-    #         f"Labels currently on issue: {used_labels}"
-    #     )
-
-    #     def check(msg: discord.Message):
-    #         return (
-    #             msg.author == ctx.author
-    #             and msg.channel == ctx.channel
-    #             and (msg.content in il_names or msg.content.casefold() == "exit")
-    #         )
-
-    #     while True:
-    #         try:
-    #             answer: discord.Message = await self.bot.wait_for(
-    #                 "message", check=check, timeout=30.0
-    #             )
-    #         except TimeoutError:
-    #             return await ctx.send("Timeout.")
-    #         if answer.content.casefold() == "exit":
-    #             return await ctx.send("Done.")
-    #         try:
-    #             await GitHubAPI.remove_label(issue, answer.content)
-    #         except EXCEPTIONS as e:
-    #             return await self._handle_error(ctx, e)
-
-    #         il_names.remove(answer.content)
-
-    #         used_labels = inline_hum_list(il_names)
-    #         await ctx.send(
-    #             "Label removed. Again, 30 seconds. Say another label name if you want to remove "
-    #             f"one, or `exit` to finish.\n\nLabels currently on issue: {used_labels}"
-    #         )
-
     @ghi.command()
-    async def open(self, ctx: commands.Context, *, title: str):
-        """Open a new issue. Does NOT reopen."""
-        try:
-            await self._get_token(ctx)
-            await self._get_repo(ctx)
-        except EXCEPTIONS as e:
-            return await self._handle_error(ctx, e)
-
+    async def newissue(self, ctx: commands.Context, *, title: str):
+        """Open a new issue. If you want to reopen, then use the normal interactive view."""
         await ctx.send(
             "Your next message will be the description of the issue. If you answer exactly "
-            "`cancel` I won't make an issue.\n"
-            "You've got 5 minutes, remember the 2000 Discord character limit!"
+            "`cancel` I'll cancel. You will have another opportunity to cancel later on.\n"
+            "You've got 5 minutes."
         )
         try:
             answer: discord.Message = await self.bot.wait_for(
                 "message", check=MessagePredicate.same_context(ctx), timeout=300.0
             )
         except TimeoutError:
-            return await ctx.send("Aborting.")
+            return await ctx.send("Timeout. Aborting.")
         if answer.content.casefold() == "cancel":
             return await ctx.send("Aborting.")
         else:
             description = answer.content
 
-        await ctx.send(
-            "Do you want to add one or more labels to this issue? (yes or no, 15 seconds)"
-        )
-        pred = MessagePredicate.yes_or_no(ctx)
+        msg = "Are you happy with your issue? You'll be able to add labels once I've created it."
         try:
-            answer = await self.bot.wait_for("message", check=pred, timeout=15.0)
+            result = await wait_for_yes_no(ctx, msg)
         except TimeoutError:
+            return await ctx.send("Timeout. Aborting.")
+
+        if result is False:
             return await ctx.send("Aborting.")
 
-        to_add: List[str] = []
-        if pred.result is True:
-            repo_labels = await self.api.get_repo_labels()
-            rl_names = []
-            for label in repo_labels:
-                rl_names.append(label["name"])
+        async with ctx.typing():
+            assert self.api is not None
 
-            avaliable_labels = inline_hum_list(rl_names)
-            await ctx.send(
-                "You have 30 seconds, please say what label you want to add. Any invalid input "
-                "will be ignored. This is case sensitive. Say `exit` to abort creating the issue, "
-                f"or **`create` to make the issue**.\n\nAvaliable labels: {avaliable_labels}"
-            )
+            try:
+                issue_info = await self.api.create_issue(title, description)
+            except EXCEPTIONS as e:
+                return await self._handle_error(ctx, e)
 
-            def check(msg: discord.Message):
-                return (
-                    msg.author == ctx.author
-                    and msg.channel == ctx.channel
-                    and (msg.content in rl_names or msg.content.casefold() in ["create", "exit"])
-                )
-
-            to_add = []
-            while True:
-                try:
-                    answer = await self.bot.wait_for("message", check=check, timeout=30.0)
-                except TimeoutError:
-                    await ctx.send("Timeout on this label.")
-                    break
-                if answer.content.casefold() == "exit":
-                    await ctx.send("Exiting. No changes were saved.")
-                    return
-                if answer.content.casefold() == "create":
-                    break
-                elif answer.content in to_add:
-                    await ctx.send(
-                        "It looks like that label's already on the issue. Choose another, 30 "
-                        "seconds."
-                    )
-                    continue
-                to_add.append(answer.content)
-                rl_names.remove(answer.content)
-
-                avaliable_labels = inline_hum_list(rl_names)
-                used_labels = inline_hum_list(to_add)
-                await ctx.send(
-                    "Label added. Again, 30 seconds. Say another label name if you want to add "
-                    "more, `create` to create the issue or `exit` to exit without saving.\n\n"
-                    f"Avaliable labels: {avaliable_labels}\nLabels currently on issue: "
-                    f"{used_labels}"
-                )
-        try:
-            resp = await self.api.create_issue(title, description, to_add)
-        except EXCEPTIONS as e:
-            return await self._handle_error(ctx, e)
-
-        await ctx.send(
-            "Created issue {}: {}".format(resp.get("number"), "<{}>".format(resp.get("html_url")))
-        )
+        embed = format_embed(issue_info)
+        view = GHView(issue_info, self.api, self.bot, ctx.author.id)
+        msg = await ctx.send("Issue created:", embed=embed, view=view)
+        view.master_msg = msg

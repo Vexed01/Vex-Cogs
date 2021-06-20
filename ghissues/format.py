@@ -5,8 +5,6 @@ from redbot.core.utils.chat_formatting import inline, pagify
 from vexcogutils.chat import inline_hum_list
 
 # most of the issue formatting design is from Kowin's `githubcards` cog, a big thank you goes there
-# it has been modified because... i don't want to use a json to object thing in this cog and i use
-# the rest api not graphql which has a few... quirks compared with graphql
 
 
 def format_embed(issue_data: dict) -> discord.Embed:
@@ -34,16 +32,16 @@ def format_embed(issue_data: dict) -> discord.Embed:
         embed.description = issue_data["body"]
 
     if issue_data.get("merged"):
-        embed.colour = 0x6E40C9
+        embed.colour = 0xA371F7
         state = "Merged"
     elif issue_data.get("draft"):
         embed.colour = 0x8B949E
         state = "Draft"
     elif issue_data["state"] == "open":
-        embed.colour = 0xA371F7
+        embed.colour = 0x3FB950
         state = "Open"
     elif issue_data["state"] == "closed":
-        embed.colour = 0xDA3633
+        embed.colour = 0xF85149
         state = "Closed"
     else:
         embed.color = 0x8B949E
