@@ -1,10 +1,13 @@
+# most of the issue formatting design is from Kowin's `githubcards` cog, a big thank you goes there
+# the code itself has been modified
+# the original code was licensed under Mozilla Public License 2.0 from http://mozilla.org/MPL/2.0/
+# MPL 2.0 is compatible with this program's overall license, GNU GPL v3
+
 import datetime
 
 import discord
 from redbot.core.utils.chat_formatting import inline, pagify
 from vexcogutils.chat import inline_hum_list
-
-# most of the issue formatting design is from Kowin's `githubcards` cog, a big thank you goes there
 
 
 def format_embed(issue_data: dict) -> discord.Embed:
