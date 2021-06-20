@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-from typing import Dict, TypedDict, Union
+from typing import Dict, List, TypedDict, Union
 
 import psutil
 from redbot.core.utils import AsyncIter
@@ -34,24 +34,37 @@ async def get_cpu() -> Dict[str, str]:
     await asyncio.sleep(1)
     percent = psutil.cpu_percent(percpu=True)
     time = psutil.cpu_times()
-    freq = psutil.cpu_freq(percpu=True)
+    try:
+        freq = psutil.cpu_freq(percpu=True)
+    except NotImplementedError:  # happens on WSL
+        freq = []
     cores = psutil.cpu_count()
 
+    # freq could be [] because of WSL totally failing, and some other systems seem to give no
+    # frequency data at all.
+
     if psutil.LINUX:
+        do_frequ = len(freq) == cores
         data = {"percent": "", "freq": "", "freq_note": "", "time": ""}
         for i in range(cores):
             data["percent"] += f"[Core {i}] {percent[i]} %\n"
-            ghz = round((freq[i].current / 1000), 2)
-            data["freq"] += f"[Core {i}] {ghz} GHz\n"
+            if do_frequ:
+                ghz = round((freq[i].current / 1000), 2)
+                data["freq"] += f"[Core {i}] {ghz} GHz\n"
     else:
+        do_frequ = len(freq) == 1
         data = {"percent": "", "freq": "", "freq_note": " (nominal)", "time": ""}
         for i in range(cores):
             data[
                 "percent"
             ] += f"[Core {i}] {percent[i]} % \n"  # keep extra space here, for special case,
             # tabulate removes it
-        ghz = round((freq[0].current / 1000), 2)
-        data["freq"] = f"{ghz} GHz\n"  # blame windows
+        if freq:
+            ghz = round((freq[0].current / 1000), 2)
+            data["freq"] = f"{ghz} GHz\n"  # blame windows
+
+    if not do_frequ:
+        data["freq"] = "Not available"
 
     data["time"] += f"[Idle]   {_hum(time.idle)} seconds\n"
     data["time"] += f"[User]   {_hum(time.user)} seconds\n"
@@ -109,7 +122,7 @@ async def get_sensors(fahrenheit: bool) -> Dict[str, str]:
 
 async def get_users(embed: bool) -> Dict[str, str]:
     """Get users connected"""
-    users = psutil.users()
+    users: List[psutil._common.suser] = psutil.users()
 
     e = "`" if embed else ""
 

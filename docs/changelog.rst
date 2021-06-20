@@ -476,6 +476,30 @@ System
 ======
 
 *********
+``1.2.7``
+*********
+
+2021-06-18
+
+- Make the cog compatible with WSL
+
+*********
+``1.2.6``
+*********
+
+2021-06-18
+
+- Use UTC for bot uptime
+
+*********
+``1.2.5``
+*********
+
+2021-06-18
+
+- Handle no CPU frequency data being avalible
+
+*********
 ``1.2.4``
 *********
 
