@@ -111,6 +111,7 @@ class SendCache:
                 "investigating",
                 "scheduled",  # decided to put this in orange as is in future, not now
                 "in",  # scheduled - full is "in progress"
+                "verifying",
             ]:
                 return Colour.orange()
             elif status in ["resolved", "completed"]:
