@@ -1,6 +1,6 @@
 import asyncio
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import pandas
 from redbot.core.bot import Red
@@ -8,7 +8,8 @@ from redbot.core.commands import CogMeta
 from redbot.core.config import Config
 from vexcogutils.loop import VexLoop
 
-from betteruptime.utils import UptimeData
+if TYPE_CHECKING:
+    from betteruptime.utils import UptimeData
 
 
 class CompositeMetaClass(CogMeta, ABCMeta):
@@ -38,5 +39,5 @@ class MixinMeta(ABC):
     ready: bool
 
     @abstractmethod
-    async def get_data(self, num_days: int) -> UptimeData:
+    async def get_data(self, num_days: int) -> "UptimeData":
         raise NotImplementedError
