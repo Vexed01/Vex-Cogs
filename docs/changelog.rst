@@ -118,6 +118,17 @@ BetterUptime
 ============
 
 *********
+``2.0.0``
+*********
+
+2021-06-21
+
+- Significant internal refactoring to make it more maintainable
+- New command: ``uptimegraph`` - see uptime in graph form
+- New command: ``uptimeexport`` (bot owner only) - export uptime data to CSV
+- Fix removing wrong command on cog unload
+
+*********
 ``1.6.0``
 *********
 
