@@ -29,13 +29,13 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
     data to become available.
     """
 
-    __version__ = "1.6.0"
+    __version__ = "2.0.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        default: dict = {}  # :dict is pointless but makes mypy happy
+        default: dict = {}
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(version=1)
         self.config.register_global(cog_loaded=default)
@@ -47,8 +47,8 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
 
         self.first_load = 0.0
 
-        self.cog_loaded_cache = pandas.Series(dtype="object")  # suppresses deprecation warn
-        self.connected_cache = pandas.Series(dtype="object")  # suppresses deprecation warn
+        self.cog_loaded_cache = pandas.Series(dtype="object")  # dtype="object is to suppresses
+        self.connected_cache = pandas.Series(dtype="object")  # deprecation warn
         self.unload_write = True
 
         self.main_loop = None

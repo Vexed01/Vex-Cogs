@@ -1,5 +1,4 @@
 import datetime
-import logging
 from typing import Union
 
 import discord
@@ -12,8 +11,6 @@ from .consts import SECONDS_IN_DAY
 from .plot import plot
 
 old_uptime = None
-
-_log = logging.getLogger("red.vex.betteruptime")
 
 
 class BUCommands(MixinMeta):
@@ -137,6 +134,9 @@ class BUCommands(MixinMeta):
 
         data = await self.get_data(num_days)
         sr = data.daily_connected_percentages()
+
+        if len(sr) < 2:
+            return await ctx.send("Give me a few more days to collect data!")
 
         async with ctx.typing():
             file = await plot(sr)
