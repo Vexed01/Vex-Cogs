@@ -140,7 +140,12 @@ class BUCommands(MixinMeta):
 
         async with ctx.typing():
             file = await plot(sr)
-        await ctx.send(file=file)
+        await ctx.send(
+            content=(
+                "This excludes today. Days with uptime under `99.7%` will be labelled, if any."
+            ),
+            file=file,
+        )
 
     @commands.is_owner()
     @commands.command()

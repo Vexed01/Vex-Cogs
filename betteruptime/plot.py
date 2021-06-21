@@ -6,11 +6,10 @@ import discord
 import matplotlib
 import pandas
 from matplotlib import pyplot as plt
+from numpy import ceil, floor
+from pandas import Timestamp
 
 matplotlib.use("agg")
-
-
-ONE_DAY_SECONDS = 86400
 
 
 async def plot(sr: pandas.Series) -> discord.File:
@@ -25,6 +24,24 @@ async def plot(sr: pandas.Series) -> discord.File:
     return await asyncio.wait_for(task, timeout=10.0)
 
 
+def get_y_lim_min(sr: pandas.Series) -> int:
+    min = sr.min()
+    if min > 70:
+        return 60
+    if min > 20:
+        return floor((min / 10) - 1.3) * 10
+    return 0
+
+
+def get_y_lim_max(sr: pandas.Series):
+    max = sr.max()
+    if max > 90:
+        return 104
+    if max > 50:
+        return ceil((max / 10) * 10) + 4
+    return ceil((max / 10) * 10) + 2.5
+
+
 def _plot(
     sr: pandas.Series,
 ) -> discord.File:
@@ -37,7 +54,21 @@ def _plot(
             title="Daily uptime data",
             ax=ax,
         )
-        ax.set_ylim([0, 105])
+
+        ymin = get_y_lim_min(sr)
+        ymax = get_y_lim_max(sr)
+        ax.set_ylim([ymin, ymax])
+
+        for i, value in enumerate(sr.values):
+            if value < 99.7:  # only annotate days that weren't perfect
+                date: Timestamp = sr.index[i]
+                ax.annotate(
+                    f"{value}%\n{date.strftime('%d %b')}",
+                    (sr.index[i], value),
+                    xytext=(sr.index[i], value - ((ymax - ymin) / 8)),
+                    arrowprops={"arrowstyle": "-"},
+                )
+
         buffer = io.BytesIO()
         fig.savefig(buffer, format="png", dpi=200)
         plt.close(fig)
