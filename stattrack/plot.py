@@ -33,7 +33,7 @@ async def plot(
             ylabel=ylabel,
         ),
     )
-    return await asyncio.wait_for(task, timeout=10.0)  # should be around 1 sec
+    return await asyncio.wait_for(task, timeout=10.0)  # _plot should take around 1 sec
 
 
 def _plot(
@@ -43,7 +43,6 @@ def _plot(
     ylabel: str,
 ) -> discord.File:
     """Do not use on own - blocking."""
-    # plotting and saving blocks event loop for ~0.5 to 1 second for me
     now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
     start = now - delta
     start = max(start, sr.first_valid_index())
