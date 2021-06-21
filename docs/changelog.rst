@@ -10,8 +10,27 @@ Usage of this for all version bumping updates started 21-04-08.
 
 Date format throughout is YYYY-MM-DD
 
-See the contents bar on the right to jump to a cog.
+Jump links:
 
+| :ref:`aliases<cl_aliases>`
+| :ref:`anotherpingcog<cl_apc>`
+| :ref:`beautify<cl_beautify>`
+| :ref:`betteruptime<cl_betteruptime>`
+| :ref:`cmdlog<cl_cmdlog>`
+| :ref:`github<cl_github>`
+| :ref:`madtranslate<cl_madtranslate>`
+| :ref:`stattrack<cl_stattrack>`
+| :ref:`status<cl_status>`
+| :ref:`system<cl_system>`
+| :ref:`timechannel<cl_timechannel>`
+| :ref:`wol<cl_wol>`
+
+.. note::
+    Changelogs are automaticity generated. As such, there may sometimes be visual glitches
+    as I do not check this.
+
+
+.. _cl_aliases:
 
 =======
 Aliases
@@ -34,6 +53,8 @@ Aliases
 - Fix logic for checking command
 - Small internal cleanup (still more to do)
 
+.. _cl_apc:
+
 ==============
 AnotherPingCog
 ==============
@@ -46,7 +67,7 @@ AnotherPingCog
 
 - Potentially fix super edge case behaviour with command not registering
 
-*No updates since changelogs started*
+.. _cl_beautify:
 
 ========
 Beautify
@@ -113,6 +134,8 @@ Internal Changes
 
 - Initial release
 
+.. _cl_betteruptime:
+
 ============
 BetterUptime
 ============
@@ -175,7 +198,7 @@ BetterUptime
 
 2021-05-09
 
-- Fix undreachable code
+- Fix unreachable code
 
 *********
 ``1.4.0``
@@ -199,6 +222,8 @@ BetterUptime
 *********
 
 - Slight logic changes for banding in ``downtime`` command
+
+.. _cl_cmdlog:
 
 ======
 CmdLog
@@ -237,11 +262,18 @@ CmdLog
 
 - Initial release
 
+.. _cl_github:
+
 ======
 GitHub
 ======
 
 *No updates since changelogs started*
+
+Note: This cog is scheduled for deprecation in favour of a new cog `ghissues` which
+supports buttons, for when they are officially supported in Red
+
+.. _cl_madtranslate:
 
 ============
 MadTranslate
@@ -263,6 +295,8 @@ MadTranslate
 
 - Initial release
 
+.. _cl_stattrack:
+
 =========
 StatTrack
 =========
@@ -282,6 +316,8 @@ StatTrack
 2021-06-02
 
 - Initial release
+
+.. _cl_status:
 
 ======
 Status
@@ -482,6 +518,8 @@ Internal changes
 - Changes to how incidents are stored including config wrapper
 - No longer write ETags to config (just cache)
 
+.. _cl_system:
+
 ======
 System
 ======
@@ -579,6 +617,8 @@ System
     - shows what time the system was booted and how long ago that was
 - Internal refactor, splitting commands and psutil parsers into two files
 
+.. _cl_timechannel:
+
 ===========
 TimeChannel
 ===========
@@ -607,6 +647,8 @@ TimeChannel
 
 - Initial release
 
+.. _cl_wol:
+
 ===
 WOL
 ===
@@ -619,9 +661,19 @@ WOL
 
 - Initial release
 
+.. _cl_docs:
+
 =========
 Meta Docs
 =========
+
+*********
+``2.2.0``
+*********
+
+2021-06-21
+
+- Directly link to each section at the top of changelog
 
 *********
 ``2.1.1``
