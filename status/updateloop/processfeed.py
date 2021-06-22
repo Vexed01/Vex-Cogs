@@ -1,5 +1,4 @@
 import datetime
-import logging
 import re
 from typing import List, Optional
 
@@ -9,8 +8,6 @@ from redbot.core.utils.chat_formatting import humanize_list, pagify
 
 from status.core import TYPES_LITERAL
 from status.objects import IncidentData, UpdateField
-
-_log = logging.getLogger("red.vex.status.processfeed")
 
 
 def _handle_long_fields(
@@ -39,9 +36,7 @@ def _handle_long_fields(
             paged = list(pagify(field.value, page_length=1024))
             new_fields.append(UpdateField(field.name, paged[0], field.update_id))
             for page in paged[1:]:
-                new_fields.append(
-                    UpdateField("Above continued (hit field limits)", page, field.update_id)
-                )
+                new_fields.append(UpdateField("\u200b", page, field.update_id))
 
     return new_fields
 

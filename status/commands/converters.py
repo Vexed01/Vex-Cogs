@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from redbot.core.commands import BadArgument, Context, Converter
 
 from status.core import FEEDS, MODES_LITERAL, SERVICE_LITERAL
+from status.core.consts import ICON_BASE
 
 
 class _ServiceTypeHint:
@@ -33,7 +34,7 @@ else:
             self.id = FEEDS[argument]["id"]
             self.url = FEEDS[argument]["url"]
             self.friendly = FEEDS[argument]["friendly"]
-            self.avatar = FEEDS[argument]["avatar"]
+            self.avatar = ICON_BASE.format(argument)
 
             return self
 

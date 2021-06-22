@@ -340,6 +340,15 @@ Status
 ======
 
 *********
+``2.3.8``
+*********
+
+2021-06-22
+
+- Move icons to GH Pages
+- Make field name a zero width space for when embed fields are split
+
+*********
 ``2.3.7``
 *********
 
