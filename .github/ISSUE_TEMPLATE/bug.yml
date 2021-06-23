@@ -4,9 +4,10 @@ name: "Bug Report"
 title: "[COGNAME HERE] TITLE HERE"
 body:
   - type: markdown
-    value: |
-      "### Thanks for taking the time to make an issue!"
-      "If you want general support please reach out to in the Red Cog Support server at https://discord.gg/GET4DVk"
+    attributes:
+      value: |
+        "### Thanks for taking the time to make an issue!"
+        "If you want general support please reach out to in the Red Cog Support server at https://discord.gg/GET4DVk"
   - type: input
     id: cog-name
     attributes:
