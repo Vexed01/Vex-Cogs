@@ -16,6 +16,7 @@ body:
       description: "Please enter the first code block of the command `[p]<cogname>info` where `[p]` is your prefix and `<cogname>` is the name of the cog in lower case. For example, if the cog is called `Status` run `[p]statusinfo`."
       label: "What versions are you running?"
       placeholder: "Copy and paste the first codeblock here"
+      render: ""
     validations:
       required: false
   - type: textarea
@@ -23,7 +24,6 @@ body:
     attributes:
       description: "Please go into as much detail as possible and, if you can, show steps to reproduce it. If there's an error, paste it in the next box below."
       label: "Describe the bug"
-      render: python
     validations:
       required: false
   - type: textarea
