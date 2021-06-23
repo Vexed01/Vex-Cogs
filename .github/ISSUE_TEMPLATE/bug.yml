@@ -2,7 +2,6 @@ description: "File a bug report"
 labels: ["type: bug"]
 name: "Bug Report"
 title: "[COGNAME HERE] TITLE HERE"
----
 body:
   - type: input
     id: cog-name
