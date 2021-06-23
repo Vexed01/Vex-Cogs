@@ -4,19 +4,17 @@ name: "Feature request"
 title: "[COGNAME HERE] TITLE HERE"
 ---
 body:
-  -
+  - type: input
+    id: cog-name
     attributes:
       label: "What cog is this feature request for?"
       placeholder: "Enter the name of the cog"
-    id: cog-name
-    type: input
     validations:
       required: true
-  -
+  - type: textarea
+    id: desc
     attributes:
       label: "Describe the feature request in as much detail as possible"
       placeholder: "The more information the better!"
-    id: desc
-    type: textarea
     validations:
       required: true
