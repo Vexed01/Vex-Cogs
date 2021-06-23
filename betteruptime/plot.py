@@ -63,7 +63,7 @@ def _plot(
             if value < 99.7:  # only annotate days that weren't perfect
                 date: Timestamp = sr.index[i]
                 ax.annotate(
-                    f"{value}%\n{date.strftime('%d %b')}",
+                    f"{value}%\n{date.strftime('%d %b')}",  # type:ignore  # stubs incorrect
                     (sr.index[i], value),
                     xytext=(sr.index[i], value - ((ymax - ymin) / 8)),
                     arrowprops={"arrowstyle": "-"},

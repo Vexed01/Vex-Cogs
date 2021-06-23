@@ -92,7 +92,6 @@ class UptimeData:
             new[date] = format(
                 round((self.daily_connected_data[date] / SECONDS_IN_DAY) * 100, 2), ".2f"
             )
-        new.rename("Connected to Discord")
         del new[midnight]
         return new
 
@@ -106,7 +105,6 @@ class UptimeData:
                 round((self.daily_cog_loaded_data[date] / SECONDS_IN_DAY) * 100, 2), ".2f"
             )
         del new[midnight]
-        new.rename("Cog Loaded")
         return new
 
 

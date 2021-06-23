@@ -3,7 +3,7 @@ import logging
 import pandas
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.chat_formatting import pagify
 from vexcogutils import format_help, format_info
 
 from betteruptime.commands import BUCommands
@@ -97,7 +97,7 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
 
     @commands.command(name="updev", hidden=True)
     async def _dev_com(self, ctx: commands.Context):
-        await ctx.send(box(str(await self.get_data(9000))))
+        await ctx.send_interactive(pagify(str(await self.get_data(9000))), box_lang="")
 
     @commands.command(name="uploop", hidden=True)
     async def _dev_loop(self, ctx: commands.Context):
