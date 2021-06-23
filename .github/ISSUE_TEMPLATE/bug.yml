@@ -1,38 +1,41 @@
-name: Bug Report
-description: File a bug report
-title: "[Bug]: "
-labels: [bug, triage]
-assignees:
-  - octocat
+description: "File a bug report"
+labels: ["type: bug"]
+name: "Bug Report"
+title: "[COGNAME HERE] TITLE HERE"
+---
 body:
-  - type: input
-    id: cog-name
+  -
     attributes:
-      label: What cog is this bug report for?
-      placeholder: Enter the name of the cog
+      label: "What cog is this bug report for?"
+      placeholder: "Enter the name of the cog"
+    id: cog-name
+    type: input
     validations:
       required: true
-  - type: textarea
-    id: vers
+  -
     attributes:
-      label: What versions are you running?
       description: "Please enter the first code block of the command `[p]<cogname>info` where `[p]` is your prefix and `<cogname>` is the name of the cog in lower case. For example, if the cog is called `Status` run `[p]statusinfo`."
-      placeholder: Copy and paste the first codeblock here
+      label: "What versions are you running?"
+      placeholder: "Copy and paste the first codeblock here"
+    id: vers
+    type: textarea
     validations:
       required: false
-  - type: textarea
-    id: desc
+  -
     attributes:
-      label: Describe the bug
       description: "Please go into as much detail as possible and, if you can, show steps to reproduce it. If there's an error, paste it in the next box below."
+      label: "Describe the bug"
       render: python
-     validations:
-      required: false  
-  - type: textarea
-    id: logs
+    id: desc
+    type: textarea
+    validations:
+      required: false
+  -
     attributes:
+      description: "Please copy and paste any relevant log output either from the console or using the `[p]traceback` command. This will be automatically formatted into code, so no need for backticks."
       label: "If there's an error, paste it here."
-      description: Please copy and paste any relevant log output either from the console or using the `[p]traceback` command. This will be automatically formatted into code, so no need for backticks.
       render: python
-     validations:
-      required: false          
+    id: logs
+    type: textarea
+    validations:
+      required: false
