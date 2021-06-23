@@ -16,7 +16,7 @@ body:
     id: vers
     attributes:
       label: What versions are you running?
-      description: Please enter the first code block of the command `[p]<cogname>info` where `[p]` is your prefix and `<cogname>` is the name of the cog in lower case. For example, if the cog is called `Status` run `[p]statusinfo`.
+      description: "Please enter the first code block of the command `[p]<cogname>info` where `[p]` is your prefix and `<cogname>` is the name of the cog in lower case. For example, if the cog is called `Status` run `[p]statusinfo`."
       placeholder: Copy and paste the first codeblock here
     validations:
       required: false
