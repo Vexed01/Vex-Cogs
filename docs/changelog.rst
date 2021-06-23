@@ -246,6 +246,16 @@ CmdLog
 ======
 
 *********
+``1.3.0``
+*********
+
+2021-06-23
+
+- Add content logging, by deafult turned off (see command ``[p]cmdlog content``)
+- Simplify EUD statement
+- Add info on how long long since cog load (how long current cache lasts) on log commands
+
+*********
 ``1.1.0``
 *********
 

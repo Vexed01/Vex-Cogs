@@ -3,14 +3,14 @@ import logging
 import sys
 from collections import deque
 from io import BytesIO
-from typing import Deque, Union
+from typing import Deque, Optional, Union
 
 import discord
 from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
-from redbot.core import commands
+from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.commands import CheckFailure as RedCheckFailure
-from redbot.core.utils.chat_formatting import humanize_number
+from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta
 from vexcogutils import format_help, format_info
 from vexcogutils.chat import humanize_bytes
 
@@ -25,10 +25,14 @@ class CmdLog(commands.Cog):
 
     The cog keeps an internal cache and everything is also logged to the bot's main logs under
     `red.vex.cmdlog`, level INFO.
+
+    The internal cache is non persistant and subsequently is lost on cog unload,
+    including bot shutdowns. The logged data will last until Red's custom logging
+    rotator deletes old logs.
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.1.0"
+    __version__ = "1.2.0"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -36,33 +40,55 @@ class CmdLog(commands.Cog):
         self.log_cache: Deque[Union[LoggedCommand, LoggedCheckFailure]] = deque(maxlen=100_000)
         # this is about 50MB max from my simulated testing
 
+        self.load_time = datetime.datetime.utcnow()
+
+        self.config = Config.get_conf(self, 418078199982063626, force_registration=True)
+        self.config.register_global(log_content=False)
+
+        self.log_content: Optional[bool] = None
+
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
     # not supporting red_delete_data_for_user - see EUD statement in info.json or `[p]cog info`
+    # whilst it is possible to remove data from the internal cache, data in the bot's logs isn't
+    # so easy to remove so imo there's no point removing only 1 data location
 
     def log_com(self, ctx: commands.Context) -> None:
-        logged_com = LoggedCommand(ctx)
+        logged_com = LoggedCommand(ctx, self.log_content)
         _log.info(logged_com)
         self.log_cache.append(logged_com)
 
     def log_cf(self, ctx: commands.Context) -> None:
-        logged_com = LoggedCheckFailure(ctx)
+        logged_com = LoggedCheckFailure(ctx, self.log_content)
         _log.info(logged_com)
         self.log_cache.append(logged_com)
 
     def cache_size(self) -> int:
         return sum(sys.getsizeof(i) for i in self.log_cache)
 
+    def get_track_start(self) -> str:
+        if len(self.log_cache) == 100_000:  # max size
+            return "Max log size reached. Only the last 100 000 commands are stored."
+
+        ago = humanize_timedelta(timedelta=datetime.datetime.utcnow() - self.load_time)
+        return f"Log started {ago} ago."
+
     @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):
+        if self.log_content is None:
+            self.log_content = await self.config.log_content()
+
         if ctx.guild:
             assert not isinstance(ctx.channel, discord.DMChannel)
         self.log_com(ctx)
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        if self.log_content is None:
+            self.log_content = await self.config.log_content()
+
         if isinstance(error, (RedCheckFailure, DpyCheckFailure)):
             self.log_cf(ctx)
 
@@ -84,6 +110,13 @@ class CmdLog(commands.Cog):
         """
 
     @cmdlog.command()
+    async def content(self, ctx: commands.Context, to_log: bool):
+        """Set whether or not whole message content should be logged. Default false."""
+        await self.config.log_content.set(to_log)
+        self.log_content = to_log
+        await ctx.send("Message content will " + ("now" if to_log else "now not") + " be logged.")
+
+    @cmdlog.command()
     async def cache(self, ctx: commands.Context):
         """Show the size of the internal command cache."""
         cache_bytes = self.cache_size()
@@ -100,7 +133,10 @@ class CmdLog(commands.Cog):
         log_str = f"Generated at {now}.\n" + "\n".join(logs)
         logs_bytes = BytesIO(log_str.encode())
 
-        await ctx.send("Here is the command log.", file=discord.File(logs_bytes, "cmdlog.txt"))
+        await ctx.send(
+            "Here is the command log. " + self.get_track_start(),
+            file=discord.File(logs_bytes, "cmdlog.txt"),
+        )
         logs_bytes.close()
 
     @cmdlog.command()
@@ -119,7 +155,7 @@ class CmdLog(commands.Cog):
         logs_bytes = BytesIO(log_str.encode())
 
         await ctx.send(
-            f"Here is the command log for user {user_id}.",
+            f"Here is the command log for user {user_id}. " + self.get_track_start(),
             file=discord.File(logs_bytes, f"cmdlog_{user_id}.txt"),
         )
         logs_bytes.close()
@@ -142,7 +178,7 @@ class CmdLog(commands.Cog):
         logs_bytes = BytesIO(log_str.encode())
 
         await ctx.send(
-            f"Here is the command log for server {server_id}.",
+            f"Here is the command log for server {server_id}. " + self.get_track_start(),
             file=discord.File(logs_bytes, f"cmdlog_{server_id}.txt"),
         )
         logs_bytes.close()
@@ -173,7 +209,7 @@ class CmdLog(commands.Cog):
         logs_bytes = BytesIO(log_str.encode())
 
         await ctx.send(
-            f"Here is the command log for command '{command}'.",
+            f"Here is the command log for command '{command}'. " + self.get_track_start(),
             file=discord.File(logs_bytes, f"cmdlog_{command.replace(' ', '_')}.txt"),
         )
         logs_bytes.close()

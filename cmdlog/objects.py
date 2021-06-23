@@ -4,6 +4,7 @@ from sys import getsizeof
 from typing import Optional
 
 from discord.channel import DMChannel
+from discord.message import Message
 from redbot.core import commands
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -22,7 +23,7 @@ class IDFKWhatToNameThis:
 class LogMixin:
     """Base for logged data"""
 
-    def __init__(self, ctx: commands.Context):
+    def __init__(self, ctx: commands.Context, log_content: Optional[bool]):
         self.command = ctx.command.qualified_name
         self.user = IDFKWhatToNameThis(
             id=ctx.author.id, name=f"{ctx.author.name}#{ctx.author.discriminator}"
@@ -34,6 +35,10 @@ class LogMixin:
             assert not isinstance(ctx.channel, DMChannel)
             self.channel = IDFKWhatToNameThis(id=ctx.channel.id, name=f"#{ctx.channel.name}")
             self.guild = IDFKWhatToNameThis(id=ctx.guild.id, name=ctx.guild.name)
+        self.content: Optional[str] = None
+        if log_content and ctx.message is not None:
+            assert isinstance(ctx.message, Message)
+            self.content = ctx.message.content
 
         self.time = datetime.datetime.utcnow().strftime(TIME_FORMAT)
 
@@ -58,11 +63,12 @@ class LoggedCommand(LogMixin):
     """Inherits from LogMixin, for a logged command"""
 
     def __str__(self) -> str:
+        com = self.content or self.command
         if not self.guild or not self.channel:
-            return f"'{self.command}' ran by {self.user.id} ({self.user.name}) in our DMs."
+            return f"'{com}' ran by {self.user.id} ({self.user.name}) in our DMs."
 
         return (
-            f"'{self.command}' ran by {self.user.id} ({self.user.name}) "
+            f"'{com}' ran by {self.user.id} ({self.user.name}) "
             f"with message ID {self.msg_id} "
             f"in channel {self.channel.id} ({self.channel.name}) "
             f"in guild {self.guild.id} ({self.guild.name})"
@@ -73,11 +79,12 @@ class LoggedCheckFailure(LogMixin):
     """Inherits from LogMixin, for a logged check failure"""
 
     def __str__(self) -> str:
+        com = self.content or self.command
         if not self.guild or not self.channel:
-            return f"'{self.command}' ran by {self.user.id} ({self.user.name}) in our DMs."
+            return f"'{com}' ran by {self.user.id} ({self.user.name}) in our DMs."
 
         return (
-            f"'{self.command}' raised a check failure by {self.user.id} ({self.user.name}) "
+            f"'{com}' raised a check failure by {self.user.id} ({self.user.name}) "
             f"with message ID {self.msg_id} "
             f"in channel {self.channel.id} ({self.channel.name}) "
             f"in guild {self.guild.id} ({self.guild.name})"
