@@ -3,7 +3,6 @@ from typing import List
 
 import discord
 import psutil
-from discord.types.embed import EmbedField
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_timedelta
@@ -66,7 +65,7 @@ class System(commands.Cog):
 
         fields = emb["fields"]
         if len(fields) > 2:  # needs multi rows
-            data: List[List[EmbedField]] = []
+            data: List[list] = []
             temp = []
             for field in fields:
                 temp.append(field)
@@ -81,7 +80,7 @@ class System(commands.Cog):
             for row in data:
                 while len(row) < 3:
                     row.append(empty_field)
-                fields.extend(row)
+                fields.extend(row)  # type:ignore
 
         # else it's 2 or less columns so doesn't need special treatment
         emb["fields"] = fields
