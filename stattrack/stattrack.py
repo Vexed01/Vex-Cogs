@@ -98,6 +98,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 await self.migrate_v1_to_v2(df_conf)
             else:  # new install
                 self.df_cache = pandas.DataFrame()
+            assert self.df_cache is not None
             await self.driver.write(self.df_cache)
             await self.config.version.set(2)
             _log.info("Done.")
