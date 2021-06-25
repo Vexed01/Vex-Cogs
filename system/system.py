@@ -37,7 +37,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.3.1"
+    __version__ = "1.3.2"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -351,6 +351,7 @@ class System(commands.Cog):
         See what resources [botname] is using.
 
         Platforms: Windows, Linux, Mac OS
+        Note: SWAP memory information is only available on Linux.
         """
         red = (await get_red())["red"]
 
