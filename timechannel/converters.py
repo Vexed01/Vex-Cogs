@@ -1,17 +1,18 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 
-import rapidfuzz
-from pytz import common_timezones
+import rapidfuzz.process
 from redbot.core.commands import BadArgument, Context, Converter
 
+from timechannel.data import ZONE_KEYS
+
 if TYPE_CHECKING:
-    TimezoneConverter = str
+    TimezoneConverter = Tuple[str, float, int]
 else:
 
     class TimezoneConverter(Converter):
         async def convert(self, ctx: Context, argument: str) -> str:
             fuzzy_results = rapidfuzz.process.extract(
-                argument, common_timezones, limit=2, score_cutoff=90
+                argument, ZONE_KEYS, limit=2, score_cutoff=90
             )
             if len(fuzzy_results) > 1:
                 raise BadArgument(
@@ -26,4 +27,4 @@ else:
                     "column):\nhttps://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List"
                 )
 
-            return fuzzy_results[0][0]
+            return fuzzy_results[0]
