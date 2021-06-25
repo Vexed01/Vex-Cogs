@@ -10,7 +10,7 @@
         "system": "1.2.7",
         "timechannel": "1.1.1",
         "wol": "1.0.0",
-        "stattrack": "1.0.1",
+        "stattrack": "1.1.0",
         "madtranslate": "1.0.1"
     }
 }
