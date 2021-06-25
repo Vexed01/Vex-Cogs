@@ -17,7 +17,7 @@ from redbot.core.data_manager import cog_data_path
 # will only happend once, for migration from config. SQL includes copying DF + executor overhead
 # basically this is the raw speed changes for the loop itself
 # ~1.3 sec to ~0.03 sec, dataset of ~1 week on windows
-# ~5-6 sec to ~[] sec, dataset of ~1 month on linux
+# ~5-6 sec to ~0.04 sec, dataset of ~1 month on linux
 # reads are insignificant as only happen on cog load
 
 

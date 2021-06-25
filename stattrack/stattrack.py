@@ -4,7 +4,6 @@ import json
 import logging
 import time
 from asyncio.events import AbstractEventLoop
-from sys import getsizeof
 from typing import Dict, Optional, Set
 
 import discord
@@ -14,7 +13,6 @@ from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
 from vexcogutils import format_help, format_info
-from vexcogutils.chat import humanize_bytes
 from vexcogutils.loop import VexLoop
 
 from stattrack.abc import CompositeMetaClass
@@ -126,8 +124,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     @commands.command(hidden=True)
     async def stattrackinfo(self, ctx: commands.Context):
         assert self.df_cache is not None
-        ram = humanize_bytes(getsizeof(self.df_cache))
-        disk = humanize_bytes(getsizeof(self.df_cache.to_json(orient="split")))
         await ctx.send(
             await format_info(
                 self.qualified_name,
@@ -135,8 +131,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 loops=[self.loop_meta] if self.loop_meta else [],
                 extras={
                     "Loop time": f"{self.last_loop_time}",
-                    "Disk usage": disk,
-                    "RAM usage": f"At least {ram}",
                 },
             )
         )
