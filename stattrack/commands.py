@@ -7,8 +7,6 @@ from redbot.core.utils.chat_formatting import box, text_to_file
 from stattrack.abc import MixinMeta
 from stattrack.converters import TimespanConverter
 
-from .plot import plot
-
 DEFAULT_DELTA = datetime.timedelta(days=1)
 
 
@@ -29,7 +27,7 @@ class StatTrackCommands(MixinMeta):
         sr = self.df_cache[label]
         if len(sr) < 2:
             return await ctx.send("I need a little longer to collect data. Try again in a minute.")
-        file = await plot(sr, delta, title, ylabel)
+        file = await self.plot(sr, delta, title, ylabel)
         await ctx.send(file=file)
 
     @commands.cooldown(10, 60.0, BucketType.user)
@@ -41,6 +39,7 @@ class StatTrackCommands(MixinMeta):
     async def raw(self, ctx, var):
         await ctx.send(box(str(self.df_cache[var])))
 
+    @commands.is_owner()
     @stattrack.group()
     async def export(self, ctx: commands.Context):
         """Export stattrack data."""

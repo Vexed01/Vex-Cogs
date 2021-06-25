@@ -5,7 +5,7 @@
     "install_msg": "This cog will immediately start a background process which could use some extra resources. Storage wise, this cog uses around 150KB per day. This is just around 50MB per year (the cog will NOT automatically delete old data so this will increase over time). RAM usage will be at least double disk usage and may spike to more when commands are used or the loop is active. You can see storage usage with the `stattrackinfo` command. All other commands are under `stattrack`\n\n**Once you load the cog, please wait a few seconds then run the `stattrackinfo` command. If the 'loop time' is None then wait a bit and try again. When it appears, if it's over 30 seconds __you should not use this cog on your bot.__**",
     "description": "Track your bot's statistics over time, including ping, members, guild and message/command counts.\n\nThis has a background process which could be intensive.\n\nThis stores data in Red's config which is not especially built for this cog's usage.",
     "short": "Stat tracking cog including ping, member counts and counts of commands/messages. View the data in Discord.",
-    "requirements": ["pandas", "matplotlib", "vex-cog-utils==1.4.5"],
+    "requirements": ["pandas>=1.1.0", "matplotlib", "vex-cog-utils==1.4.5"],
     "tags": ["utility", "timeseries", "tracking", "stats"],
     "end_user_data_statement": "This cog permanently stores anonymised and aggregated data about users' statuses and counts messages sent, not including their content. This data cannot be traced back to individual users."
 }

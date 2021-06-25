@@ -328,6 +328,14 @@ StatTrack
 =========
 
 *********
+``1.1.0``
+*********
+
+2021-06-25
+
+- Move to SQLite for data storage for superior speed
+
+*********
 ``1.0.1``
 *********
 

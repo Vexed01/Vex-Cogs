@@ -3,13 +3,15 @@ import datetime
 import json
 import logging
 import time
+from asyncio.events import AbstractEventLoop
 from sys import getsizeof
-from typing import Dict, Set
+from typing import Dict, Optional, Set
 
 import discord
 import pandas
 from redbot.core import Config, commands
 from redbot.core.bot import Red
+from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
 from vexcogutils import format_help, format_info
 from vexcogutils.chat import humanize_bytes
@@ -17,6 +19,8 @@ from vexcogutils.loop import VexLoop
 
 from stattrack.abc import CompositeMetaClass
 from stattrack.commands import StatTrackCommands
+from stattrack.driver import StatTrackDriver
+from stattrack.plot import StatPlot
 
 _log = logging.getLogger("red.vexed.stattrack")
 
@@ -25,7 +29,7 @@ def snapped_utcnow():
     return datetime.datetime.utcnow().replace(microsecond=0, second=0)
 
 
-class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
+class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMetaClass):
     """
     Track your bot's metrics and view them in Discord.
     Requires no external setup, so uses Red's config. This cog will use around 150KB per day.
@@ -34,7 +38,7 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.0.1"
+    __version__ = "1.1.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -45,6 +49,8 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
         self.loop_meta = None
         self.last_loop_time = None
 
+        self.do_write: Optional[bool] = None
+
         self.cmd_count = 0
         self.msg_count = 0
 
@@ -52,10 +58,12 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
         self.config.register_global(version=1)
         self.config.register_global(main_df={})
 
-        if 418078199982063626 in bot.owner_ids:  # type:ignore
-            bot.add_dev_env_value("stattrack", lambda _: self)
+        self.driver = StatTrackDriver(bot)
 
         asyncio.create_task(self.async_init())
+
+        if 418078199982063626 in bot.owner_ids:  # type:ignore
+            bot.add_dev_env_value("stattrack", lambda _: self)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -68,6 +76,10 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
     def cog_unload(self) -> None:
         if self.loop:
             self.loop.cancel()
+
+        self.plot_executor.shutdown()
+        self.driver.sql_executor.shutdown()
+
         try:
             self.bot.remove_dev_env_value("stattrack")
         except KeyError:
@@ -75,15 +87,40 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
 
     async def async_init(self) -> None:
         await self.bot.wait_until_red_ready()
-        df_conf = await self.config.main_df()
-        if df_conf:
-            self.df_cache = pandas.read_json(json.dumps(df_conf), orient="split")
-            assert isinstance(self.df_cache, pandas.DataFrame)
+
+        if await self.config.version() != 2:
+            self.do_write = True
+            _log.info("Migrating StatTrack config.")
+            df_conf = await self.config.main_df()
+
+            if df_conf:  # needs migration
+                self.df_cache = pandas.read_json(json.dumps(df_conf), orient="split", typ="frame")
+                await self.migrate_v1_to_v2(df_conf)
+            else:  # new install
+                self.df_cache = pandas.DataFrame()
+            await self.driver.write(self.df_cache)
+            await self.config.version.set(2)
+            _log.info("Done.")
         else:
-            self.df_cache = pandas.DataFrame()
+            self.do_write = False
+            self.df_cache = await self.driver.read()
 
         self.loop = asyncio.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
+
+    async def migrate_v1_to_v2(self, data: dict) -> None:
+        assert isinstance(self.bot.loop, AbstractEventLoop)
+        # a big dataset can take 1 second to write as JSON, so better make it not blocking
+
+        def backup() -> None:
+            with open(cog_data_path(self) / "v1_to_v2_backup.json", "w") as fp:
+                json.dump(data, fp)
+
+        await self.bot.loop.run_in_executor(None, backup)
+
+        await self.config.version.set(2)
+
+        await self.config.main_df.clear()
 
     @commands.command(hidden=True)
     async def stattrackinfo(self, ctx: commands.Context):
@@ -199,41 +236,33 @@ class StatTrack(commands.Cog, StatTrackCommands, metaclass=CompositeMetaClass):
             df[k] = v
 
         self.df_cache = self.df_cache.append(df)
+
         end = time.monotonic()
         main_time = round(end - start, 1)
         _log.debug(f"Loop finished in {main_time} seconds")
 
-        start = time.monotonic()
-        await self.config.main_df.set(json.loads(self.df_cache.to_json(orient="split")))
-        end = time.monotonic()
-        save_time = round(end - start, 1)
-        _log.debug(f"Config saved in {save_time} seconds")
+        if self.do_write is True:
+            start = time.monotonic()
+            await self.driver.write(self.df_cache)
+            end = time.monotonic()
+            save_time = round(end - start, 3)
+            _log.debug(f"SQLite wrote in {save_time} seconds")
+            self.do_write = False
+        else:
+            start = time.monotonic()
+            await self.driver.append(df)
+            end = time.monotonic()
+            save_time = round(end - start, 3)
+            _log.debug(f"SQLite appended in {save_time} seconds")
 
         total_time = main_time + save_time
 
         if total_time > 30.0:
-            # if purging will make a difference (ie make save time shorter)
-            if save_time > 10:
-                # if it's over 50MB (~1 year)
-                # purge_worthwhile = getsizeof(self.df_cache.to_json(orient="split")) > 50_000_000
-
-                # purging not implemented yet
-                # if purge_worthwhile:
-                #     purge = (
-                #         "\nYou may want to consider deleting old data with the Discord command "
-                #         "`stattrack purge`. This will shorten the loop because less data has to "
-                #         "be saved each time"
-                #     )
-                purge = ""
-            else:
-                purge = ""
-
             # TODO: only warn once + send to owners
             _log.warning(
                 "StatTrack loop took a while. This means that it's using lots of resources on "
                 "this machine. You might want to consider unloading or removing the cog. There "
                 "is also a high chance of some datapoints on the graphs being skipped."
-                + purge
                 + f"\nMain loop: {main_time}s, Data saving: {save_time}s so total time is "
                 + total_time
             )
