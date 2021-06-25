@@ -12,7 +12,7 @@ WINDOWS: bool
 
 # -------------------------------------------------------------------------------------------------
 # these are NOT representive of the actual code as the namedtuped changes based on the os
-# this cog uses three attributes - and they are supported on all OSes
+# this cog uses attributes that are common and used i the cog
 # most of these are also in _common or the oses file so :awesome:
 scputimes = namedtuple("scputimes", ["user", "idle", "system"])
 scpufreq = namedtuple("scpufreq", ["current", "min", "max"])
@@ -20,6 +20,7 @@ svmem = namedtuple("svmem", ["total", "available", "percent", "used"])
 sswap = namedtuple("sswap", ["total", "used", "free", "percent"])
 shwtemp = namedtuple("shwtemp", ["label", "current", "high", "critical"])
 sfan = namedtuple("sfan", ["label", "current"])
+pmem = namedtuple("pmem", ["rss", "vms"])
 
 class ProcInfo(TypedDict):
     status: str
@@ -27,6 +28,10 @@ class ProcInfo(TypedDict):
 
 class Process:
     info: ProcInfo
+    pid: int
+    def oneshot(self): ...
+    def memory_info(self) -> pmem: ...
+    def cpu_percent(self, interval: bool = None) -> float: ...
 
 # -------------------------------------------------------------------------------------------------
 # some of these can return others but for this cog will only return one thing due to args used

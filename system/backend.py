@@ -234,3 +234,29 @@ async def get_uptime() -> Dict[str, str]:
     data["uptime"] += f"[Up for]    {friendly_up_for}\n"
 
     return data
+
+
+async def get_red() -> Dict[str, str]:
+    """Get info for Red's process."""
+    p = psutil.Process()
+
+    p.cpu_percent()
+    await asyncio.sleep(1)
+    with p.oneshot():
+        cpu = p.cpu_percent()
+        mem = p.memory_info()
+
+    all_phys = psutil.virtual_memory().total
+    all_swap = psutil.swap_memory().total
+
+    red_phys = (mem.rss / all_phys) * 100
+    red_swap = (mem.vms / all_swap) * 100
+
+    data = {"red": ""}
+
+    data["red"] += f"[Process ID]   {p.pid}\n"
+    data["red"] += f"[CPU Usage]    {cpu} %\n"
+    data["red"] += f"[Physical mem] {humanize_bytes(mem.rss)} ({round(red_phys, 2)} %)\n"
+    data["red"] += f"[SWAP mem]     {humanize_bytes(mem.vms)} ({round(red_swap, 2)} %)\n"
+
+    return data

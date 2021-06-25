@@ -8,19 +8,20 @@ from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_timedelta
 from vexcogutils import format_help, format_info
 
-from .command import DynamicHelp
-from .utils import (
+from .backend import (
     box,
     get_cpu,
     get_disk,
     get_mem,
     get_net,
     get_proc,
+    get_red,
     get_sensors,
     get_uptime,
     get_users,
     up_for,
 )
+from .command import DynamicHelp
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"
@@ -36,7 +37,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.2.7"
+    __version__ = "1.3.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -342,6 +343,24 @@ class System(commands.Cog):
         else:
             msg = "**Utime**\n"
             msg += box(f"Uptime\n{uptime}\n")
+            await ctx.send(msg)
+
+    @system.command(name="red", cls=DynamicHelp, supported_sys=True)  # all systems
+    async def system_red(self, ctx: commands.Context):
+        """
+        See what resources [botname] is using.
+
+        Platforms: Windows, Linux, Mac OS
+        """
+        red = (await get_red())["red"]
+
+        if await ctx.embed_requested():
+            embed = discord.Embed(title="Red's resource usage", colour=await ctx.embed_colour())
+            embed.add_field(name="Resource usage", value=box(red))
+            await ctx.send(embed=self.finalise_embed(embed))
+        else:
+            msg = "**Red's resource usage**\n"
+            msg += box(f"Resource usage\n{red}\n")
             await ctx.send(msg)
 
     @system.command(

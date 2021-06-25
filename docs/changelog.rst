@@ -568,6 +568,14 @@ System
 ======
 
 *********
+``1.3.1``
+*********
+
+2021-06-25
+
+- New command: ``[p]system red``
+
+*********
 ``1.2.7``
 *********
 
@@ -672,7 +680,7 @@ TimeChannel
 
 2021-06-25
 
-- You can now choose your own format. Take a look at `[p]tcset create` for some infomation on how to do so. You'll have to remove old channels with `[p]tcset remove`
+- You can now choose your own format. Take a look at ``[p]tcset create`` for some infomation on how to do so. You'll have to remove old channels with ``[p]tcset remove``
 
 *********
 ``1.1.1``
