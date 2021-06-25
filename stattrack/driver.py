@@ -4,7 +4,6 @@ import sqlite3
 from asyncio.events import AbstractEventLoop
 
 import pandas
-import pyarrow  # noqa  # no used here but needed optional dep for feather stuff in pandas
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 
