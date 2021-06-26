@@ -40,7 +40,7 @@ class LogMixin:
             assert isinstance(ctx.message, Message)
             self.content = ctx.message.content
 
-        self.time = datetime.datetime.utcnow().strftime(TIME_FORMAT)
+        self.time = datetime.datetime.now().strftime(TIME_FORMAT)
 
     def __str__(self) -> str:
         raise NotImplementedError()

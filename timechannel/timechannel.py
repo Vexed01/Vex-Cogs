@@ -12,6 +12,7 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from vexcogutils import format_help, format_info
+from vexcogutils.chat import datetime_to_timestamp
 
 from timechannel.utils import gen_replacements
 
@@ -97,11 +98,14 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         # partially from core at (what a tight fit with the link :aha:)
         # https://github.com/Cog-Creators/Red-DiscordBot/blob/V3/develop/redbot/core/events.py#L355
         sys_now = datetime.datetime.utcnow()
+        aware_sys_now = datetime.datetime.now(datetime.timezone.utc)
         discord_now = ctx.message.created_at
-        if "UTC" not in data.values():
+        if "qw" not in data.values():
             description = f"UTC time: {sys_now.strftime('%b %d, %H:%M')}"
         else:
             description = ""
+
+        description += f"\nYour local time: {datetime_to_timestamp(aware_sys_now)}"
 
         diff = int(abs((discord_now - sys_now).total_seconds()))
         if diff > 60:
@@ -116,7 +120,6 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             timestamp=datetime.datetime.utcnow(),
             description=description,
         )
-        embed.set_footer(text="Your local time")
         for c_id, target_timezone in data.items():
             channel = self.bot.get_channel(int(c_id))  # idk why its str
             assert not isinstance(channel, DMChannel) and not isinstance(channel, GroupChannel)

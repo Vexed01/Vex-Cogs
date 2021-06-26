@@ -29,7 +29,8 @@ class BUCommands(MixinMeta):
             - `[p]uptime 0` (for all-time data)
             - `[p]uptime 7`
         """
-        # START OF CODE FROM RED'S CORE uptime COMMAND
+        # MOSTLY FROM CORE'S UPTIME COMMAND
+        # TODO: use datetime_to_timestamp in utils when red/dpy uses timezone aware datetimes
         since = self.bot.uptime.strftime("%Y-%m-%d %H:%M:%S")
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or "Less than one second."
