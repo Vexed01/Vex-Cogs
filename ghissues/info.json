@@ -3,7 +3,7 @@
     "author": ["Vexed (Vexed#3211)"],
     "name": "GHIssues",
     "install_msg": "⚠**Requires discord.py 2.0 which is not in a stable version of Red and will break most cogs**⚠",
-    "requirements": ["gidgethub>=5.0.0", "vex-cog-utils==1.4.5"],
+    "requirements": ["gidgethub>=5.0.0", "vex-cog-utils==1.4.6"],
     "description": "Create, comment, labelify and close GitHub issues, with partial PR support.\n\n⚠ Requires discord.py 2.0 which is not in a stable version of Red and will break most other cogs ⚠",
     "short": "Create, comment, labelify and close GitHub issues. ⚠ Requires discord.py 2.0 which is not in a stable version of Red and will break most other cogs ⚠",
     "tags": ["utility", "github", "issues"],
