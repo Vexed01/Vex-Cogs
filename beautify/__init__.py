@@ -8,6 +8,12 @@ from redbot.core.bot import Red
 
 # VCU reload needs to be done before importing files that depend on new version
 if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.6"):
+    importlib.reload(vexcogutils.version)
+    importlib.reload(vexcogutils.consts)
+
+    importlib.reload(vexcogutils.chat)
+    importlib.reload(vexcogutils.meta)
+    importlib.reload(vexcogutils.loop)
     importlib.reload(vexcogutils)
 
 from .beautify import Beautify
