@@ -176,7 +176,7 @@ class BUCommands(MixinMeta):
     async def resetbu(self, ctx: commands.Context, confirm: bool = False):
         """Reset the cog's data."""
         p = ctx.clean_prefix
-        if confirm is False:
+        if not confirm:
             return await ctx.send(
                 "⚠ This will reset the all your uptime data. This action is **irreversible**. "
                 "All the uptime data will be **lost forever** ⚠\n"
