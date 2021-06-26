@@ -1,5 +1,13 @@
+import importlib
 import json
 from pathlib import Path
+
+import vexcogutils
+from redbot.core import VersionInfo
+
+# VCU reload needs to be done before importing files that depend on new version
+if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.6"):
+    importlib.reload(vexcogutils)
 
 from .anotherpingcog import setup
 
