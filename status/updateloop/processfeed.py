@@ -128,8 +128,8 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
     else:
         scheduled_for = None
 
-    if len(desc) > 2048:
-        desc = desc[0:2040] + "\n..."  # v unlikely to happen... so im being lazy
+    if len(desc) > 4096:
+        desc = desc[0:4050] + "\n..."  # v unlikely to happen... so im being lazy
 
     return IncidentData(
         fields=fields,

@@ -68,6 +68,11 @@ class SendCache:
                 value="This is because embeds are limited to 25 fields.",
             )
 
+        if len(embed) > 6000:  # ffs
+            embed.description += "\nNote: some earlier updates were omitted due to embed limits."
+            while len(embed) > 6000:
+                embed.remove_field(0)
+
         return embed
 
     def _make_plain_base(self) -> str:
