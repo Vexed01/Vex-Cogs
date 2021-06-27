@@ -37,7 +37,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.3.2"
+    __version__ = "1.3.3"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -353,19 +353,24 @@ class System(commands.Cog):
         Platforms: Windows, Linux, Mac OS
         Note: SWAP memory information is only available on Linux.
         """
-        red = (await get_red())["red"]
+        async with ctx.typing():
+            red = (await get_red())["red"]
+
+        botname = self.bot.user.name
 
         if await ctx.embed_requested():
-            embed = discord.Embed(title="Red's resource usage", colour=await ctx.embed_colour())
+            embed = discord.Embed(
+                title=f"{botname}'s resource usage", colour=await ctx.embed_colour()
+            )
             embed.add_field(name="Resource usage", value=box(red))
             await ctx.send(embed=self.finalise_embed(embed))
         else:
-            msg = "**Red's resource usage**\n"
+            msg = f"**{botname}'s resource usage**\n"
             msg += box(f"Resource usage\n{red}\n")
             await ctx.send(msg)
 
     @system.command(
-        name="top", aliases=["overview", "all"], cls=DynamicHelp, supported_sys=True  # all systems
+        name="all", aliases=["overview", "top"], cls=DynamicHelp, supported_sys=True  # all systems
     )
     async def system_all(self, ctx: commands.Context):
         """
@@ -381,12 +386,14 @@ class System(commands.Cog):
             cpu = await get_cpu()
             mem = await get_mem()
             proc = await get_proc()
+            red = (await get_red())["red"]
 
-            percent = cpu["percent"]
-            times = cpu["time"]
-            physical = mem["physical"]
-            swap = mem["swap"]
-            procs = proc["statuses"]
+        percent = cpu["percent"]
+        times = cpu["time"]
+        physical = mem["physical"]
+        swap = mem["swap"]
+        procs = proc["statuses"]
+        botname = self.bot.user.name
 
         if await ctx.embed_requested():
             embed = discord.Embed(title="Overview", colour=await ctx.embed_colour())
@@ -395,6 +402,7 @@ class System(commands.Cog):
             embed.add_field(name="Physical Memory", value=box(physical))
             embed.add_field(name="SWAP Memory", value=box(swap))
             embed.add_field(name="Processes", value=box(procs))
+            embed.add_field(name=f"{botname}'s resource usage", value=box(red))
             await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Overview**\n"
@@ -402,5 +410,6 @@ class System(commands.Cog):
             to_box += f"Physical Memory\n{physical}\n"
             to_box += f"SWAP Memory\n{swap}\n"
             to_box += f"Processes\n{procs}\n"
+            to_box += f"{botname}'s resource usage\n{red}\n"
             msg += box(to_box)
             await ctx.send(msg)

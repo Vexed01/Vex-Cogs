@@ -568,6 +568,16 @@ System
 ======
 
 *********
+``1.3.5``
+*********
+
+2021-06-27
+
+- Show Red's resource usage in the ``system all`` command
+- Trigger typing for ``system red`` command
+- Use the bot's name for Red's resource usage instead of just "Red"
+
+*********
 ``1.3.2``
 *********
 
