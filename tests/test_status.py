@@ -17,7 +17,7 @@ def test_field_handler():
     VALID = [UpdateField(name="", value="A" * 1023, update_id="...")]
     BOUNDARY = [UpdateField(name="", value="A" * 1024, update_id="...")]
     INVALID = [UpdateField(name="", value="A" * 1025, update_id="...")]
-    EXTREME = [UpdateField(name="", value="A" * 9000, update_id="...")]
+    EXTREME = [UpdateField(name="", value="A" * 2049, update_id="...")]
 
     split_under = processfeed._handle_long_fields(VALID)
     split_at = processfeed._handle_long_fields(BOUNDARY)
