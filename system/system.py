@@ -37,7 +37,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.3.3"
+    __version__ = "1.3.4"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -406,7 +406,8 @@ class System(commands.Cog):
             await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Overview**\n"
-            to_box = f"CPU\n{cpu}\n\n"
+            to_box = f"CPU Usage\n{percent}\n"
+            to_box += f"CPU Times\n{times}\n"
             to_box += f"Physical Memory\n{physical}\n"
             to_box += f"SWAP Memory\n{swap}\n"
             to_box += f"Processes\n{procs}\n"
