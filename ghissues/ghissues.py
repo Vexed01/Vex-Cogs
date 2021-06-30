@@ -43,7 +43,7 @@ class GHIssues(commands.Cog):
     cog, eg `githubcards`. Then set up with `ghi setrepo`.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.0.dev"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -56,13 +56,17 @@ class GHIssues(commands.Cog):
 
         self.api = GitHubAPI("", "")
 
+        self.setup = False
+
         asyncio.create_task(self.async_init())
 
     async def async_init(self) -> None:
         token = (await self.bot.get_shared_api_tokens("github")).get("token", "")
         repo = await self.config.repo()
 
-        self.api = GitHubAPI(repo, token)
+        if repo and token:
+            self.api = GitHubAPI(repo, token)
+            self.setup = True
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -121,8 +125,11 @@ class GHIssues(commands.Cog):
             - `[p]ghi howtoken`
             - `[p]ghi newissue`
         """
+        if self.setup is False:
+            return await ctx.send(
+                "You need to set up a repo and token. Take a look at (`ghi howtoken`)."
+            )
         async with ctx.typing():
-            assert self.api is not None
             issue_info = await self.api.get_issue(issue)
             embed = format_embed(issue_info)
         view = GHView(issue_info, self.api, self.bot, ctx.author.id)
@@ -140,7 +147,8 @@ class GHIssues(commands.Cog):
             "option at the top.\n"
             "2. Copy the token and, in my DMs, run this command: "
             f"`{p}set api github token PUTYOURTOKENHERE`\n"
-            f"3. Set up a repo with `{p}gh setrepo`"
+            f"3. Set up a repo with `{p}gh setrepo`\n"
+            f"4. Reload the cog with `{p}reload ghissues`"
         )
 
     @ghi.command()
@@ -162,6 +170,10 @@ class GHIssues(commands.Cog):
     @ghi.command()
     async def newissue(self, ctx: commands.Context, *, title: str):
         """Open a new issue. If you want to reopen, then use the normal interactive view."""
+        if self.setup is False:
+            return await ctx.send(
+                "You need to set up a repo (`ghi setrepo`) and token (`ghi howtoken`)."
+            )
         await ctx.send(
             "Your next message will be the description of the issue. If you answer exactly "
             "`cancel` I'll cancel. You will have another opportunity to cancel later on.\n"
