@@ -242,18 +242,24 @@ async def get_red() -> Dict[str, str]:
 
     p.cpu_percent()
     await asyncio.sleep(1)
-    cpu = p.cpu_percent()
-    phys_mem = p.memory_percent("rss")
 
-    if psutil.LINUX:
-        swap_mem = p.memory_percent("swap")
+    with p.oneshot():
+        cpu = p.cpu_percent()
+        phys_mem_pc = p.memory_percent("rss")
+        phys_mem = p.memory_info().rss
+
+        if psutil.LINUX:
+            swap_mem_pc = p.memory_percent("swap")
+            swap_mem = p.memory_full_info().swap
 
     data = {"red": ""}
 
     data["red"] += f"[Process ID]   {p.pid}\n"
     data["red"] += f"[CPU Usage]    {cpu} %\n"
-    data["red"] += f"[Physical mem] {round(phys_mem, 2)} %\n"
+    data["red"] += f"[Physical mem] {round(phys_mem_pc, 2)} %\n"
+    data["red"] += f"               {humanize_bytes(phys_mem, 1)}\n"
     if psutil.LINUX:
-        data["red"] += f"[SWAP mem]     {round(swap_mem, 2)} %\n"
+        data["red"] += f"[SWAP mem]     {round(swap_mem_pc, 2)} %\n"
+        data["red"] += f"               {humanize_bytes(swap_mem, 1)}\n"
 
     return data

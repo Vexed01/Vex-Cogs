@@ -576,6 +576,14 @@ System
 ======
 
 *********
+``1.3.5``
+*********
+
+2021-06-30
+
+- Change formatting of ``system red`` and it's corresponding section of ``system all``
+
+*********
 ``1.3.4``
 *********
 

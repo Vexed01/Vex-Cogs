@@ -21,6 +21,7 @@ sswap = namedtuple("sswap", ["total", "used", "free", "percent"])
 shwtemp = namedtuple("shwtemp", ["label", "current", "high", "critical"])
 sfan = namedtuple("sfan", ["label", "current"])
 pmem = namedtuple("pmem", ["rss", "vms"])
+pfullmem = namedtuple("pfullmem", ["rss", "vms", "swap"])
 
 class ProcInfo(TypedDict):
     status: str
@@ -30,6 +31,8 @@ class Process:
     info: ProcInfo
     pid: int
     def oneshot(self): ...
+    def memory_info(self) -> pmem: ...
+    def memory_full_info(self) -> pfullmem: ...
     def memory_percent(self, memtype: str = None) -> float: ...
     def cpu_percent(self, interval: bool = None) -> float: ...
 
