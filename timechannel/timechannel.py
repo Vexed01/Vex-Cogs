@@ -12,6 +12,7 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from vexcogutils import format_help, format_info
+from vexcogutils.chat import datetime_to_timestamp
 
 from timechannel.utils import gen_replacements
 
@@ -64,20 +65,22 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         _log.debug("Loop stopped as cog unloaded.")
 
     async def maybe_migrate(self) -> None:
-        if await self.config.version() != 2:
-            _log.debug("Migating to config v2")
-            keys = list(ZONE_KEYS.keys())
-            values = list(ZONE_KEYS.values())
-            all_guilds = await self.config.all_guilds()
-            for guild_id, guild_data in all_guilds.items():
-                for c_id, target_timezone in guild_data.get("timechannels", {}).items():
-                    if target_timezone:
-                        short_tz = target_timezone.split("/")[-1].replace("_", " ")
-                        num_id = keys[values.index(target_timezone)]
-                        all_guilds[guild_id]["timechannels"][c_id] = f"{short_tz}: {{{num_id}}}"
-                await self.config.guild_from_id(guild_id).set(all_guilds[guild_id])
+        if await self.config.version() == 2:
+            return
 
-            await self.config.version.set(2)
+        _log.debug("Migating to config v2")
+        keys = list(ZONE_KEYS.keys())
+        values = list(ZONE_KEYS.values())
+        all_guilds = await self.config.all_guilds()
+        for guild_id, guild_data in all_guilds.items():
+            for c_id, target_timezone in guild_data.get("timechannels", {}).items():
+                if target_timezone:
+                    short_tz = target_timezone.split("/")[-1].replace("_", " ")
+                    num_id = keys[values.index(target_timezone)]
+                    all_guilds[guild_id]["timechannels"][c_id] = f"{short_tz}: {{{num_id}}}"
+            await self.config.guild_from_id(guild_id).set(all_guilds[guild_id])
+
+        await self.config.version.set(2)
 
     @commands.command(hidden=True, aliases=["tcinfo"])
     async def timechannelinfo(self, ctx: commands.Context):
@@ -97,11 +100,14 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         # partially from core at (what a tight fit with the link :aha:)
         # https://github.com/Cog-Creators/Red-DiscordBot/blob/V3/develop/redbot/core/events.py#L355
         sys_now = datetime.datetime.utcnow()
+        aware_sys_now = datetime.datetime.now(datetime.timezone.utc)
         discord_now = ctx.message.created_at
-        if "UTC" not in data.values():
+        if "qw" not in data.values():
             description = f"UTC time: {sys_now.strftime('%b %d, %H:%M')}"
         else:
             description = ""
+
+        description += f"\nYour local time: {datetime_to_timestamp(aware_sys_now)}"
 
         diff = int(abs((discord_now - sys_now).total_seconds()))
         if diff > 60:
@@ -116,7 +122,6 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             timestamp=datetime.datetime.utcnow(),
             description=description,
         )
-        embed.set_footer(text="Your local time")
         for c_id, target_timezone in data.items():
             channel = self.bot.get_channel(int(c_id))  # idk why its str
             assert not isinstance(channel, DMChannel) and not isinstance(channel, GroupChannel)

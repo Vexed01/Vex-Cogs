@@ -131,7 +131,7 @@ STATUS_EXPECTED_EMBED_INCIDENTS_ALL = {
     "fields": [
         {
             "inline": False,
-            "name": "Identified - May 14, 20:22 UTC",
+            "name": "Identified - <t:1400098960:f>",
             "value": "Our master database has ham sandwiches flying out of the rack, and we're working our hardest to stop the bleeding. The whole site is down while we restore functionality, and we'll provide another update within 30 minutes.",
         }
     ],
@@ -149,7 +149,7 @@ Incident link: <http://stspg.co:5000/Q0E>
 Impact: **Critical**
 Affects: _Unknown_
 
-**Identified - May 14, 20:22 UTC**
+**Identified - <t:1400098960:f>**
 Our master database has ham sandwiches flying out of the rack, and we're working our hardest to stop the bleeding. The whole site is down while we restore functionality, and we'll provide another update within 30 minutes.
 """
 
@@ -157,14 +157,14 @@ STATUS_EXPECTED_EMBED_SCHEDULED_ALL = {
     "fields": [
         {
             "inline": False,
-            "name": "Scheduled - May 14, 20:24 UTC",
+            "name": "Scheduled - <t:1400099081:f>",
             "value": "Our data center has informed us that they will be performing routine network maintenance. No interruption in service is expected. Any issues during this maintenance should be directed to our support center",
         }
     ],
     "color": 15105570,
     "timestamp": "2014-05-14T20:24:41.913000+00:00",
     "type": "rich",
-    "description": "Impact: **None**\nAffects: _Unknown_\nScheduled for: **May 18, 04:00 UTC** to **May 18, 05:30 UTC**",
+    "description": "Impact: **None**\nAffects: _Unknown_\nScheduled for: **<t:1400385600:f>** to **<t:1400391000:f>**",
     "url": "http://stspg.co:5000/Q0F",
     "title": "Network Maintenance (No Interruption Expected)",
 }
@@ -174,8 +174,8 @@ Network Maintenance (No Interruption Expected)**
 Incident link: <http://stspg.co:5000/Q0F>
 Impact: **None**
 Affects: _Unknown_
-Scheduled for: **May 18, 04:00 UTC** to **May 18, 05:30 UTC**
+Scheduled for: **<t:1400385600:f>** to **<t:1400391000:f>**
 
-**Scheduled - May 14, 20:24 UTC**
+**Scheduled - <t:1400099081:f>**
 Our data center has informed us that they will be performing routine network maintenance. No interruption in service is expected. Any issues during this maintenance should be directed to our support center
 """
