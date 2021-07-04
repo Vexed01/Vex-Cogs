@@ -65,20 +65,22 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         _log.debug("Loop stopped as cog unloaded.")
 
     async def maybe_migrate(self) -> None:
-        if await self.config.version() != 2:
-            _log.debug("Migating to config v2")
-            keys = list(ZONE_KEYS.keys())
-            values = list(ZONE_KEYS.values())
-            all_guilds = await self.config.all_guilds()
-            for guild_id, guild_data in all_guilds.items():
-                for c_id, target_timezone in guild_data.get("timechannels", {}).items():
-                    if target_timezone:
-                        short_tz = target_timezone.split("/")[-1].replace("_", " ")
-                        num_id = keys[values.index(target_timezone)]
-                        all_guilds[guild_id]["timechannels"][c_id] = f"{short_tz}: {{{num_id}}}"
-                await self.config.guild_from_id(guild_id).set(all_guilds[guild_id])
+        if await self.config.version() == 2:
+            return
 
-            await self.config.version.set(2)
+        _log.debug("Migating to config v2")
+        keys = list(ZONE_KEYS.keys())
+        values = list(ZONE_KEYS.values())
+        all_guilds = await self.config.all_guilds()
+        for guild_id, guild_data in all_guilds.items():
+            for c_id, target_timezone in guild_data.get("timechannels", {}).items():
+                if target_timezone:
+                    short_tz = target_timezone.split("/")[-1].replace("_", " ")
+                    num_id = keys[values.index(target_timezone)]
+                    all_guilds[guild_id]["timechannels"][c_id] = f"{short_tz}: {{{num_id}}}"
+            await self.config.guild_from_id(guild_id).set(all_guilds[guild_id])
+
+        await self.config.version.set(2)
 
     @commands.command(hidden=True, aliases=["tcinfo"])
     async def timechannelinfo(self, ctx: commands.Context):
