@@ -1,16 +1,14 @@
 import datetime
-import logging
 import re
 from typing import List, Optional
 
 from dateutil.parser import parse as parse_time
 from markdownify import markdownify
 from redbot.core.utils.chat_formatting import humanize_list, pagify
+from vexcogutils.chat import datetime_to_timestamp
 
 from status.core import TYPES_LITERAL
 from status.objects import IncidentData, UpdateField
-
-_log = logging.getLogger("red.vex.status.processfeed")
 
 
 def _handle_long_fields(
@@ -39,9 +37,7 @@ def _handle_long_fields(
             paged = list(pagify(field.value, page_length=1024))
             new_fields.append(UpdateField(field.name, paged[0], field.update_id))
             for page in paged[1:]:
-                new_fields.append(
-                    UpdateField("Above continued (hit field limits)", page, field.update_id)
-                )
+                new_fields.append(UpdateField("\u200b", page, field.update_id))
 
     return new_fields
 
@@ -87,16 +83,12 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
     fields = []
     for update in incident["incident_updates"]:
         # this is exactly how they are displayed on the website
-        friendly_time = (
-            parse_time(update["created_at"])
-            .astimezone(datetime.timezone.utc)
-            .strftime("%b %d, %H:%M %Z")
-        )
+        dt = parse_time(update["created_at"])
 
         fields.append(
             UpdateField(
                 name="{} - {}".format(
-                    update["status"].replace("_", " ").capitalize(), friendly_time
+                    update["status"].replace("_", " ").capitalize(), datetime_to_timestamp(dt)
                 ),
                 value=_handle_html(update["body"]),
                 update_id=update["id"],
@@ -116,16 +108,8 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
     desc = f"Impact: **{incident['impact'].capitalize()}**\nAffects: {affected_components}"
 
     if type == "scheduled":
-        start = (
-            parse_time(incident["scheduled_for"])
-            .astimezone(datetime.timezone.utc)
-            .strftime("%b %d, %H:%M %Z")
-        )
-        end = (
-            parse_time(incident["scheduled_until"])
-            .astimezone(datetime.timezone.utc)
-            .strftime("%b %d, %H:%M %Z")
-        )
+        start = datetime_to_timestamp(parse_time(incident["scheduled_for"]))
+        end = datetime_to_timestamp(parse_time(incident["scheduled_until"]))
 
         desc += f"\nScheduled for: **{start}** to **{end}**"
 
@@ -133,8 +117,8 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
     else:
         scheduled_for = None
 
-    if len(desc) > 2048:
-        desc = desc[0:2040] + "\n..."  # v unlikely to happen... so im being lazy
+    if len(desc) > 4096:
+        desc = desc[0:4050] + "\n..."  # v unlikely to happen... so im being lazy
 
     return IncidentData(
         fields=fields,

@@ -14,37 +14,37 @@ from .consts import (
 
 # this critical edge case stuff that needs to work
 def test_field_handler():
-    UNDER_MAX = [UpdateField(name="", value="A" * 1023, update_id="...")]
-    AT_MAX = [UpdateField(name="", value="A" * 1024, update_id="...")]
-    OVER_MAX = [UpdateField(name="", value="A" * 1025, update_id="...")]
-    VERY_OVER_MAX = [UpdateField(name="", value="A" * 2049, update_id="...")]
+    VALID = [UpdateField(name="", value="A" * 1023, update_id="...")]
+    BOUNDARY = [UpdateField(name="", value="A" * 1024, update_id="...")]
+    INVALID = [UpdateField(name="", value="A" * 1025, update_id="...")]
+    EXTREME = [UpdateField(name="", value="A" * 2049, update_id="...")]
 
-    split_under = processfeed._handle_long_fields(UNDER_MAX)
-    split_at = processfeed._handle_long_fields(AT_MAX)
-    split_over = processfeed._handle_long_fields(OVER_MAX)
-    split_very_over = processfeed._handle_long_fields(VERY_OVER_MAX)
+    split_under = processfeed._handle_long_fields(VALID)
+    split_at = processfeed._handle_long_fields(BOUNDARY)
+    split_over = processfeed._handle_long_fields(INVALID)
+    split_very_over = processfeed._handle_long_fields(EXTREME)
 
     assert len(split_under) == 1
     assert len(split_at) == 1
     assert len(split_over) == 2
     assert len(split_very_over) == 3
 
-    assert split_under[0].value == UNDER_MAX[0].value
-    assert split_at[0].value == AT_MAX[0].value
+    assert split_under[0].value == VALID[0].value
+    assert split_at[0].value == BOUNDARY[0].value
 
     # uses cf pagify, in this case it will not loose anything as there are no new lines
-    assert len(split_over[0].value) + len(split_over[1].value) == len(OVER_MAX[0].value)
-    assert split_over[0].update_id == split_over[1].update_id == OVER_MAX[0].update_id
+    assert len(split_over[0].value) + len(split_over[1].value) == len(INVALID[0].value)
+    assert split_over[0].update_id == split_over[1].update_id == INVALID[0].update_id
 
     # uses cf pagify, in this case it will not loose anything as there are no new lines
     assert len(split_very_over[0].value) + len(split_very_over[1].value) + len(
         split_very_over[2].value
-    ) == len(VERY_OVER_MAX[0].value)
+    ) == len(EXTREME[0].value)
     assert (
         split_very_over[0].update_id
         == split_very_over[1].update_id
         == split_very_over[2].update_id
-        == VERY_OVER_MAX[0].update_id
+        == EXTREME[0].update_id
     )
 
 

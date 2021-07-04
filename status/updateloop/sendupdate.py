@@ -8,6 +8,7 @@ from discord import Embed, Message, TextChannel
 from redbot.core.bot import Red
 
 from status.core import FEEDS, UPDATE_NAME
+from status.core.consts import ICON_BASE
 from status.objects import (
     ChannelData,
     ConfChannelSettings,
@@ -143,7 +144,7 @@ class SendUpdate:
             if not edit_id:
                 sent_webhook = await webhook.send(
                     username=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
-                    avatar_url=FEEDS[self.service]["avatar"],
+                    avatar_url=ICON_BASE.format(self.service),
                     embed=embed,
                     wait=True,
                 )
@@ -154,7 +155,7 @@ class SendUpdate:
         else:
             await webhook.send(
                 username=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
-                avatar_url=FEEDS[self.service]["avatar"],
+                avatar_url=ICON_BASE.format(self.service),
                 embed=embed,
             )
 
@@ -171,7 +172,7 @@ class SendUpdate:
         embed.set_footer(text="Last update")
         embed.set_author(
             name=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
-            icon_url=FEEDS[self.service]["avatar"],
+            icon_url=ICON_BASE.format(self.service),
         )
 
         if self.channeldata.mode == "edit":

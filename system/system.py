@@ -8,19 +8,20 @@ from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_timedelta
 from vexcogutils import format_help, format_info
 
-from .command import DynamicHelp
-from .utils import (
+from .backend import (
     box,
     get_cpu,
     get_disk,
     get_mem,
     get_net,
     get_proc,
+    get_red,
     get_sensors,
     get_uptime,
     get_users,
     up_for,
 )
+from .command import DynamicHelp
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"
@@ -36,7 +37,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.2.7"
+    __version__ = "1.3.5"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -63,9 +64,9 @@ class System(commands.Cog):
         # it works...
         emb = e.to_dict()
 
-        fields: List[dict] = emb["fields"]
+        fields = emb["fields"]
         if len(fields) > 2:  # needs multi rows
-            data: List[List[dict]] = []
+            data: List[list] = []
             temp = []
             for field in fields:
                 temp.append(field)
@@ -77,11 +78,10 @@ class System(commands.Cog):
 
             empty_field = {"inline": True, "name": ZERO_WIDTH, "value": ZERO_WIDTH}
             fields = []
-            row: List[dict]
             for row in data:
                 while len(row) < 3:
                     row.append(empty_field)
-                fields.extend(row)
+                fields.extend(row)  # type:ignore
 
         # else it's 2 or less columns so doesn't need special treatment
         emb["fields"] = fields
@@ -345,8 +345,32 @@ class System(commands.Cog):
             msg += box(f"Uptime\n{uptime}\n")
             await ctx.send(msg)
 
+    @system.command(name="red", cls=DynamicHelp, supported_sys=True)  # all systems
+    async def system_red(self, ctx: commands.Context):
+        """
+        See what resources [botname] is using.
+
+        Platforms: Windows, Linux, Mac OS
+        Note: SWAP memory information is only available on Linux.
+        """
+        async with ctx.typing():
+            red = (await get_red())["red"]
+
+        botname = self.bot.user.name
+
+        if await ctx.embed_requested():
+            embed = discord.Embed(
+                title=f"{botname}'s resource usage", colour=await ctx.embed_colour()
+            )
+            embed.add_field(name="Resource usage", value=box(red))
+            await ctx.send(embed=self.finalise_embed(embed))
+        else:
+            msg = f"**{botname}'s resource usage**\n"
+            msg += box(f"Resource usage\n{red}\n")
+            await ctx.send(msg)
+
     @system.command(
-        name="top", aliases=["overview", "all"], cls=DynamicHelp, supported_sys=True  # all systems
+        name="all", aliases=["overview", "top"], cls=DynamicHelp, supported_sys=True  # all systems
     )
     async def system_all(self, ctx: commands.Context):
         """
@@ -362,12 +386,14 @@ class System(commands.Cog):
             cpu = await get_cpu()
             mem = await get_mem()
             proc = await get_proc()
+            red = (await get_red())["red"]
 
-            percent = cpu["percent"]
-            times = cpu["time"]
-            physical = mem["physical"]
-            swap = mem["swap"]
-            procs = proc["statuses"]
+        percent = cpu["percent"]
+        times = cpu["time"]
+        physical = mem["physical"]
+        swap = mem["swap"]
+        procs = proc["statuses"]
+        botname = self.bot.user.name
 
         if await ctx.embed_requested():
             embed = discord.Embed(title="Overview", colour=await ctx.embed_colour())
@@ -376,12 +402,15 @@ class System(commands.Cog):
             embed.add_field(name="Physical Memory", value=box(physical))
             embed.add_field(name="SWAP Memory", value=box(swap))
             embed.add_field(name="Processes", value=box(procs))
+            embed.add_field(name=f"{botname}'s resource usage", value=box(red))
             await ctx.send(embed=self.finalise_embed(embed))
         else:
             msg = "**Overview**\n"
-            to_box = f"CPU\n{cpu}\n\n"
+            to_box = f"CPU Usage\n{percent}\n"
+            to_box += f"CPU Times\n{times}\n"
             to_box += f"Physical Memory\n{physical}\n"
             to_box += f"SWAP Memory\n{swap}\n"
             to_box += f"Processes\n{procs}\n"
+            to_box += f"{botname}'s resource usage\n{red}\n"
             msg += box(to_box)
             await ctx.send(msg)

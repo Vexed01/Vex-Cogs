@@ -68,6 +68,12 @@ class SendCache:
                 value="This is because embeds are limited to 25 fields.",
             )
 
+        assert isinstance(embed.description, str)
+        if len(embed) > 6000:  # ffs
+            embed.description += "\nNote: some earlier updates were omitted due to embed limits."
+            while len(embed) > 6000:
+                embed.remove_field(0)
+
         return embed
 
     def _make_plain_base(self) -> str:
@@ -111,6 +117,7 @@ class SendCache:
                 "investigating",
                 "scheduled",  # decided to put this in orange as is in future, not now
                 "in",  # scheduled - full is "in progress"
+                "verifying",
             ]:
                 return Colour.orange()
             elif status in ["resolved", "completed"]:

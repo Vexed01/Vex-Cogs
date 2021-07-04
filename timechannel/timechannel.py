@@ -1,20 +1,28 @@
+import asyncio
 import datetime
 import logging
 from typing import Dict
 
 import discord
 import pytz
-from discord.channel import DMChannel, GroupChannel
+import rapidfuzz.process
+from discord.channel import DMChannel, GroupChannel, VoiceChannel
+from discord.guild import Guild
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from vexcogutils import format_help, format_info
+from vexcogutils.chat import datetime_to_timestamp
+
+from timechannel.utils import gen_replacements
 
 from .abc import CompositeMetaClass
-from .converters import TimezoneConverter
+from .data import ZONE_KEYS
 from .loop import TCLoop
 
 _log = logging.getLogger("red.vex.timechannel")
+
+MAX_LEN_VISUAL = ". . . . . . . . . . . . . . . . . . . . . . . . ."
 
 
 class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
@@ -32,14 +40,17 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     The `[p]timezones` command (runnable by anyone) will show the full location name.
     """
 
-    __version__ = "1.1.1"
+    __version__ = "1.2.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
+        self.config.register_global(version=1)
         self.config.register_guild(timechannels={})
+
+        asyncio.create_task(self.maybe_migrate())
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -53,6 +64,24 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         self.loop.cancel()
         _log.debug("Loop stopped as cog unloaded.")
 
+    async def maybe_migrate(self) -> None:
+        if await self.config.version() == 2:
+            return
+
+        _log.debug("Migating to config v2")
+        keys = list(ZONE_KEYS.keys())
+        values = list(ZONE_KEYS.values())
+        all_guilds = await self.config.all_guilds()
+        for guild_id, guild_data in all_guilds.items():
+            for c_id, target_timezone in guild_data.get("timechannels", {}).items():
+                if target_timezone:
+                    short_tz = target_timezone.split("/")[-1].replace("_", " ")
+                    num_id = keys[values.index(target_timezone)]
+                    all_guilds[guild_id]["timechannels"][c_id] = f"{short_tz}: {{{num_id}}}"
+            await self.config.guild_from_id(guild_id).set(all_guilds[guild_id])
+
+        await self.config.version.set(2)
+
     @commands.command(hidden=True, aliases=["tcinfo"])
     async def timechannelinfo(self, ctx: commands.Context):
         await ctx.send(
@@ -65,18 +94,20 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         """See the time in all the configured timezones for this server."""
         assert ctx.guild is not None
         data: Dict[int, str] = await self.config.guild(ctx.guild).timechannels()
-        print(data)
         if data is None:
             return await ctx.send("It looks like no time channels have been set up yet.")
 
         # partially from core at (what a tight fit with the link :aha:)
         # https://github.com/Cog-Creators/Red-DiscordBot/blob/V3/develop/redbot/core/events.py#L355
         sys_now = datetime.datetime.utcnow()
+        aware_sys_now = datetime.datetime.now(datetime.timezone.utc)
         discord_now = ctx.message.created_at
-        if "UTC" not in data.values():
+        if "qw" not in data.values():
             description = f"UTC time: {sys_now.strftime('%b %d, %H:%M')}"
         else:
             description = ""
+
+        description += f"\nYour local time: {datetime_to_timestamp(aware_sys_now)}"
 
         diff = int(abs((discord_now - sys_now).total_seconds()))
         if diff > 60:
@@ -91,7 +122,6 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             timestamp=datetime.datetime.utcnow(),
             description=description,
         )
-        embed.set_footer(text="Your local time")
         for c_id, target_timezone in data.items():
             channel = self.bot.get_channel(int(c_id))  # idk why its str
             assert not isinstance(channel, DMChannel) and not isinstance(channel, GroupChannel)
@@ -109,33 +139,76 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     async def timechannelset(self, ctx: commands.Context):
         """Manage channels which will show the time for a timezone."""
 
-    @commands.bot_has_permissions(manage_channels=True)
-    @timechannelset.command()
-    async def create(self, ctx: commands.Context, timezone: TimezoneConverter):
+    @timechannelset.command(require_var_positional=True)
+    async def short(self, ctx: commands.Context, *, timezone: str):
         """
-        Set up a time channel in this server.
+        Get the short identifier for the main `create` command.
 
         The list of acceptable timezones is here (the "TZ database name" column):
         https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
 
         There is a fuzzy search, so you shouldn't need to enter the region.
 
+        Please look at `[p]help tcset create` for more information.
+
+        **Examples:**
+            - `[p]tcset short New York`
+            - `[p]tcset short UTC`
+            - `[p]tcset short London`
+            - `[p]tcset short Europe/London`
+        """
+        fuzzy_results = rapidfuzz.process.extract(  # type:ignore
+            timezone, ZONE_KEYS, limit=2, score_cutoff=90
+        )
+        if len(fuzzy_results) > 1:
+            return await ctx.send(
+                "That search returned too many matches. Use the `Region/Location` format or "
+                'you can see the full list here (the "TZ database name" '
+                "column):\n<https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List>"
+            )
+        if len(fuzzy_results) == 0:
+            return await ctx.send(
+                "That search didn't find any matches. You should be able to enter any "
+                'major city, or you can see the full list here (the "TZ database name" '
+                "column):\n<https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List>"
+            )
+
+        await ctx.send(f"{fuzzy_results[0][0]}'s short identifier is `{fuzzy_results[0][2]}`")
+
+    @commands.bot_has_permissions(manage_channels=True)
+    @timechannelset.command()
+    async def create(self, ctx: commands.Context, *, string: str):
+        """
+        Set up a time channel in this server.
+
         If you move the channel into a category, **click 'Keep Current Permissions' in the sync
         permissions dialogue.**
 
-        **Examples:**
-            - `[p]tcset create New York`
-            - `[p]tcset create UTC`
-            - `[p]tcset create London`
-            - `[p]tcset create Europe/London`
+        **How to use this command:**
+
+        First, use the `[p]tcset short <long_tz>` to get the short identifier for the
+        timezone of your choice.
+
+        Once you've got a short identifier from `tcset short`, you can use it in this command.
+        Simply put curly brackets, `{` and `}` around it, and it will be replaced with the time.
+
+        **For example**, running `[p]tcset short new york` gives a short identifier of `fv`.
+        This can then be used like so: `[p]tcset create :clock: New York: {fv}`.
+
+        You could also use two in one, for example
+        `[p]tcset create UK: {446} FR: 455`
+
+        **More Examples:**
+            - `[p]tcset create \N{CLOCK FACE TWO OCLOCK}\N{VARIATION SELECTOR-16} New York: {fv}`
+            - `[p]tcset create \N{GLOBE WITH MERIDIANS} UTC: {qw}`
+            - `[p]tcset create {ni} in London`
+            - `[p]tcset create US Pacific: {qv}`
         """
-        assert ctx.guild is not None
+        assert isinstance(ctx.guild, Guild)
 
-        time = datetime.datetime.now(pytz.timezone(timezone)).strftime("%I%p").lstrip("0")
-        short_tz = timezone.split("/")[-1]  # full one usually is too long to fit
-        name = f"{short_tz}: {time}"
+        reps = gen_replacements()
+        name = string.format(**reps)
 
-        # thanks boboly
         overwrites = {
             ctx.guild.default_role: discord.PermissionOverwrite(connect=False),
             ctx.guild.me: discord.PermissionOverwrite(manage_channels=True, connect=True),
@@ -144,17 +217,20 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         channel = await ctx.guild.create_voice_channel(
             name=name, overwrites=overwrites, reason=reason  # type:ignore
         )
+        assert isinstance(channel, VoiceChannel)
 
         assert not isinstance(channel, DMChannel) and not isinstance(channel, GroupChannel)
 
         await self.config.guild(ctx.guild).timechannels.set_raw(  # type: ignore
-            channel.id, value=timezone  # idk why its not an int
+            channel.id, value=string
         )
 
         await ctx.send(
-            f"Done, {channel.mention} will now show timezone `{timezone}`. Regular users will be "
+            f"Done, {channel.mention} will now show those timezone(s). It will update every "
+            "quarter hour. Regular users will be "
             "unable to connect. You can move this channel into a category if you wish, but "
-            "**click 'Keep Current Permissions' in the sync permissions dialogue.**"
+            "**click 'Keep Current Permissions' in the sync permissions dialogue.** Note that "
+            "you cannot move it under a private category."
         )
 
     @commands.bot_has_permissions(manage_channels=True)

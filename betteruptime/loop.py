@@ -18,14 +18,11 @@ class BULoop(MixinMeta):
     def __init__(self) -> None:
         asyncio.create_task(self.initialise())
 
-        self.main_loop_meta = VexLoop("BetterUptime Main Loop", 15.0)
         self.main_loop = asyncio.create_task(self.betteruptime_main_loop())
-
-        self.conf_loop_meta = VexLoop("BetterUptime Config Loop", 60.0)
-        self.conf_loop = asyncio.create_task(self.betteruptime_conf_loop())
 
     async def initialise(self) -> None:
         await self.bot.wait_until_red_ready()
+        _log.debug("[BU SETUP] Starting setup...")
 
         self.last_known_ping = self.bot.latency
         self.last_ping_change = time()
@@ -36,17 +33,12 @@ class BULoop(MixinMeta):
             await self.config.first_load.set(time())
             self.first_load = time()
 
-        _log.debug("Waiting a bit to allow for previous unload to clean up (assuming reload)...")
-        await asyncio.sleep(2)  # wait for unloading to be able to clean up properly
-        _log.debug("Setting up...")
-
-        # v1 and v3 have the same format
         if await self.config.version() == 1:
-            _log.info("Migrating BetterUptime config to new format...")
+            _log.info("Migrating BetterUptime config to new format (1 -> 3)...")
             await self.migrate_v1_to_v3()
             await self.config.version.set(3)
         elif await self.config.version() == 2:
-            _log.info("Migrating BetterUptime config to new format...")
+            _log.info("Migrating BetterUptime config to new format (2 -> 3)...")
             await self.migate_v2_to_v3()
             await self.config.version.set(3)
         else:
@@ -57,9 +49,9 @@ class BULoop(MixinMeta):
                 json.dumps(await self.config.connected()), typ="series"
             )
 
-        _log.info("BetterUptime has been initialised and is now running.")
-
         self.ready = True
+
+        _log.debug("[BU SETUP] Config setup finished, waiting to start loops")
 
     async def migrate_v1_to_v3(self):
         old_cog_loaded = await self.config.cog_loaded()
@@ -103,48 +95,37 @@ class BULoop(MixinMeta):
         await self.write_to_config()
 
     async def betteruptime_main_loop(self):
-        while not self.ready:
-            await asyncio.sleep(1)
+        while self.ready is False:
+            await asyncio.sleep(0.1)
 
-        await asyncio.sleep(15)  # wait for initial uptime to occur
+        # making the loop run on the minute every time means i don't need to worry about seconds
+        # well, on the minute - 5 sec. it's to make stuff easier in the loop code
+        while (round(time() + 5) % 60) != 0:
+            await asyncio.sleep(0.1)
+
+        self.main_loop_meta = VexLoop("BetterUptime Main Loop", 60.0)
+
+        _log.debug("[BU SETUP] Starting loop")
+        _log.debug("[BU SETUP] BetterUptime is now fully initialised. Setup complete.")
 
         while True:
-            _log.debug("Main BetterUptime loop has started next iteration")
+            _log.debug("Loop has started next iteration")
             try:
                 self.main_loop_meta.iter_start()
                 await self.update_uptime()
+                await self.write_to_config()
                 self.main_loop_meta.iter_finish()
+                _log.debug("Loop has finished, saved to config")
             except Exception as e:
                 self.main_loop_meta.iter_error(e)
                 _log.exception(
                     "Something went wrong in the main BetterUptime loop. The loop will try again "
-                    "in 15 seconds. Please report this to Vexed."
+                    "in 60 seconds. Please report this and the below information to Vexed."
                 )
 
             await self.main_loop_meta.sleep_until_next()
 
-    async def betteruptime_conf_loop(self):
-        while not self.ready:
-            await asyncio.sleep(1)
-
-        await asyncio.sleep(65)  # wait for main loop to run for a minute before writing anything
-
-        while True:
-            _log.debug("Config BetterUptime loop has started next iteration")
-            try:
-                self.conf_loop_meta.iter_start()
-                await self.write_to_config()
-                self.conf_loop_meta.iter_finish()
-            except Exception as e:
-                self.conf_loop_meta.iter_error(e)
-                _log.exception(
-                    "Something went wrong in the conf BetterUptime loop. The loop will try again "
-                    "in 60 seconds. Please report this to Vexed."
-                )
-
-            await self.conf_loop_meta.sleep_until_next()
-
-    async def write_to_config(self, final=False) -> None:
+    async def write_to_config(self) -> None:
         if not self.cog_loaded_cache.empty:
             data = json.loads(self.cog_loaded_cache.to_json())  # type: ignore
             await self.config.cog_loaded.set(data)
@@ -152,69 +133,24 @@ class BULoop(MixinMeta):
             data = json.loads(self.connected_cache.to_json())  # type: ignore
             await self.config.connected.set(data)
 
-        if final:
-            _log.info("BetterUptime is fully unloaded.")
-        else:
-            _log.debug("Wrote local cache to config.")
-
     async def update_uptime(self):
         utcdatetoday = datetime.datetime.utcnow().replace(
             microsecond=0, second=0, minute=0, hour=0
         )
-        utcdateyesterday = utcdatetoday - datetime.timedelta(days=1)
 
         # === COG LOADED ===
-
-        # im sure the indentation could be reduced here
         try:
-            self.cog_loaded_cache[utcdatetoday] += 15
+            self.cog_loaded_cache[utcdatetoday] += 60
         except KeyError:
-            # we need to top up both today and yesterday with their respective amounts
-
-            now = datetime.datetime.utcnow()
-            midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            just_after_midnight = (now - midnight).total_seconds()
-
-            if just_after_midnight > 15:
-                self.cog_loaded_cache[utcdatetoday] = 15
-            else:
-                just_before_midnight = 15 - just_after_midnight
-                self.cog_loaded_cache[utcdatetoday] = just_after_midnight
-
-                try:
-                    self.cog_loaded_cache[utcdateyesterday] += just_before_midnight
-                except KeyError:
-                    pass
+            self.cog_loaded_cache[utcdatetoday] = 60
 
         # === CONNECTED ===
         # bit of background info here: the latency is updated every heartbeat and if the heartbeat
-        # fails the latency is infinity (INF)
-
-        current_latency = self.bot.latency
-
-        # the latency has changed and it's not infinity (couldn't connect)
-        if current_latency != self.last_known_ping:
-            if current_latency != INF:
-                since_last = time() - self.last_ping_change
-
-                try:
-                    self.connected_cache[utcdatetoday] += since_last
-                except KeyError:
-                    # we need to top up both today and yesterday with their respective amounts
-
-                    now = datetime.datetime.now(datetime.timezone.utc)
-                    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-                    just_after_midnight = (now - midnight).seconds
-
-                    if just_after_midnight > since_last:
-                        self.connected_cache[utcdatetoday] = since_last
-                    else:
-                        just_before_midnight = since_last - just_after_midnight
-                        self.connected_cache[utcdatetoday] = just_after_midnight
-
-                        try:
-                            self.connected_cache[utcdateyesterday] += just_before_midnight
-                        except KeyError:
-                            pass
-            self.last_known_ping = current_latency
-            self.last_ping_change = time()
+        # fails (so bot is unable to connect) the latency is infinity (float("inf"))
+        # heartbeats are around every 42 seconds as of the time i write this
+        # and it's a float for compatibility with old versions
+        if self.bot.latency != INF:
+            try:
+                self.connected_cache[utcdatetoday] += 60.0
+            except KeyError:
+                self.connected_cache[utcdatetoday] = 60.0

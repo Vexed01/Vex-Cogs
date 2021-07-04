@@ -1,12 +1,14 @@
 import asyncio
 import datetime
 import logging
+import math
 from typing import Dict
 
-import pytz
-from discord.channel import DMChannel, GroupChannel
+from discord.channel import VoiceChannel
 from discord.errors import HTTPException
 from vexcogutils.loop import VexLoop
+
+from timechannel.utils import gen_replacements
 
 from .abc import MixinMeta
 
@@ -15,16 +17,17 @@ _log = logging.getLogger("red.vex.timechannel.loop")
 
 class TCLoop(MixinMeta):
     def __init__(self) -> None:
-        self.loop_meta = VexLoop("TimeChannel Loop", 3600)  # 1 hour
+        self.loop_meta = VexLoop("TimeChannel Loop", 900)  # 10 mins
         self.loop = asyncio.create_task(self.timechannel_loop())
 
-    async def wait_until_hour(self) -> None:
-        delta = datetime.timedelta(hours=1)
+    async def wait_until_iter(self) -> None:
         now = datetime.datetime.utcnow()
-        next_hour = now.replace(minute=0, second=1, microsecond=0) + delta
-        seconds_to_sleep = (next_hour - now).total_seconds()
+        time = now.timestamp()
+        time = math.ceil(time / 900) * 900
+        next_iter = datetime.datetime.fromtimestamp(time) - now
+        seconds_to_sleep = (next_iter).total_seconds()
 
-        _log.debug(f"Sleeping for {seconds_to_sleep} seconds until next hour...")
+        _log.debug(f"Sleeping for {seconds_to_sleep} seconds until next iter...")
         await asyncio.sleep(seconds_to_sleep)
 
     async def timechannel_loop(self) -> None:
@@ -41,14 +44,17 @@ class TCLoop(MixinMeta):
                     "Something went wrong in the timechannel loop. Some channels may have been "
                     "missed. The loop will run again at the next hour."
                 )
+            _log.debug("Timechannel iteration finished")
 
-            await self.wait_until_hour()
+            await self.wait_until_iter()
 
     async def maybe_update_channels(self) -> None:
         all_guilds: Dict[int, Dict[str, Dict[int, str]]] = await self.config.all_guilds()
         if not all_guilds:
             _log.debug("No time channels registered, nothing to do...")
             return
+
+        reps = gen_replacements()
 
         for guild_id, guild_data in all_guilds.items():
             guild = self.bot.get_guild(guild_id)
@@ -57,28 +63,15 @@ class TCLoop(MixinMeta):
                 await self.config.guild_from_id(guild_id).clear()
                 continue
 
-            for c_id, target_timezone in guild_data.get("timechannels", {}).items():
-                channel = self.bot.get_channel(int(c_id))  # dont know why its str
-                assert not isinstance(channel, DMChannel) and not isinstance(channel, GroupChannel)
+            for c_id, string in guild_data.get("timechannels", {}).items():
+                channel = self.bot.get_channel(int(c_id))
                 if channel is None:
                     # yes log *could* be inaccurate but a timezone being removed is unlikely
                     _log.debug(f"Can't find channel with ID {c_id} - skipping")
                     continue
-                if target_timezone not in pytz.common_timezones:
-                    _log.debug(f"Timezone {target_timezone} is not recognised.")
-                    # hard to remove from config as config is guild based, guild based so can
-                    # easily iterate through timechannels in guild for timezones command.
-                    continue
+                assert isinstance(channel, VoiceChannel)
 
-                new_time = (
-                    datetime.datetime.now(pytz.timezone(target_timezone))
-                    .strftime("%I%p")
-                    .lstrip("0")
-                )
-                short_tz = target_timezone.split("/")[-1].replace(
-                    "_", " "
-                )  # full one usually is too long
-                new_name = f"{short_tz}: {new_time} "
+                new_name = string.format(**reps)
 
                 try:
                     await channel.edit(
