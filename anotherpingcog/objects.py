@@ -42,14 +42,15 @@ class FullSettings:
 
 
 class Cache:
-    def __init__(self, settings: Defaults, embed: bool, bot: Red):
+    def __init__(self, settings: Defaults, embed: bool, footer: str, bot: Red):
         """Initialize with the dict from config."""
         self.force_embed = embed
+        self.footer = footer
         self.__data = settings
         self.__bot = bot
 
     def __repr__(self):
-        return f"Cache({self.__data}, {self.force_embed}, bot)"
+        return f"Cache({self.__data}, {self.force_embed}, {self.footer}, bot)"
 
     def set(self, colour_name: COLOURS, settings: Settings) -> None:
         self.__data[colour_name]["emoji"] = settings.emoji or DEFAULTS[colour_name]["emoji"]
