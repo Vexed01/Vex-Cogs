@@ -21,6 +21,11 @@ DEFAULT_CONF = {
     "green": {"emoji": None, "colour": None},
 }
 
+DEFAULT_FOOTER = (
+    "If the bot feels fast, don't worry about high numbers\nScale: Excellent | "
+    "Good | Alright | Bad | Very Bad"
+)
+
 LEFT_ARROW = "\N{LEFTWARDS BLACK ARROW}\N{VARIATION SELECTOR-16}"
 
 
@@ -34,14 +39,14 @@ class AnotherPingCog(commands.Cog):
     You can customise the emojis, colours or force embeds with `[p]pingset`.
     """
 
-    __version__ = "1.1.4"
+    __version__ = "1.1.5"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
-        self.config.register_global(force_embed=True)
+        self.config.register_global(force_embed=True, footer="default")
         self.config.register_global(custom_settings=DEFAULT_CONF)
 
         asyncio.create_task(self._make_cache())
@@ -65,7 +70,10 @@ class AnotherPingCog(commands.Cog):
 
     async def _make_cache(self) -> None:
         self.cache = Cache(
-            await self.config.custom_settings(), await self.config.force_embed(), self.bot
+            await self.config.custom_settings(),
+            await self.config.force_embed(),
+            await self.config.footer(),
+            self.bot,
         )
 
     @commands.command(hidden=True)
@@ -104,10 +112,10 @@ class AnotherPingCog(commands.Cog):
         if use_embed:
             embed = discord.Embed(title=title)
             embed.add_field(name="Discord WS", value=box(f"{ws_latency} ms", "py"))
-            embed.set_footer(
-                text="If the bot feels fast, don't worry about high numbers\nScale: Excellent | "
-                "Good | Alright | Bad | Very Bad"
-            )
+            if settings.footer == "default":
+                embed.set_footer(text=DEFAULT_FOOTER)
+            elif settings.footer != "none":
+                embed.set_footer(text=settings.footer)
             start = monotonic()
             message: discord.Message = await ctx.send(embed=embed)
         else:
@@ -130,12 +138,12 @@ class AnotherPingCog(commands.Cog):
             extra = box(f"{ws_latency} ms", "py")
             embed.set_field_at(0, name="Discord WS", value=f"{ws_latency_text}{extra}")
             extra = box(f"{m_latency} ms", "py")
-            embed.add_field(name="Message send time", value=f"{m_latency_text}{extra}")
+            embed.add_field(name="Message Send", value=f"{m_latency_text}{extra}")
             embed.colour = colour
             await message.edit(embed=embed)
         else:
             data = [
-                ["Discord WS", "Message send time"],
+                ["Discord WS", "Message Send"],
                 [ws_latency_text, m_latency_text],
                 [f"{ws_latency} ms", f"{m_latency} ms"],
             ]
@@ -211,6 +219,32 @@ class AnotherPingCog(commands.Cog):
                 "The `embedset` command will now decide whether or not to send an embed, which "
                 "is by default True."
             )
+
+    @pingset.command(require_var_positional=True)
+    async def footer(self, ctx: commands.Context, *, text: str):
+        """
+        Set a custom footer for the ping embed.
+
+        If `none` is provided as the parameter, there will be no embed footer.
+
+        If `default` is provided as the parameter, the default footer will be used.
+
+        Otherwise, the provided text will be used as the custom footer.
+        """
+        if text.lower() == "default":
+            text = "default"
+            await ctx.send(
+                f"The default footer text will now be used for `{ctx.clean_prefix}ping`."
+            )
+        elif text.lower() == "none":
+            text = "none"
+            await ctx.send(f"There will no longer be a footer for `{ctx.clean_prefix}ping`.")
+        else:
+            await ctx.send(
+                f"The provided footer text will now be used for `{ctx.clean_prefix}ping`."
+            )
+        await self.config.footer.set(text)
+        self.cache.footer = text
 
     # DRY's gone out the window here...
     # TODO: emoji + hex converter
@@ -435,20 +469,31 @@ class AnotherPingCog(commands.Cog):
                 "non-embed version."
             )
         settings = self.cache
-        embed = discord.Embed(title="Global settings for the `ping` command.")
-        embeds = "**Force embed settings:**\n"
+        embed = discord.Embed(
+            title="Global settings for the `ping` command.", color=await ctx.embed_color()
+        )
+        embeds = "**Force embed setting:**\n"
         embeds += (
-            "True - will as an embed, unless the bot doesn't have permission to send them."
+            "True - will send as an embed, unless the bot doesn't have permission to send them."
             if settings.force_embed
             else "False - `embedset` is how embeds will be determined (defaults to True)."
         )
-        embed.add_field(name="Embeds", value=embeds)
+        embed.add_field(name="Embeds", value=embeds, inline=False)
+        footer = "**Embed footer setting:**\n"
+        footer += (
+            "Default - the default text will be used in the embed footer."
+            if settings.footer == "default"
+            else "None - there will not be any footer text in the embed."
+            if settings.footer == "none"
+            else f"Custom - {settings.footer}"
+        )
+        embed.add_field(name="Footer", value=footer, inline=False)
 
         # these 3 are alright with the 5/5 rate limit, plus it's owner only.
         # if anyone wants to PR something with image generation, don't as it's wayyyyy to complex
         # for this
+        await ctx.send(embed=embed)
         await ctx.send(
-            content=embeds,
             embed=discord.Embed(
                 title=f"Emoji for green: {str(self.cache.green.emoji)}",
                 description=f"{LEFT_ARROW} Colour for green",
