@@ -138,12 +138,12 @@ class AnotherPingCog(commands.Cog):
             extra = box(f"{ws_latency} ms", "py")
             embed.set_field_at(0, name="Discord WS", value=f"{ws_latency_text}{extra}")
             extra = box(f"{m_latency} ms", "py")
-            embed.add_field(name="Message send time", value=f"{m_latency_text}{extra}")
+            embed.add_field(name="Message Send", value=f"{m_latency_text}{extra}")
             embed.colour = colour
             await message.edit(embed=embed)
         else:
             data = [
-                ["Discord WS", "Message send time"],
+                ["Discord WS", "Message Send"],
                 [ws_latency_text, m_latency_text],
                 [f"{ws_latency} ms", f"{m_latency} ms"],
             ]
