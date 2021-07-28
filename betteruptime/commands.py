@@ -5,6 +5,7 @@ import discord
 import pandas
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_timedelta, inline, pagify, text_to_file
+from vexcogutils.chat import datetime_to_timestamp
 
 from .abc import MixinMeta
 from .consts import SECONDS_IN_DAY
@@ -30,11 +31,10 @@ class BUCommands(MixinMeta):
             - `[p]uptime 7`
         """
         # MOSTLY FROM CORE'S UPTIME COMMAND
-        # TODO: use datetime_to_timestamp in utils when red/dpy uses timezone aware datetimes
-        since = self.bot.uptime.strftime("%Y-%m-%d %H:%M:%S")
+        since = datetime_to_timestamp(self.bot.uptime.replace(tzinfo=datetime.timezone.utc))
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or "Less than one second."
-        description = f"Been up for: **{uptime_str}** (since {since} UTC)."
+        description = f"Been up for: **{uptime_str}** (since {since})."
         # END
 
         if not await ctx.embed_requested():
