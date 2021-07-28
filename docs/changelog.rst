@@ -60,6 +60,14 @@ AnotherPingCog
 ==============
 
 *********
+``1.1.5``
+*********
+
+2021-07-18
+
+- Allow customisation of embed footer (`#35 <https://github.com/Vexed01/Vex-Cogs/pull/35>`_ by `Obi-Wan3 <https://github.com/Obi-Wan3>`_)
+
+*********
 ``1.1.4``
 *********
 
