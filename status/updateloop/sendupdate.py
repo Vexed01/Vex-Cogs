@@ -132,7 +132,7 @@ class SendUpdate:
         embed : Embed
             Embed to use
         """
-        embed.set_footer(text=f"Powered by {channel.guild.me.name}\nLast update")
+        embed.set_footer(text=f"Powered by {channel.guild.me.name}")
         webhook = await get_webhook(channel)
 
         if self.channeldata.mode == "edit":
@@ -169,7 +169,6 @@ class SendUpdate:
         embed : Embed
             Embed to use
         """
-        embed.set_footer(text="Last update")
         embed.set_author(
             name=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
             icon_url=ICON_BASE.format(self.service),

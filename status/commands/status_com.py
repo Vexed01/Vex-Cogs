@@ -111,7 +111,11 @@ class StatusCom(MixinMeta):
         if components.degraded_comps:
             embed = discord.Embed(
                 title="Components",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=(
+                    datetime.datetime.utcnow()
+                    if discord.__version__.startswith("1")
+                    else discord.utils.utcnow()  # type:ignore
+                ),
                 colour=await ctx.embed_colour(),
             )
             for group, comps in components.degraded_comps.items():
