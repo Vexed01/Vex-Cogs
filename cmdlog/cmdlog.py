@@ -78,7 +78,9 @@ class CmdLog(commands.Cog):
         if discord.__version__.startswith("1"):
             ago = humanize_timedelta(timedelta=datetime.datetime.utcnow() - self.load_time)
         else:
-            ago = humanize_timedelta(timedelta=discord.utils.utcnow() - self.load_time)
+            ago = humanize_timedelta(
+                timedelta=discord.utils.utcnow() - self.load_time  # type:ignore
+            )
         return f"Log started {ago} ago."
 
     @commands.Cog.listener()
