@@ -7,5 +7,6 @@
     "description": "Use Wake on LAN from Discord! This cog sends magic packets on the local network. You'll need to have set up teh computer beforehand to listen to these - just search how to set it up for your operating system.",
     "short": "Use Wake on LAN from Discord! This cog sends magic packets on the local network.",
     "tags": ["utility", "wakeonlan", "local"],
-    "end_user_data_statement": "This cog does not persistently store data or metadata about users."
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
+    "min_bot_version": "3.4.0"
 }
