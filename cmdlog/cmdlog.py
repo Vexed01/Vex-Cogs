@@ -32,7 +32,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -40,7 +40,10 @@ class CmdLog(commands.Cog):
         self.log_cache: Deque[Union[LoggedCommand, LoggedCheckFailure]] = deque(maxlen=100_000)
         # this is about 50MB max from my simulated testing
 
-        self.load_time = datetime.datetime.utcnow()
+        if discord.__version__.startswith("1"):
+            self.load_time = datetime.datetime.utcnow()
+        else:
+            self.load_time = discord.utils.utcnow()  # type:ignore
 
         self.config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(log_content=False)
@@ -72,7 +75,10 @@ class CmdLog(commands.Cog):
         if len(self.log_cache) == 100_000:  # max size
             return "Max log size reached. Only the last 100 000 commands are stored."
 
-        ago = humanize_timedelta(timedelta=datetime.datetime.utcnow() - self.load_time)
+        if discord.__version__.startswith("1"):
+            ago = humanize_timedelta(timedelta=datetime.datetime.utcnow() - self.load_time)
+        else:
+            ago = humanize_timedelta(timedelta=discord.utils.utcnow() - self.load_time)
         return f"Log started {ago} ago."
 
     @commands.Cog.listener()
