@@ -37,7 +37,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.3.6"
+    __version__ = "1.3.7"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -89,12 +89,7 @@ class System(commands.Cog):
 
         # and footer is just a nice touch, thanks max for the idea of uptime there
         sys_uptime = humanize_timedelta(seconds=up_for())
-        if discord.__version__.startswith("1"):
-            bot_uptime = humanize_timedelta(timedelta=datetime.datetime.utcnow() - self.bot.uptime)
-        else:
-            bot_uptime = humanize_timedelta(
-                timedelta=discord.utils.utcnow() - self.bot.uptime  # type:ignore
-            )
+        bot_uptime = humanize_timedelta(timedelta=datetime.datetime.utcnow() - self.bot.uptime)
 
         e.set_footer(text=f"System uptime: {sys_uptime}\nBot uptime: {bot_uptime}")
 
