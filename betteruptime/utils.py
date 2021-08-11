@@ -92,7 +92,10 @@ class UptimeData:
             new[date] = format(
                 round((self.daily_connected_data[date] / SECONDS_IN_DAY) * 100, 2), ".2f"
             )
-        del new[midnight]
+        try:
+            del new[midnight]
+        except KeyError:  # dunno how this could happen but it did once
+            pass
         return new
 
     def daily_cog_loaded_percentages(self) -> pandas.Series:
