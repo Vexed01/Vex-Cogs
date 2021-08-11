@@ -10,8 +10,7 @@ from discord.ext.commands.cog import CogMeta
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from vexcogutils.loop import VexLoop
-
-from stattrack.driver import StatTrackDriver
+from vexcogutils.sqldriver import PandasSQLiteDriver
 
 
 class CompositeMetaClass(CogMeta, ABCMeta):
@@ -27,7 +26,7 @@ class MixinMeta(ABC):
     bot: Red
     config: Config
 
-    driver: StatTrackDriver
+    driver: PandasSQLiteDriver
     plot_executor: ThreadPoolExecutor
 
     loop_meta: Optional[VexLoop]

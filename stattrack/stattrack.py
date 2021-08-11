@@ -14,10 +14,10 @@ from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
 from vexcogutils import format_help, format_info
 from vexcogutils.loop import VexLoop
+from vexcogutils.sqldriver import PandasSQLiteDriver
 
 from stattrack.abc import CompositeMetaClass
 from stattrack.commands import StatTrackCommands
-from stattrack.driver import StatTrackDriver
 from stattrack.plot import StatPlot
 
 _log = logging.getLogger("red.vexed.stattrack")
@@ -36,7 +36,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.1.0"
+    __version__ = "1.3.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -56,7 +56,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.config.register_global(version=1)
         self.config.register_global(main_df={})
 
-        self.driver = StatTrackDriver(bot)
+        self.driver = PandasSQLiteDriver(bot, type(self).__name__, "timeseries.db")
 
         asyncio.create_task(self.async_init())
 
