@@ -37,7 +37,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.3.7"
+    __version__ = "1.3.8"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:

@@ -19,7 +19,7 @@ def box(text: str) -> str:
 
 
 def up_for() -> float:
-    now = datetime.datetime.utcnow().timestamp()
+    now = datetime.datetime.now().timestamp()
     return now - psutil.boot_time()
 
 
@@ -225,8 +225,10 @@ async def get_uptime() -> Dict[str, str]:
     """Get uptime info"""
     boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
 
-    friendly_boot_time = boot_time.strftime("%b %d, %H:%M:%S UTC")
-    friendly_up_for = humanize_timedelta(timedelta=datetime.datetime.utcnow() - boot_time)
+    tz = datetime.datetime.now().astimezone().tzinfo
+    # boot_time is naive
+    friendly_boot_time = boot_time.strftime(f"%b %d, %H:%M:%S {tz}")
+    friendly_up_for = humanize_timedelta(timedelta=datetime.datetime.now() - boot_time)
 
     data = {"uptime": ""}
 
