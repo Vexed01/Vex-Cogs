@@ -1,3 +1,4 @@
+import contextlib
 import importlib
 import json
 from pathlib import Path
@@ -7,15 +8,18 @@ from redbot.core import VersionInfo
 from redbot.core.bot import Red
 
 # VCU reload needs to be done before importing files that depend on new version
-if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.7"):
+if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.8"):
     importlib.reload(vexcogutils.version)
     importlib.reload(vexcogutils.consts)
 
     importlib.reload(vexcogutils.chat)
     importlib.reload(vexcogutils.meta)
     importlib.reload(vexcogutils.loop)
-    importlib.reload(vexcogutils)
 
+    with contextlib.suppress(AttributeError):  # these are not necessarily already imported
+        importlib.reload(vexcogutils.sqldriver)
+
+    importlib.reload(vexcogutils)
 from .stattrack import StatTrack
 
 with open(Path(__file__).parent / "info.json", encoding="utf8") as fp:
