@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from sys import getsizeof
 from typing import Optional, Union
 
-from discord.channel import DMChannel, TextChannel
+from discord.abc import User
+from discord.channel import DMChannel, GroupChannel, TextChannel
 from discord.guild import Guild
 from discord.member import Member
 from discord.message import PartialMessage
@@ -29,10 +30,10 @@ class LogMixin:
 
     def __init__(
         self,
-        author: Member,
+        author: Union[Member, User],
         com_name: str,
         msg_id: Optional[int] = None,
-        channel: Optional[Union[TextChannel, DMChannel]] = None,
+        channel: Optional[Union[TextChannel, DMChannel, GroupChannel]] = None,
         guild: Optional[Guild] = None,
         log_content: Optional[bool] = None,
         content: Optional[str] = None,

@@ -20,7 +20,7 @@ from vexcogutils.chat import humanize_bytes
 from cmdlog.objects import TIME_FORMAT, LoggedAppCom, LoggedCheckFailure, LoggedCommand
 
 if discord.__version__.startswith("2"):
-    from discord import Interaction, InteractionType
+    from discord import Interaction, InteractionType  # type:ignore
 
 _log = logging.getLogger("red.vex.cmdlog")
 
@@ -134,14 +134,14 @@ class CmdLog(commands.Cog):
         userid = data.get("member", {}).get("user", {}).get("id")
 
         if data.get("guild_id", 0):
-            user = self.bot.get_guild(data.get("guild_id", 0)).get_member(userid)
+            user = self.bot.get_guild(data.get("guild_id", 0)).get_member(userid)  # type:ignore
         else:
             user = self.bot.get_user(userid)
 
         inter_data = data["data"]
         chan = self.bot.get_channel(data.get("channel_id", 0))
 
-        self.log_app_com(user, chan, inter_data)
+        self.log_app_com(user, chan, inter_data)  # type:ignore
 
     # SLASH COM PARSE FOR: DPY 2
     @commands.Cog.listener()
@@ -166,7 +166,9 @@ class CmdLog(commands.Cog):
 
         target: Optional[Union[PartialMessage, Member]]
         if target_id := data.get("target_id"):
-            target = chan.get_partial_message(target_id) or chan.guild.get_member(target_id)
+            target = chan.get_partial_message(target_id) or chan.guild.get_member(  # type:ignore
+                target_id
+            )
         else:
             target = None
 
@@ -174,7 +176,7 @@ class CmdLog(commands.Cog):
             author=user,
             com_name=data.get("name"),  # type:ignore
             channel=chan,
-            guild=chan.guild,
+            guild=chan.guild if isinstance(chan, TextChannel) else None,
             log_content=self.log_content,
             application_command=data["type"],
             target=target,
