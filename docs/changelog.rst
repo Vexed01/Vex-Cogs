@@ -270,6 +270,14 @@ CmdLog
 ======
 
 *********
+``1.3.0``
+*********
+
+2021-08-12
+
+- Support Application Commands (Slash, Message, User), both with slashinjector/dpy 1 and dpy 2
+
+*********
 ``1.2.1``
 *********
 
