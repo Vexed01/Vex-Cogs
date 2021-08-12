@@ -7,7 +7,7 @@ import vexcogutils
 from redbot.core import VersionInfo
 
 # VCU reload needs to be done before importing files that depend on new version
-if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.8"):
+if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.9"):
     importlib.reload(vexcogutils.version)
     importlib.reload(vexcogutils.consts)
 
@@ -16,7 +16,8 @@ if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.8")
     importlib.reload(vexcogutils.loop)
 
     with contextlib.suppress(AttributeError):  # these are not necessarily already imported
-        importlib.reload(vexcogutils.sqldriver)
+        # importlib.reload(vexcogutils.sqldriver)
+        ...
 
     importlib.reload(vexcogutils)
 from .anotherpingcog import setup

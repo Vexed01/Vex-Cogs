@@ -3,7 +3,7 @@
     "author": ["Vexed (Vexed#3211)"],
     "name": "GitHub",
     "install_msg": "Thanks for installing! This cog was made for bot owners to manage issues on a specific repo. Get started with `gh howtoken` and `gh setrepo`.\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/github.html>",
-    "requirements": ["gidgethub>=5.0.0", "vex-cog-utils==1.4.8"],
+    "requirements": ["gidgethub>=5.0.0", "vex-cog-utils==1.4.9"],
     "description": "Create, comment, labelify and close GitHub issues, with partial PR support.",
     "short": "Create, comment, labelify and close GitHub issues.",
     "tags": ["utility", "github", "issues"],

@@ -5,7 +5,7 @@
     "install_msg": "This cog will immediately start tracking commands once you loaded. They are logged with the logging `logging` module, so they'll appear in the bot's console or main logs (search for `red.vex.cmdlog`) and an internal cache is kept which you can see in Discord with the `cmdlog` command.\n\nIf you want to store the whole message content, including arguments, instead of just the command invoked run `[p]cmdlog content true` once you've loaded the cog.\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/cmdlog.html>",
     "description": "Track who used what commands. All command usage is logged to the bot's console/log and also internally cached. You can view the activity of an individual user, server or command.",
     "short": "Track who uses what commands, with the ability to search for a specific user, server command.",
-    "requirements": ["vex-cog-utils==1.4.8"],
+    "requirements": ["vex-cog-utils==1.4.9"],
     "tags": ["utility", "log", "logging"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users. Operational data is temporarily collected and cached whenever a command is used.\n\nWhen a command is used, the following data is collected: the message invoking the command, the user that invoked it, the server it was invoked in, and the channel it was invoked in.\n\nThis cog does not support data deletion requests, because the operational data is only stored temporarily.",
     "min_bot_version": "3.4.0"
