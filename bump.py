@@ -20,7 +20,7 @@ COGS = [
 
 UPDATE_LEVELS = ["major", "minor", "patch"]
 
-VER_REGEX = r".*__version__ = \"(\d)\.(\d)\.(\d)\".*"
+VER_REGEX = r".*__version__ = \"(\d*)\.(\d*)\.(\d*)\".*"
 
 DOCS_REGEX = r"({}\n=*\n\n)"
 

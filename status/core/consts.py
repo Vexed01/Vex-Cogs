@@ -34,7 +34,7 @@ OLD_DEFAULTS = {"mode": ALL, "webhook": False}
 
 UPDATE_NAME = "{} Status Update"
 
-ICON_BASE = "https://vexed01.github.io/Vex-Cogs/api/v1/status_icons/{}.png"
+ICON_BASE = "https://static.vexcodes.com/v1/status_icons/{}.png"
 
 FEEDS = {
     "discord": {

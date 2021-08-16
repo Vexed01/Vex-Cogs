@@ -406,6 +406,14 @@ Status
 ======
 
 **********
+``2.3.11``
+**********
+
+2021-08-16
+
+- Change service base image URL to static.vexcodes.com
+
+**********
 ``2.3.10``
 **********
 
