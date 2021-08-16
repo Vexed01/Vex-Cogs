@@ -70,7 +70,7 @@ statusset
 
 .. code-block:: none
 
-    [p]statusset 
+    [p]statusset
 
 **Description**
 
@@ -100,7 +100,7 @@ There is a list of services you can use in the ``[p]statusset list`` command.
 This is an interactive command. It will ask what mode you want to use and if you
 want to use a webhook. You can use the ``[p]statusset preview`` command to see how
 different options look or take a look at
-https://vex-cogs.rtfd.io/en/latest/cogs/statusref.html
+https://cogdocs.vexcodes.com/en/latest/cogs/statusref.html
 
 If you don't specify a specific channel, I will use the current channel.
 
@@ -114,7 +114,7 @@ statusset edit
 
 .. code-block:: none
 
-    [p]statusset edit 
+    [p]statusset edit
 
 **Description**
 
@@ -243,7 +243,7 @@ statusset preview
 
 Preview what status updates will look like.
 
-You can also see this at https://vex-cogs.rtfd.io/en/latest/cogs/statusref.html
+You can also see this at https://cogdocs.vexcodes.com/en/latest/cogs/statusref.html
 
 **<service>**
 

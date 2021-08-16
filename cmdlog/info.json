@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": ["Vexed (Vexed#3211)"],
     "name": "CmdLog",
-    "install_msg": "This cog will immediately start tracking commands once you loaded. They are logged with the logging `logging` module, so they'll appear in the bot's console or main logs (search for `red.vex.cmdlog`) and an internal cache is kept which you can see in Discord with the `cmdlog` command.\n\nIf you want to store the whole message content, including arguments, instead of just the command invoked run `[p]cmdlog content true` once you've loaded the cog.\n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/cmdlog.html>",
+    "install_msg": "This cog will immediately start tracking commands once you loaded. They are logged with the logging `logging` module, so they'll appear in the bot's console or main logs (search for `red.vex.cmdlog`) and an internal cache is kept which you can see in Discord with the `cmdlog` command.\n\nIf you want to store the whole message content, including arguments, instead of just the command invoked run `[p]cmdlog content true` once you've loaded the cog.\n\nThis cog has docs! Check them out at <https://cogdocs.vexcodes.com/en/latest/cogs/cmdlog.html>",
     "description": "Track who used what commands. All command usage is logged to the bot's console/log and also internally cached. You can view the activity of an individual user, server or command.",
     "short": "Track who uses what commands, with the ability to search for a specific user, server command.",
     "requirements": ["vex-cog-utils==1.4.9"],

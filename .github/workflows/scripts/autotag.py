@@ -10,7 +10,7 @@ TAG_MESSAGE = """
 Created with GitHub Actions.
 
 The changelog can be found at
-https://vex-cogs.readthedocs.io/en/latest/changelog.html#{cogname}
+https://cogdocs.vexcodes.com/en/latest/changelog.html#{cogname}
 
 This is an automatically created tag based of the following commit:
 {commit}

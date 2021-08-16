@@ -217,7 +217,7 @@ class SendUpdate:
     def _dispatch_main(self, channels: dict) -> None:
         """
         For more information on this event, take a look at the event reference in the docs:
-        https://vex-cogs.readthedocs.io/en/latest/statusdev.html
+        https://cogdocs.vexcodes.com/en/latest/statusdev.html
         (yes i could use autodoc but thats scary)
         """
         self.bot.dispatch(
@@ -231,7 +231,7 @@ class SendUpdate:
     def _dispatch_channel(self, channeldata: ChannelData) -> None:
         """
         For more information on this event, take a look at the event reference in the docs:
-        https://vex-cogs.readthedocs.io/en/latest/statusdev.html
+        https://cogdocs.vexcodes.com/en/latest/statusdev.html
         (yes i could use autodoc but thats scary)
         """
         self.bot.dispatch(

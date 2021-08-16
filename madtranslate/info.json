@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": ["Vexed (Vexed#3211)"],
     "name": "MadTranslate",
-    "install_msg": "Note: this uses an undocumented API for Google Translate. As such, this cog may break at short notice. \n\nThis cog has docs! Check them out at <https://vex-cogs.rtfd.io/en/latest/cogs/madtranslate.html>",
+    "install_msg": "Note: this uses an undocumented API for Google Translate. As such, this cog may break at short notice. \n\nThis cog has docs! Check them out at <https://cogdocs.vexcodes.com/en/latest/cogs/madtranslate.html>",
     "requirements": ["vex-cog-utils==1.4.9"],
     "description": "Translate something from English into a gazillion different languages then back to English. Uses an undocumented Google Translate API.",
     "short": "Translate something from English into a gazillion different languages then back to English. You'll get some funny responses! Uses an undocumented Google Translate API.",
