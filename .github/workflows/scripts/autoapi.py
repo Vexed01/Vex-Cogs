@@ -8,7 +8,7 @@ import re
 
 from git import Repo
 
-VER_FILE_LOCATION = "api/v1/version.json"
+VER_FILE_LOCATION = "v1/version.json"
 
 repo = Repo()  # repo in working dir
 
