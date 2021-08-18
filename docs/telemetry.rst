@@ -1,7 +1,7 @@
 .. _telemetry:
 
-Telemetry and Error Reporting
-=============================
+Opt-in Telemetry and Error Reporting
+====================================
 
 I (`github.com/Vexed01 <https://github.com/Vexed01>`_) have **opt-in** telemetry
 and error reporting built into all of my
@@ -72,8 +72,8 @@ and as such I cannot see your IP address. I will never share any data
 from Sentry that could be used to identify anyone or stuff that gets past the filters for
 removing sensitive data.
 
-Technical details
-=================
+Technical details of Sentry
+===========================
 
 .. _sentry_technical_details_scrubbing:
 
