@@ -13,6 +13,7 @@ Docs version: |version|
    :caption: Getting started:
 
    getting_started
+   telemetry
 
 .. toctree::
    :maxdepth: 1
