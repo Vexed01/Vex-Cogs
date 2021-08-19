@@ -17,8 +17,8 @@ if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.9")
     importlib.reload(vexcogutils.loop)
 
     with contextlib.suppress(AttributeError):  # these are not necessarily already imported
-        # importlib.reload(vexcogutils.sqldriver)
-        ...
+        importlib.reload(vexcogutils.sqldriver)
+        importlib.reload(vexcogutils.sentry)
 
     importlib.reload(vexcogutils)
 
@@ -29,4 +29,7 @@ with open(Path(__file__).parent / "info.json") as fp:
 
 
 def setup(bot: Red):
+    if vexcogutils.bot is None:
+        vexcogutils.bot = bot
+
     bot.add_cog(WOL(bot))
