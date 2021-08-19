@@ -182,14 +182,11 @@ class WOL(commands.Cog):
 
         This will send your MAC addresses to the current channel.
         """
-        data = []
         conf: Dict[str, str] = await self.config.addresses()
         if not conf:
             return await ctx.send("You haven't added any machines yet.")
 
-        for name, mac in conf.items():
-            data.append([f"[{name}]", humanize_mac(mac)])
-
+        data = [[f"[{name}]", humanize_mac(mac)] for name, mac in conf.items()]
         table = tabulate.tabulate(data, headers=["Name", "MAC"])
 
         # god i hope no-one hits 2k chars
