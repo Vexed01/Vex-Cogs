@@ -1,17 +1,24 @@
 import asyncio
+import logging
 import re
 from time import monotonic
 from typing import Optional
 
 import discord
+import sentry_sdk
 import tabulate
+import vexcogutils
 from discord.emoji import Emoji
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 from vexcogutils import format_help, format_info
+from vexcogutils.meta import out_of_date_check
 
 from .objects import Cache, Settings
+
+log = logging.getLogger("red.vex.anotherpingcog")
+
 
 DEFAULT = "default"
 
@@ -49,17 +56,57 @@ class AnotherPingCog(commands.Cog):
         self.config.register_global(force_embed=True, footer="default")
         self.config.register_global(custom_settings=DEFAULT_CONF)
 
-        asyncio.create_task(self._make_cache())
+        asyncio.create_task(self.async_init())
 
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad."""
-        return format_help(self, ctx)
+        # =========================================================================================
+        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
+        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
+        self.sentry_hub: Optional[sentry_sdk.Hub] = None
+        # =========================================================================================
 
-    async def red_delete_data_for_user(self, **kwargs) -> None:
-        """Nothing to delete"""
-        return
+    async def async_init(self):
+        await out_of_date_check("system", self.__version__)
 
-    def cog_unload(self) -> None:
+        self.cache = Cache(
+            await self.config.custom_settings(),
+            await self.config.force_embed(),
+            await self.config.footer(),
+            self.bot,
+        )
+
+        # =========================================================================================
+        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
+        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
+        # return
+
+        while vexcogutils.sentryhelper.ready is False:
+            await asyncio.sleep(0.1)
+
+        if vexcogutils.sentryhelper.sentry_enabled is False:
+            log.debug("Sentry detected as disabled.")
+            return
+
+        log.debug("Sentry detected as enabled.")
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("system", self.__version__)
+        # =========================================================================================
+
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)
+
+        if self.sentry_hub is None:  # sentry disabled
+            return
+
+        with self.sentry_hub:
+            sentry_sdk.add_breadcrumb(
+                category="command", message="Command used was " + ctx.command.qualified_name
+            )
+            sentry_sdk.capture_exception(error.original)  # type:ignore
+            log.debug("Above exception successfully reported to Sentry")
+
+    def cog_unload(self):
+        self.sentry_hub.end_session()
+        self.sentry_hub.client.close()
+
         global old_ping
         if old_ping:
             try:
@@ -68,13 +115,13 @@ class AnotherPingCog(commands.Cog):
                 pass
             self.bot.add_command(old_ping)
 
-    async def _make_cache(self) -> None:
-        self.cache = Cache(
-            await self.config.custom_settings(),
-            await self.config.force_embed(),
-            await self.config.footer(),
-            self.bot,
-        )
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad."""
+        return format_help(self, ctx)
+
+    async def red_delete_data_for_user(self, **kwargs) -> None:
+        """Nothing to delete"""
+        return
 
     @commands.command(hidden=True)
     async def apcinfo(self, ctx: commands.Context):
