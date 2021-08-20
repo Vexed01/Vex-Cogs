@@ -181,11 +181,10 @@ class Aliases(commands.Cog):
 
         if hum_guild_aliases:
             aliases += f"Server aliases: {hum_guild_aliases}\n"
+        elif ctx.guild:
+            none.append("guild")
         else:
-            if ctx.guild:
-                none.append("guild")
-            else:
-                aliases += "You're in DMs, so there aren't any server aliases."
+            aliases += "You're in DMs, so there aren't any server aliases."
         str_none = humanize_list(none, style="or")
 
         msg = f"Main command: `{strcommand}`\n{aliases}"

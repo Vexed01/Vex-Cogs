@@ -544,21 +544,23 @@ class AnotherPingCog(commands.Cog):
         await ctx.send(embed=embed)
         await ctx.send(
             embed=discord.Embed(
-                title=f"Emoji for green: {str(self.cache.green.emoji)}",
+                title=f'Emoji for green: {self.cache.green.emoji}',
                 description=f"{LEFT_ARROW} Colour for green",
                 colour=self.cache.green.colour,
-            ),
+            )
         )
+
         await ctx.send(
             embed=discord.Embed(
-                title=f"Emoji for orange: {str(self.cache.orange.emoji)}",
+                title=f'Emoji for orange: {self.cache.orange.emoji}',
                 description=f"{LEFT_ARROW} Colour for orange",
                 colour=self.cache.orange.colour,
             )
         )
+
         await ctx.send(
             embed=discord.Embed(
-                title=f"Emoji for red: {str(self.cache.red.emoji)}",
+                title=f'Emoji for red: {self.cache.red.emoji}',
                 description=f"{LEFT_ARROW} Colour for red",
                 colour=self.cache.red.colour,
             )
