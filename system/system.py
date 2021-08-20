@@ -49,10 +49,11 @@ class System(commands.Cog):
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
+        asyncio.create_task(self.async_init())
+
         # =========================================================================================
         # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
         # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
-        asyncio.create_task(self.async_init())
         self.sentry_hub: Optional[sentry_sdk.Hub] = None
         # =========================================================================================
 

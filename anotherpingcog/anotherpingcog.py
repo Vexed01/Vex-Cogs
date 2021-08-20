@@ -65,7 +65,7 @@ class AnotherPingCog(commands.Cog):
         # =========================================================================================
 
     async def async_init(self):
-        await out_of_date_check("system", self.__version__)
+        await out_of_date_check("anotherpingcog", self.__version__)
 
         self.cache = Cache(
             await self.config.custom_settings(),
@@ -87,7 +87,9 @@ class AnotherPingCog(commands.Cog):
             return
 
         log.debug("Sentry detected as enabled.")
-        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("system", self.__version__)
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub(
+            "anotherpingcog", self.__version__
+        )
         # =========================================================================================
 
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):

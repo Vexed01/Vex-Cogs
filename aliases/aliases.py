@@ -30,15 +30,17 @@ class Aliases(commands.Cog):
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
+
+        asyncio.create_task(self.async_init())
+
         # =========================================================================================
         # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
         # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
-        asyncio.create_task(self.async_init())
         self.sentry_hub: Optional[sentry_sdk.Hub] = None
         # =========================================================================================
 
     async def async_init(self):
-        await out_of_date_check("system", self.__version__)
+        await out_of_date_check("aliases", self.__version__)
 
         # =========================================================================================
         # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
@@ -53,7 +55,9 @@ class Aliases(commands.Cog):
             return
 
         log.debug("Sentry detected as enabled.")
-        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("system", self.__version__)
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub(
+            "aliases", self.__version__
+        )
         # =========================================================================================
 
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):

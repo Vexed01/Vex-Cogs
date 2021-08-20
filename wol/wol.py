@@ -41,10 +41,11 @@ class WOL(commands.Cog):
         self.config.register_global(version=1)
         self.config.register_global(addresses={})
 
+        asyncio.create_task(self.async_init())
+
         # =========================================================================================
         # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
         # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
-        asyncio.create_task(self.async_init())
         self.sentry_hub: Optional[sentry_sdk.Hub] = None
         # =========================================================================================
 
