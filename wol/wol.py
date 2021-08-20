@@ -31,7 +31,7 @@ class WOL(commands.Cog):
     `[p]wol main_pc`
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
