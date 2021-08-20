@@ -57,7 +57,7 @@ class System(commands.Cog):
         # =========================================================================================
 
     async def async_init(self):
-        await out_of_date_check("wol", self.__version__)
+        await out_of_date_check("system", self.__version__)
 
         # =========================================================================================
         # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
@@ -72,7 +72,7 @@ class System(commands.Cog):
             return
 
         log.debug("Sentry detected as enabled.")
-        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("wol", self.__version__)
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("system", self.__version__)
         # =========================================================================================
 
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
