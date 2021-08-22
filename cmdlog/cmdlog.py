@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import logging
 import sys
@@ -6,6 +7,8 @@ from io import BytesIO
 from typing import Deque, Optional, Union
 
 import discord
+import sentry_sdk
+import vexcogutils
 from discord.channel import DMChannel, TextChannel
 from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
 from discord.member import Member
@@ -16,8 +19,9 @@ from redbot.core.commands import CheckFailure as RedCheckFailure
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta
 from vexcogutils import format_help, format_info
 from vexcogutils.chat import humanize_bytes
+from vexcogutils.meta import out_of_date_check
 
-from cmdlog.objects import TIME_FORMAT, LoggedAppCom, LoggedCheckFailure, LoggedCommand
+from cmdlog.objects import TIME_FORMAT, LoggedAppCom, LoggedComError, LoggedCommand
 
 if discord.__version__.startswith("2"):
     from discord import Interaction, InteractionType  # type:ignore
@@ -43,7 +47,7 @@ class CmdLog(commands.Cog):
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.log_cache: Deque[Union[LoggedCommand, LoggedCheckFailure, LoggedAppCom]] = deque(
+        self.log_cache: Deque[Union[LoggedCommand, LoggedComError, LoggedAppCom]] = deque(
             maxlen=100_000
         )
         # this is about 50MB max from my simulated testing
@@ -57,6 +61,51 @@ class CmdLog(commands.Cog):
         self.config.register_global(log_content=False)
 
         self.log_content: Optional[bool] = None
+
+        asyncio.create_task(self.async_init())
+
+        # =========================================================================================
+        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
+        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
+        self.sentry_hub: Optional[sentry_sdk.Hub] = None
+        # =========================================================================================
+
+    async def async_init(self):
+        await out_of_date_check("cmdlog", self.__version__)
+
+        # =========================================================================================
+        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
+        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
+        # return
+
+        while vexcogutils.sentryhelper.ready is False:
+            await asyncio.sleep(0.1)
+
+        if vexcogutils.sentryhelper.sentry_enabled is False:
+            _log.debug("Sentry detected as disabled.")
+            return
+
+        _log.debug("Sentry detected as enabled.")
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("cmdlog", self.__version__)
+        # =========================================================================================
+
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)
+
+        if self.sentry_hub is None:  # sentry disabled
+            return
+
+        with self.sentry_hub:
+            sentry_sdk.add_breadcrumb(
+                category="command", message="Command used was " + ctx.command.qualified_name
+            )
+            sentry_sdk.capture_exception(error.original)  # type:ignore
+            _log.debug("Above exception successfully reported to Sentry")
+
+    def cog_unload(self):
+        if self.sentry_hub:
+            self.sentry_hub.end_session()
+            self.sentry_hub.client.close()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -79,9 +128,8 @@ class CmdLog(commands.Cog):
         _log.info(logged_com)
         self.log_cache.append(logged_com)
 
-    def log_cf(self, ctx: commands.Context) -> None:
-
-        logged_com = LoggedCommand(
+    def log_ce(self, ctx: commands.Context) -> None:
+        logged_com = LoggedComError(
             author=ctx.author,
             com_name=ctx.command.qualified_name,
             msg_id=ctx.message.id,
@@ -108,52 +156,79 @@ class CmdLog(commands.Cog):
             )
         return f"Log started {ago} ago."
 
-    @commands.Cog.listener()
-    async def on_command(self, ctx: commands.Context):
-        if self.log_content is None:
-            self.log_content = await self.config.log_content()
+    def log_list_error(self, e):
+        _log.exception("Something went wrong processing a command. See below for more info.", e)
 
-        if ctx.guild:
-            assert not isinstance(ctx.channel, discord.DMChannel)
-        self.log_com(ctx)
+        # a reminder data such as *IDs are scrubbed* before being sent to sentry and the log object
+        # has a __repr__ without names (which sentry sends) which does not give actual names while
+        # __str__ is what is logged to the user
+
+        if self.sentry_hub is None:
+            return
+
+        with self.sentry_hub:
+            sentry_sdk.capture_exception(e)
+
+    @commands.Cog.listener()
+    async def on_command_completion(self, ctx: commands.Context):
+        try:
+            if self.log_content is None:
+                self.log_content = await self.config.log_content()
+
+            if ctx.guild:
+                assert not isinstance(ctx.channel, discord.DMChannel)
+            self.log_com(ctx)
+        except Exception as e:
+            self.log_list_error(e)
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        if self.log_content is None:
-            self.log_content = await self.config.log_content()
+        try:
+            if self.log_content is None:
+                self.log_content = await self.config.log_content()
 
-        if isinstance(error, (RedCheckFailure, DpyCheckFailure)):
-            self.log_cf(ctx)
+            if isinstance(error, (RedCheckFailure, DpyCheckFailure)):
+                self.log_ce(ctx)
+        except Exception as e:
+            self.log_list_error(e)
 
     # SLASH COM PARSE FOR: KOWLIN'S SLASHINJECTOR
     @commands.Cog.listener()
     async def on_interaction_create(self, data: dict):
-        if data.get("type") != 2:
-            return
+        try:
+            if data.get("type") != 2:
+                return
 
-        userid = data.get("member", {}).get("user", {}).get("id")
+            userid = data.get("member", {}).get("user", {}).get("id")
 
-        if data.get("guild_id", 0):
-            user = self.bot.get_guild(data.get("guild_id", 0)).get_member(userid)  # type:ignore
-        else:
-            user = self.bot.get_user(userid)
+            if data.get("guild_id", 0):
+                user = self.bot.get_guild(data.get("guild_id", 0)).get_member(
+                    userid
+                )  # type:ignore
+            else:
+                user = self.bot.get_user(userid)
 
-        inter_data = data["data"]
-        chan = self.bot.get_channel(data.get("channel_id", 0))
+            inter_data = data["data"]
+            chan = self.bot.get_channel(data.get("channel_id", 0))
 
-        self.log_app_com(user, chan, inter_data)  # type:ignore
+            self.log_app_com(user, chan, inter_data)  # type:ignore
+        except Exception as e:
+            self.log_list_error(e)
 
     # SLASH COM PARSE FOR: DPY 2
     @commands.Cog.listener()
     async def on_interaction(self, inter: "Interaction"):
-        if inter.type != InteractionType.application_command:
-            return
+        try:
+            if inter.type != InteractionType.application_command:
+                return
 
-        inter_data = inter.data
-        user = inter.user
-        chan = inter.channel
+            inter_data = inter.data
+            user = inter.user
+            chan = inter.channel
 
-        self.log_app_com(user, chan, inter_data)
+            self.log_app_com(user, chan, inter_data)
+        except Exception as e:
+            self.log_list_error(e)
 
     def log_app_com(
         self,

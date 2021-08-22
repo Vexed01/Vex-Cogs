@@ -12,7 +12,7 @@ from discord.message import PartialMessage
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
-@dataclass
+@dataclass(repr=False)  # repr=False will prevent data held here going to sentry if an error occurs
 class IDFKWhatToNameThis:
     id: int
     name: str
@@ -87,7 +87,11 @@ class LogMixin:
 class LoggedCommand(LogMixin):
     """Inherits from LogMixin, for a logged command"""
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:  # if enabled, this is what is sent to sentry when an error occurs
+        # (if this obj has been generated at that point)
+        return "<LoggedCommand with data removed>"
+
+    def __str__(self) -> str:  # this is what is logged locally
         com = self.content or self.command
         if not self.guild or not self.channel:
             return f"Text command '{com}' ran by {self.user.id} ({self.user.name}) in our DMs."
@@ -101,20 +105,24 @@ class LoggedCommand(LogMixin):
         )
 
 
-class LoggedCheckFailure(LogMixin):
-    """Inherits from LogMixin, for a logged check failure"""
+class LoggedComError(LogMixin):
+    """Inherits from LogMixin, for a logged error"""
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:  # if enabled, this is what is sent to sentry when an error occurs
+        # (if this obj has been generated at that point)
+        return "<LoggedComError with data removed>"
+
+    def __str__(self) -> str:  # this is what is logged locally
         com = self.content or self.command
         if not self.guild or not self.channel:
             return (
-                f"Text command '{com}' raised a check failure by {self.user.id} ({self.user.name})"
+                f"Text command '{com}' raised an error by {self.user.id} ({self.user.name})"
                 " in our DMs."
             )
 
         assert self.msg_id is not None
         return (
-            f"Text command '{com}' raised a check failure by {self.user.id} ({self.user.name}) "
+            f"Text command '{com}' raised an error by {self.user.id} ({self.user.name}) "
             f"with message ID {self.msg_id} "
             f"in channel {self.channel.id} ({self.channel.name}) "
             f"in guild {self.guild.id} ({self.guild.name})"
@@ -124,7 +132,11 @@ class LoggedCheckFailure(LogMixin):
 class LoggedAppCom(LogMixin):
     """Inherits from LogMixin, for a logged Application Command."""
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:  # if enabled, this is what is sent to sentry when an error occurs
+        # (if this obj has been generated at that point)
+        return f"<LoggedAppCom with data removed app_type={self.app_type}>"
+
+    def __str__(self) -> str:  # this is what's logged locally
         assert self.app_type is not None
 
         if self.app_type == 1:  # slash com
