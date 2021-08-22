@@ -8,12 +8,15 @@ from typing import Dict, Optional, Set
 
 import discord
 import pandas
+import sentry_sdk
+import vexcogutils
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
 from vexcogutils import format_help, format_info
 from vexcogutils.loop import VexLoop
+from vexcogutils.meta import out_of_date_check
 from vexcogutils.sqldriver import PandasSQLiteDriver
 
 from stattrack.abc import CompositeMetaClass
@@ -63,6 +66,12 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         if 418078199982063626 in bot.owner_ids:  # type:ignore
             bot.add_dev_env_value("stattrack", lambda _: self)
 
+        # =========================================================================================
+        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
+        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
+        self.sentry_hub: Optional[sentry_sdk.Hub] = None
+        # =========================================================================================
+
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
@@ -85,6 +94,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
     async def async_init(self) -> None:
         await self.bot.wait_until_red_ready()
+        await out_of_date_check("stattrack", self.__version__)
 
         if await self.config.version() != 2:
             self.do_write = True
@@ -106,6 +116,37 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         self.loop = asyncio.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
+
+        # =========================================================================================
+        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
+        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
+        # return
+
+        while vexcogutils.sentryhelper.ready is False:
+            await asyncio.sleep(0.1)
+
+        if vexcogutils.sentryhelper.sentry_enabled is False:
+            _log.debug("Sentry detected as disabled.")
+            return
+
+        _log.debug("Sentry detected as enabled.")
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub(
+            "stattrack", self.__version__
+        )
+        # =========================================================================================
+
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)
+
+        if self.sentry_hub is None:  # sentry disabled
+            return
+
+        with self.sentry_hub:
+            sentry_sdk.add_breadcrumb(
+                category="command", message="Command used was " + ctx.command.qualified_name
+            )
+            sentry_sdk.capture_exception(error.original)  # type:ignore
+            _log.debug("Above exception successfully reported to Sentry")
 
     async def migrate_v1_to_v2(self, data: dict) -> None:
         assert isinstance(self.bot.loop, AbstractEventLoop)
@@ -158,6 +199,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             self.cmd_count += 1
 
     async def stattrack_loop(self):
+        await asyncio.sleep(1)
         while True:
             _log.debug("StatTrack loop has started next iteration")
             try:
@@ -168,7 +210,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 self.loop_meta.iter_error(e)
                 _log.exception(
                     "Something went wrong in the StatTrack loop. The loop will try again "
-                    "shortly. Please report this to Vexed."
+                    "shortly."
                 )
 
             await self.loop_meta.sleep_until_next()

@@ -116,7 +116,7 @@ class Status(
         log.info("Status unloaded.")
 
     async def _async_init(self) -> None:
-        await out_of_date_check("wol", self.__version__)
+        await out_of_date_check("status", self.__version__)
 
         await self.bot.wait_until_red_ready()
 
@@ -150,7 +150,7 @@ class Status(
             return
 
         log.debug("Sentry detected as enabled.")
-        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("wol", self.__version__)
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("status", self.__version__)
         # =========================================================================================
 
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
