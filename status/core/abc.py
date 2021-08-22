@@ -1,10 +1,12 @@
 import asyncio
 from abc import ABC, ABCMeta, abstractmethod
+from typing import Optional
 
 from aiohttp import ClientSession
 from discord.ext.commands.cog import CogMeta
 from redbot.core.bot import Red
 from redbot.core.config import Config
+from sentry_sdk.hub import Hub
 from vexcogutils.loop import VexLoop
 
 from status.core.statusapi import StatusAPI
@@ -44,6 +46,8 @@ class MixinMeta(ABC):
     statusapi: StatusAPI
 
     ready: bool
+
+    sentry_hub: Optional[Hub]
 
     @abstractmethod
     async def get_initial_data(self) -> None:

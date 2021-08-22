@@ -1,11 +1,15 @@
 import asyncio
 import logging
 from copy import deepcopy
+from typing import Optional
 
 import aiohttp
+import sentry_sdk
+import vexcogutils
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info
+from vexcogutils.meta import out_of_date_check
 
 from status.commands.status_com import StatusCom
 from status.commands.statusdev_com import StatusDevCom
@@ -22,7 +26,7 @@ from status.objects import (
 )
 from status.updateloop import SendUpdate, StatusLoop
 
-_log = logging.getLogger("red.vex.status.core")
+log = logging.getLogger("red.vex.status.core")
 
 
 class Status(
@@ -76,9 +80,15 @@ class Status(
                 self.bot.add_dev_env_value("status", lambda _: self)
                 self.bot.add_dev_env_value("statusapi", lambda _: self.statusapi)
                 self.bot.add_dev_env_value("sendupdate", lambda _: SendUpdate)
-                _log.debug("Added dev env vars.")
+                log.debug("Added dev env vars.")
             except Exception:
-                _log.exception("Unable to add dev env vars.", exc_info=True)
+                log.exception("Unable to add dev env vars.", exc_info=True)
+
+        # =========================================================================================
+        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
+        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
+        self.sentry_hub: Optional[sentry_sdk.Hub] = None
+        # =========================================================================================
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -91,24 +101,32 @@ class Status(
     def cog_unload(self) -> None:
         self.loop.cancel()
         asyncio.create_task(self.session.close())
+
+        if self.sentry_hub:
+            self.sentry_hub.end_session()
+            self.sentry_hub.client.close()  # type:ignore
+
         try:
             self.bot.remove_dev_env_value("status")
             self.bot.remove_dev_env_value("statusapi")
             self.bot.remove_dev_env_value("sendupdate")
         except KeyError:
-            _log.debug("Unable to remove dev env vars. They probably weren't added.")
-        _log.info("Status unloaded.")
+            log.debug("Unable to remove dev env vars. They probably weren't added.")
+
+        log.info("Status unloaded.")
 
     async def _async_init(self) -> None:
+        await out_of_date_check("wol", self.__version__)
+
         await self.bot.wait_until_red_ready()
 
         if await self.config.version() != 3:
-            _log.info("Getting initial data from services...")
+            log.info("Getting initial data from services...")
             await self.migrate_to_v3()
             await self.get_initial_data()
             await self.config.incidents.clear()
             await self.config.version.set(3)
-            _log.info("Done!")
+            log.info("Done!")
             self.actually_send = False
         else:
             self.actually_send = True
@@ -119,25 +137,50 @@ class Status(
         # this will start the loop
         self.ready = True
 
-        _log.info("Status cog has been successfully initialized.")
+        # =========================================================================================
+        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
+        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
+        # return
+
+        while vexcogutils.sentryhelper.ready is False:
+            await asyncio.sleep(0.1)
+
+        if vexcogutils.sentryhelper.sentry_enabled is False:
+            log.debug("Sentry detected as disabled.")
+            return
+
+        log.debug("Sentry detected as enabled.")
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("wol", self.__version__)
+        # =========================================================================================
+
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)
+
+        if self.sentry_hub is None:  # sentry disabled
+            return
+
+        with self.sentry_hub:
+            sentry_sdk.add_breadcrumb(
+                category="command", message="Command used was " + ctx.command.qualified_name
+            )
+            sentry_sdk.capture_exception(error.original)  # type:ignore
+            log.debug("Above exception successfully reported to Sentry")
 
     async def get_initial_data(self) -> None:
         """Start with initial data from services."""
         old_ids = []
         for service, settings in FEEDS.items():
-            _log.debug(f"Starting {service}.")
+            log.debug(f"Starting {service}.")
             try:
                 incidents, etag, status = await self.statusapi.incidents(settings["id"])
                 if status != 200:
-                    _log.warning(
-                        f"Unable to get initial data from {service}: HTTP status {status}"
-                    )
+                    log.warning(f"Unable to get initial data from {service}: HTTP status {status}")
                 incs = incidents["incidents"]
                 for inc in incs:
                     old_ids.append(inc["id"])
                     old_ids.extend([i["id"] for i in inc["incident_updates"]])
             except Exception:
-                _log.warning(f"Unable to get initial data from {service}.", exc_info=True)
+                log.warning(f"Unable to get initial data from {service}.", exc_info=True)
                 continue
 
             try:
@@ -145,15 +188,13 @@ class Status(
                     settings["id"]
                 )
                 if status != 200:
-                    _log.warning(
-                        f"Unable to get initial data from {service}: HTTP status {status}"
-                    )
+                    log.warning(f"Unable to get initial data from {service}: HTTP status {status}")
                 incs = scheduled["scheduled_maintenances"]
                 for inc in incs:
                     old_ids.append(inc["id"])
                     old_ids.extend([i["id"] for i in inc["incident_updates"]])
             except Exception:
-                _log.warning(f"Unable to get initial data from {service}.", exc_info=True)
+                log.warning(f"Unable to get initial data from {service}.", exc_info=True)
                 continue
 
         await self.config.old_ids.set(old_ids)
@@ -162,8 +203,8 @@ class Status(
         """Set up conifg for version 3"""
         # ik this is a mess
         really_old = await self.config.all_channels()
-        _log.debug("Config migration in progress. Old data is below in case something goes wrong.")
-        _log.debug(really_old)
+        log.debug("Config migration in progress. Old data is below in case something goes wrong.")
+        log.debug(really_old)
         for c_id, data in really_old.items():
             c_old = deepcopy(data)["feeds"]
             for service in data.get("feeds", {}).keys():

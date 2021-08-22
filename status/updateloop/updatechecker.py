@@ -28,7 +28,9 @@ class StatusLoop(MixinMeta):
 
     async def status_loop(self):
         while not self.ready:
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
+
+        await asyncio.sleep(1)
 
         while True:
             self.loop_meta.iter_start()
@@ -48,11 +50,11 @@ class StatusLoop(MixinMeta):
                     "Vexed."
                 )
             except Exception as e:
-                self.loop_meta.iter_error(e)
+                self.loop_meta.iter_error(e, self.sentry_hub)
                 _log.error(
                     "Unable to check and send updates. Some services were likely missed. The "
                     "might be picked up on the next loop. You may want to report this to Vexed.",
-                    exc_info=True,
+                    exc_info=e,
                 )
             end = monotonic()
             total = round(end - start, 1)
