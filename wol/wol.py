@@ -82,8 +82,9 @@ class WOL(commands.Cog):
             log.debug("Above exception successfully reported to Sentry")
 
     def cog_unload(self):
-        self.sentry_hub.end_session()
-        self.sentry_hub.client.close()
+        if self.sentry_hub:
+            self.sentry_hub.end_session()
+            self.sentry_hub.client.close()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
