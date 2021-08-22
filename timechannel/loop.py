@@ -57,7 +57,6 @@ class TCLoop(MixinMeta):
 
         reps = gen_replacements()
 
-        1 / 0
         for guild_id, guild_data in all_guilds.items():
             guild = self.bot.get_guild(guild_id)
             if guild is None:
