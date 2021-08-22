@@ -1,11 +1,13 @@
 import asyncio
 import datetime
 import logging
-from typing import Dict
+from typing import Dict, Optional
 
 import discord
 import pytz
 import rapidfuzz.process
+import sentry_sdk
+import vexcogutils
 from discord.channel import DMChannel, GroupChannel, VoiceChannel
 from discord.guild import Guild
 from redbot.core import commands
@@ -13,6 +15,7 @@ from redbot.core.bot import Red
 from redbot.core.config import Config
 from vexcogutils import format_help, format_info
 from vexcogutils.chat import datetime_to_timestamp
+from vexcogutils.meta import out_of_date_check
 
 from timechannel.utils import gen_replacements
 
@@ -20,7 +23,7 @@ from .abc import CompositeMetaClass
 from .data import ZONE_KEYS
 from .loop import TCLoop
 
-_log = logging.getLogger("red.vex.timechannel")
+log = logging.getLogger("red.vex.timechannel")
 
 MAX_LEN_VISUAL = ". . . . . . . . . . . . . . . . . . . . . . . . ."
 
@@ -33,9 +36,6 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     major city: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
 
     There is a fuzzy search so you don't need to put the region in, only the city.
-
-    This cog will shrink down from the proper region names, for example `America/New_York`
-    will become `New York`.
 
     The `[p]timezones` command (runnable by anyone) will show the full location name.
     """
@@ -51,6 +51,47 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         self.config.register_guild(timechannels={})
 
         asyncio.create_task(self.maybe_migrate())
+        asyncio.create_task(self.async_init())
+
+        # =========================================================================================
+        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
+        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
+        self.sentry_hub: Optional[sentry_sdk.Hub] = None
+        # =========================================================================================
+
+    async def async_init(self):
+        await out_of_date_check("timechannel", self.__version__)
+
+        # =========================================================================================
+        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
+        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
+        # return
+
+        while vexcogutils.sentryhelper.ready is False:
+            await asyncio.sleep(0.1)
+
+        if vexcogutils.sentryhelper.sentry_enabled is False:
+            log.debug("Sentry detected as disabled.")
+            return
+
+        log.debug("Sentry detected as enabled.")
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub(
+            "timechannel", self.__version__
+        )
+        # =========================================================================================
+
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)
+
+        if self.sentry_hub is None:  # sentry disabled
+            return
+
+        with self.sentry_hub:
+            sentry_sdk.add_breadcrumb(
+                category="command", message="Command used was " + ctx.command.qualified_name
+            )
+            sentry_sdk.capture_exception(error.original)  # type:ignore
+            log.debug("Above exception successfully reported to Sentry")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -62,13 +103,17 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
 
     def cog_unload(self) -> None:
         self.loop.cancel()
-        _log.debug("Loop stopped as cog unloaded.")
+        log.debug("Loop stopped as cog unloaded.")
+
+        if self.sentry_hub:
+            self.sentry_hub.end_session()
+            self.sentry_hub.client.close()  # type:ignore
 
     async def maybe_migrate(self) -> None:
         if await self.config.version() == 2:
             return
 
-        _log.debug("Migating to config v2")
+        log.debug("Migating to config v2")
         keys = list(ZONE_KEYS.keys())
         values = list(ZONE_KEYS.values())
         all_guilds = await self.config.all_guilds()
