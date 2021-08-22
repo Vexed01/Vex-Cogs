@@ -98,6 +98,8 @@ class BULoop(MixinMeta):
         while self.ready is False:
             await asyncio.sleep(0.1)
 
+        await asyncio.sleep(1)
+
         # making the loop run on the minute every time means i don't need to worry about seconds
         # well, on the minute - 5 sec. it's to make stuff easier in the loop code
         while (round(time() + 5) % 60) != 0:
@@ -117,7 +119,7 @@ class BULoop(MixinMeta):
                 self.main_loop_meta.iter_finish()
                 _log.debug("Loop has finished, saved to config")
             except Exception as e:
-                self.main_loop_meta.iter_error(e)
+                self.main_loop_meta.iter_error(e, self.sentry_hub)
                 _log.exception(
                     "Something went wrong in the main BetterUptime loop. The loop will try again "
                     "in 60 seconds. Please report this and the below information to Vexed."

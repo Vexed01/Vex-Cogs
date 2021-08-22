@@ -87,6 +87,10 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.plot_executor.shutdown()
         self.driver.sql_executor.shutdown()
 
+        if self.sentry_hub:
+            self.sentry_hub.end_session()
+            self.sentry_hub.client.close()  # type:ignore
+
         try:
             self.bot.remove_dev_env_value("stattrack")
         except KeyError:
@@ -207,7 +211,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 await self.update_stats()
                 self.loop_meta.iter_finish()
             except Exception as e:
-                self.loop_meta.iter_error(e)
+                self.loop_meta.iter_error(e, self.sentry_hub)
                 _log.exception(
                     "Something went wrong in the StatTrack loop. The loop will try again "
                     "shortly."

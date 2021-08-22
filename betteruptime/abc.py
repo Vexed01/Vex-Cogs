@@ -6,6 +6,7 @@ import pandas
 from redbot.core.bot import Red
 from redbot.core.commands import CogMeta
 from redbot.core.config import Config
+from sentry_sdk.hub import Hub
 from vexcogutils.loop import VexLoop
 
 if TYPE_CHECKING:
@@ -37,6 +38,8 @@ class MixinMeta(ABC):
     connected_cache: pandas.Series
 
     ready: bool
+
+    sentry_hub: Optional[Hub]
 
     @abstractmethod
     async def get_data(self, num_days: int) -> "UptimeData":
