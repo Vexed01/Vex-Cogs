@@ -220,6 +220,17 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             await self.loop_meta.sleep_until_next()
 
     async def update_stats(self):
+        if self.sentry_hub:
+            with self.sentry_hub:
+                master_trans = sentry_sdk.start_transaction(
+                    op="loop",
+                    name="StatTrack loop",
+                    description="Main stats loop for collecting, processing and saving data.",
+                )
+            prep_trans = master_trans.start_child(
+                op="prep", description="Preparation for stats collection"
+            )
+
         now = snapped_utcnow()
         if now == self.df_cache.last_valid_index():  # just reloaded and this min's data collected
             _log.debug("Skipping this loop - cog was likely recently reloaded")
@@ -227,6 +238,16 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         df = pandas.DataFrame(index=[snapped_utcnow()])
         start = time.monotonic()
         data = {}
+
+        if self.sentry_hub:
+            prep_trans.finish()
+            data_trans = master_trans.start_child(op="data_collect", description="Data collection")
+            data1_trans = data_trans.start_child(
+                op="data_collect_1", description="Non-loop data collection"
+            )
+
+        await asyncio.sleep(0)
+
         try:
             latency = round(self.bot.latency * 1000)
             if latency > 1000:  # somethings up... lets not track stats
@@ -245,6 +266,12 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         data["command_count"] = self.cmd_count
         data["message_count"] = self.msg_count
         self.cmd_count, self.msg_count = 0, 0
+
+        if self.sentry_hub:
+            data1_trans.finish()
+            data2_trans = data_trans.start_child(
+                op="data_collect_2", description="Loop data collection"
+            )
 
         count: Dict[str, Set[int]] = {  # can't use defaultdict, got to have these set
             "status_online": set(),
@@ -270,11 +297,22 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             data["channels_cat"] += len(guild.categories)
             data["channels_stage"] += len(guild.stage_channels)
 
+        if self.sentry_hub:
+            data2_trans.finish()
+            data_trans.finish()
+            format_trans = master_trans.start_child(
+                op="data_conversion", description="Data format conversion"
+            )
+
         for k, v in count.items():
             df[k] = len(v)
 
         for k, v in data.items():
             df[k] = v
+
+        if self.sentry_hub:
+            format_trans.finish()
+            save_trans = master_trans.start_child(op="save", description="Save data")
 
         self.df_cache = self.df_cache.append(df)
 
@@ -295,6 +333,10 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             end = time.monotonic()
             save_time = round(end - start, 3)
             _log.debug(f"SQLite appended in {save_time} seconds")
+
+        if self.sentry_hub:
+            save_trans.finish()
+            master_trans.finish()
 
         total_time = main_time + save_time
 
