@@ -336,6 +336,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         if self.sentry_hub:
             save_trans.finish()
+            master_trans.set_status("ok")
             master_trans.finish()
 
         total_time = main_time + save_time
