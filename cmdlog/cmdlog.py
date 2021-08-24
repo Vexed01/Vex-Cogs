@@ -299,7 +299,7 @@ class CmdLog(commands.Cog):
     async def full(self, ctx: commands.Context):
         """Upload all the logs that are stored in the cache."""
         now = datetime.datetime.now().strftime(TIME_FORMAT)
-        logs = [f"[{i.time}] {str(i)}" for i in self.log_cache]
+        logs = [f'[{i.time}] {i}' for i in self.log_cache]
         log_str = f"Generated at {now}.\n" + "\n".join(logs)
         logs_bytes = BytesIO(log_str.encode())
 
@@ -318,7 +318,7 @@ class CmdLog(commands.Cog):
             - `[p]cmdlog user 418078199982063626`
         """
         now = datetime.datetime.now().strftime(TIME_FORMAT)
-        logs = [f"[{i.time}] {str(i)}" for i in self.log_cache if i.user.id == user_id]
+        logs = [f'[{i.time}] {i}' for i in self.log_cache if i.user.id == user_id]
         log_str = f"Generated at {now} for user {user_id}.\n" + (
             "\n".join(logs) or "It looks like I didn't find anything for that user."
         )  # happy doing this because of file previews
@@ -340,8 +340,11 @@ class CmdLog(commands.Cog):
         """
         now = datetime.datetime.now().strftime(TIME_FORMAT)
         logs = [
-            f"[{i.time}] {str(i)}" for i in self.log_cache if i.guild and i.guild.id == server_id
+            f'[{i.time}] {i}'
+            for i in self.log_cache
+            if i.guild and i.guild.id == server_id
         ]
+
         log_str = f"Generated at {now} for server {server_id}.\n" + (
             "\n".join(logs) or "It looks like I didn't find anything for that user."
         )  # happy doing this because of file previews
@@ -372,7 +375,12 @@ class CmdLog(commands.Cog):
         # not checking if a command exists because want to allow for this to find it if it was
         # unloaded (eg if com was found to be intensive, see if it was one user spamming it)
         now = datetime.datetime.now().strftime(TIME_FORMAT)
-        logs = [f"[{i.time}] {str(i)}" for i in self.log_cache if i.command.startswith(command)]
+        logs = [
+            f'[{i.time}] {i}'
+            for i in self.log_cache
+            if i.command.startswith(command)
+        ]
+
         log_str = f"Generated at {now} for command '{command}'.\n" + (
             "\n".join(logs) or "It looks like I didn't find anything for that command."
         )  # happy doing this because of file previews
