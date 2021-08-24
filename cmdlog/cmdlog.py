@@ -13,6 +13,7 @@ from discord.channel import DMChannel, TextChannel
 from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
 from discord.member import Member
 from discord.message import PartialMessage
+from discord.user import User
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.commands import CheckFailure as RedCheckFailure
@@ -202,11 +203,11 @@ class CmdLog(commands.Cog):
                 return
 
             userid = data.get("member", {}).get("user", {}).get("id")
-
+            user: Union[Member, User]
             if data.get("guild_id", 0):
-                user = self.bot.get_guild(data.get("guild_id", 0)).get_member(
+                user = self.bot.get_guild(data.get("guild_id", 0)).get_member(  # type:ignore
                     userid
-                )  # type:ignore
+                )
             else:
                 user = self.bot.get_user(userid)
 
