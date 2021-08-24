@@ -45,7 +45,7 @@ class GitHub(commands.Cog):
     cog, eg `githubcards`. Then set up with `gh setrepo`.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:

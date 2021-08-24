@@ -374,6 +374,14 @@ CmdLog
 GitHub
 ======
 
+*********
+``1.0.1``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
 *No updates since changelogs started*
 
 Note: This cog is scheduled for deprecation in favour of a new cog `ghissues` which
