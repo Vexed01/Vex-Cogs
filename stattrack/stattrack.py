@@ -129,6 +129,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         while vexcogutils.sentryhelper.ready is False:
             await asyncio.sleep(0.1)
 
+        await vexcogutils.sentryhelper.maybe_send_owners("stattrack")
+
         if vexcogutils.sentryhelper.sentry_enabled is False:
             _log.debug("Sentry detected as disabled.")
             return

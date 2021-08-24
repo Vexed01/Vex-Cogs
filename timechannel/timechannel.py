@@ -70,6 +70,8 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         while vexcogutils.sentryhelper.ready is False:
             await asyncio.sleep(0.1)
 
+        await vexcogutils.sentryhelper.maybe_send_owners("timechannel")
+
         if vexcogutils.sentryhelper.sentry_enabled is False:
             log.debug("Sentry detected as disabled.")
             return

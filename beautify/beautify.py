@@ -63,6 +63,8 @@ class Beautify(commands.Cog):
         while vexcogutils.sentryhelper.ready is False:
             await asyncio.sleep(0.1)
 
+        await vexcogutils.sentryhelper.maybe_send_owners("beautify")
+
         if vexcogutils.sentryhelper.sentry_enabled is False:
             log.debug("Sentry detected as disabled.")
             return

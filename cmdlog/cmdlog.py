@@ -78,6 +78,8 @@ class CmdLog(commands.Cog):
         # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
         # return
 
+        await vexcogutils.sentryhelper.maybe_send_owners("cmdlog")
+
         while vexcogutils.sentryhelper.ready is False:
             await asyncio.sleep(0.1)
 

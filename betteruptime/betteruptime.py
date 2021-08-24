@@ -85,6 +85,8 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
         while vexcogutils.sentryhelper.ready is False:
             await asyncio.sleep(0.1)
 
+        await vexcogutils.sentryhelper.maybe_send_owners("betteruptime")
+
         if vexcogutils.sentryhelper.sentry_enabled is False:
             _log.debug("Sentry detected as disabled.")
             return
@@ -138,8 +140,6 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
             self.bot.remove_dev_env_value("bu")
         except Exception:
             pass
-
-    # =============================================================================================
 
     @commands.command(hidden=True)
     async def betteruptimeinfo(self, ctx: commands.Context):
