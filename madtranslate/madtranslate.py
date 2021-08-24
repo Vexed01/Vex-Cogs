@@ -67,7 +67,7 @@ class MadTranslate(commands.Cog):
     This will defiantly have some funny moments... Take everything with a pinch of salt!
     """
 
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red):

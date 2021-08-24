@@ -394,6 +394,14 @@ MadTranslate
 ============
 
 *********
+``1.0.2``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
+*********
 ``1.0.1``
 *********
 
