@@ -37,6 +37,14 @@ Aliases
 =======
 
 *********
+``1.0.5``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
+*********
 ``1.0.4``
 *********
 
@@ -60,6 +68,14 @@ AnotherPingCog
 ==============
 
 *********
+``1.1.6``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
+*********
 ``1.1.5``
 *********
 
@@ -80,6 +96,14 @@ AnotherPingCog
 ========
 Beautify
 ========
+
+*********
+``1.1.2``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
 
 *********
 ``1.1.1``
@@ -147,6 +171,14 @@ Internal Changes
 ============
 BetterUptime
 ============
+
+*********
+``2.0.5``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
 
 *********
 ``2.0.4``
@@ -270,6 +302,14 @@ CmdLog
 ======
 
 *********
+``1.3.1``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
+*********
 ``1.3.0``
 *********
 
@@ -334,6 +374,14 @@ CmdLog
 GitHub
 ======
 
+*********
+``1.0.1``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
 *No updates since changelogs started*
 
 Note: This cog is scheduled for deprecation in favour of a new cog `ghissues` which
@@ -344,6 +392,14 @@ supports buttons, for when they are officially supported in Red
 ============
 MadTranslate
 ============
+
+*********
+``1.0.2``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
 
 *********
 ``1.0.1``
@@ -366,6 +422,14 @@ MadTranslate
 =========
 StatTrack
 =========
+
+*********
+``1.3.1``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
 
 *********
 ``1.3.0``
@@ -404,6 +468,14 @@ StatTrack
 ======
 Status
 ======
+
+**********
+``2.3.12``
+**********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
 
 **********
 ``2.3.11``
@@ -640,6 +712,14 @@ System
 ======
 
 *********
+``1.3.9``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
+*********
 ``1.3.8``
 *********
 
@@ -805,6 +885,14 @@ TimeChannel
 ===========
 
 *********
+``1.2.2``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
+*********
 ``1.2.1``
 *********
 
@@ -849,6 +937,46 @@ TimeChannel
 ===
 WOL
 ===
+
+*********
+``1.0.5``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
+*********
+``1.0.4``
+*********
+
+2021-08-20
+
+- More realease testing...
+
+*********
+``1.0.3``
+*********
+
+2021-08-20
+
+- Stil testing release workflow...
+
+*********
+``1.0.2``
+*********
+
+2021-08-20
+
+- Still testing release workflow...
+
+*********
+``1.0.1``
+*********
+
+2021-08-20
+
+- Testing release workflow, please ignore
 
 *********
 ``1.0.0``

@@ -1,12 +1,17 @@
+import asyncio
 import datetime
-from typing import List
+import logging
+from typing import List, Optional
 
 import discord
 import psutil
+import sentry_sdk
+import vexcogutils
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_timedelta
 from vexcogutils import format_help, format_info
+from vexcogutils.meta import out_of_date_check
 
 from .backend import (
     box,
@@ -23,6 +28,7 @@ from .backend import (
 )
 from .command import DynamicHelp
 
+log = logging.getLogger("red.vex.system")
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"
 
@@ -37,11 +43,58 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.3.8"
+    __version__ = "1.3.9"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
+
+        asyncio.create_task(self.async_init())
+
+        # =========================================================================================
+        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
+        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
+        self.sentry_hub: Optional[sentry_sdk.Hub] = None
+        # =========================================================================================
+
+    async def async_init(self):
+        await out_of_date_check("system", self.__version__)
+
+        # =========================================================================================
+        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
+        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
+        # return
+
+        while vexcogutils.sentryhelper.ready is False:
+            await asyncio.sleep(0.1)
+
+        await vexcogutils.sentryhelper.maybe_send_owners("system")
+
+        if vexcogutils.sentryhelper.sentry_enabled is False:
+            log.debug("Sentry detected as disabled.")
+            return
+
+        log.debug("Sentry detected as enabled.")
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("system", self.__version__)
+        # =========================================================================================
+
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)  # type:ignore
+
+        if self.sentry_hub is None:  # sentry disabled
+            return
+
+        with self.sentry_hub:
+            sentry_sdk.add_breadcrumb(
+                category="command", message="Command used was " + ctx.command.qualified_name
+            )
+            sentry_sdk.capture_exception(error.original)  # type:ignore
+            log.debug("Above exception successfully reported to Sentry")
+
+    def cog_unload(self):
+        if self.sentry_hub:
+            self.sentry_hub.end_session()
+            self.sentry_hub.client.close()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""

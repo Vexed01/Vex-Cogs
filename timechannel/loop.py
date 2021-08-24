@@ -32,20 +32,21 @@ class TCLoop(MixinMeta):
 
     async def timechannel_loop(self) -> None:
         await self.bot.wait_until_red_ready()
+        await asyncio.sleep(1)
         _log.debug("Timechannel loop has started.")
         while True:
             try:
                 self.loop_meta.iter_start()
                 await self.maybe_update_channels()
                 self.loop_meta.iter_finish()
+
+                _log.debug("Timechannel iteration finished")
             except Exception as e:
-                self.loop_meta.iter_error(e)
+                self.loop_meta.iter_error(e, self.sentry_hub)
                 _log.exception(
                     "Something went wrong in the timechannel loop. Some channels may have been "
                     "missed. The loop will run again at the next hour."
                 )
-            _log.debug("Timechannel iteration finished")
-
             await self.wait_until_iter()
 
     async def maybe_update_channels(self) -> None:
@@ -59,8 +60,7 @@ class TCLoop(MixinMeta):
         for guild_id, guild_data in all_guilds.items():
             guild = self.bot.get_guild(guild_id)
             if guild is None:
-                _log.debug(f"Can't find guild with ID {guild_id} - removing from config")
-                await self.config.guild_from_id(guild_id).clear()
+                _log.debug(f"Can't find guild with ID {guild_id} - skipping")
                 continue
 
             for c_id, string in guild_data.get("timechannels", {}).items():

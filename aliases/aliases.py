@@ -1,5 +1,9 @@
-from typing import List
+import asyncio
+import logging
+from typing import List, Optional
 
+import sentry_sdk
+import vexcogutils
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
@@ -8,6 +12,9 @@ from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.chat_formatting import inline as cf_inline
 from redbot.core.utils.chat_formatting import pagify
 from vexcogutils import format_help, format_info, inline_hum_list
+from vexcogutils.meta import out_of_date_check
+
+log = logging.getLogger("red.vex.aliases")
 
 
 def inline(text: str) -> str:
@@ -18,11 +25,60 @@ def inline(text: str) -> str:
 class Aliases(commands.Cog):
     """Get all the alias information you could ever want about a command."""
 
-    __version__ = "1.0.4"
+    __version__ = "1.0.5"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
+
+        asyncio.create_task(self.async_init())
+
+        # =========================================================================================
+        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
+        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
+        self.sentry_hub: Optional[sentry_sdk.Hub] = None
+        # =========================================================================================
+
+    async def async_init(self):
+        await out_of_date_check("aliases", self.__version__)
+
+        # =========================================================================================
+        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
+        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
+        # return
+
+        while vexcogutils.sentryhelper.ready is False:
+            await asyncio.sleep(0.1)
+
+            await vexcogutils.sentryhelper.maybe_send_owners("aliases")
+
+        if vexcogutils.sentryhelper.sentry_enabled is False:
+            log.debug("Sentry detected as disabled.")
+            return
+
+        log.debug("Sentry detected as enabled.")
+        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub(
+            "aliases", self.__version__
+        )
+        # =========================================================================================
+
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)  # type:ignore
+
+        if self.sentry_hub is None:  # sentry disabled
+            return
+
+        with self.sentry_hub:
+            sentry_sdk.add_breadcrumb(
+                category="command", message="Command used was " + ctx.command.qualified_name
+            )
+            sentry_sdk.capture_exception(error.original)  # type:ignore
+            log.debug("Above exception successfully reported to Sentry")
+
+    def cog_unload(self):
+        if self.sentry_hub:
+            self.sentry_hub.end_session()
+            self.sentry_hub.client.close()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -128,11 +184,10 @@ class Aliases(commands.Cog):
 
         if hum_guild_aliases:
             aliases += f"Server aliases: {hum_guild_aliases}\n"
+        elif ctx.guild:
+            none.append("guild")
         else:
-            if ctx.guild:
-                none.append("guild")
-            else:
-                aliases += "You're in DMs, so there aren't any server aliases."
+            aliases += "You're in DMs, so there aren't any server aliases."
         str_none = humanize_list(none, style="or")
 
         msg = f"Main command: `{strcommand}`\n{aliases}"
