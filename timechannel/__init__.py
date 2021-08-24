@@ -21,6 +21,7 @@ if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.9")
         ...
 
     importlib.reload(vexcogutils)
+
 from .timechannel import TimeChannel
 
 with open(Path(__file__).parent / "info.json") as fp:
