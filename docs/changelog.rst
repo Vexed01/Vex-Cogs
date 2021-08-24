@@ -68,6 +68,14 @@ AnotherPingCog
 ==============
 
 *********
+``1.1.6``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
+*********
 ``1.1.5``
 *********
 
