@@ -28,4 +28,7 @@ with open(Path(__file__).parent / "info.json", encoding="utf8") as fp:
 
 
 def setup(bot: Red) -> None:
+    if vexcogutils.bot is None:
+        vexcogutils.bot = bot
+
     bot.add_cog(StatTrack(bot))

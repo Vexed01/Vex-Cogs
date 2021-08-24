@@ -157,6 +157,9 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
 
 
 def setup(bot: Red) -> None:
+    if vexcogutils.bot is None:
+        vexcogutils.bot = bot
+
     global old_uptime
     old_uptime = bot.get_command("uptime")
     if old_uptime:

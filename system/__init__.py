@@ -29,4 +29,7 @@ with open(Path(__file__).parent / "info.json") as fp:
 
 
 def setup(bot: Red) -> None:
+    if vexcogutils.bot is None:
+        vexcogutils.bot = bot
+
     bot.add_cog(System(bot))

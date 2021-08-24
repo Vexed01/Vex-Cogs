@@ -571,6 +571,9 @@ class AnotherPingCog(commands.Cog):
 
 
 def setup(bot: Red) -> None:
+    if vexcogutils.bot is None:
+        vexcogutils.bot = bot
+
     global old_ping
     old_ping = bot.get_command("ping")
     if old_ping:
