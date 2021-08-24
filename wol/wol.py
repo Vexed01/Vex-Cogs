@@ -71,7 +71,7 @@ class WOL(commands.Cog):
         # =========================================================================================
 
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)
+        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)  # type:ignore
 
         if self.sentry_hub is None:  # sentry disabled
             return
