@@ -25,7 +25,7 @@ def inline(text: str) -> str:
 class Aliases(commands.Cog):
     """Get all the alias information you could ever want about a command."""
 
-    __version__ = "1.0.4"
+    __version__ = "1.0.5"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
