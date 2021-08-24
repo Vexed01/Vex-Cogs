@@ -885,6 +885,14 @@ TimeChannel
 ===========
 
 *********
+``1.2.2``
+*********
+
+2021-08-24
+
+- Add opt-in telemetry and error reporting
+
+*********
 ``1.2.1``
 *********
 
