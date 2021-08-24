@@ -8,7 +8,7 @@ from redbot.core import VersionInfo
 from redbot.core.bot import Red
 
 # VCU reload needs to be done before importing files that depend on new version
-if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.9"):
+if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.5.2"):
     importlib.reload(vexcogutils.version)
     importlib.reload(vexcogutils.consts)
 
@@ -18,7 +18,7 @@ if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.4.9")
 
     with contextlib.suppress(AttributeError):  # these are not necessarily already imported
         # importlib.reload(vexcogutils.sqldriver)
-        ...
+        importlib.reload(vexcogutils.sentry)
 
     importlib.reload(vexcogutils)
 from .madtranslate import MadTranslate
