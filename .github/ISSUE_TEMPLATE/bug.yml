@@ -1,7 +1,7 @@
 description: "File a bug report"
 labels: ["type: bug"]
 name: "Bug Report"
-title: "[COGNAME HERE] TITLE HERE"
+title: "[Cog name] Title"
 body:
   - type: markdown
     attributes:

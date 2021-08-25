@@ -1,7 +1,7 @@
 description: "File a feature request"
 labels: ["type: enhancement"]
 name: "Feature request"
-title: "[COGNAME HERE] TITLE HERE"
+title: "[Cog name] Title"
 body:
   - type: input
     id: cog-name
