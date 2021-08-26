@@ -46,7 +46,7 @@ class StatusCom(MixinMeta):
 
     # TODO: support DMs
     @commands.guild_only()
-    @commands.cooldown(10, 120, commands.BucketType.user)
+    @commands.cooldown(2, 10, commands.BucketType.user)
     @commands.command(cls=DynamicHelp)
     async def status(self, ctx: commands.Context, service: ServiceConverter):
         """

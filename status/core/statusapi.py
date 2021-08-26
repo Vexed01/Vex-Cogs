@@ -1,6 +1,8 @@
 from typing import Dict, NamedTuple
 
 from aiohttp import ClientSession
+from asyncache import cached
+from cachetools import TTLCache
 
 from status.core import FEEDS
 
@@ -19,7 +21,9 @@ def get_base(service_id: str) -> str:
 
 
 class StatusAPI:
-    """Interact with the Status API."""
+    """Interact with the Status API. Includes a cache with a TTL of 90 seconds."""
+
+    # loop is every 120 seconds, so a 90 sec TTL means it *will* refresh each time
 
     def __init__(self, session: ClientSession):
         self.session = session
@@ -35,6 +39,7 @@ class StatusAPI:
 
     # you'll see this doesn't implement the whole 8 endpoints of the API, im lazy
 
+    @cached(TTLCache(maxsize=64, ttl=90))
     async def components(self, service_id: str) -> APIResp:
         base = get_base(service_id)
 
@@ -43,6 +48,7 @@ class StatusAPI:
         respo_json = await resp.json() if resp.status == 200 else {}
         return APIResp(respo_json, resp.headers.get("Etag", ""), resp.status)
 
+    @cached(TTLCache(maxsize=64, ttl=90))
     async def summary(self, service_id: str) -> APIResp:
         base = get_base(service_id)
 
@@ -51,6 +57,7 @@ class StatusAPI:
         resp_json = await resp.json() if resp.status == 200 else {}
         return APIResp(resp_json, resp.headers.get("Etag", ""), resp.status)
 
+    @cached(TTLCache(maxsize=64, ttl=90))
     async def scheduled_maintenance(self, service_id: str, etag: str = "") -> APIResp:
         headers = {"If-None-Match": etag}
         base = get_base(service_id)
@@ -62,6 +69,7 @@ class StatusAPI:
         resp_json = await resp.json() if resp.status == 200 else {}
         return APIResp(resp_json, resp.headers.get("Etag", ""), resp.status)
 
+    @cached(TTLCache(maxsize=64, ttl=90))
     async def incidents(self, service_id: str, etag: str = "") -> APIResp:
         headers = {"If-None-Match": etag}
         base = get_base(service_id)

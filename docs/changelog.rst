@@ -469,6 +469,14 @@ StatTrack
 Status
 ======
 
+*********
+``2.4.0``
+*********
+
+2021-08-26
+
+- Cache status updates, and therefore decrase the cooldown on the `status` command
+
 **********
 ``2.3.12``
 **********
