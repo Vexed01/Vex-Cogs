@@ -7,6 +7,6 @@
     "short": "Track who uses what commands, with the ability to search for a specific user, server command.",
     "requirements": ["vex-cog-utils==1.5.5"],
     "tags": ["utility", "log", "logging"],
-    "end_user_data_statement": "This cog does not persistently store data or metadata about users. Operational data is temporarily collected and cached whenever a command is used.\n\nWhen a command is used, the following data is collected: the message invoking the command, the user that invoked it, the server it was invoked in, and the channel it was invoked in.\n\nThis cog does not support data deletion requests, because the operational data is only stored temporarily.",
+    "end_user_data_statement": "This cog does may persistently store data or metadata about users. Operational data is temporarily collected and cached whenever a command is used and may be stored.\n\nWhen a command is used, the following data is collected: the message invoking the command, the user that invoked it, the server it was invoked in, and the channel it was invoked in. This includes application commands, as well as old-style text commands.\n\nThis cog does not support data deletion requests, it handles operational data.",
     "min_bot_version": "3.4.0"
 }

@@ -24,6 +24,8 @@ from vexcogutils.meta import out_of_date_check
 
 from cmdlog.objects import TIME_FORMAT, LoggedAppCom, LoggedComError, LoggedCommand
 
+from .channellogger import ChannelLogger
+
 if discord.__version__.startswith("2"):
     from discord import Interaction, InteractionType  # type:ignore
 
@@ -43,7 +45,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.3.1"
+    __version__ = "1.4.0"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -60,8 +62,11 @@ class CmdLog(commands.Cog):
 
         self.config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(log_content=False)
+        self.config.register_global(log_channel=None)
 
         self.log_content: Optional[bool] = None
+
+        self.channel_logger: Optional[ChannelLogger] = None
 
         asyncio.create_task(self.async_init())
 
@@ -73,6 +78,11 @@ class CmdLog(commands.Cog):
 
     async def async_init(self):
         await out_of_date_check("cmdlog", self.__version__)
+
+        chan_id: Optional[str] = await self.config.log_channel()
+        if chan_id is not None:
+            self.channel_logger = ChannelLogger(self.bot, self.bot.get_channel(int(chan_id)))
+            self.channel_logger.start()
 
         # =========================================================================================
         # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
@@ -90,6 +100,9 @@ class CmdLog(commands.Cog):
 
         _log.debug("Sentry detected as enabled.")
         self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("cmdlog", self.__version__)
+
+        if self.channel_logger:
+            self.channel_logger.sentry_hub = self.sentry_hub
         # =========================================================================================
 
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -109,6 +122,7 @@ class CmdLog(commands.Cog):
         if self.sentry_hub:
             self.sentry_hub.end_session()
             self.sentry_hub.client.close()
+        self.channel_logger.stop()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -130,6 +144,8 @@ class CmdLog(commands.Cog):
         )
         _log.info(logged_com)
         self.log_cache.append(logged_com)
+        if self.channel_logger:
+            self.channel_logger.add_command(logged_com)
 
     def log_ce(self, ctx: commands.Context) -> None:
         logged_com = LoggedComError(
@@ -143,6 +159,8 @@ class CmdLog(commands.Cog):
         )
         _log.info(logged_com)
         self.log_cache.append(logged_com)
+        if self.channel_logger:
+            self.channel_logger.add_command(logged_com)
 
     def cache_size(self) -> int:
         return sum(sys.getsizeof(i) for i in self.log_cache)
@@ -262,6 +280,8 @@ class CmdLog(commands.Cog):
 
         _log.info(logged_com)
         self.log_cache.append(logged_com)
+        if self.channel_logger:
+            self.channel_logger.add_command(logged_com)
 
     @commands.command(hidden=True)
     async def cmdloginfo(self, ctx: commands.Context):
@@ -286,6 +306,42 @@ class CmdLog(commands.Cog):
         await self.config.log_content.set(to_log)
         self.log_content = to_log
         await ctx.send("Message content will " + ("now" if to_log else "now not") + " be logged.")
+
+    @cmdlog.command()
+    async def channel(self, ctx: commands.Context, channel: Optional[TextChannel]):
+        """Set the channel to send logs to, this is optional.
+
+        Run the comand without a channel to stop sending.
+
+        **Example:**
+            - `[p]cmdlog channel #com-log` - set the log channel to #com-log
+            - `[p]cmdlog channel` - stop sending logs
+        """
+        if channel is None:
+            await self.config.log_channel.set(None)
+            if self.channel_logger:
+                self.channel_logger.stop()
+                self.channel_logger = None
+            await ctx.send(
+                "Reset, logs will not be sent to a Discord channel. You can always access them "
+                "though the other commands in this group.\n\n If you meant to set the channel, "
+                f"do `{ctx.clean_prefix}cmdlog channel #your-channel-here`"
+            )
+            return
+
+        await self.config.log_channel.set(channel.id)
+        if self.channel_logger:
+            self.channel_logger.stop()
+        self.channel_logger = ChannelLogger(self.bot, channel, self.sentry_hub)
+        self.channel_logger.start()
+        await ctx.send(
+            f"Command logs will now be sent to {channel.mention}. Please be aware "
+            "of the privacy implications of permanently logging End User Data (unlike the other "
+            "logs in this cog, which are either in memory or part of logging rotation) and ensure "
+            "permissions for accessing this channel are restricted - you are responsible. Logging "
+            "this End User Data is a grey area in Discord's Terms of Service.\n\n"
+            "To avoid rate limits, **logs will only be sent every 60 seconds**."
+        )
 
     @cmdlog.command()
     async def cache(self, ctx: commands.Context):

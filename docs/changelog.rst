@@ -302,6 +302,14 @@ CmdLog
 ======
 
 *********
+``1.4.0``
+*********
+
+2021-08-27
+
+- Add new command (``[p]cmdlog channel``) to log commands to a channel
+
+*********
 ``1.3.1``
 *********
 
