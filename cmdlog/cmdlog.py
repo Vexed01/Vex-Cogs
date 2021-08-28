@@ -45,7 +45,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.4.0"
+    __version__ = "1.4.1"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -79,10 +79,16 @@ class CmdLog(commands.Cog):
     async def async_init(self):
         await out_of_date_check("cmdlog", self.__version__)
 
+        await self.bot.wait_until_red_ready()
+
         chan_id: Optional[str] = await self.config.log_channel()
         if chan_id is not None:
-            self.channel_logger = ChannelLogger(self.bot, self.bot.get_channel(int(chan_id)))
-            self.channel_logger.start()
+            chan = self.bot.get_channel(int(chan_id))
+            if chan is not None:
+                self.channel_logger = ChannelLogger(self.bot, self.bot.get_channel(int(chan_id)))
+                self.channel_logger.start()
+            else:
+                _log.warning("Commands will NOT be sent to a channel because it appears invalid.")
 
         # =========================================================================================
         # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
@@ -178,7 +184,9 @@ class CmdLog(commands.Cog):
         return f"Log started {ago} ago."
 
     def log_list_error(self, e):
-        _log.exception("Something went wrong processing a command. See below for more info.", e)
+        _log.exception(
+            "Something went wrong processing a command. See below for more info.", exc_info=e
+        )
 
         # a reminder data such as *IDs are scrubbed* before being sent to sentry and the log object
         # has a __repr__ without names (which sentry sends) which does not give actual names while
@@ -222,17 +230,20 @@ class CmdLog(commands.Cog):
 
             userid = data.get("member", {}).get("user", {}).get("id")
             user: Union[Member, User]
-            if data.get("guild_id", 0):
-                user = self.bot.get_guild(data.get("guild_id", 0)).get_member(  # type:ignore
-                    userid
-                )
+            if guild_s := data.get("guild_id"):
+                guild = self.bot.get_guild(int(guild_s))
+                if not isinstance(guild, discord.Guild):
+                    return
+                user = guild.get_member(userid)
             else:
                 user = self.bot.get_user(userid)
 
             inter_data = data["data"]
             chan = self.bot.get_channel(data.get("channel_id", 0))
+            if not isinstance(chan, TextChannel):
+                return
 
-            self.log_app_com(user, chan, inter_data)  # type:ignore
+            self.log_app_com(user, chan, inter_data)
         except Exception as e:
             self.log_list_error(e)
 
@@ -328,6 +339,11 @@ class CmdLog(commands.Cog):
                 f"do `{ctx.clean_prefix}cmdlog channel #your-channel-here`"
             )
             return
+
+        if channel.permissions_for(ctx.me).send_messages is False:
+            return await ctx.send(
+                "I can't do that because I don't have send message permissions in that channel."
+            )
 
         await self.config.log_channel.set(channel.id)
         if self.channel_logger:

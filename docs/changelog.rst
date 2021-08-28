@@ -302,6 +302,17 @@ CmdLog
 ======
 
 *********
+``1.4.1``
+*********
+
+2021-08-28
+
+- Fix AttributeError in sending com log to channel
+- Fix AttributeError in handling slash commands from Kowlin's SlashInjector
+- Ensure bot has send message permissions when setting log channel
+- Fixes CMDLOG-2 and CMDLOG-3 on Sentry
+
+*********
 ``1.4.0``
 *********
 
