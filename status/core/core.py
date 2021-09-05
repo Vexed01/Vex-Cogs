@@ -102,7 +102,7 @@ class Status(
         self.loop.cancel()
         asyncio.create_task(self.session.close())
 
-        if self.sentry_hub:
+        if self.sentry_hub and self.sentry_hub.client:
             self.sentry_hub.end_session()
             self.sentry_hub.client.close()  # type:ignore
 

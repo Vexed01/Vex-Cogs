@@ -107,7 +107,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         self.loop.cancel()
         log.debug("Loop stopped as cog unloaded.")
 
-        if self.sentry_hub:
+        if self.sentry_hub and self.sentry_hub.client:
             self.sentry_hub.end_session()
             self.sentry_hub.client.close()  # type:ignore
 

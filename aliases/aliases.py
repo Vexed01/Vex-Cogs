@@ -76,7 +76,7 @@ class Aliases(commands.Cog):
             log.debug("Above exception successfully reported to Sentry")
 
     def cog_unload(self):
-        if self.sentry_hub:
+        if self.sentry_hub and self.sentry_hub.client:
             self.sentry_hub.end_session()
             self.sentry_hub.client.close()
 

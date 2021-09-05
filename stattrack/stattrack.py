@@ -87,7 +87,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.plot_executor.shutdown()
         self.driver.sql_executor.shutdown()
 
-        if self.sentry_hub:
+        if self.sentry_hub and self.sentry_hub.client:
             self.sentry_hub.end_session()
             self.sentry_hub.client.close()  # type:ignore
 

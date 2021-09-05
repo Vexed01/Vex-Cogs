@@ -132,7 +132,7 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
                 pass
             self.bot.add_command(old_uptime)
 
-        if self.sentry_hub:
+        if self.sentry_hub and self.sentry_hub.client:
             self.sentry_hub.end_session()
             self.sentry_hub.client.close()  # type:ignore
 
