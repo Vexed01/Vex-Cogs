@@ -14,7 +14,6 @@ from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
 from discord.member import Member
 from discord.message import PartialMessage
 from discord.user import User
-from dislash.interactions.app_command_interaction import ContextMenuInteraction
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.commands import CheckFailure as RedCheckFailure
@@ -32,6 +31,7 @@ if discord.__version__.startswith("2"):
 
 if TYPE_CHECKING:
     from dislash import SlashInteraction
+    from dislash.interactions.app_command_interaction import ContextMenuInteraction
 
 _log = logging.getLogger("red.vex.cmdlog")
 
@@ -49,7 +49,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.4.2"
+    __version__ = "1.4.3"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
