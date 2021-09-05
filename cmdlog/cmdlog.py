@@ -4,16 +4,17 @@ import logging
 import sys
 from collections import deque
 from io import BytesIO
-from typing import Deque, Optional, Union
+from typing import TYPE_CHECKING, Deque, Optional, Union
 
 import discord
 import sentry_sdk
 import vexcogutils
-from discord.channel import DMChannel, TextChannel
+from discord.channel import TextChannel
 from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
 from discord.member import Member
 from discord.message import PartialMessage
 from discord.user import User
+from dislash.interactions.app_command_interaction import ContextMenuInteraction
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.commands import CheckFailure as RedCheckFailure
@@ -28,6 +29,9 @@ from .channellogger import ChannelLogger
 
 if discord.__version__.startswith("2"):
     from discord import Interaction, InteractionType  # type:ignore
+
+if TYPE_CHECKING:
+    from dislash import SlashInteraction
 
 _log = logging.getLogger("red.vex.cmdlog")
 
@@ -45,7 +49,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.4.1"
+    __version__ = "1.4.2"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -85,7 +89,7 @@ class CmdLog(commands.Cog):
         if chan_id is not None:
             chan = self.bot.get_channel(int(chan_id))
             if chan is not None:
-                self.channel_logger = ChannelLogger(self.bot, self.bot.get_channel(int(chan_id)))
+                self.channel_logger = ChannelLogger(self.bot, chan)
                 self.channel_logger.start()
             else:
                 _log.warning("Commands will NOT be sent to a channel because it appears invalid.")
@@ -125,10 +129,11 @@ class CmdLog(commands.Cog):
             _log.debug("Above exception successfully reported to Sentry")
 
     def cog_unload(self):
-        if self.sentry_hub:
+        if self.sentry_hub and self.sentry_hub.client:
             self.sentry_hub.end_session()
             self.sentry_hub.client.close()
-        self.channel_logger.stop()
+        if self.channel_logger:
+            self.channel_logger.stop()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -140,13 +145,13 @@ class CmdLog(commands.Cog):
 
     def log_com(self, ctx: commands.Context) -> None:
         logged_com = LoggedCommand(
-            author=ctx.author,
+            author=ctx.author,  # type:ignore
             com_name=ctx.command.qualified_name,
-            msg_id=ctx.message.id,
-            channel=ctx.channel,
-            guild=ctx.guild,
+            msg_id=ctx.message.id,  # type:ignore
+            channel=ctx.channel,  # type:ignore
+            guild=ctx.guild,  # type:ignore
             log_content=self.log_content,
-            content=ctx.message.content,
+            content=ctx.message.content,  # type:ignore
         )
         _log.info(logged_com)
         self.log_cache.append(logged_com)
@@ -155,13 +160,13 @@ class CmdLog(commands.Cog):
 
     def log_ce(self, ctx: commands.Context) -> None:
         logged_com = LoggedComError(
-            author=ctx.author,
+            author=ctx.author,  # type:ignore
             com_name=ctx.command.qualified_name,
-            msg_id=ctx.message.id,
-            channel=ctx.channel,
-            guild=ctx.guild,
+            msg_id=ctx.message.id,  # type:ignore
+            channel=ctx.channel,  # type:ignore
+            guild=ctx.guild,  # type:ignore
             log_content=self.log_content,
-            content=ctx.message.content,
+            content=ctx.message.content,  # type:ignore
         )
         _log.info(logged_com)
         self.log_cache.append(logged_com)
@@ -221,7 +226,7 @@ class CmdLog(commands.Cog):
         except Exception as e:
             self.log_list_error(e)
 
-    # SLASH COM PARSE FOR: KOWLIN'S SLASHINJECTOR
+    # APP COM PARSE FOR: KOWLIN'S SLASHINJECTOR
     @commands.Cog.listener()
     async def on_interaction_create(self, data: dict):
         try:
@@ -229,7 +234,7 @@ class CmdLog(commands.Cog):
                 return
 
             userid = data.get("member", {}).get("user", {}).get("id")
-            user: Union[Member, User]
+            user: Optional[Union[Member, User]]
             if guild_s := data.get("guild_id"):
                 guild = self.bot.get_guild(int(guild_s))
                 if not isinstance(guild, discord.Guild):
@@ -243,36 +248,81 @@ class CmdLog(commands.Cog):
             if not isinstance(chan, TextChannel):
                 return
 
-            self.log_app_com(user, chan, inter_data)
+            self.log_app_com(
+                user,
+                chan,
+                inter_data,
+                inter_type=inter_data["type"],
+                target_id=data.get("target_id"),
+            )
         except Exception as e:
             self.log_list_error(e)
 
-    # SLASH COM PARSE FOR: DPY 2
+    # APP COM PARSE FOR: DPY2
     @commands.Cog.listener()
     async def on_interaction(self, inter: "Interaction"):
         try:
-            if inter.type != InteractionType.application_command:
+            if discord.__version__.startswith("1"):  # FILTER OUT DISLASH SHIT
                 return
+            if isinstance(inter, Interaction):  # "PROPER" DPY 2
+                if inter.type != InteractionType.application_command:
+                    return
 
-            inter_data = inter.data
-            user = inter.user
-            chan = inter.channel
+                user = inter.user
+                inter_type = inter.type
+                target = inter.data.get("target_id")
 
-            self.log_app_com(user, chan, inter_data)
+                self.log_app_com(user, inter.channel, inter_type, target)
         except Exception as e:
             self.log_list_error(e)
 
+    # APP COM PARSE FOR DISLASH, 1/3
+    @commands.Cog.listener()
+    async def on_slash_command(self, inter: "SlashInteraction"):
+        self.log_app_com(
+            user=inter.author,
+            chan=inter.channel,
+            inter_type=1,
+            com_name=inter.data.name,
+        )
+
+    # APP COM PARSE FOR DISLASH, 2/3
+    @commands.Cog.listener()
+    async def on_user_command(self, inter: "ContextMenuInteraction"):
+        self.log_app_com(
+            user=inter.user,
+            chan=inter.channel,
+            inter_type=2,
+            com_name=inter.data.name,
+            target_id=inter.data.target_id,
+        )
+
+    # APP COM PARSE FOR DISLASH, 3/3
+    @commands.Cog.listener()
+    async def on_message_command(self, inter: "ContextMenuInteraction"):
+        self.log_app_com(
+            user=inter.user,
+            chan=inter.channel,
+            com_name=inter.data.name,
+            inter_type=3,
+            target_id=inter.data.target_id,
+        )
+
     def log_app_com(
         self,
-        user: Optional[Union[discord.User, discord.Member]],
-        chan: Union[DMChannel, TextChannel],
-        data: dict,
+        user: Optional[Union[discord.user.User, discord.abc.User]],
+        chan: Optional[Union[discord.DMChannel, discord.TextChannel]],
+        com_name: str,
+        inter_type: int,
+        target_id: Optional[int] = None,
     ):
-        if user is None:
+        if user is None or chan is None:
             return
 
+        assert isinstance(user, discord.User)
+
         target: Optional[Union[PartialMessage, Member]]
-        if target_id := data.get("target_id"):
+        if target_id:
             target = chan.get_partial_message(target_id) or chan.guild.get_member(  # type:ignore
                 target_id
             )
@@ -281,11 +331,11 @@ class CmdLog(commands.Cog):
 
         logged_com = LoggedAppCom(
             author=user,
-            com_name=data.get("name"),  # type:ignore
+            com_name=com_name,
             channel=chan,
             guild=chan.guild if isinstance(chan, TextChannel) else None,
             log_content=self.log_content,
-            application_command=data["type"],
+            application_command=inter_type,
             target=target,
         )
 

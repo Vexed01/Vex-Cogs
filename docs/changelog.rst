@@ -302,6 +302,14 @@ CmdLog
 ======
 
 *********
+``1.4.2``
+*********
+
+2021-09-05
+
+- Add support for dislash.py application commands
+
+*********
 ``1.4.1``
 *********
 

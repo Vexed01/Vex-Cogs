@@ -3,11 +3,9 @@ from dataclasses import dataclass
 from sys import getsizeof
 from typing import Optional, Union
 
-from discord.abc import User
-from discord.channel import DMChannel, GroupChannel, TextChannel
+import discord
+from discord.channel import DMChannel, TextChannel
 from discord.guild import Guild
-from discord.member import Member
-from discord.message import PartialMessage
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -30,16 +28,19 @@ class LogMixin:
 
     def __init__(
         self,
-        author: Union[Member, User],
+        author: Optional[discord.User],
         com_name: str,
         msg_id: Optional[int] = None,
-        channel: Optional[Union[TextChannel, DMChannel, GroupChannel]] = None,
+        channel: Optional[Union[DMChannel, TextChannel]] = None,
         guild: Optional[Guild] = None,
         log_content: Optional[bool] = None,
         content: Optional[str] = None,
         application_command: Optional[int] = None,
-        target: Optional[Union[Member, PartialMessage]] = None,
+        target: Optional[Union[discord.User, discord.PartialMessage]] = None,
     ):
+        if author is None:
+            return
+
         # ALL COMMANDS
         self.command = com_name
         self.user = IDFKWhatToNameThis(id=author.id, name=f"{author.name}#{author.discriminator}")
@@ -60,8 +61,9 @@ class LogMixin:
         # USER/MESSAGE COMMANDS
         self.app_type = application_command
         self.target: Optional[IDFKWhatToNameThis] = None
-        if self.target:
-            t_name = target.name if isinstance(target, Member) else ""
+
+        if isinstance(target, discord.User):
+            t_name = target.name if isinstance(target, discord.User) else ""
             self.target = IDFKWhatToNameThis(id=target.id, name=t_name)
 
         self.time = datetime.datetime.now().strftime(TIME_FORMAT)
