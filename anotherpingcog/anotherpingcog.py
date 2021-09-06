@@ -161,6 +161,8 @@ class AnotherPingCog(commands.Cog):
         else:
             use_embed = True
 
+        embed: Optional[discord.Embed] = None
+
         if use_embed:
             embed = discord.Embed(title=title)
             embed.add_field(name="Discord WS", value=box(f"{ws_latency} ms", "py"))
@@ -179,14 +181,14 @@ class AnotherPingCog(commands.Cog):
         # im sure there's better way to do these long ifs, haven't looked properly yet
 
         m_latency = round((end - start) * 1000)
-        if embed:
-            colour = self._get_emb_colour(ws_latency, m_latency, settings)
 
         ws_latency_text, m_latency_text = self._get_latency_text(
             ws_latency, m_latency, settings, use_embed
         )
 
         if use_embed:
+            assert isinstance(embed, discord.Embed)
+            colour = self._get_emb_colour(ws_latency, m_latency, settings)
             extra = box(f"{ws_latency} ms", "py")
             embed.set_field_at(0, name="Discord WS", value=f"{ws_latency_text}{extra}")
             extra = box(f"{m_latency} ms", "py")
