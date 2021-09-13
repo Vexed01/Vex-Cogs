@@ -92,7 +92,11 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             sentry_sdk.add_breadcrumb(
                 category="command", message="Command used was " + ctx.command.qualified_name
             )
-            sentry_sdk.capture_exception(error.original)  # type:ignore
+            try:
+                e = error.original
+            except AttributeError:
+                e = error
+            sentry_sdk.capture_exception(e)
             log.debug("Above exception successfully reported to Sentry")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:

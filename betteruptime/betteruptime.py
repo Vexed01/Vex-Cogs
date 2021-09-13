@@ -107,7 +107,11 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
             sentry_sdk.add_breadcrumb(
                 category="command", message="Command used was " + ctx.command.qualified_name
             )
-            sentry_sdk.capture_exception(error.original)  # type:ignore
+            try:
+                e = error.original
+            except AttributeError:
+                e = error
+            sentry_sdk.capture_exception(e)
             _log.debug("Above exception successfully reported to Sentry")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:

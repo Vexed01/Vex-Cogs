@@ -151,7 +151,11 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             sentry_sdk.add_breadcrumb(
                 category="command", message="Command used was " + ctx.command.qualified_name
             )
-            sentry_sdk.capture_exception(error.original)  # type:ignore
+            try:
+                e = error.original
+            except AttributeError:
+                e = error
+            sentry_sdk.capture_exception(e)
             _log.debug("Above exception successfully reported to Sentry")
 
     async def migrate_v1_to_v2(self, data: dict) -> None:

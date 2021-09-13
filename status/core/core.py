@@ -165,7 +165,11 @@ class Status(
             sentry_sdk.add_breadcrumb(
                 category="command", message="Command used was " + ctx.command.qualified_name
             )
-            sentry_sdk.capture_exception(error.original)  # type:ignore
+            try:
+                e = error.original
+            except AttributeError:
+                e = error
+            sentry_sdk.capture_exception(e)
             log.debug("Above exception successfully reported to Sentry")
 
     async def get_initial_data(self) -> None:
