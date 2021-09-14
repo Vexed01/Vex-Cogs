@@ -173,6 +173,14 @@ BetterUptime
 ============
 
 *********
+``2.0.6``
+*********
+
+2021-09-14
+
+- Theoretically fix plotting error in certian situations
+
+*********
 ``2.0.5``
 *********
 

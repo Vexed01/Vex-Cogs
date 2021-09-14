@@ -96,7 +96,7 @@ class UptimeData:
             del new[midnight]
         except KeyError:  # dunno how this could happen but it did once
             pass
-        return new
+        return new.astype(float)
 
     def daily_cog_loaded_percentages(self) -> pandas.Series:
         midnight = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -108,7 +108,7 @@ class UptimeData:
                 round((self.daily_cog_loaded_data[date] / SECONDS_IN_DAY) * 100, 2), ".2f"
             )
         del new[midnight]
-        return new
+        return new.astype(float)
 
 
 class Utils(MixinMeta):

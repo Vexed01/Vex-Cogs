@@ -34,7 +34,7 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
     data to become available.
     """
 
-    __version__ = "2.0.5"
+    __version__ = "2.0.6"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -52,8 +52,8 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
 
         self.first_load = 0.0
 
-        self.cog_loaded_cache = pandas.Series(dtype="object")  # dtype="object is to suppresses
-        self.connected_cache = pandas.Series(dtype="object")  # deprecation warn
+        self.cog_loaded_cache = pandas.Series(dtype="float64")
+        self.connected_cache = pandas.Series(dtype="float64")
         self.unload_write = True
 
         self.main_loop = None
@@ -108,7 +108,7 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
                 category="command", message="Command used was " + ctx.command.qualified_name
             )
             try:
-                e = error.original
+                e = error.original  # type:ignore
             except AttributeError:
                 e = error
             sentry_sdk.capture_exception(e)
