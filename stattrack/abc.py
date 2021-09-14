@@ -32,7 +32,7 @@ class MixinMeta(ABC):
 
     loop_meta: Optional[VexLoop]
     loop: Optional[asyncio.Task]
-    last_loop_time: Optional[float]
+    last_loop_time: Optional[str]
 
     df_cache: Optional[pandas.DataFrame]
 

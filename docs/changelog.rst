@@ -467,6 +467,14 @@ StatTrack
 =========
 
 *********
+``1.3.2``
+*********
+
+2021-09-14
+
+- Fix TypeError in log for when loop overruns
+
+*********
 ``1.3.1``
 *********
 

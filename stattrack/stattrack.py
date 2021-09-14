@@ -39,7 +39,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.3.1"
+    __version__ = "1.3.2"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -354,7 +354,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 "this machine. You might want to consider unloading or removing the cog. There "
                 "is also a high chance of some datapoints on the graphs being skipped."
                 + f"\nMain loop: {main_time}s, Data saving: {save_time}s so total time is "
-                + total_time
+                + str(total_time)
             )
 
         self.last_loop_time = f"{total_time} seconds ({main_time}, {save_time})"
