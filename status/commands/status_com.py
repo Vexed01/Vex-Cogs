@@ -5,7 +5,7 @@ from typing import Dict, List, NamedTuple, Optional
 import discord
 from discord.channel import TextChannel
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta
+from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta, pagify
 
 from status.commands.command import DynamicHelp
 from status.commands.converters import ServiceConverter
@@ -122,7 +122,8 @@ class StatusCom(MixinMeta):
                 value = ""
                 for comp in comps:
                     value += comp + "\n"
-                embed.add_field(name=group, value=value, inline=False)
+                for page in pagify(value, page_length=1024):
+                    embed.add_field(name=group, value=page, inline=False)
 
             await ctx.send(msg, embed=embed)
         else:

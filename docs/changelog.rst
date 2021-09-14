@@ -521,6 +521,14 @@ Status
 ======
 
 *********
+``2.4.1``
+*********
+
+2021-09-14
+
+- Limit embed value length in status command, for affected components. This did NOT affect the background loop and automatic sending of updates
+
+*********
 ``2.4.0``
 *********
 
