@@ -126,7 +126,7 @@ class CmdLog(commands.Cog):
                 category="command", message="Command used was " + ctx.command.qualified_name
             )
             try:
-                e = error.original
+                e = error.original  # type:ignore
             except AttributeError:
                 e = error
             sentry_sdk.capture_exception(e)
