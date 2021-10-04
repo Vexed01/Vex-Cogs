@@ -46,7 +46,7 @@ class AnotherPingCog(commands.Cog):
     You can customise the emojis, colours or force embeds with `[p]pingset`.
     """
 
-    __version__ = "1.1.6"
+    __version__ = "1.1.7"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -146,7 +146,14 @@ class AnotherPingCog(commands.Cog):
         If I can't send embeds or they are disabled here, I will send a normal message instead.
         The embed has more detail and is preferred.
         """
-        ws_latency = round(self.bot.latency * 1000)
+        try:
+            ws_latency = round(self.bot.latency * 1000)
+        except OverflowError:  # ping float is infinity, ie last ping to discord failed
+            await ctx.send(
+                "I'm alive and working normally, but I've had connection issues in the last few "
+                "seconds so precise ping times are unavailable. Try again in a minute."
+            )
+            return
 
         title = (
             "\N{TABLE TENNIS PADDLE AND BALL}  Pong!"

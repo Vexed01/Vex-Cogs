@@ -68,6 +68,14 @@ AnotherPingCog
 ==============
 
 *********
+``1.1.7``
+*********
+
+2021-10-04
+
+- Fix OverflowError in edge cases (ANOTHERPINGCOG-2 on Sentry)
+
+*********
 ``1.1.6``
 *********
 
