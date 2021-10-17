@@ -1,5 +1,5 @@
 {
-    "short": "THIS IS NOT A COG. HOWEVER, DOWNLOADER DETECTS IT AS ONE AND WILL TRY AND LOAD IT.",
-    "description": "THIS IS NOT A COG. HOWEVER, DOWNLOADER DETECTS IT AS ONE AND WILL TRY AND LOAD IT.",
-    "disabled": true
+    "short": "Contrary to what downloader thinks, this isn't a cog!",
+    "disabled": true,
+    "hidden": true
 }
