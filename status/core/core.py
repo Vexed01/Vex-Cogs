@@ -53,13 +53,14 @@ class Status(
 
         # config
         default: dict = {}  # pointless typehint but hey
-        self.config: Config = Config.get_conf(
-            self, identifier="Vexed-status"  # type:ignore
-        )  # shit idntfr... bit late to change it... even mypy agrees...
-        self.config.register_global(version=2)
-        self.config.register_global(feed_store=default)
-        self.config.register_global(old_ids=[])
-        self.config.register_global(latest=default)  # this is unused? i think? remove soonish
+        # self.config: Config = Config.get_conf(self, identifier="Vexed-status")  # type:ignore
+        self.config: Config = Config.get_conf(self, identifier=418078199982063626)
+        self.config.register_global(
+            version=2,
+            feed_store=default,
+            old_ids=[],
+            migrated_identifier=False,
+        )
         self.config.register_channel(feeds=default)
         self.config.register_guild(service_restrictions=default)
 
@@ -73,7 +74,7 @@ class Status(
 
         self.ready = False
 
-        asyncio.create_task(self._async_init())
+        bot.loop.create_task(self._async_init())
 
         if 418078199982063626 in self.bot.owner_ids:  # type:ignore  # im lazy
             try:
