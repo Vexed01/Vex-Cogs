@@ -30,11 +30,11 @@ class MixinMeta(ABC):
     driver: PandasSQLiteDriver
     plot_executor: ThreadPoolExecutor
 
-    loop_meta: Optional[VexLoop]
-    loop: Optional[asyncio.Task]
-    last_loop_time: Optional[str]
+    loop_meta: VexLoop
+    loop: asyncio.Task
+    last_loop_time: str
 
-    df_cache: Optional[pandas.DataFrame]
+    df_cache: pandas.DataFrame
 
     cmd_count: int
     msg_count: int

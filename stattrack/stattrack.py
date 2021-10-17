@@ -45,11 +45,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.df_cache = None
-        self.loop = None
-        self.loop_meta = None
-        self.last_loop_time = None
-
         self.do_write: Optional[bool] = None
 
         self.cmd_count = 0

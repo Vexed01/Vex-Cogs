@@ -1,8 +1,10 @@
 import datetime
+from io import StringIO
 
+import discord
 from discord.ext.commands.cooldowns import BucketType
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import box, text_to_file
+from redbot.core.utils.chat_formatting import box
 
 from stattrack.abc import MixinMeta
 from stattrack.converters import TimespanConverter
@@ -47,18 +49,44 @@ class StatTrackCommands(MixinMeta):
     @export.command(name="json")
     async def export_json(self, ctx: commands.Context):
         """Export as JSON with pandas orient "split" """
-        assert self.df_cache is not None
         data = self.df_cache.to_json(orient="split")
-        assert data is not None
-        await ctx.send("Here is your file.", file=text_to_file(data, "stattrack.json"))
+        fp = StringIO()
+        fp.write(data)
+        size = fp.tell()
+        if ctx.guild:
+            assert isinstance(ctx.guild, discord.Guild)
+            max_size = ctx.guild.filesize_limit
+        else:
+            max_size = 8388608
+        if size > max_size:
+            await ctx.send(
+                "Sorry, this file is too big to send here. Try a server with a higher upload file "
+                "size limit."
+            )
+            return
+        fp.seek(0)
+        await ctx.send("Here is your file.", file=discord.File(fp, "stattrack.json"))
 
     @export.command(name="csv")
     async def export_csv(self, ctx: commands.Context):
         """Export as CSV"""
-        assert self.df_cache is not None
         data = self.df_cache.to_csv()
-        assert data is not None
-        await ctx.send("Here is your file.", file=text_to_file(data, "stattrack.csv"))
+        fp = StringIO()
+        fp.write(data)
+        size = fp.tell()
+        if ctx.guild:
+            assert isinstance(ctx.guild, discord.Guild)
+            max_size = ctx.guild.filesize_limit
+        else:
+            max_size = 8388608
+        if size > max_size:
+            await ctx.send(
+                "Sorry, this file is too big to send here. Try a server with a higher upload file "
+                "size limit."
+            )
+            return
+        fp.seek(0)
+        await ctx.send("Here is your file.", file=discord.File(fp, "stattrack.csv"))
 
     @stattrack.command()
     async def ping(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
