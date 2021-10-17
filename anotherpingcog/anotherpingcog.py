@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import re
 from time import monotonic
 from typing import Optional
 
@@ -8,7 +7,8 @@ import discord
 import sentry_sdk
 import tabulate
 import vexcogutils
-from discord.emoji import Emoji
+from discord.ext.commands.converter import ColourConverter, PartialEmojiConverter
+from discord.ext.commands.errors import BadColourArgument, PartialEmojiConversionFailure
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
@@ -56,7 +56,7 @@ class AnotherPingCog(commands.Cog):
         self.config.register_global(force_embed=True, footer="default")
         self.config.register_global(custom_settings=DEFAULT_CONF)
 
-        asyncio.create_task(self.async_init())
+        bot.loop.create_task(self.async_init())
 
         # =========================================================================================
         # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
@@ -342,9 +342,9 @@ class AnotherPingCog(commands.Cog):
             await self.config.custom_settings.set_raw("red", "emoji", value=None)  # type:ignore
             emoji_toset = None
         else:
-            match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
-            bot_emoji: Optional[Emoji] = self.bot.get_emoji(int(match.group(2))) if match else None
-            if not bot_emoji:
+            try:
+                bot_emoji = await PartialEmojiConverter().convert(ctx, emoji)
+            except PartialEmojiConversionFailure:
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the "
                     "server the emoji was added to."
@@ -357,16 +357,14 @@ class AnotherPingCog(commands.Cog):
             await self.config.custom_settings.set_raw("red", "colour", value=None)  # type:ignore
             hex = None
         else:
-            hex_colour = hex_colour.lstrip("#")
             try:
-                int_colour = int(hex_colour, 16)
-            except ValueError:  # not base 16
-                int_colour = 16777216
-            if int_colour > 16777215:  # max value
+                colour = await ColourConverter().convert(ctx, hex_colour)
+            except BadColourArgument:
                 return await ctx.send(
                     'That doesn\'t look like a valid colour. Google "hex colour" for some '
                     "converters."
                 )
+            int_colour = colour.value
             await self.config.custom_settings.set_raw(  # type:ignore
                 "red", "colour", value=int_colour
             )
@@ -411,9 +409,9 @@ class AnotherPingCog(commands.Cog):
             await self.config.custom_settings.set_raw("orange", "emoji", value=None)  # type:ignore
             emoji_toset = None
         else:
-            match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
-            bot_emoji = self.bot.get_emoji(int(match.group(2))) if match else None
-            if not bot_emoji:
+            try:
+                bot_emoji = await PartialEmojiConverter().convert(ctx, emoji)
+            except PartialEmojiConversionFailure:
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the "
                     "server the emoji was added to."
@@ -428,16 +426,14 @@ class AnotherPingCog(commands.Cog):
             )
             hex = None
         else:
-            hex_colour = hex_colour.lstrip("#")
             try:
-                int_colour = int(hex_colour, 16)
-            except ValueError:  # not base 16
-                int_colour = 16777216
-            if int_colour > 16777215:  # max value
+                colour = await ColourConverter().convert(ctx, hex_colour)
+            except BadColourArgument:
                 return await ctx.send(
                     'That doesn\'t look like a valid colour. Google "hex colour" for some '
                     "converters."
                 )
+            int_colour = colour.value
             await self.config.custom_settings.set_raw(  # type:ignore
                 "orange", "colour", value=int_colour
             )
@@ -482,9 +478,9 @@ class AnotherPingCog(commands.Cog):
             await self.config.custom_settings.set_raw("green", "emoji", value=None)  # type:ignore
             emoji_toset = None
         else:
-            match = re.match(r"(<.*:)([0-9]{17,20})(>)", str(emoji))
-            bot_emoji = self.bot.get_emoji(int(match.group(2))) if match else None
-            if not bot_emoji:
+            try:
+                bot_emoji = await PartialEmojiConverter().convert(ctx, emoji)
+            except PartialEmojiConversionFailure:
                 return await ctx.send(
                     "It looks like that's not a valid custom emoji. I'm probably not in the "
                     "server the emoji was added to."
@@ -497,16 +493,14 @@ class AnotherPingCog(commands.Cog):
             await self.config.custom_settings.set_raw("green", "colour", value=None)  # type:ignore
             hex = None
         else:
-            hex_colour = hex_colour.lstrip("#")
             try:
-                int_colour = int(hex_colour, 16)
-            except ValueError:  # not base 16
-                int_colour = 16777216
-            if int_colour > 16777215:  # max value
+                colour = await ColourConverter().convert(ctx, hex_colour)
+            except BadColourArgument:
                 return await ctx.send(
                     'That doesn\'t look like a valid colour. Google "hex colour" for some '
                     "converters."
                 )
+            int_colour = colour.value
             await self.config.custom_settings.set_raw(  # type:ignore
                 "green", "colour", value=int_colour
             )
