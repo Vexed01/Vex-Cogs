@@ -42,11 +42,9 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
 
         default: dict = {}
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
-        self.config.register_global(version=1)
-        self.config.register_global(cog_loaded=default)
-        self.config.register_global(connected=default)
-        self.config.register_global(first_load=None)
-
+        self.config.register_global(
+            version=1, cog_loaded=default, connected=default, first_load=None
+        )
         self.last_known_ping = 0.0
         self.last_ping_change = 0.0
 

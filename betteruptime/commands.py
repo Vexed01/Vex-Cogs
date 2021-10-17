@@ -185,10 +185,7 @@ class BUCommands(MixinMeta):
         if self.main_loop:
             self.main_loop.cancel()
 
-        await self.config.version.clear()
-        await self.config.cog_loaded.clear()
-        await self.config.connected.clear()
-        await self.config.first_load.clear()
+        await self.config.clear()
 
         self.ready = False
 
