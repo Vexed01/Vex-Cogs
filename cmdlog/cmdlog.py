@@ -3,7 +3,7 @@ import datetime
 import logging
 import sys
 from collections import deque
-from io import BytesIO
+from io import StringIO
 from typing import TYPE_CHECKING, Deque, Optional, Union
 
 import discord
@@ -422,20 +422,36 @@ class CmdLog(commands.Cog):
         cache_count = humanize_number(len(self.log_cache))
         await ctx.send(f"\nCache size: {cache_size} with {cache_count} commands.")
 
+    @commands.bot_has_permissions(attach_files=True)
     @cmdlog.command()
     async def full(self, ctx: commands.Context):
         """Upload all the logs that are stored in the cache."""
         now = datetime.datetime.now().strftime(TIME_FORMAT)
         logs = [f"[{i.time}] {i}" for i in self.log_cache]
         log_str = f"Generated at {now}.\n" + "\n".join(logs)
-        logs_bytes = BytesIO(log_str.encode())
+        fp = StringIO()
+        fp.write(log_str)
+        size = fp.tell()
+        if ctx.guild:
+            assert isinstance(ctx.guild, discord.Guild)
+            max_size = ctx.guild.filesize_limit
+        else:
+            max_size = 8388608
+        if size > max_size:
+            await ctx.send(
+                "Hmm, it looks like you've got some seriously long logs! They're over "
+                "the file size limit. Reset with `[p]reload cmdlog` or choose a different user."
+            )
+            return
+        fp.seek(0)
 
         await ctx.send(
             "Here is the command log. " + self.get_track_start(),
-            file=discord.File(logs_bytes, "cmdlog.txt"),
+            file=discord.File(fp, "cmdlog.txt"),
         )
-        logs_bytes.close()
+        fp.close()
 
+    @commands.bot_has_permissions(attach_files=True)
     @cmdlog.command()
     async def user(self, ctx: commands.Context, user_id: int):
         """
@@ -449,14 +465,30 @@ class CmdLog(commands.Cog):
         log_str = f"Generated at {now} for user {user_id}.\n" + (
             "\n".join(logs) or "It looks like I didn't find anything for that user."
         )  # happy doing this because of file previews
-        logs_bytes = BytesIO(log_str.encode())
+
+        fp = StringIO()
+        fp.write(log_str)
+        size = fp.tell()
+        if ctx.guild:
+            assert isinstance(ctx.guild, discord.Guild)
+            max_size = ctx.guild.filesize_limit
+        else:
+            max_size = 8388608
+        if size > max_size:
+            await ctx.send(
+                "Hmm, it looks like you've got some seriously long logs! They're over "
+                "the file size limit. Reset with `[p]reload cmdlog` or choose a different user."
+            )
+            return
+        fp.seek(0)
 
         await ctx.send(
             f"Here is the command log for user {user_id}. " + self.get_track_start(),
-            file=discord.File(logs_bytes, f"cmdlog_{user_id}.txt"),
+            file=discord.File(fp, f"cmdlog_{user_id}.txt"),
         )
-        logs_bytes.close()
+        fp.close()
 
+    @commands.bot_has_permissions(attach_files=True)
     @cmdlog.command(aliases=["guild"])
     async def server(self, ctx: commands.Context, server_id: int):
         """
@@ -471,14 +503,29 @@ class CmdLog(commands.Cog):
         log_str = f"Generated at {now} for server {server_id}.\n" + (
             "\n".join(logs) or "It looks like I didn't find anything for that user."
         )  # happy doing this because of file previews
-        logs_bytes = BytesIO(log_str.encode())
+        fp = StringIO()
+        fp.write(log_str)
+        size = fp.tell()
+        if ctx.guild:
+            assert isinstance(ctx.guild, discord.Guild)
+            max_size = ctx.guild.filesize_limit
+        else:
+            max_size = 8388608
+        if size > max_size:
+            await ctx.send(
+                "Hmm, it looks like you've got some seriously long logs! They're over "
+                "the file size limit. Reset with `[p]reload cmdlog` or choose a different user."
+            )
+            return
+        fp.seek(0)
 
         await ctx.send(
             f"Here is the command log for server {server_id}. " + self.get_track_start(),
-            file=discord.File(logs_bytes, f"cmdlog_{server_id}.txt"),
+            file=discord.File(fp, f"cmdlog_{server_id}.txt"),
         )
-        logs_bytes.close()
+        fp.close()
 
+    @commands.bot_has_permissions(attach_files=True)
     @cmdlog.command()
     async def command(self, ctx: commands.Context, *, command: str):
         """
@@ -503,10 +550,24 @@ class CmdLog(commands.Cog):
         log_str = f"Generated at {now} for command '{command}'.\n" + (
             "\n".join(logs) or "It looks like I didn't find anything for that command."
         )  # happy doing this because of file previews
-        logs_bytes = BytesIO(log_str.encode())
+        fp = StringIO()
+        fp.write(log_str)
+        size = fp.tell()
+        if ctx.guild:
+            assert isinstance(ctx.guild, discord.Guild)
+            max_size = ctx.guild.filesize_limit
+        else:
+            max_size = 8388608
+        if size > max_size:
+            await ctx.send(
+                "Hmm, it looks like you've got some seriously long logs! They're over "
+                "the file size limit. Reset with `[p]reload cmdlog` or choose a different user."
+            )
+            return
+        fp.seek(0)
 
         await ctx.send(
             f"Here is the command log for command '{command}'. " + self.get_track_start(),
-            file=discord.File(logs_bytes, f"cmdlog_{command.replace(' ', '_')}.txt"),
+            file=discord.File(fp, f"cmdlog_{command.replace(' ', '_')}.txt"),
         )
-        logs_bytes.close()
+        fp.close()
