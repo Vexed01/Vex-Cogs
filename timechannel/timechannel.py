@@ -50,8 +50,8 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         self.config.register_global(version=1)
         self.config.register_guild(timechannels={})
 
-        asyncio.create_task(self.maybe_migrate())
-        asyncio.create_task(self.async_init())
+        self.bot.loop.create_task(self.maybe_migrate())
+        self.bot.loop.create_task(self.async_init())
 
         # =========================================================================================
         # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO

@@ -44,7 +44,7 @@ class Beautify(commands.Cog):
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        asyncio.create_task(self.async_init())
+        self.bot.loop.create_task(self.async_init())
 
         # =========================================================================================
         # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO

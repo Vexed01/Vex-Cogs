@@ -56,7 +56,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         self.driver = PandasSQLiteDriver(bot, type(self).__name__, "timeseries.db")
 
-        asyncio.create_task(self.async_init())
+        self.bot.loop.create_task(self.async_init())
 
         if 418078199982063626 in bot.owner_ids:  # type:ignore
             bot.add_dev_env_value("stattrack", lambda _: self)
@@ -113,7 +113,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             self.do_write = False
             self.df_cache = await self.driver.read()
 
-        self.loop = asyncio.create_task(self.stattrack_loop())
+        self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
 
         # =========================================================================================

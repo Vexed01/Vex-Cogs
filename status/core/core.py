@@ -101,7 +101,7 @@ class Status(
 
     def cog_unload(self) -> None:
         self.loop.cancel()
-        asyncio.create_task(self.session.close())
+        self.bot.loop.create_task(self.session.close())
 
         if self.sentry_hub and self.sentry_hub.client:
             self.sentry_hub.end_session()

@@ -24,7 +24,7 @@ class StatusLoop(MixinMeta):
         self.etags: Dict[str, str] = {}
 
         self.loop_meta = VexLoop("Status Loop", 120.0)
-        self.loop = asyncio.create_task(self.status_loop())
+        self.loop = self.bot.loop.create_task(self.status_loop())
 
     async def status_loop(self):
         while not self.ready:

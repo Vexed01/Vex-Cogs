@@ -41,7 +41,7 @@ class WOL(commands.Cog):
         self.config.register_global(version=1)
         self.config.register_global(addresses={})
 
-        asyncio.create_task(self.async_init())
+        self.bot.loop.create_task(self.async_init())
 
         # =========================================================================================
         # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO

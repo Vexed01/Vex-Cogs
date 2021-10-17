@@ -64,7 +64,7 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
         except Exception:
             pass
 
-        asyncio.create_task(self.async_init())
+        self.bot.loop.create_task(self.async_init())
 
         # =========================================================================================
         # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO

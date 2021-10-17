@@ -18,7 +18,7 @@ _log = logging.getLogger("red.vex.timechannel.loop")
 class TCLoop(MixinMeta):
     def __init__(self) -> None:
         self.loop_meta = VexLoop("TimeChannel Loop", 900)  # 10 mins
-        self.loop = asyncio.create_task(self.timechannel_loop())
+        self.loop = self.bot.loop.create_task(self.timechannel_loop())
 
     async def wait_until_iter(self) -> None:
         now = datetime.datetime.utcnow()

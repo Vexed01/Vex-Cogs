@@ -17,9 +17,9 @@ _log = logging.getLogger("red.vex.betteruptime.loop")
 
 class BULoop(MixinMeta):
     def __init__(self) -> None:
-        asyncio.create_task(self.initialise())
+        self.bot.loop.create_task(self.initialise())
 
-        self.main_loop = asyncio.create_task(self.betteruptime_main_loop())
+        self.main_loop = self.bot.loop.create_task(self.betteruptime_main_loop())
 
     async def initialise(self) -> None:
         await self.bot.wait_until_red_ready()

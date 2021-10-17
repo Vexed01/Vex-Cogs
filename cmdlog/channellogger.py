@@ -38,7 +38,7 @@ class ChannelLogger:
     def start(self) -> None:
         """Start the channel logger task."""
         self._queue = Queue()
-        self.task = asyncio.create_task(self._cmdlog_channel_task())
+        self.task = self.bot.loop.create_task(self._cmdlog_channel_task())
 
     def add_command(self, command: LogMixin):
         self._queue.put_nowait(command)

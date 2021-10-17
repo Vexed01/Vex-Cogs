@@ -72,7 +72,7 @@ class CmdLog(commands.Cog):
 
         self.channel_logger: Optional[ChannelLogger] = None
 
-        asyncio.create_task(self.async_init())
+        self.bot.loop.create_task(self.async_init())
 
         # =========================================================================================
         # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
