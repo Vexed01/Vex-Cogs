@@ -398,6 +398,32 @@ class StatusSetCom(MixinMeta):
             True,
         ).send({ctx.channel.id: {"mode": mode, "webhook": webhook, "edit_id": {}}})
 
+    @statusset.command(name="clear", aliases=["erase"], usage="[channel]")
+    async def statusset_clear(self, ctx: commands.Context, *, chan: Optional[discord.TextChannel]):
+        """
+        Remove all feeds from a channel.
+
+        If you don't specify a channel, I will use the current channel
+
+        **Examples:**
+            - `[p]statusset clear #testing`
+            - `[p]statusset clear` (for using current channel)
+        """
+        if TYPE_CHECKING:
+            channel = GuildChannel()
+            guild = Guild()
+        else:
+            channel = chan or ctx.channel
+            guild = ctx.guild  # This command can only be run in guilds.
+        feeds = await self.config.channel(channel).feeds()
+        if not feeds:
+            return await ctx.send(f"It looks like I don't send any updates in {channel.mention}.")
+        for feed in feeds.keys():  # First removing all feeds from cache, feed will be the name
+            self.used_feeds.remove_feed(feed)
+            self.service_restrictions_cache.remove_restriction(guild.id, feed, channel.id)
+        await self.config.channel(channel).clear()
+        await ctx.send(f"Done, I have removed {len(feeds)} feeds from {channel.mention}")
+
     # ########################################### EDIT ############################################
 
     @statusset.group()
