@@ -401,7 +401,7 @@ class StatusSetCom(MixinMeta):
     @statusset.command(name="clear", aliases=["erase"], usage="[channel]")
     async def statusset_clear(self, ctx: commands.Context, *, chan: Optional[discord.TextChannel]):
         """
-        Remove all status from a channel.
+        Remove all feeds from a channel.
 
         If you don't specify a channel, I will use the current channel
 
