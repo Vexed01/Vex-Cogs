@@ -422,7 +422,7 @@ class StatusSetCom(MixinMeta):
             self.used_feeds.remove_feed(feed)
             self.service_restrictions_cache.remove_restriction(guild.id, feed, channel.id)
         await self.config.channel(channel).clear()
-        await ctx.send(f"Done, I have removed {len(feeds)} status from {channel.mention}")
+        await ctx.send(f"Done, I have removed {len(feeds)} feeds from {channel.mention}")
 
     # ########################################### EDIT ############################################
 
