@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from time import monotonic
 from typing import Optional

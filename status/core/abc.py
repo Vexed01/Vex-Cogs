@@ -1,6 +1,5 @@
 import asyncio
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Optional
 
 from aiohttp import ClientSession
 from discord.ext.commands.cog import CogMeta

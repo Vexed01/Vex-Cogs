@@ -2,7 +2,6 @@ import asyncio
 from abc import ABC, ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
-from typing import Optional
 
 import discord
 import pandas

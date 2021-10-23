@@ -1,10 +1,8 @@
-import asyncio
 import logging
 from asyncio import TimeoutError
-from typing import List, Mapping, Optional
+from typing import List, Mapping
 
 import discord
-import vexcogutils
 from gidgethub import HTTPException
 from redbot.core import Config, commands
 from redbot.core.bot import Red

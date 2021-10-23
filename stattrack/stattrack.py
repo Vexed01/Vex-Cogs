@@ -8,7 +8,6 @@ from typing import Dict, Optional, Set
 
 import discord
 import pandas
-import vexcogutils
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path

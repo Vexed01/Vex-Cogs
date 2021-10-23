@@ -1,10 +1,7 @@
-import asyncio
 import logging
 from copy import deepcopy
-from typing import Optional
 
 import aiohttp
-import vexcogutils
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info

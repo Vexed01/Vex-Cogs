@@ -6,7 +6,6 @@ from urllib.parse import urlencode
 
 import aiohttp
 import discord
-import vexcogutils
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box

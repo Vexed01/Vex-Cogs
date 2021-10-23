@@ -1,9 +1,7 @@
-import asyncio
 import json
 import logging
 from typing import Optional
 
-import vexcogutils
 from redbot.core import commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info

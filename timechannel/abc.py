@@ -1,6 +1,5 @@
 import asyncio
 from abc import ABC, ABCMeta
-from typing import Optional
 
 from redbot.core.bot import Red
 from redbot.core.commands import CogMeta

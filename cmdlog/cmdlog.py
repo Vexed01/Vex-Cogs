@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import logging
 import sys
@@ -7,7 +6,6 @@ from io import StringIO
 from typing import TYPE_CHECKING, Deque, Optional, Union
 
 import discord
-import vexcogutils
 from discord.channel import TextChannel
 from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
 from discord.member import Member

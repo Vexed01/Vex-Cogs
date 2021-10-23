@@ -1,12 +1,10 @@
-import asyncio
 import datetime
 import logging
-from typing import Dict, Optional
+from typing import Dict
 
 import discord
 import pytz
 import rapidfuzz.process
-import vexcogutils
 from discord.channel import DMChannel, GroupChannel, VoiceChannel
 from discord.guild import Guild
 from redbot.core import commands

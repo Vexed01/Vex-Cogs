@@ -1,11 +1,9 @@
-import asyncio
 import datetime
 import logging
-from typing import List, Optional
+from typing import List
 
 import discord
 import psutil
-import vexcogutils
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_timedelta

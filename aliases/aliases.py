@@ -1,8 +1,6 @@
-import asyncio
 import logging
-from typing import List, Optional
+from typing import List
 
-import vexcogutils
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
