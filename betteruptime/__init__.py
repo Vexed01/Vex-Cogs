@@ -15,8 +15,6 @@ if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.5.9")
     importlib.reload(vexcogutils.meta)
     importlib.reload(vexcogutils.loop)
 
-
-
     importlib.reload(vexcogutils)
 
 from .betteruptime import setup

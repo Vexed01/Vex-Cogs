@@ -37,7 +37,7 @@ class MixinMeta(ABC):
     connected_cache: pandas.Series
 
     ready: bool
-    
+
     @abstractmethod
     async def get_data(self, num_days: int) -> "UptimeData":
         raise NotImplementedError

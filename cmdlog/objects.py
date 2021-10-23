@@ -85,6 +85,7 @@ class LogMixin:
 
         return size
 
+
 class LoggedCommand(LogMixin):
     """Inherits from LogMixin, for a logged command"""
 
