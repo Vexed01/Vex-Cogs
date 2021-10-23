@@ -7,7 +7,6 @@ from typing import Optional
 from discord.channel import TextChannel
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, pagify
-from sentry_sdk import Hub
 from vexcogutils.loop import VexLoop
 
 from cmdlog.objects import LogMixin
@@ -21,7 +20,7 @@ class ChannelLogger:
         self.channel = channel
         self.task: Optional[asyncio.Task] = None
 
-        self._loop_meta = VexLoop("CmdLog channels", 60.0)  # mainly used for easy sentry reporting
+        self._loop_meta = VexLoop("CmdLog channels", 60.0)
 
         self.last_send = self._utc_now() - datetime.timedelta(seconds=65)
         # basically make next sendable time now
