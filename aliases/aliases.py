@@ -9,7 +9,6 @@ from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.chat_formatting import inline as cf_inline
 from redbot.core.utils.chat_formatting import pagify
 from vexcogutils import format_help, format_info, inline_hum_list
-from vexcogutils.meta import out_of_date_check
 
 log = logging.getLogger("red.vex.aliases")
 

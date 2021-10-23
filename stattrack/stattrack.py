@@ -14,7 +14,6 @@ from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
 from vexcogutils import format_help, format_info
 from vexcogutils.loop import VexLoop
-from vexcogutils.meta import out_of_date_check
 from vexcogutils.sqldriver import PandasSQLiteDriver
 
 from stattrack.abc import CompositeMetaClass

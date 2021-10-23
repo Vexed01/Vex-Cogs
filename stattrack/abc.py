@@ -43,6 +43,6 @@ class MixinMeta(ABC):
     ) -> discord.File:
         raise NotImplementedError
 
-    @abstractmethod 
+    @abstractmethod
     async def async_init(self) -> None:
         raise NotImplementedError

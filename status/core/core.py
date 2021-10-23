@@ -5,7 +5,6 @@ import aiohttp
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info
-from vexcogutils.meta import out_of_date_check
 
 from status.commands.status_com import StatusCom
 from status.commands.statusdev_com import StatusDevCom

@@ -28,7 +28,7 @@ with open(Path(__file__).parent / "info.json") as fp:
 async def setup(bot: Red):
     if vexcogutils.bot is None:
         vexcogutils.bot = bot
-        
+
     cog = WOL(bot)
     await out_of_date_check("wol", cog.__version__)
     bot.add_cog(cog)

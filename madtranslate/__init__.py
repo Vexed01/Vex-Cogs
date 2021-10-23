@@ -31,4 +31,3 @@ async def setup(bot: Red) -> None:
     cog = MadTranslate(bot)
     await out_of_date_check("madtranslate", cog.__version__)
     bot.add_cog(cog)
-

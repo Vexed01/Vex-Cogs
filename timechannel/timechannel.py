@@ -12,7 +12,6 @@ from redbot.core.bot import Red
 from redbot.core.config import Config
 from vexcogutils import format_help, format_info
 from vexcogutils.chat import datetime_to_timestamp
-from vexcogutils.meta import out_of_date_check
 
 from timechannel.utils import gen_replacements
 

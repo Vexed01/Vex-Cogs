@@ -6,7 +6,7 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config, Group
 from redbot.core.utils.chat_formatting import box
-from vexcogutils import format_help, format_info, out_of_date_check
+from vexcogutils import format_help, format_info
 from wakeonlan import send_magic_packet
 
 log = logging.getLogger("red.vex.wol")

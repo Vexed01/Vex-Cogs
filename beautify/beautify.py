@@ -5,7 +5,6 @@ from typing import Optional
 from redbot.core import commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info
-from vexcogutils.meta import out_of_date_check
 
 from .errors import JSONDecodeError, NoData
 from .utils import decode_json, get_data, send_output

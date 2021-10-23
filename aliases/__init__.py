@@ -4,9 +4,9 @@ import json
 from pathlib import Path
 
 import vexcogutils
-from vexcogutils.meta import out_of_date_check
 from redbot.core import VersionInfo
 from redbot.core.bot import Red
+from vexcogutils.meta import out_of_date_check
 
 # VCU reload needs to be done before importing files that depend on new version
 if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.5.9"):

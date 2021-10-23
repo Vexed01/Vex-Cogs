@@ -10,7 +10,6 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 from vexcogutils import format_help, format_info
-from vexcogutils.meta import out_of_date_check
 
 from .langs import LANGS
 
