@@ -48,3 +48,7 @@ class MixinMeta(ABC):
     @abstractmethod
     async def get_initial_data(self) -> None:
         raise NotImplementedError()
+
+    @abstractmethod
+    async def async_init(self) -> None:
+        raise NotImplementedError()

@@ -70,8 +70,6 @@ class Status(
 
         self.ready = False
 
-        bot.loop.create_task(self._async_init())
-
         if 418078199982063626 in self.bot.owner_ids:  # type:ignore  # im lazy
             try:
                 self.bot.add_dev_env_value("status", lambda _: self)
@@ -102,11 +100,7 @@ class Status(
 
         log.info("Status unloaded.")
 
-    async def _async_init(self) -> None:
-        await out_of_date_check("status", self.__version__)
-
-        await self.bot.wait_until_red_ready()
-
+    async def async_init(self) -> None:
         if await self.config.version() != 3:
             log.info("Getting initial data from services...")
             await self.migrate_to_v3()

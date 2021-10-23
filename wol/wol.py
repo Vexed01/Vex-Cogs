@@ -38,11 +38,6 @@ class WOL(commands.Cog):
         self.config.register_global(version=1)
         self.config.register_global(addresses={})
 
-        self.bot.loop.create_task(self.async_init())
-
-    async def async_init(self):
-        await out_of_date_check("wol", self.__version__)
-
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)

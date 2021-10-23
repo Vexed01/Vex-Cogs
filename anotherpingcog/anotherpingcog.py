@@ -54,11 +54,7 @@ class AnotherPingCog(commands.Cog):
         self.config.register_global(force_embed=True, footer="default")
         self.config.register_global(custom_settings=DEFAULT_CONF)
 
-        bot.loop.create_task(self.async_init())
-
     async def async_init(self):
-        await out_of_date_check("anotherpingcog", self.__version__)
-
         self.cache = Cache(
             await self.config.custom_settings(),
             await self.config.force_embed(),
@@ -528,7 +524,7 @@ class AnotherPingCog(commands.Cog):
         )
 
 
-def setup(bot: Red) -> None:
+async def setup(bot: Red) -> None:
     if vexcogutils.bot is None:
         vexcogutils.bot = bot
 
@@ -537,5 +533,7 @@ def setup(bot: Red) -> None:
     if old_ping:
         bot.remove_command(old_ping.name)
 
-    apc = AnotherPingCog(bot)
-    bot.add_cog(apc)
+    cog = AnotherPingCog(bot)
+    await cog.async_init()
+    await out_of_date_check("aliases", cog.__version__)
+    bot.add_cog(cog)

@@ -9,6 +9,7 @@ from redbot.core import VersionInfo
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from redbot.core.utils import AsyncIter
+from vexcogutils.meta import out_of_date_check
 
 # VCU reload needs to be done before importing files that depend on new version
 if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.5.9"):
@@ -59,4 +60,8 @@ async def setup(bot: Red) -> None:
         vexcogutils.bot = bot
 
     await maybe_migrate_config_identifier()
-    bot.add_cog(Status(bot))
+
+    cog = Status(bot)
+    await out_of_date_check("status", cog.__version__)
+    await cog.async_init()
+    bot.add_cog(cog)

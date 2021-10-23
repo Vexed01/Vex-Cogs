@@ -16,16 +16,10 @@ _log = logging.getLogger("red.vex.betteruptime.loop")
 
 class BULoop(MixinMeta):
     def __init__(self) -> None:
-        self.bot.loop.create_task(self.initialise())
-
         self.main_loop = self.bot.loop.create_task(self.betteruptime_main_loop())
 
-    async def initialise(self) -> None:
-        await self.bot.wait_until_red_ready()
+    async def async_init(self) -> None:
         _log.debug("[BU SETUP] Starting setup...")
-
-        self.last_known_ping = self.bot.latency
-        self.last_ping_change = time()
 
         self.first_load = await self.config.first_load()
         # want to make sure its actually written
@@ -97,6 +91,9 @@ class BULoop(MixinMeta):
     async def betteruptime_main_loop(self):
         while self.ready is False:
             await asyncio.sleep(0.1)
+
+        self.last_known_ping = self.bot.latency
+        self.last_ping_change = time()
 
         await asyncio.sleep(1)
 

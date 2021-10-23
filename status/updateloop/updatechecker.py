@@ -32,6 +32,8 @@ class StatusLoop(MixinMeta):
 
         await asyncio.sleep(1)
 
+        await self.bot.wait_until_red_ready()        
+
         while True:
             self.loop_meta.iter_start()
             _log.debug("Update loop started.")

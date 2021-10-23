@@ -28,11 +28,6 @@ class Aliases(commands.Cog):
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.bot.loop.create_task(self.async_init())
-
-    async def async_init(self):
-        await out_of_date_check("aliases", self.__version__)
-
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)

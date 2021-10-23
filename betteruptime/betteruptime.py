@@ -61,11 +61,6 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
         except Exception:
             pass
 
-        self.bot.loop.create_task(self.async_init())
-
-    async def async_init(self):
-        await out_of_date_check("betteruptime", self.__version__)
-
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
@@ -108,7 +103,7 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
         await ctx.send(embed=self.main_loop_meta.get_debug_embed())
 
 
-def setup(bot: Red) -> None:
+async def setup(bot: Red) -> None:
     if vexcogutils.bot is None:
         vexcogutils.bot = bot
 
@@ -117,5 +112,7 @@ def setup(bot: Red) -> None:
     if old_uptime:
         bot.remove_command(old_uptime.name)
 
-    bu = BetterUptime(bot)
-    bot.add_cog(bu)
+    cog = BetterUptime(bot)
+    await cog.async_init()
+    await out_of_date_check("betteruptime", cog.__version__)
+    bot.add_cog(cog)
