@@ -10,7 +10,7 @@ from discord.guild import Guild
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
-@dataclass(repr=False)  # repr=False will prevent data held here going to sentry if an error occurs
+@dataclass()
 class IDFKWhatToNameThis:
     id: int
     name: str
@@ -85,13 +85,8 @@ class LogMixin:
 
         return size
 
-
 class LoggedCommand(LogMixin):
     """Inherits from LogMixin, for a logged command"""
-
-    def __repr__(self) -> str:  # if enabled, this is what is sent to sentry when an error occurs
-        # (if this obj has been generated at that point)
-        return "<LoggedCommand with data removed>"
 
     def __str__(self) -> str:  # this is what is logged locally
         com = self.content or self.command
@@ -109,10 +104,6 @@ class LoggedCommand(LogMixin):
 
 class LoggedComError(LogMixin):
     """Inherits from LogMixin, for a logged error"""
-
-    def __repr__(self) -> str:  # if enabled, this is what is sent to sentry when an error occurs
-        # (if this obj has been generated at that point)
-        return "<LoggedComError with data removed>"
 
     def __str__(self) -> str:  # this is what is logged locally
         com = self.content or self.command
@@ -133,10 +124,6 @@ class LoggedComError(LogMixin):
 
 class LoggedAppCom(LogMixin):
     """Inherits from LogMixin, for a logged Application Command."""
-
-    def __repr__(self) -> str:  # if enabled, this is what is sent to sentry when an error occurs
-        # (if this obj has been generated at that point)
-        return f"<LoggedAppCom with data removed app_type={self.app_type}>"
 
     def __str__(self) -> str:  # this is what's logged locally
         assert self.app_type is not None

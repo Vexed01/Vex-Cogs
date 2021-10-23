@@ -42,7 +42,6 @@ class TCLoop(MixinMeta):
 
                 _log.debug("Timechannel iteration finished")
             except Exception as e:
-                self.loop_meta.iter_error(e, self.sentry_hub)
                 _log.exception(
                     "Something went wrong in the timechannel loop. Some channels may have been "
                     "missed. The loop will run again at the next hour."

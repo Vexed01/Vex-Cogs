@@ -5,7 +5,6 @@ from typing import Optional
 from redbot.core.bot import Red
 from redbot.core.commands import CogMeta
 from redbot.core.config import Config
-from sentry_sdk.hub import Hub
 from vexcogutils.loop import VexLoop
 
 
@@ -24,5 +23,3 @@ class MixinMeta(ABC):
 
     loop_meta: VexLoop
     loop: asyncio.Task
-
-    sentry_hub: Optional[Hub]

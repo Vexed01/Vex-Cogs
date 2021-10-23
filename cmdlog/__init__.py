@@ -16,9 +16,7 @@ if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.5.9")
     importlib.reload(vexcogutils.meta)
     importlib.reload(vexcogutils.loop)
 
-    with contextlib.suppress(AttributeError):  # these are not necessarily already imported
-        # importlib.reload(vexcogutils.sqldriver)
-        importlib.reload(vexcogutils.sentry)
+
 
     importlib.reload(vexcogutils)
 from .cmdlog import CmdLog

@@ -6,7 +6,6 @@ import pandas
 from redbot.core.bot import Red
 from redbot.core.commands import CogMeta
 from redbot.core.config import Config
-from sentry_sdk.hub import Hub
 from vexcogutils.loop import VexLoop
 
 if TYPE_CHECKING:

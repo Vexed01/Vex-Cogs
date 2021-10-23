@@ -127,23 +127,6 @@ class Status(
         # this will start the loop
         self.ready = True
 
-    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)  # type:ignore
-
-        if self.sentry_hub is None:  # sentry disabled
-            return
-
-        with self.sentry_hub:
-            sentry_sdk.add_breadcrumb(
-                category="command", message="Command used was " + ctx.command.qualified_name
-            )
-            try:
-                e = error.original  # type:ignore
-            except AttributeError:
-                e = error
-            sentry_sdk.capture_exception(e)
-            log.debug("Above exception successfully reported to Sentry")
-
     async def get_initial_data(self) -> None:
         """Start with initial data from services."""
         old_ids = []
