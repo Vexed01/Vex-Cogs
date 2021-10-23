@@ -8,7 +8,6 @@ from typing import Dict, Optional, Set
 
 import discord
 import pandas
-import sentry_sdk
 import vexcogutils
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -61,12 +60,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         if 418078199982063626 in bot.owner_ids:  # type:ignore
             bot.add_dev_env_value("stattrack", lambda _: self)
 
-        # =========================================================================================
-        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
-        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
-        self.sentry_hub: Optional[sentry_sdk.Hub] = None
-        # =========================================================================================
-
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
@@ -82,17 +75,12 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.plot_executor.shutdown()
         self.driver.sql_executor.shutdown()
 
-        if self.sentry_hub and self.sentry_hub.client:
-            self.sentry_hub.end_session()
-            self.sentry_hub.client.close()  # type:ignore
-
         try:
             self.bot.remove_dev_env_value("stattrack")
         except KeyError:
             pass
 
     async def async_init(self) -> None:
-        await self.bot.wait_until_red_ready()
         await out_of_date_check("stattrack", self.__version__)
 
         if await self.config.version() != 2:
@@ -113,45 +101,10 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             self.do_write = False
             self.df_cache = await self.driver.read()
 
+        await self.bot.wait_until_red_ready()
+
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
-
-        # =========================================================================================
-        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
-        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
-        # return
-
-        while vexcogutils.sentryhelper.ready is False:
-            await asyncio.sleep(0.1)
-
-        await vexcogutils.sentryhelper.maybe_send_owners("stattrack")
-
-        if vexcogutils.sentryhelper.sentry_enabled is False:
-            _log.debug("Sentry detected as disabled.")
-            return
-
-        _log.debug("Sentry detected as enabled.")
-        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub(
-            "stattrack", self.__version__
-        )
-        # =========================================================================================
-
-    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)  # type:ignore
-
-        if self.sentry_hub is None:  # sentry disabled
-            return
-
-        with self.sentry_hub:
-            sentry_sdk.add_breadcrumb(
-                category="command", message="Command used was " + ctx.command.qualified_name
-            )
-            try:
-                e = error.original  # type:ignore
-            except AttributeError:
-                e = error
-            sentry_sdk.capture_exception(e)
-            _log.debug("Above exception successfully reported to Sentry")
 
     async def migrate_v1_to_v2(self, data: dict) -> None:
         assert isinstance(self.bot.loop, AbstractEventLoop)
