@@ -44,7 +44,8 @@ class TCLoop(MixinMeta):
             except Exception as e:
                 _log.exception(
                     "Something went wrong in the timechannel loop. Some channels may have been "
-                    "missed. The loop will run again at the next hour."
+                    "missed. The loop will run again at the next hour.",
+                    exc_info=e
                 )
             await self.wait_until_iter()
 

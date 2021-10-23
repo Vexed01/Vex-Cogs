@@ -166,7 +166,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             except Exception as e:
                 _log.exception(
                     "Something went wrong in the StatTrack loop. The loop will try again "
-                    "shortly."
+                    "shortly.",
+                    exc_info=e
                 )
 
             await self.loop_meta.sleep_until_next()

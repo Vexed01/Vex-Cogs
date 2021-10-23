@@ -117,7 +117,7 @@ class BULoop(MixinMeta):
                 await self.update_uptime()
                 self.main_loop_meta.iter_finish()
                 _log.debug("Loop has finished, saved to config")
-            except Exception as e:
+            except Exception:
                 _log.exception(
                     "Something went wrong in the main BetterUptime loop. The loop will try again "
                     "in 60 seconds. Please report this and the below information to Vexed."
