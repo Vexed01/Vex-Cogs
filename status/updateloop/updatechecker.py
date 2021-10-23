@@ -50,7 +50,6 @@ class StatusLoop(MixinMeta):
                     "Vexed."
                 )
             except Exception as e:
-                self.loop_meta.iter_error(e, self.sentry_hub)
                 _log.error(
                     "Unable to check and send updates. Some services were likely missed. The "
                     "might be picked up on the next loop. You may want to report this to Vexed.",

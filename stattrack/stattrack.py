@@ -8,8 +8,6 @@ from typing import Dict, Optional, Set
 
 import discord
 import pandas
-import sentry_sdk
-import vexcogutils
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
@@ -61,12 +59,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         if 418078199982063626 in bot.owner_ids:  # type:ignore
             bot.add_dev_env_value("stattrack", lambda _: self)
 
-        # =========================================================================================
-        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
-        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
-        self.sentry_hub: Optional[sentry_sdk.Hub] = None
-        # =========================================================================================
-
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
@@ -82,17 +74,12 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.plot_executor.shutdown()
         self.driver.sql_executor.shutdown()
 
-        if self.sentry_hub and self.sentry_hub.client:
-            self.sentry_hub.end_session()
-            self.sentry_hub.client.close()  # type:ignore
-
         try:
             self.bot.remove_dev_env_value("stattrack")
         except KeyError:
             pass
 
     async def async_init(self) -> None:
-        await self.bot.wait_until_red_ready()
         await out_of_date_check("stattrack", self.__version__)
 
         if await self.config.version() != 2:
@@ -113,45 +100,10 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             self.do_write = False
             self.df_cache = await self.driver.read()
 
+        await self.bot.wait_until_red_ready()
+
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
-
-        # =========================================================================================
-        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
-        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
-        # return
-
-        while vexcogutils.sentryhelper.ready is False:
-            await asyncio.sleep(0.1)
-
-        await vexcogutils.sentryhelper.maybe_send_owners("stattrack")
-
-        if vexcogutils.sentryhelper.sentry_enabled is False:
-            _log.debug("Sentry detected as disabled.")
-            return
-
-        _log.debug("Sentry detected as enabled.")
-        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub(
-            "stattrack", self.__version__
-        )
-        # =========================================================================================
-
-    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)  # type:ignore
-
-        if self.sentry_hub is None:  # sentry disabled
-            return
-
-        with self.sentry_hub:
-            sentry_sdk.add_breadcrumb(
-                category="command", message="Command used was " + ctx.command.qualified_name
-            )
-            try:
-                e = error.original  # type:ignore
-            except AttributeError:
-                e = error
-            sentry_sdk.capture_exception(e)
-            _log.debug("Above exception successfully reported to Sentry")
 
     async def migrate_v1_to_v2(self, data: dict) -> None:
         assert isinstance(self.bot.loop, AbstractEventLoop)
@@ -212,26 +164,15 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 await self.update_stats()
                 self.loop_meta.iter_finish()
             except Exception as e:
-                self.loop_meta.iter_error(e, self.sentry_hub)
                 _log.exception(
                     "Something went wrong in the StatTrack loop. The loop will try again "
-                    "shortly."
+                    "shortly.",
+                    exc_info=e,
                 )
 
             await self.loop_meta.sleep_until_next()
 
     async def update_stats(self):
-        if self.sentry_hub:
-            with self.sentry_hub:
-                master_trans = sentry_sdk.start_transaction(
-                    op="loop",
-                    name="StatTrack loop",
-                    description="Main stats loop for collecting, processing and saving data.",
-                )
-            prep_trans = master_trans.start_child(
-                op="prep", description="Preparation for stats collection"
-            )
-
         now = snapped_utcnow()
         if now == self.df_cache.last_valid_index():  # just reloaded and this min's data collected
             _log.debug("Skipping this loop - cog was likely recently reloaded")
@@ -239,15 +180,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         df = pandas.DataFrame(index=[snapped_utcnow()])
         start = time.monotonic()
         data = {}
-
-        if self.sentry_hub:
-            prep_trans.finish()
-            data_trans = master_trans.start_child(op="data_collect", description="Data collection")
-            data1_trans = data_trans.start_child(
-                op="data_collect_1", description="Non-loop data collection"
-            )
-
-        await asyncio.sleep(0)
 
         try:
             latency = round(self.bot.latency * 1000)
@@ -267,12 +199,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         data["command_count"] = self.cmd_count
         data["message_count"] = self.msg_count
         self.cmd_count, self.msg_count = 0, 0
-
-        if self.sentry_hub:
-            data1_trans.finish()
-            data2_trans = data_trans.start_child(
-                op="data_collect_2", description="Loop data collection"
-            )
 
         count: Dict[str, Set[int]] = {  # can't use defaultdict, got to have these set
             "status_online": set(),
@@ -298,22 +224,11 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             data["channels_cat"] += len(guild.categories)
             data["channels_stage"] += len(guild.stage_channels)
 
-        if self.sentry_hub:
-            data2_trans.finish()
-            data_trans.finish()
-            format_trans = master_trans.start_child(
-                op="data_conversion", description="Data format conversion"
-            )
-
         for k, v in count.items():
             df[k] = len(v)
 
         for k, v in data.items():
             df[k] = v
-
-        if self.sentry_hub:
-            format_trans.finish()
-            save_trans = master_trans.start_child(op="save", description="Save data")
 
         self.df_cache = self.df_cache.append(df)
 
@@ -334,11 +249,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             end = time.monotonic()
             save_time = round(end - start, 3)
             _log.debug(f"SQLite appended in {save_time} seconds")
-
-        if self.sentry_hub:
-            save_trans.finish()
-            master_trans.set_status("ok")
-            master_trans.finish()
 
         total_time = main_time + save_time
 

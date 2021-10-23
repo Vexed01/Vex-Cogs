@@ -1,10 +1,8 @@
-import asyncio
 import logging
 from time import monotonic
 from typing import Optional
 
 import discord
-import sentry_sdk
 import tabulate
 import vexcogutils
 from discord.ext.commands.converter import ColourConverter, PartialEmojiConverter
@@ -58,12 +56,6 @@ class AnotherPingCog(commands.Cog):
 
         bot.loop.create_task(self.async_init())
 
-        # =========================================================================================
-        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
-        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
-        self.sentry_hub: Optional[sentry_sdk.Hub] = None
-        # =========================================================================================
-
     async def async_init(self):
         await out_of_date_check("anotherpingcog", self.__version__)
 
@@ -74,48 +66,7 @@ class AnotherPingCog(commands.Cog):
             self.bot,
         )
 
-        # =========================================================================================
-        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
-        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
-        # return
-
-        while vexcogutils.sentryhelper.ready is False:
-            await asyncio.sleep(0.1)
-
-        await vexcogutils.sentryhelper.maybe_send_owners("anotherpingcog")
-
-        if vexcogutils.sentryhelper.sentry_enabled is False:
-            log.debug("Sentry detected as disabled.")
-            return
-
-        log.debug("Sentry detected as enabled.")
-        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub(
-            "anotherpingcog", self.__version__
-        )
-        # =========================================================================================
-
-    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)  # type:ignore
-
-        if self.sentry_hub is None:  # sentry disabled
-            return
-
-        with self.sentry_hub:
-            sentry_sdk.add_breadcrumb(
-                category="command", message="Command used was " + ctx.command.qualified_name
-            )
-            try:
-                e = error.original  # type:ignore
-            except AttributeError:
-                e = error
-            sentry_sdk.capture_exception(e)
-            log.debug("Above exception successfully reported to Sentry")
-
     def cog_unload(self):
-        if self.sentry_hub and self.sentry_hub.client:
-            self.sentry_hub.end_session()
-            self.sentry_hub.client.close()
-
         global old_ping
         if old_ping:
             try:

@@ -2,14 +2,12 @@ import asyncio
 from abc import ABC, ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
-from typing import Optional
 
 import discord
 import pandas
 from discord.ext.commands.cog import CogMeta
 from redbot.core.bot import Red
 from redbot.core.config import Config
-from sentry_sdk.hub import Hub
 from vexcogutils.loop import VexLoop
 from vexcogutils.sqldriver import PandasSQLiteDriver
 
@@ -38,8 +36,6 @@ class MixinMeta(ABC):
 
     cmd_count: int
     msg_count: int
-
-    sentry_hub: Optional[Hub]
 
     @abstractmethod
     async def plot(

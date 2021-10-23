@@ -6,7 +6,6 @@ from time import time
 from typing import Dict
 
 import pandas
-import sentry_sdk
 from vexcogutils.loop import VexLoop
 
 from .abc import MixinMeta
@@ -118,8 +117,7 @@ class BULoop(MixinMeta):
                 await self.update_uptime()
                 self.main_loop_meta.iter_finish()
                 _log.debug("Loop has finished, saved to config")
-            except Exception as e:
-                self.main_loop_meta.iter_error(e, self.sentry_hub)
+            except Exception:
                 _log.exception(
                     "Something went wrong in the main BetterUptime loop. The loop will try again "
                     "in 60 seconds. Please report this and the below information to Vexed."
@@ -136,17 +134,6 @@ class BULoop(MixinMeta):
             await self.config.connected.set(data)
 
     async def update_uptime(self):
-        if self.sentry_hub:
-            with self.sentry_hub:
-                master_span = sentry_sdk.start_transaction(
-                    op="loop",
-                    name="BetterUptime main loop",
-                    description="Main loop for BetterUptime",
-                )
-                collection_span = master_span.start_child(
-                    op="collect_data", description="Data collection"
-                )
-
         utcdatetoday = datetime.datetime.utcnow().replace(
             microsecond=0, second=0, minute=0, hour=0
         )
@@ -168,13 +155,4 @@ class BULoop(MixinMeta):
             except KeyError:
                 self.connected_cache[utcdatetoday] = 60.0
 
-        if self.sentry_hub:
-            collection_span.finish()
-            save_span = master_span.start_child(op="save", description="Save data")
-
         await self.write_to_config()
-
-        if self.sentry_hub:
-            save_span.finish()
-            master_span.set_status("ok")
-            master_span.finish()

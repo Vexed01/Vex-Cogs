@@ -4,11 +4,9 @@ import logging
 from asyncio import Queue
 from typing import Optional
 
-import sentry_sdk
 from discord.channel import TextChannel
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, pagify
-from sentry_sdk import Hub
 from vexcogutils.loop import VexLoop
 
 from cmdlog.objects import LogMixin
@@ -17,13 +15,12 @@ log = logging.getLogger("red.vex.cmdlog.channellogger")
 
 
 class ChannelLogger:
-    def __init__(self, bot: Red, channel: TextChannel, sentry_hub: Optional[Hub] = None) -> None:
+    def __init__(self, bot: Red, channel: TextChannel) -> None:
         self.bot = bot
-        self.sentry_hub = sentry_hub
         self.channel = channel
         self.task: Optional[asyncio.Task] = None
 
-        self._loop_meta = VexLoop("CmdLog channels", 60.0)  # mainly used for easy sentry reporting
+        self._loop_meta = VexLoop("CmdLog channels", 60.0)
 
         self.last_send = self._utc_now() - datetime.timedelta(seconds=65)
         # basically make next sendable time now
@@ -66,12 +63,9 @@ class ChannelLogger:
                 log.warning(
                     "Something went wrong preparing and sending the messages for the CmdLog "
                     "channel. Some will have been lost, however they will still be available "
-                    "under the `[p]cmdlog` command in Discord.",
+                    "under the `[p]cmdlog` command in Discord. Please report this to Vexed.",
                     exc_info=e,
                 )
-                if self.sentry_hub:
-                    with self.sentry_hub:
-                        sentry_sdk.capture_exception(e)
 
     async def _wait_to_next_safe_send_time(self) -> None:
         now = self._utc_now()

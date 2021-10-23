@@ -1,11 +1,7 @@
-import asyncio
 import logging
 from copy import deepcopy
-from typing import Optional
 
 import aiohttp
-import sentry_sdk
-import vexcogutils
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from vexcogutils import format_help, format_info
@@ -85,12 +81,6 @@ class Status(
             except Exception:
                 log.exception("Unable to add dev env vars.", exc_info=True)
 
-        # =========================================================================================
-        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
-        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
-        self.sentry_hub: Optional[sentry_sdk.Hub] = None
-        # =========================================================================================
-
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
@@ -102,10 +92,6 @@ class Status(
     def cog_unload(self) -> None:
         self.loop.cancel()
         self.bot.loop.create_task(self.session.close())
-
-        if self.sentry_hub and self.sentry_hub.client:
-            self.sentry_hub.end_session()
-            self.sentry_hub.client.close()  # type:ignore
 
         try:
             self.bot.remove_dev_env_value("status")
@@ -137,41 +123,6 @@ class Status(
 
         # this will start the loop
         self.ready = True
-
-        # =========================================================================================
-        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
-        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
-        # return
-
-        while vexcogutils.sentryhelper.ready is False:
-            await asyncio.sleep(0.1)
-
-        await vexcogutils.sentryhelper.maybe_send_owners("status")
-
-        if vexcogutils.sentryhelper.sentry_enabled is False:
-            log.debug("Sentry detected as disabled.")
-            return
-
-        log.debug("Sentry detected as enabled.")
-        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("status", self.__version__)
-        # =========================================================================================
-
-    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)  # type:ignore
-
-        if self.sentry_hub is None:  # sentry disabled
-            return
-
-        with self.sentry_hub:
-            sentry_sdk.add_breadcrumb(
-                category="command", message="Command used was " + ctx.command.qualified_name
-            )
-            try:
-                e = error.original  # type:ignore
-            except AttributeError:
-                e = error
-            sentry_sdk.capture_exception(e)
-            log.debug("Above exception successfully reported to Sentry")
 
     async def get_initial_data(self) -> None:
         """Start with initial data from services."""

@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import logging
 import sys
@@ -7,8 +6,6 @@ from io import StringIO
 from typing import TYPE_CHECKING, Deque, Optional, Union
 
 import discord
-import sentry_sdk
-import vexcogutils
 from discord.channel import TextChannel
 from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
 from discord.member import Member
@@ -74,12 +71,6 @@ class CmdLog(commands.Cog):
 
         self.bot.loop.create_task(self.async_init())
 
-        # =========================================================================================
-        # NOTE: IF YOU ARE EDITING MY COGS, PLEASE ENSURE SENTRY IS DISBALED BY FOLLOWING THE INFO
-        # IN async_init(...) BELOW (SENTRY IS WHAT'S USED FOR TELEMETRY + ERROR REPORTING)
-        self.sentry_hub: Optional[sentry_sdk.Hub] = None
-        # =========================================================================================
-
     async def async_init(self):
         await out_of_date_check("cmdlog", self.__version__)
 
@@ -94,48 +85,7 @@ class CmdLog(commands.Cog):
             else:
                 _log.warning("Commands will NOT be sent to a channel because it appears invalid.")
 
-        # =========================================================================================
-        # TO DISABLE SENTRY FOR THIS COG (EG IF YOU ARE EDITING THIS COG) EITHER DISABLE SENTRY
-        # WITH THE `[p]vextelemetry` COMMAND, OR UNCOMMENT THE LINE BELOW, OR REMOVE IT COMPLETELY:
-        # return
-
-        await vexcogutils.sentryhelper.maybe_send_owners("cmdlog")
-
-        while vexcogutils.sentryhelper.ready is False:
-            await asyncio.sleep(0.1)
-
-        if vexcogutils.sentryhelper.sentry_enabled is False:
-            _log.debug("Sentry detected as disabled.")
-            return
-
-        _log.debug("Sentry detected as enabled.")
-        self.sentry_hub = await vexcogutils.sentryhelper.get_sentry_hub("cmdlog", self.__version__)
-
-        if self.channel_logger:
-            self.channel_logger.sentry_hub = self.sentry_hub
-        # =========================================================================================
-
-    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        await self.bot.on_command_error(ctx, error, unhandled_by_cog=True)  # type:ignore
-
-        if self.sentry_hub is None:  # sentry disabled
-            return
-
-        with self.sentry_hub:
-            sentry_sdk.add_breadcrumb(
-                category="command", message="Command used was " + ctx.command.qualified_name
-            )
-            try:
-                e = error.original  # type:ignore
-            except AttributeError:
-                e = error
-            sentry_sdk.capture_exception(e)
-            _log.debug("Above exception successfully reported to Sentry")
-
     def cog_unload(self):
-        if self.sentry_hub and self.sentry_hub.client:
-            self.sentry_hub.end_session()
-            self.sentry_hub.client.close()
         if self.channel_logger:
             self.channel_logger.stop()
 
@@ -196,16 +146,6 @@ class CmdLog(commands.Cog):
         _log.exception(
             "Something went wrong processing a command. See below for more info.", exc_info=e
         )
-
-        # a reminder data such as *IDs are scrubbed* before being sent to sentry and the log object
-        # has a __repr__ without names (which sentry sends) which does not give actual names while
-        # __str__ is what is logged to the user
-
-        if self.sentry_hub is None:
-            return
-
-        with self.sentry_hub:
-            sentry_sdk.capture_exception(e)
 
     @commands.Cog.listener()
     async def on_command_completion(self, ctx: commands.Context):
@@ -402,7 +342,7 @@ class CmdLog(commands.Cog):
         await self.config.log_channel.set(channel.id)
         if self.channel_logger:
             self.channel_logger.stop()
-        self.channel_logger = ChannelLogger(self.bot, channel, self.sentry_hub)
+        self.channel_logger = ChannelLogger(self.bot, channel)
         self.channel_logger.start()
         await ctx.send(
             f"Command logs will now be sent to {channel.mention}. Please be aware "
