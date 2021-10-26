@@ -1,7 +1,9 @@
 [tool.black]
 line-length = 99
 target-version = ["py38"]
+extend-exclude = "vexutils"
 
 [tool.isort]
 profile = "black"
 line_length = 99
+extend_skip = "vexutils"
