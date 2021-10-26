@@ -29,5 +29,6 @@ async def setup(bot: Red):
         vexcogutils.bot = bot
 
     cog = CmdLog(bot)
+    await cog.async_init()
     await out_of_date_check("cmdlog", cog.__version__)
     bot.add_cog(cog)
