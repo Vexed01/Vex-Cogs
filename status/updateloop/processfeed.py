@@ -5,10 +5,10 @@ from typing import List, Optional
 from dateutil.parser import parse as parse_time
 from markdownify import markdownify
 from redbot.core.utils.chat_formatting import humanize_list, pagify
-from vexcogutils.chat import datetime_to_timestamp
 
 from status.core import TYPES_LITERAL
 from status.objects import IncidentData, UpdateField
+from status.vexutils.chat import datetime_to_timestamp
 
 
 def _handle_long_fields(

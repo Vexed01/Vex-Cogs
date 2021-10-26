@@ -15,12 +15,12 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.commands import CheckFailure as RedCheckFailure
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta
-from vexcogutils import format_help, format_info
-from vexcogutils.chat import humanize_bytes
 
 from cmdlog.objects import TIME_FORMAT, LoggedAppCom, LoggedComError, LoggedCommand
 
 from .channellogger import ChannelLogger
+from .vexutils import format_help, format_info
+from .vexutils.chat import humanize_bytes
 
 if discord.__version__.startswith("2"):
     from discord import Interaction, InteractionType  # type:ignore

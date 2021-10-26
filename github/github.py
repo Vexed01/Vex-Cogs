@@ -7,11 +7,11 @@ from gidgethub import HTTPException
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.predicates import MessagePredicate
-from vexcogutils import format_help, format_info, inline_hum_list
 
 from .api import GitHubAPI
 from .consts import CROSS, EXCEPTIONS
 from .errors import CustomError
+from .vexutils import format_help, format_info, inline_hum_list
 
 # cspell:ignore labelify kowlin's resp
 

@@ -4,16 +4,15 @@ from typing import Optional
 
 import discord
 import tabulate
-import vexcogutils
 from discord.ext.commands.converter import ColourConverter, PartialEmojiConverter
 from discord.ext.commands.errors import BadColourArgument, PartialEmojiConversionFailure
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
-from vexcogutils import format_help, format_info
-from vexcogutils.meta import out_of_date_check
 
 from .objects import Cache, Settings
+from .vexutils import format_help, format_info
+from .vexutils.meta import out_of_date_check
 
 log = logging.getLogger("red.vex.anotherpingcog")
 
@@ -525,9 +524,6 @@ class AnotherPingCog(commands.Cog):
 
 
 async def setup(bot: Red) -> None:
-    if vexcogutils.bot is None:
-        vexcogutils.bot = bot
-
     global old_ping
     old_ping = bot.get_command("ping")
     if old_ping:

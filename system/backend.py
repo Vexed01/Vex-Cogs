@@ -7,7 +7,8 @@ from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import box as cf_box
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta, pagify
 from tabulate import tabulate
-from vexcogutils.chat import humanize_bytes
+
+from .vexutils.chat import humanize_bytes
 
 
 def box(text: str) -> str:

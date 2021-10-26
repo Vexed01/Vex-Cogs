@@ -7,9 +7,10 @@ from typing import Optional
 from discord.channel import TextChannel
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, pagify
-from vexcogutils.loop import VexLoop
 
 from cmdlog.objects import LogMixin
+
+from .vexutils.loop import VexLoop
 
 log = logging.getLogger("red.vex.cmdlog.channellogger")
 

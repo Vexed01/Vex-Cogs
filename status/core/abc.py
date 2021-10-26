@@ -5,7 +5,6 @@ from aiohttp import ClientSession
 from discord.ext.commands.cog import CogMeta
 from redbot.core.bot import Red
 from redbot.core.config import Config
-from vexcogutils.loop import VexLoop
 
 from status.core.statusapi import StatusAPI
 from status.objects import (
@@ -15,6 +14,7 @@ from status.objects import (
     ServiceRestrictionsCache,
     UsedFeeds,
 )
+from status.vexutils.loop import VexLoop
 
 
 class CompositeMetaClass(CogMeta, ABCMeta):

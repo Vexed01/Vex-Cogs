@@ -8,8 +8,9 @@ import pandas
 from discord.ext.commands.cog import CogMeta
 from redbot.core.bot import Red
 from redbot.core.config import Config
-from vexcogutils.loop import VexLoop
-from vexcogutils.sqldriver import PandasSQLiteDriver
+
+from .vexutils.loop import VexLoop
+from .vexutils.sqldriver import PandasSQLiteDriver
 
 
 class CompositeMetaClass(CogMeta, ABCMeta):

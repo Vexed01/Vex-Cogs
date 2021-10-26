@@ -16,8 +16,10 @@ so it's probably best to look/edit there.
 
 ---
 
-Last sync at: {time} UTC
+Last sync at: {time}
+
 Version: `{version}`
+
 Commit: [`{commit}`](https://github.com/Vexed01/vex-cog-utils/commit/{commit})
 """
 

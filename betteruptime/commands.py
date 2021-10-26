@@ -5,11 +5,11 @@ import discord
 import pandas
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_timedelta, inline, pagify, text_to_file
-from vexcogutils.chat import datetime_to_timestamp
 
 from .abc import MixinMeta
 from .consts import SECONDS_IN_DAY
 from .plot import plot
+from .vexutils.chat import datetime_to_timestamp
 
 old_uptime = None
 

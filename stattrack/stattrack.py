@@ -12,13 +12,14 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
-from vexcogutils import format_help, format_info
-from vexcogutils.loop import VexLoop
-from vexcogutils.sqldriver import PandasSQLiteDriver
 
 from stattrack.abc import CompositeMetaClass
 from stattrack.commands import StatTrackCommands
 from stattrack.plot import StatPlot
+
+from .vexutils import format_help, format_info
+from .vexutils.loop import VexLoop
+from .vexutils.sqldriver import PandasSQLiteDriver
 
 _log = logging.getLogger("red.vexed.stattrack")
 

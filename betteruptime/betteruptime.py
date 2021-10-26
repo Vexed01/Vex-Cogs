@@ -1,18 +1,17 @@
 import logging
 
 import pandas
-import vexcogutils
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import pagify
-from vexcogutils import format_help, format_info
-from vexcogutils.meta import out_of_date_check
 
 from betteruptime.commands import BUCommands
 
 from .abc import CompositeMetaClass
 from .loop import BULoop
 from .utils import Utils
+from .vexutils import format_help, format_info
+from .vexutils.meta import out_of_date_check
 
 old_uptime = None
 
@@ -104,9 +103,6 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
 
 
 async def setup(bot: Red) -> None:
-    if vexcogutils.bot is None:
-        vexcogutils.bot = bot
-
     global old_uptime
     old_uptime = bot.get_command("uptime")
     if old_uptime:

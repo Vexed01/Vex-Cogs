@@ -7,7 +7,6 @@ import psutil
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_timedelta
-from vexcogutils import format_help, format_info
 
 from .backend import (
     box,
@@ -23,6 +22,7 @@ from .backend import (
     up_for,
 )
 from .command import DynamicHelp
+from .vexutils import format_help, format_info
 
 log = logging.getLogger("red.vex.system")
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."

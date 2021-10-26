@@ -6,7 +6,8 @@ import pandas
 from redbot.core.bot import Red
 from redbot.core.commands import CogMeta
 from redbot.core.config import Config
-from vexcogutils.loop import VexLoop
+
+from .vexutils.loop import VexLoop
 
 if TYPE_CHECKING:
     from betteruptime.utils import UptimeData

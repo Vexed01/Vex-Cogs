@@ -1,5 +1,3 @@
-import vexcogutils  # noqa
-
 from status.objects import SendCache, UpdateField
 from status.objects.incidentdata import Update
 from status.updateloop import processfeed

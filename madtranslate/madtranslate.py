@@ -9,9 +9,9 @@ import discord
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
-from vexcogutils import format_help, format_info
 
 from .langs import LANGS
+from .vexutils import format_help, format_info
 
 log = logging.getLogger("red.vex.madtranslate")
 

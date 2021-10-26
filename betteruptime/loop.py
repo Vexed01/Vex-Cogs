@@ -6,10 +6,10 @@ from time import time
 from typing import Dict
 
 import pandas
-from vexcogutils.loop import VexLoop
 
 from .abc import MixinMeta
 from .consts import INF, SECONDS_IN_DAY
+from .vexutils.loop import VexLoop
 
 _log = logging.getLogger("red.vex.betteruptime.loop")
 

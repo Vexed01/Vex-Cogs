@@ -10,14 +10,14 @@ from discord.guild import Guild
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
-from vexcogutils import format_help, format_info
-from vexcogutils.chat import datetime_to_timestamp
 
 from timechannel.utils import gen_replacements
 
 from .abc import CompositeMetaClass
 from .data import ZONE_KEYS
 from .loop import TCLoop
+from .vexutils import format_help, format_info
+from .vexutils.chat import datetime_to_timestamp
 
 log = logging.getLogger("red.vex.timechannel")
 

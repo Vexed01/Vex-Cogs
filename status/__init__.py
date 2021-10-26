@@ -4,23 +4,14 @@ import json
 from pathlib import Path
 from typing import AsyncContextManager
 
-import vexcogutils
 from redbot.core import VersionInfo
 from redbot.core.bot import Red
 from redbot.core.config import Config
 from redbot.core.utils import AsyncIter
-from vexcogutils.meta import out_of_date_check
 
-# VCU reload needs to be done before importing files that depend on new version
-if VersionInfo.from_str(vexcogutils.__version__) < VersionInfo.from_str("1.5.9"):
-    importlib.reload(vexcogutils.version)
-    importlib.reload(vexcogutils.consts)
+from status.vexutils.meta import out_of_date_check
 
-    importlib.reload(vexcogutils.chat)
-    importlib.reload(vexcogutils.meta)
-    importlib.reload(vexcogutils.loop)
-
-    importlib.reload(vexcogutils)
+from . import vexutils
 from .core.core import Status
 
 with open(Path(__file__).parent / "info.json") as fp:
@@ -56,9 +47,6 @@ async def maybe_migrate_config_identifier() -> None:
 
 
 async def setup(bot: Red) -> None:
-    if vexcogutils.bot is None:
-        vexcogutils.bot = bot
-
     await maybe_migrate_config_identifier()
 
     cog = Status(bot)

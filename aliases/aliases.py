@@ -8,7 +8,8 @@ from redbot.core.utils import deduplicate_iterables
 from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.chat_formatting import inline as cf_inline
 from redbot.core.utils.chat_formatting import pagify
-from vexcogutils import format_help, format_info, inline_hum_list
+
+from .vexutils import format_help, format_info, inline_hum_list
 
 log = logging.getLogger("red.vex.aliases")
 

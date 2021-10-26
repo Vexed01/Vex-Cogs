@@ -4,10 +4,10 @@ from typing import Optional
 
 from redbot.core import commands
 from redbot.core.bot import Red
-from vexcogutils import format_help, format_info
 
 from .errors import JSONDecodeError, NoData
 from .utils import decode_json, get_data, send_output
+from .vexutils import format_help, format_info
 
 # dont want to force this as can be a pain on windows
 try:

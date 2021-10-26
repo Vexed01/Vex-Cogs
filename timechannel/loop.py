@@ -6,11 +6,11 @@ from typing import Dict
 
 from discord.channel import VoiceChannel
 from discord.errors import HTTPException
-from vexcogutils.loop import VexLoop
 
 from timechannel.utils import gen_replacements
 
 from .abc import MixinMeta
+from .vexutils.loop import VexLoop
 
 _log = logging.getLogger("red.vex.timechannel.loop")
 

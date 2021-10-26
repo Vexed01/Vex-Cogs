@@ -4,7 +4,8 @@ from abc import ABC, ABCMeta, abstractmethod
 from redbot.core.bot import Red
 from redbot.core.commands import CogMeta
 from redbot.core.config import Config
-from vexcogutils.loop import VexLoop
+
+from .vexutils.loop import VexLoop
 
 
 class CompositeMetaClass(CogMeta, ABCMeta):

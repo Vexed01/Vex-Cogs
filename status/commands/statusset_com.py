@@ -11,7 +11,6 @@ from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.predicates import MessagePredicate
 from tabulate import tabulate
-from vexcogutils import inline_hum_list
 
 from status.commands.command import DynamicHelp, DynamicHelpGroup
 from status.commands.converters import ModeConverter, ServiceConverter
@@ -19,6 +18,7 @@ from status.core import FEEDS, SPECIAL_INFO
 from status.core.abc import MixinMeta
 from status.objects import SendCache, Update
 from status.updateloop import SendUpdate, process_json
+from status.vexutils.chat import inline_hum_list
 
 # NOTE:
 # Not using ctx.guild because mypy goes mad, using channel.guild - it'll make sense when you see it

@@ -4,7 +4,6 @@ from copy import deepcopy
 import aiohttp
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from vexcogutils import format_help, format_info
 
 from status.commands.status_com import StatusCom
 from status.commands.statusdev_com import StatusDevCom
@@ -20,6 +19,7 @@ from status.objects import (
     UsedFeeds,
 )
 from status.updateloop import SendUpdate, StatusLoop
+from status.vexutils import format_help, format_info
 
 log = logging.getLogger("red.vex.status.core")
 
