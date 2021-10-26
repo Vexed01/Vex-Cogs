@@ -14,7 +14,6 @@ from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
 from vexcogutils import format_help, format_info
 from vexcogutils.loop import VexLoop
-from vexcogutils.meta import out_of_date_check
 from vexcogutils.sqldriver import PandasSQLiteDriver
 
 from stattrack.abc import CompositeMetaClass
@@ -54,8 +53,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         self.driver = PandasSQLiteDriver(bot, type(self).__name__, "timeseries.db")
 
-        self.bot.loop.create_task(self.async_init())
-
         if 418078199982063626 in bot.owner_ids:  # type:ignore
             bot.add_dev_env_value("stattrack", lambda _: self)
 
@@ -80,8 +77,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             pass
 
     async def async_init(self) -> None:
-        await out_of_date_check("stattrack", self.__version__)
-
         if await self.config.version() != 2:
             self.do_write = True
             _log.info("Migrating StatTrack config.")
@@ -99,8 +94,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         else:
             self.do_write = False
             self.df_cache = await self.driver.read()
-
-        await self.bot.wait_until_red_ready()
 
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
@@ -157,6 +150,9 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
     async def stattrack_loop(self):
         await asyncio.sleep(1)
+
+        await self.bot.wait_until_red_ready()
+
         while True:
             _log.debug("StatTrack loop has started next iteration")
             try:

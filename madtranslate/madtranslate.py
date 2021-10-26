@@ -10,7 +10,6 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 from vexcogutils import format_help, format_info
-from vexcogutils.meta import out_of_date_check
 
 from .langs import LANGS
 
@@ -70,11 +69,6 @@ class MadTranslate(commands.Cog):
 
     def __init__(self, bot: Red):
         self.bot = bot
-
-        self.bot.loop.create_task(self.async_init())
-
-    async def async_init(self):
-        await out_of_date_check("madtranslate", self.__version__)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""

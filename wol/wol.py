@@ -6,7 +6,7 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config, Group
 from redbot.core.utils.chat_formatting import box
-from vexcogutils import format_help, format_info, out_of_date_check
+from vexcogutils import format_help, format_info
 from wakeonlan import send_magic_packet
 
 log = logging.getLogger("red.vex.wol")
@@ -37,11 +37,6 @@ class WOL(commands.Cog):
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(version=1)
         self.config.register_global(addresses={})
-
-        self.bot.loop.create_task(self.async_init())
-
-    async def async_init(self):
-        await out_of_date_check("wol", self.__version__)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""

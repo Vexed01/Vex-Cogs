@@ -1,5 +1,5 @@
 import asyncio
-from abc import ABC, ABCMeta
+from abc import ABC, ABCMeta, abstractmethod
 
 from redbot.core.bot import Red
 from redbot.core.commands import CogMeta
@@ -22,3 +22,7 @@ class MixinMeta(ABC):
 
     loop_meta: VexLoop
     loop: asyncio.Task
+
+    @abstractmethod
+    async def maybe_migrate(self) -> None:
+        raise NotImplementedError()

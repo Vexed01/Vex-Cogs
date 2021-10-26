@@ -17,7 +17,6 @@ from redbot.core.commands import CheckFailure as RedCheckFailure
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta
 from vexcogutils import format_help, format_info
 from vexcogutils.chat import humanize_bytes
-from vexcogutils.meta import out_of_date_check
 
 from cmdlog.objects import TIME_FORMAT, LoggedAppCom, LoggedComError, LoggedCommand
 
@@ -69,13 +68,7 @@ class CmdLog(commands.Cog):
 
         self.channel_logger: Optional[ChannelLogger] = None
 
-        self.bot.loop.create_task(self.async_init())
-
     async def async_init(self):
-        await out_of_date_check("cmdlog", self.__version__)
-
-        await self.bot.wait_until_red_ready()
-
         chan_id: Optional[str] = await self.config.log_channel()
         if chan_id is not None:
             chan = self.bot.get_channel(int(chan_id))

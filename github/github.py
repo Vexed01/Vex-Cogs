@@ -8,7 +8,6 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.predicates import MessagePredicate
 from vexcogutils import format_help, format_info, inline_hum_list
-from vexcogutils.meta import out_of_date_check
 
 from .api import GitHubAPI
 from .consts import CROSS, EXCEPTIONS
@@ -55,11 +54,6 @@ class GitHub(commands.Cog):
 
         self.repo = ""
         self.token = ""
-
-        self.bot.loop.create_task(self.async_init())
-
-    async def async_init(self):
-        await out_of_date_check("github", self.__version__)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""

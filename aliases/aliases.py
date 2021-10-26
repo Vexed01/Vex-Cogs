@@ -9,7 +9,6 @@ from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.chat_formatting import inline as cf_inline
 from redbot.core.utils.chat_formatting import pagify
 from vexcogutils import format_help, format_info, inline_hum_list
-from vexcogutils.meta import out_of_date_check
 
 log = logging.getLogger("red.vex.aliases")
 
@@ -27,11 +26,6 @@ class Aliases(commands.Cog):
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
-
-        self.bot.loop.create_task(self.async_init())
-
-    async def async_init(self):
-        await out_of_date_check("aliases", self.__version__)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""

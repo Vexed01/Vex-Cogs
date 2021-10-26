@@ -42,3 +42,7 @@ class MixinMeta(ABC):
         self, sr: pandas.Series, delta: timedelta, title: str, ylabel: str
     ) -> discord.File:
         raise NotImplementedError
+
+    @abstractmethod
+    async def async_init(self) -> None:
+        raise NotImplementedError

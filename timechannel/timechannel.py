@@ -12,7 +12,6 @@ from redbot.core.bot import Red
 from redbot.core.config import Config
 from vexcogutils import format_help, format_info
 from vexcogutils.chat import datetime_to_timestamp
-from vexcogutils.meta import out_of_date_check
 
 from timechannel.utils import gen_replacements
 
@@ -46,12 +45,6 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(version=1)
         self.config.register_guild(timechannels={})
-
-        self.bot.loop.create_task(self.maybe_migrate())
-        self.bot.loop.create_task(self.async_init())
-
-    async def async_init(self):
-        await out_of_date_check("timechannel", self.__version__)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
