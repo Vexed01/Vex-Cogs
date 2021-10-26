@@ -93,8 +93,8 @@ async def format_info(
 
     start = f"{qualified_name} by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n"
     versions = [
-        ["Cog", current.cogs.get(cog_name), latest.cogs.get(cog_name), cog_updated],
-        ["Utils", current.utils, latest.utils, utils_updated],
+        ["This Cog", current.cogs.get(cog_name), latest.cogs.get(cog_name), cog_updated],
+        ["Bundled Utils", current.utils, latest.utils, utils_updated],
         ["Red", current.red, latest.red, red_updated],
     ]
 
