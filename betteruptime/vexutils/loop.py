@@ -6,7 +6,6 @@ from typing import List, Optional
 import discord
 import tabulate
 from redbot.core.utils.chat_formatting import box, pagify
-from sentry_sdk import Hub
 
 from .consts import CHECK, CROSS
 
@@ -84,19 +83,13 @@ class VexLoop:
         self.currently_running = False
         # now this is accurate. imo its better to have something than nothing
 
-    def iter_error(self, error: BaseException, sentry_hub: Optional[Hub] = None) -> None:
+    def iter_error(self, error: BaseException) -> None:
         """Register an iteration's exception. If enabled, will report to Sentry."""
         self.currently_running = False
         self.last_exc_raw = error
         self.last_exc = "".join(
             traceback.format_exception(type(error), error, error.__traceback__)
         )
-
-        if sentry_hub is None:
-            return
-
-        with sentry_hub:
-            sentry_hub.capture_exception(error)
 
     def get_debug_embed(self) -> discord.Embed:
         """Get an embed with infomation on this loop."""
