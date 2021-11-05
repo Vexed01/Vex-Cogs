@@ -3,10 +3,10 @@
     "author": ["Vexed (Vexed#3211)"],
     "name": "MadTranslate",
     "install_msg": "Note: this uses an undocumented API for Google Translate. As such, this cog may break at short notice. \n\nThis cog has docs! Check them out at <https://cogdocs.vexcodes.com/en/latest/cogs/madtranslate.html>",
-    "requirements": [],
+    "requirements": ["tabulate", "cachetools", "asyncache"],
     "description": "Translate something from English into a gazillion different languages then back to English. Uses an undocumented Google Translate API.",
     "short": "Translate something from English into a gazillion different languages then back to English. You'll get some funny responses! Uses an undocumented Google Translate API.",
-    "tags": ["madtranslate", "translate", "google", "fun", "tabulate", "cachetools", "asyncache"],
+    "tags": ["madtranslate", "translate", "google", "fun"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "min_bot_version": "3.4.0"
 }
