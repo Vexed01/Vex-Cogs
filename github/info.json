@@ -6,7 +6,7 @@
     "requirements": ["gidgethub>=5.0.0"],
     "description": "Create, comment, labelify and close GitHub issues, with partial PR support.",
     "short": "Create, comment, labelify and close GitHub issues.",
-    "tags": ["utility", "github", "issues"],
+    "tags": ["utility", "github", "issues", "tabulate", "cachetools", "asyncache"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "min_bot_version": "3.4.0"
 }

@@ -6,7 +6,7 @@
     "requirements": ["tabulate"],
     "description": "Replace the ping command with a rich embed that shows ping time and message time. It is colour coded: red, orange and green, and the bot owner can customise the colours and emojis for different latency levels, as well as force an embed.",
     "short": "Just another ping cog... But this one has fancy colours in an embed the bot owner can customise!",
-    "tags": ["utility", "ping", "pingtime"],
+    "tags": ["utility", "ping", "pingtime", "tabulate", "cachetools", "asyncache"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "min_bot_version": "3.4.0"
 }

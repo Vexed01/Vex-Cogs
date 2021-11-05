@@ -6,7 +6,7 @@
     "description": "Get all the information you could ever need about a command's aliases.",
     "short": "Get all the information you could ever need about a command's aliases.",
     "requirements": [],
-    "tags": ["utility", "alias"],
+    "tags": ["utility", "alias", "tabulate", "cachetools", "asyncache"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "min_bot_version": "3.4.0"
 }

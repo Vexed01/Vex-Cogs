@@ -6,7 +6,7 @@
     "requirements": [],
     "description": "Translate something from English into a gazillion different languages then back to English. Uses an undocumented Google Translate API.",
     "short": "Translate something from English into a gazillion different languages then back to English. You'll get some funny responses! Uses an undocumented Google Translate API.",
-    "tags": ["madtranslate", "translate", "google", "fun"],
+    "tags": ["madtranslate", "translate", "google", "fun", "tabulate", "cachetools", "asyncache"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "min_bot_version": "3.4.0"
 }

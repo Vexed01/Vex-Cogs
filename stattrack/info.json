@@ -6,7 +6,7 @@
     "description": "Track your bot's statistics over time, including ping, members, guild and message/command counts.\n\nThis has a background process which could be intensive.\n\nThis stores data in Red's config which is not especially built for this cog's usage.",
     "short": "Stat tracking cog including ping, member counts and counts of commands/messages. View the data in Discord.",
     "requirements": ["pandas>=1.1.0", "matplotlib"],
-    "tags": ["utility", "timeseries", "tracking", "stats"],
+    "tags": ["utility", "timeseries", "tracking", "stats", "tabulate", "cachetools", "asyncache"],
     "end_user_data_statement": "This cog permanently stores anonymised and aggregated data about users' statuses and counts messages sent, not including their content. This data cannot be traced back to individual users.",
     "min_bot_version": "3.4.0"
 }

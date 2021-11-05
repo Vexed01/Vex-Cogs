@@ -6,7 +6,7 @@
     "description": "Beautify and minify JSON. Supports attachments, codeblocks and replies.",
     "short": "Beautify and minify JSON. Supports attachments, codeblocks and replies.",
     "requirements": [],
-    "tags": ["utility", "json"],
+    "tags": ["utility", "json", "tabulate", "cachetools", "asyncache"],
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "min_bot_version": "3.4.0"
 }
