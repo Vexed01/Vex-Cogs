@@ -46,13 +46,13 @@ class PandasSQLiteDriver:
 
     def _write(self, df: pandas.DataFrame) -> None:
         connection = sqlite3.connect(self.sql_path)
-        df.to_sql(self.table, con=connection, if_exists="replace")
+        df.to_sql(self.table, con=connection, if_exists="replace")  # type:ignore
         connection.commit()
         connection.close()
 
     def _append(self, df: pandas.DataFrame) -> None:
         connection = sqlite3.connect(self.sql_path)
-        df.to_sql(self.table, con=connection, if_exists="append")
+        df.to_sql(self.table, con=connection, if_exists="append")  # type:ignore
         connection.commit()
         connection.close()
 
