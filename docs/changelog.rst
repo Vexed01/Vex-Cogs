@@ -18,6 +18,7 @@ Jump links:
 | :ref:`betteruptime<cl_betteruptime>`
 | :ref:`cmdlog<cl_cmdlog>`
 | :ref:`github<cl_github>`
+| :ref:`googletrends<cl_googletrends>`
 | :ref:`madtranslate<cl_madtranslate>`
 | :ref:`stattrack<cl_stattrack>`
 | :ref:`status<cl_status>`
@@ -425,6 +426,9 @@ CmdLog
 GitHub
 ======
 
+Note: This cog is scheduled for deprecation in favour of a new cog `ghissues` which
+supports buttons, for when they are officially supported in Red
+
 *********
 ``1.0.1``
 *********
@@ -433,10 +437,19 @@ GitHub
 
 - Add opt-in telemetry and error reporting
 
-*No updates since changelogs started*
+.. _cl_googletrends:
 
-Note: This cog is scheduled for deprecation in favour of a new cog `ghissues` which
-supports buttons, for when they are officially supported in Red
+============
+GoogleTrends
+============
+
+*********
+``1.0.0``
+*********
+
+2021-11-09
+
+- Initial release
 
 .. _cl_madtranslate:
 
