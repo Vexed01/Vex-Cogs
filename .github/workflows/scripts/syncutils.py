@@ -72,9 +72,6 @@ for cog in cog_folders:
 
     shutil.copytree(utils_location, destination)
 
-utils_repo.close()
-git.rmtree(utils_repo_clone_location)
-
 token = os.environ["CF_KV"]
 headers = {
     "Authorization": f"Bearer {token}",
@@ -88,3 +85,6 @@ url = (
 kv_data = requests.get(url, headers=headers).json()
 kv_data["utils"] = str(utils_repo.head.commit)  # type:ignore
 requests.put(url, headers=headers, data=json.dumps(kv_data))
+
+utils_repo.close()
+git.rmtree(utils_repo_clone_location)
