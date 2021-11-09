@@ -182,6 +182,14 @@ BetterUptime
 ============
 
 *********
+``2.1.1``
+*********
+
+2021-11-09
+
+- Limit annotated points on uptime graph to 5
+
+*********
 ``2.1.0``
 *********
 
