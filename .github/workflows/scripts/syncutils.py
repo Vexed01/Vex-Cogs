@@ -83,8 +83,8 @@ headers = {
 
 url = (
     "https://api.cloudflare.com/client/v4/accounts/5d6844358ea26524bf29b35cb98628f5/"
-    f"storage/kv/namespaces/10cca0f984d143768bf7f23ee276f5e0/values/cogs"
+    "storage/kv/namespaces/10cca0f984d143768bf7f23ee276f5e0/values/cogs"
 )
 kv_data = requests.get(url, headers=headers).json()
-kv_data["utils"] = utils_repo.head.commit
+kv_data["utils"] = str(utils_repo.head.commit)  # type:ignore
 requests.put(url, headers=headers, data=json.dumps(kv_data))
