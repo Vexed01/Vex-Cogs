@@ -1,4 +1,5 @@
 import asyncio
+import json
 from logging import getLogger
 from typing import Dict, List, NamedTuple, Union
 
@@ -51,6 +52,7 @@ def format_help(self: commands.Cog, ctx: commands.Context) -> str:
 
 
 async def format_info(
+    ctx: commands.Context,
     qualified_name: str,
     cog_version: str,
     extras: Dict[str, Union[str, bool]] = {},
@@ -60,6 +62,8 @@ async def format_info(
 
     Parameters
     ----------
+    ctx : commands.Context
+        Context
     qualified_name : str
         The name you want to show, eg "BetterUptime"
     cog_version : str
@@ -80,22 +84,44 @@ async def format_info(
     try:
         latest = await _get_latest_vers()
 
-        cog_updated = (
-            GREEN_CIRCLE if current.cogs[cog_name] >= latest.cogs[cog_name] else RED_CIRCLE
-        )
-        # utils_updated = GREEN_CIRCLE if current.utils >= latest.utils else RED_CIRCLE
-        red_updated = GREEN_CIRCLE if current.red >= latest.red else RED_CIRCLE
+        cog_updated = current.cogs[cog_name] >= latest.cogs[cog_name]
+        utils_updated = current.utils == latest.utils
+        red_updated = current.red >= latest.red
     except Exception:  # anything and everything, eg aiohttp error or version parsing error
         log.warning("Unable to parse versions.", exc_info=True)
-        cog_updated, _, red_updated = "Unknown", "Unknown", "Unknown"
+        cog_updated, utils_updated, red_updated = "Unknown", "Unknown", "Unknown"
         latest = UnknownVers({cog_name: "Unknown"})
 
     start = f"{qualified_name} by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n"
     versions = [
-        ["This Cog", current.cogs.get(cog_name), latest.cogs.get(cog_name), cog_updated],
-        # ["Bundled Utils", current.utils, latest.utils, utils_updated],
-        ["Red", current.red, latest.red, red_updated],
+        [
+            "This Cog",
+            current.cogs.get(cog_name),
+            latest.cogs.get(cog_name),
+            GREEN_CIRCLE if cog_updated else RED_CIRCLE,
+        ],
+        [
+            "Bundled Utils",
+            current.utils,
+            latest.utils,
+            GREEN_CIRCLE if utils_updated else RED_CIRCLE,
+        ],
+        [
+            "Red",
+            current.red,
+            latest.red,
+            GREEN_CIRCLE if red_updated else RED_CIRCLE,
+        ],
     ]
+    update_msg = "\n"
+    if not cog_updated:
+        update_msg += f"To update this cog, use the `{ctx.clean_prefix}cog update` command.\n"
+    if not utils_updated:
+        update_msg += (
+            f"To update the bundled utils, use the `{ctx.clean_prefix}utils update` command.\n"
+        )
+    if not red_updated:
+        update_msg += "To update Red, see https://docs.discord.red/en/stable/update_red.html\n"
 
     data = []
     if loops:
@@ -116,6 +142,7 @@ async def format_info(
     boxed = box(
         tabulate.tabulate(versions, headers=["", "Your Version", "Latest version", "Up to date?"])
     )
+    boxed += update_msg
     if data:
         boxed += box(tabulate.tabulate(data, tablefmt="plain"))
 
@@ -144,13 +171,13 @@ async def out_of_date_check(cogname: str, currentver: str) -> None:
 
 class Vers(NamedTuple):
     cogs: Dict[str, VersionInfo]
-    # utils: VersionInfo
+    utils: str
     red: VersionInfo
 
 
 class UnknownVers(NamedTuple):
     cogs: Dict[str, str]
-    # utils: str = "Unknown"
+    utils: str = "Unknown"
     red: str = "Unknown"
 
 
@@ -158,28 +185,29 @@ class UnknownVers(NamedTuple):
 async def _get_latest_vers() -> Vers:
     data: dict
     async with aiohttp.ClientSession() as session:
-        async with session.get(
-            "https://static.vexcodes.com/v1/versions.json", timeout=3  # ik its called static :)
-        ) as r:
+        async with session.get("https://api.vexcodes.com/v1/vers/", timeout=5) as r:
             data = await r.json()
-            latest_cogs = data.get("cogs", {})
+            latest_utils = data["utils"][:7]
+            data.pop("utils")
+            latest_cogs = data
         async with session.get("https://pypi.org/pypi/Red-DiscordBot/json", timeout=3) as r:
             data = await r.json()
             latest_red = VersionInfo.from_str(data.get("info", {}).get("version", "0.0.0"))
-        # async with session.get("https://pypi.org/pypi/vex-cog-utils/json", timeout=3) as r:
-        #     data = await r.json()
-        #     latest_utils = VersionInfo.from_str(data.get("info", {}).get("version", "0.0.0"))
 
     obj_latest_cogs = {
         str(cogname): VersionInfo.from_str(ver) for cogname, ver in latest_cogs.items()
     }
 
-    return Vers(obj_latest_cogs, latest_red)
+    return Vers(obj_latest_cogs, latest_utils, latest_red)
 
 
 def _get_current_vers(curr_cog_ver: str, qual_name: str) -> Vers:
+    with open("commit.json") as fp:
+        data = json.load(fp)
+        latest_utils = data.get("latest_commit", "Unknown")[:7]
+
     return Vers(
         {qual_name.lower(): VersionInfo.from_str(curr_cog_ver)},
-        # VersionInfo.from_str(cur_utils_version),
+        latest_utils,
         cur_red_version,
     )
