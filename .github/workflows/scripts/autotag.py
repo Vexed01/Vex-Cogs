@@ -50,7 +50,7 @@ else:
 
     url = (
         "https://api.cloudflare.com/client/v4/accounts/5d6844358ea26524bf29b35cb98628f5/"
-        f"storage/kv/namespaces/10cca0f984d143768bf7f23ee276f5e0/values/cogs"
+        "storage/kv/namespaces/10cca0f984d143768bf7f23ee276f5e0/values/cogs"
     )
     data = requests.get(url, headers=headers).json()
     data[cog] = ver
