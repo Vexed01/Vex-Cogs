@@ -2,7 +2,6 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Vexed01/Vex-Cogs/Checks?label=checks&style=for-the-badge)
 ![Read the Docs](https://img.shields.io/readthedocs/vex-cogs?style=for-the-badge)
-![Utils Downloads](https://img.shields.io/pypi/dw/vex-cog-utils?label=utils%20downloads&style=for-the-badge)
 ![Python 3.8](https://img.shields.io/badge/python-v3.8-blue?style=for-the-badge)
 ![Discord.py](https://img.shields.io/badge/discord-py-blue?style=for-the-badge)
 
