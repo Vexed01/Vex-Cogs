@@ -30,6 +30,7 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | [betteruptime](https://s.vexcodes.com/c/betteruptime) | See your bot's uptime percentages and check when downtime happened. |
 | [cmdlog](https://s.vexcodes.com/c/cmdlog) | Track command usage, searchable by user, server or command name.
 | [github](https://s.vexcodes.com/c/github) | Create, comment, labelify and close GitHub issues, with partial PR support. |
+| [googletrends](https://s.vexcodes.com/c/googletrends) | Find out what the world is searching, right from Discord. |
 | [madtranslate](https://s.vexcodes.com/c/madtranslate) | Translate text through lots of languages. Get some funny results! |
 | [stattrack](https://s.vexcodes.com/c/stattrack) | Track metrics about your bot and view them in Discord. |
 | [status](https://s.vexcodes.com/c/status) | Recieve automatic status updates from various services, including Discord. |

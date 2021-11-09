@@ -57,6 +57,7 @@ Cog name                              Summary
 :ref:`betteruptime<betteruptime>`     New uptime command that tracks the bot's uptime percentage (last 30 days).
 :ref:`cmdlog<cmdlog>`                 Track command usage, searchable by user, server or command name.
 :ref:`github<github>`                 Create, comment, labelify and close GitHub issues, with partial PR support.
+:ref:`googletrends<googletrends>`     Find out what the world is searching, right from Discord.
 :ref:`madtranslate<madtranslate>`     Translate text through lots of languages. Get some funny results!
 :ref:`stattrack<stattrack>`           Track metrics about your bot and view them in Discord.
 :ref:`status<status>`                 Recieve automatic status updates from various services, including Discord.
