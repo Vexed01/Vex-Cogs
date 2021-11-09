@@ -47,7 +47,7 @@ with open(utils_location / "README.md", "w") as fp:
     fp.write(readme)
 
 with open(utils_location / "commit.json", "w") as fp:
-    fp.write(json.dumps({"latest_commit": utils_repo.head.commit}))
+    fp.write(json.dumps({"latest_commit": str(utils_repo.head.commit)}))
 
 cog_folders = [
     "aliases",
