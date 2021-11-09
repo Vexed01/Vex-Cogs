@@ -39,9 +39,7 @@ class MixinMeta(ABC):
     msg_count: int
 
     @abstractmethod
-    async def plot(
-        self, sr: pandas.Series, delta: timedelta, title: str, ylabel: str
-    ) -> discord.File:
+    async def plot(self, sr: pandas.Series, delta: timedelta, ylabel: str) -> discord.File:
         raise NotImplementedError
 
     @abstractmethod

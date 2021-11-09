@@ -4,7 +4,7 @@ from io import StringIO
 import discord
 from discord.ext.commands.cooldowns import BucketType
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.chat_formatting import box, humanize_timedelta
 
 from stattrack.abc import MixinMeta
 from stattrack.converters import TimespanConverter
@@ -29,8 +29,15 @@ class StatTrackCommands(MixinMeta):
         sr = self.df_cache[label]
         if len(sr) < 2:
             return await ctx.send("I need a little longer to collect data. Try again in a minute.")
-        file = await self.plot(sr, delta, title, ylabel)
-        await ctx.send(file=file)
+        graph = await self.plot(sr, delta, ylabel)
+
+        embed = discord.Embed(
+            title=title + "for the last " + humanize_timedelta(timedelta=delta),
+            colour=await ctx.embed_colour(),
+        )
+        embed.set_footer(text="Times are in UTC")
+        embed.set_image(url="attachment://plot.png")
+        await ctx.send(file=graph, embed=embed)
 
     @commands.cooldown(10, 60.0, BucketType.user)
     @commands.group()
@@ -65,7 +72,9 @@ class StatTrackCommands(MixinMeta):
             )
             return
         fp.seek(0)
-        await ctx.send("Here is your file.", file=discord.File(fp, "stattrack.json"))
+        await ctx.send(
+            "Here is your file.", file=discord.File(fp, "stattrack.json")  # type:ignore
+        )
 
     @export.command(name="csv")
     async def export_csv(self, ctx: commands.Context):
@@ -86,7 +95,7 @@ class StatTrackCommands(MixinMeta):
             )
             return
         fp.seek(0)
-        await ctx.send("Here is your file.", file=discord.File(fp, "stattrack.csv"))
+        await ctx.send("Here is your file.", file=discord.File(fp, "stattrack.csv"))  # type:ignore
 
     @stattrack.command()
     async def ping(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
