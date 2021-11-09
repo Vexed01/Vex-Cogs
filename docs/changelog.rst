@@ -182,6 +182,14 @@ BetterUptime
 ============
 
 *********
+``2.1.2``
+*********
+
+2021-11-09
+
+- Fix incorrect percentages in graph annotation
+
+*********
 ``2.1.1``
 *********
 

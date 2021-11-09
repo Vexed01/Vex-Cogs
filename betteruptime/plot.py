@@ -53,7 +53,7 @@ def _plot(
             x=list(low_values.keys())[list(low_values.values()).index(val)],  # type:ignore
             # ^ is getting key from value
             y=val,
-            text=f"{low_values[date]}%\n{date.strftime('%d %b')}",
+            text=f"{val}%\n{date.strftime('%d %b')}",
         )
 
     labelled_pc = max(low_values.values()) if low_values else None
