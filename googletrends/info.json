@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": ["Vexed (Vexed#3211)"],
     "name": "GoogleTrends",
-    "install_msg": "Thanks for installing! Find out what the world is searching, right from Discord. Once you've loaded the cog, start with `[p]trends discord`\n\nPlease note there is no Google Trends API, so therefore this is a scraper and may break at any time.\n\nThis cog has docs! Check them out at <https://cogdocs.vexcodes.com/en/latest/cogs/googletrends.html>",
+    "install_msg": "Thanks for installing! Find out what the world is searching, right from Discord. Once you've loaded the cog, start with `[p]trends discord`\n\nPlease note there is no Google Trends API, so therefore this is a scraper and may break at any time.\n\nThis cog has docs! Check them out at <https://s.vexcodes.com/c/googletrends>",
     "requirements": ["plotly", "kaleido", "pytrends", "tabulate", "cachetools", "asyncache"],
     "description": "Find out what the world is searching, right from Discord. Includes charts.",
     "short": "Find out what the world is searching, right from Discord. Includes charts.",

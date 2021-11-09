@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": ["Vexed (Vexed#3211)"],
     "name": "GitHub",
-    "install_msg": "Thanks for installing! This cog was made for bot owners to manage issues on a specific repo. Get started with `gh howtoken` and `gh setrepo`.\n\nThis cog has docs! Check them out at <https://cogdocs.vexcodes.com/en/latest/cogs/github.html>",
+    "install_msg": "Thanks for installing! This cog was made for bot owners to manage issues on a specific repo. Get started with `gh howtoken` and `gh setrepo`.\n\nThis cog has docs! Check them out at <https://s.vexcodes.com/c/github>",
     "requirements": ["gidgethub>=5.0.0", "tabulate", "cachetools", "asyncache"],
     "description": "Create, comment, labelify and close GitHub issues, with partial PR support.",
     "short": "Create, comment, labelify and close GitHub issues.",

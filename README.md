@@ -24,18 +24,18 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 
 | Cog name | Description |
 | --- | --- |
-| [aliases](https://cogdocs.vexcodes.com/en/latest/cogs/aliases.html) | Get all the information you could ever need about a command's aliases. |
-| [anotherpingcog](https://cogdocs.vexcodes.com/en/latest/cogs/anotherpingcog.html) | Another ping cog... But this one has fancy colours in a customisable embed! |
-| [beautify](https://cogdocs.vexcodes.com/en/latest/cogs/beautify.html) | Beautify and minify JSON.
-| [betteruptime](https://cogdocs.vexcodes.com/en/latest/cogs/betteruptime.html) | See your bot's uptime percentages and check when downtime happened. |
-| [cmdlog](https://cogdocs.vexcodes.com/en/latest/cogs/cmdlog.html) | Track command usage, searchable by user, server or command name.
-| [github](https://cogdocs.vexcodes.com/en/latest/cogs/github.html) | Create, comment, labelify and close GitHub issues, with partial PR support. |
-| [madtranslate](https://cogdocs.vexcodes.com/en/latest/cogs/madtranslate.html) | Translate text through lots of languages. Get some funny results! |
-| [stattrack](https://cogdocs.vexcodes.com/en/latest/cogs/stattrack.html) | Track metrics about your bot and view them in Discord. |
-| [status](https://cogdocs.vexcodes.com/en/latest/cogs/status.html) | Recieve automatic status updates from various services, including Discord. |
-| [system](https://cogdocs.vexcodes.com/en/latest/cogs/system.html) | Get system metrics of the host device, such as RAM or CPU. |
-| [timechannel](https://cogdocs.vexcodes.com/en/latest/cogs/timechannel.html) | Get the time in different timezones in voice channels. |
-| [wol](https://cogdocs.vexcodes.com/en/latest/cogs/wol.html) | Use Wake on LAN from Discord! This cog sends magic packets on the local network.
+| [aliases](https://s.vexcodes.com/c/aliases) | Get all the information you could ever need about a command's aliases. |
+| [anotherpingcog](https://s.vexcodes.com/c/anotherpingcog) | Another ping cog... But this one has fancy colours in a customisable embed! |
+| [beautify](https://s.vexcodes.com/c/beautify) | Beautify and minify JSON.
+| [betteruptime](https://s.vexcodes.com/c/betteruptime) | See your bot's uptime percentages and check when downtime happened. |
+| [cmdlog](https://s.vexcodes.com/c/cmdlog) | Track command usage, searchable by user, server or command name.
+| [github](https://s.vexcodes.com/c/github) | Create, comment, labelify and close GitHub issues, with partial PR support. |
+| [madtranslate](https://s.vexcodes.com/c/madtranslate) | Translate text through lots of languages. Get some funny results! |
+| [stattrack](https://s.vexcodes.com/c/stattrack) | Track metrics about your bot and view them in Discord. |
+| [status](https://s.vexcodes.com/c/status) | Recieve automatic status updates from various services, including Discord. |
+| [system](https://s.vexcodes.com/c/system) | Get system metrics of the host device, such as RAM or CPU. |
+| [timechannel](https://s.vexcodes.com/c/timechannel) | Get the time in different timezones in voice channels. |
+| [wol](https://s.vexcodes.com/c/wol) | Use Wake on LAN from Discord! This cog sends magic packets on the local network.
 
 All these cogs have docs! My docs [are here](https://cogdocs.vexcodes.com/en/latest) or click on the cog name to go directly to that cog's docs page.
 
