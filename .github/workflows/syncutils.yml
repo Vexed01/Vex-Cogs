@@ -25,7 +25,7 @@ jobs:
     - name: Run script syncutils.py
       run: |
         python .github/workflows/scripts/syncutils.py
-      with:
+      env:
         CF_KV: ${{ secrets.CF_KV}}
 
     - name: "Commit and push changes"
