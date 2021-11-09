@@ -283,7 +283,7 @@ class CmdLog(commands.Cog):
 
     @commands.command(hidden=True)
     async def cmdloginfo(self, ctx: commands.Context):
-        main = await format_info(self.qualified_name, self.__version__)
+        main = await format_info(ctx, self.qualified_name, self.__version__)
         cache_size = humanize_bytes(self.cache_size(), 1)
         cache_count = humanize_number(len(self.log_cache))
         extra = f"\nCache size: {cache_size} with {cache_count} commands."

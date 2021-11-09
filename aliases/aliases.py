@@ -38,7 +38,7 @@ class Aliases(commands.Cog):
 
     @commands.command(hidden=True)
     async def aliasesinfo(self, ctx: commands.Context):
-        await ctx.send(await format_info(self.qualified_name, self.__version__))
+        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.command(usage="<command>")
     async def aliases(self, ctx: commands.Context, *, strcommand: str):

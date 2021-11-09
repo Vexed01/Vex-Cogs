@@ -79,7 +79,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     @commands.command(hidden=True, aliases=["tcinfo"])
     async def timechannelinfo(self, ctx: commands.Context):
         await ctx.send(
-            await format_info(self.qualified_name, self.__version__, loops=[self.loop_meta])
+            await format_info(ctx, self.qualified_name, self.__version__, loops=[self.loop_meta])
         )
 
     @commands.guild_only()

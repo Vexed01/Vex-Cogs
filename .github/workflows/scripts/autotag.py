@@ -1,5 +1,8 @@
+import json
+import os
 import re
 
+import requests
 from git import Repo
 
 # hello person looking at my code
@@ -37,7 +40,20 @@ else:
     tag_name = f"{cog}-{ver}"
     repo.create_tag(tag_name, message=TAG_MESSAGE.format(cogname=cog, commit=latest_commit))
     repo.remote().push(f"refs/tags/{tag_name}")
-    print(f"Pushed a new tag {tag_name}.")
+    print(f"Pushed a new tag {tag_name} to GitHub.")
 
+    token = os.environ["CF_KV"]
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "text/plain",
+    }
+
+    url = (
+        "https://api.cloudflare.com/client/v4/accounts/5d6844358ea26524bf29b35cb98628f5/"
+        f"storage/kv/namespaces/10cca0f984d143768bf7f23ee276f5e0/values/cogs"
+    )
+    data = requests.get(url, headers=headers).json()
+    data[cog] = ver
+    requests.put(url, headers=headers, data=json.dumps(data))
 
 print("Script finished.")

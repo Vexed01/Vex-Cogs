@@ -55,7 +55,7 @@ class System(commands.Cog):
 
     @commands.command(hidden=True)
     async def systeminfo(self, ctx: commands.Context):
-        await ctx.send(await format_info(self.qualified_name, self.__version__))
+        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     def finalise_embed(self, e: discord.Embed) -> discord.Embed:
         """Make embeds look nicer - limit to two columns and set the footer to boot time"""

@@ -2,10 +2,13 @@
 # this is currently triggered manually, may be changed in the future
 
 import datetime
+import json
+import os
 import shutil
 from pathlib import Path
 
 import git
+import requests
 from git import Repo
 
 README_MD_TEXT = """## My utils
@@ -31,8 +34,8 @@ utils_repo = Repo.clone_from(
 utils_location = utils_repo_clone_location / "vexutils"
 
 with open(utils_location / "version.py") as fp:
-    data = fp.read()
-    curr_ver = data.split('"')[1]
+    kv_data = fp.read()
+    curr_ver = kv_data.split('"')[1]
 
 readme = README_MD_TEXT.format(
     time=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z"),
@@ -43,6 +46,9 @@ readme = README_MD_TEXT.format(
 with open(utils_location / "README.md", "w") as fp:
     fp.write(readme)
 
+with open(utils_location / "commit.json", "w") as fp:
+    fp.write(json.dumps({"latest_commit": utils_repo.head.commit}))
+
 cog_folders = [
     "aliases",
     "anotherpingcog",
@@ -50,6 +56,7 @@ cog_folders = [
     "betteruptime",
     "cmdlog",
     "github",
+    "googletrends",
     "madtranslate",
     "stattrack",
     "status",
@@ -67,3 +74,17 @@ for cog in cog_folders:
 
 utils_repo.close()
 git.rmtree(utils_repo_clone_location)
+
+token = os.environ["CF_KV"]
+headers = {
+    "Authorization": f"Bearer {token}",
+    "Content-Type": "text/plain",
+}
+
+url = (
+    "https://api.cloudflare.com/client/v4/accounts/5d6844358ea26524bf29b35cb98628f5/"
+    f"storage/kv/namespaces/10cca0f984d143768bf7f23ee276f5e0/values/cogs"
+)
+kv_data = requests.get(url, headers=headers).json()
+kv_data["utils"] = utils_repo.head.commit
+requests.put(url, headers=headers, data=json.dumps(kv_data))

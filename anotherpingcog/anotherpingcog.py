@@ -80,7 +80,7 @@ class AnotherPingCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def apcinfo(self, ctx: commands.Context):
-        await ctx.send(await format_info(self.qualified_name, self.__version__))
+        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     # cspell:disable-next-line
     @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])

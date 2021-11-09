@@ -90,7 +90,7 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
     @commands.command(hidden=True)
     async def betteruptimeinfo(self, ctx: commands.Context):
         loops = [self.main_loop_meta] if self.main_loop_meta else []
-        await ctx.send(await format_info(self.qualified_name, self.__version__, loops=loops))
+        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__, loops=loops))
 
     @commands.command(name="updev", hidden=True)
     async def _dev_com(self, ctx: commands.Context):

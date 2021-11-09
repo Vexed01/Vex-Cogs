@@ -106,7 +106,7 @@ class GitHub(commands.Cog):
     async def githubinfo(self, ctx: commands.Context):
         extras = {"Token": bool(self.token), "Repo": bool(self.repo)}
         main = await format_info(
-            self.qualified_name, self.__version__, extras=extras  # type:ignore
+            ctx, self.qualified_name, self.__version__, extras=extras  # type:ignore
         )
 
         if not (self.token and self.repo):

@@ -118,6 +118,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         assert self.df_cache is not None
         await ctx.send(
             await format_info(
+                ctx,
                 self.qualified_name,
                 self.__version__,
                 loops=[self.loop_meta] if self.loop_meta else [],

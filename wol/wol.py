@@ -50,7 +50,7 @@ class WOL(commands.Cog):
 
     @commands.command(hidden=True)
     async def wolinfo(self, ctx: commands.Context):
-        await ctx.send(await format_info(self.qualified_name, self.__version__))
+        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.is_owner()
     @commands.command()
