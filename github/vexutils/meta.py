@@ -1,6 +1,7 @@
 import asyncio
 import json
 from logging import getLogger
+from pathlib import Path
 from typing import Dict, List, NamedTuple, Union
 
 import aiohttp
@@ -202,7 +203,7 @@ async def _get_latest_vers() -> Vers:
 
 
 def _get_current_vers(curr_cog_ver: str, qual_name: str) -> Vers:
-    with open("commit.json") as fp:
+    with open(Path(__file__).parent / "commit.json") as fp:
         data = json.load(fp)
         latest_utils = data.get("latest_commit", "Unknown")[:7]
 
