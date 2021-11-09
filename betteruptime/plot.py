@@ -3,13 +3,12 @@ import functools
 import io
 
 import discord
-import matplotlib
 import pandas
-from matplotlib import pyplot as plt
-from numpy import ceil, floor
+import plotly.express as px
 from pandas import Timestamp
+from plotly.graph_objs._figure import Figure
 
-matplotlib.use("agg")
+# yes i am using a private import, atm plotly does dynamic imports which are not supported by mypy
 
 
 async def plot(sr: pandas.Series) -> discord.File:
@@ -24,55 +23,33 @@ async def plot(sr: pandas.Series) -> discord.File:
     return await asyncio.wait_for(task, timeout=10.0)
 
 
-def get_y_lim_min(sr: pandas.Series) -> int:
-    min = sr.min()
-    if min > 70:
-        return 60
-    if min > 20:
-        return floor((min / 10) - 1.3) * 10
-    return 0
-
-
-def get_y_lim_max(sr: pandas.Series):
-    max = sr.max()
-    if max > 90:
-        return 104
-    if max > 50:
-        return ceil((max / 10) * 10) + 4
-    return ceil((max / 10) * 10) + 2.5
-
-
 def _plot(
     sr: pandas.Series,
 ) -> discord.File:
     """Do not use on own - blocking."""
-    with plt.style.context("dark_background"):
-        fig = plt.figure(figsize=(8, 5))
-        ax = fig.add_subplot(111)
-        ax = sr.plot(
-            ylabel="Percentage",
-            title="Daily uptime data",
-            ax=ax,
-        )
 
-        ymin = get_y_lim_min(sr)
-        ymax = get_y_lim_max(sr)
-        ax.set_ylim([ymin, ymax])
-
-        for i, value in enumerate(sr.values):
-            if value < 99.7:  # only annotate days that weren't perfect
-                date: Timestamp = sr.index[i]
-                ax.annotate(
-                    f"{value}%\n{date.strftime('%d %b')}",  # type:ignore  # stubs incorrect
-                    (sr.index[i], value),
-                    xytext=(sr.index[i], value - ((ymax - ymin) / 8)),
-                    arrowprops={"arrowstyle": "-"},
-                )
-
-        buffer = io.BytesIO()
-        fig.savefig(buffer, format="png", dpi=200)
-        plt.close(fig)
-        buffer.seek(0)
-        file = discord.File(buffer, "plot.png")
-        buffer.close()
-        return file
+    fig: Figure = px.line(
+        sr,
+        template="plotly_dark",
+        labels={"index": "Date", "value": "Percentage uptime"},
+    )
+    fig.update_layout(
+        title_x=0.5,
+        font_size=14,
+        showlegend=False,
+    )
+    for i, value in enumerate(sr.values):
+        if value < 99.7:  # only annotate non-perfect days
+            date: Timestamp = sr.index[i]  # type:ignore
+            fig.add_annotation(
+                x=date,
+                y=value,
+                text=f"{value}%\n{date.strftime('%d %b')}",
+            )
+    fig.update_yaxes(rangemode="tozero")
+    bytes = fig.to_image(format="png", width=800, height=500, scale=1)
+    buffer = io.BytesIO(bytes)
+    buffer.seek(0)
+    file = discord.File(buffer, filename="plot.png")
+    buffer.close()
+    return file

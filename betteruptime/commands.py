@@ -140,13 +140,16 @@ class BUCommands(MixinMeta):
             return await ctx.send("Give me a few more days to collect data!")
 
         async with ctx.typing():
-            file = await plot(sr)
-        await ctx.send(
-            content=(
-                "This excludes today. Days with uptime under `99.7%` will be labelled, if any."
-            ),
-            file=file,
+            graph = await plot(sr)
+
+        embed = discord.Embed(
+            title="Daily uptime data for the last " + str(num_days) + " days",
+            description="Days with uptime under `99.7%` will be labelled, if any.",
+            colour=await ctx.embed_colour(),
         )
+        embed.set_footer(text="Times are in UTC. This excludes today.")
+        embed.set_image(url="attachment://plot.png")
+        await ctx.send(file=graph, embed=embed)
 
     @commands.is_owner()
     @commands.command()
