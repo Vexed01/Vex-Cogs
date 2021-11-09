@@ -12,7 +12,6 @@ from redbot.core.utils.chat_formatting import box
 
 from .consts import DOCS_BASE, GREEN_CIRCLE, RED_CIRCLE
 from .loop import VexLoop
-from .version import __version__ as cur_utils_version
 
 log = getLogger("red.vex-utils")
 
@@ -39,16 +38,16 @@ def format_help(self: commands.Cog, ctx: commands.Context) -> str:
         Formatted help
     """
     docs = DOCS_BASE.format(self.qualified_name.lower())
-    pre_processed = super(type(self), self).format_help_for_context(ctx)
+    pre_processed = super(type(self), self).format_help_for_context(ctx)  # type:ignore
 
     return (
-        f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: "
-        f"**`{self.__version__}`**\n{docs}"
+        f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: "  # type:ignore
+        f"**`{self.__version__}`**\n{docs}"  # type:ignore
     )
     # adding docs link here so doesn't show up in auto generated docs
 
 
-# TODO: get utils version directly from pypi and stop using red internal util
+# TODO: stop using red internal util
 
 
 async def format_info(
@@ -82,19 +81,19 @@ async def format_info(
         latest = await _get_latest_vers()
 
         cog_updated = (
-            GREEN_CIRCLE if current.cogs.get(cog_name) >= latest.cogs.get(cog_name) else RED_CIRCLE
+            GREEN_CIRCLE if current.cogs[cog_name] >= latest.cogs[cog_name] else RED_CIRCLE
         )
-        utils_updated = GREEN_CIRCLE if current.utils >= latest.utils else RED_CIRCLE
+        # utils_updated = GREEN_CIRCLE if current.utils >= latest.utils else RED_CIRCLE
         red_updated = GREEN_CIRCLE if current.red >= latest.red else RED_CIRCLE
     except Exception:  # anything and everything, eg aiohttp error or version parsing error
         log.warning("Unable to parse versions.", exc_info=True)
-        cog_updated, utils_updated, red_updated = "Unknown", "Unknown", "Unknown"
+        cog_updated, _, red_updated = "Unknown", "Unknown", "Unknown"
         latest = UnknownVers({cog_name: "Unknown"})
 
     start = f"{qualified_name} by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n"
     versions = [
         ["This Cog", current.cogs.get(cog_name), latest.cogs.get(cog_name), cog_updated],
-        ["Bundled Utils", current.utils, latest.utils, utils_updated],
+        # ["Bundled Utils", current.utils, latest.utils, utils_updated],
         ["Red", current.red, latest.red, red_updated],
     ]
 
@@ -134,7 +133,7 @@ async def out_of_date_check(cogname: str, currentver: str) -> None:
         )
         # really doesn't matter if this fails so fine with debug level
         return
-    if VersionInfo.from_str(currentver) < vers.cogs.get(cogname):
+    if VersionInfo.from_str(currentver) < vers.cogs[cogname]:
         log.warning(
             f"Your {cogname} cog, from Vex, is out of date. You can update your cogs with the "
             "'cog update' command in Discord."
@@ -145,13 +144,13 @@ async def out_of_date_check(cogname: str, currentver: str) -> None:
 
 class Vers(NamedTuple):
     cogs: Dict[str, VersionInfo]
-    utils: VersionInfo
+    # utils: VersionInfo
     red: VersionInfo
 
 
 class UnknownVers(NamedTuple):
     cogs: Dict[str, str]
-    utils: str = "Unknown"
+    # utils: str = "Unknown"
     red: str = "Unknown"
 
 
@@ -167,20 +166,20 @@ async def _get_latest_vers() -> Vers:
         async with session.get("https://pypi.org/pypi/Red-DiscordBot/json", timeout=3) as r:
             data = await r.json()
             latest_red = VersionInfo.from_str(data.get("info", {}).get("version", "0.0.0"))
-        async with session.get("https://pypi.org/pypi/vex-cog-utils/json", timeout=3) as r:
-            data = await r.json()
-            latest_utils = VersionInfo.from_str(data.get("info", {}).get("version", "0.0.0"))
+        # async with session.get("https://pypi.org/pypi/vex-cog-utils/json", timeout=3) as r:
+        #     data = await r.json()
+        #     latest_utils = VersionInfo.from_str(data.get("info", {}).get("version", "0.0.0"))
 
     obj_latest_cogs = {
         str(cogname): VersionInfo.from_str(ver) for cogname, ver in latest_cogs.items()
     }
 
-    return Vers(obj_latest_cogs, latest_utils, latest_red)
+    return Vers(obj_latest_cogs, latest_red)
 
 
 def _get_current_vers(curr_cog_ver: str, qual_name: str) -> Vers:
     return Vers(
         {qual_name.lower(): VersionInfo.from_str(curr_cog_ver)},
-        VersionInfo.from_str(cur_utils_version),
+        # VersionInfo.from_str(cur_utils_version),
         cur_red_version,
     )
