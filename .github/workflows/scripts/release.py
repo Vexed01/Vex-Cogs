@@ -55,5 +55,6 @@ else:
     data = requests.get(url, headers=headers).json()
     data[cog] = ver
     requests.put(url, headers=headers, data=json.dumps(data))
+    print("Updated Cloudflare KV.")
 
 print("Script finished.")
