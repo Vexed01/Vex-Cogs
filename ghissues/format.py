@@ -7,7 +7,8 @@ import datetime
 
 import discord
 from redbot.core.utils.chat_formatting import inline, pagify
-from vexcogutils.chat import inline_hum_list
+
+from .vexutils.chat import inline_hum_list
 
 
 def format_embed(issue_data: dict) -> discord.Embed:

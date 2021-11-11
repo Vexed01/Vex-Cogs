@@ -1,4 +1,3 @@
-import asyncio
 from asyncio import TimeoutError
 from typing import Mapping
 
@@ -7,15 +6,15 @@ from gidgethub import HTTPException
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.predicates import MessagePredicate
-from vexcogutils import format_help, format_info
 
 from ghissues.button_pred import wait_for_yes_no
 from ghissues.views.master import GHView
 
 from .api import GitHubAPI
-from .consts import CROSS, EXCEPTIONS
+from .consts import EXCEPTIONS
 from .errors import CustomError
 from .format import format_embed
+from .vexutils import format_help, format_info
 
 # cspell:ignore labelify kowlin's resp
 
@@ -43,7 +42,7 @@ class GHIssues(commands.Cog):
     cog, eg `githubcards`. Then set up with `ghi setrepo`.
     """
 
-    __version__ = "1.0.0.dev"
+    __version__ = "1.0.0"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -57,8 +56,6 @@ class GHIssues(commands.Cog):
         self.api = GitHubAPI("", "")
 
         self.setup = False
-
-        asyncio.create_task(self.async_init())
 
     async def async_init(self) -> None:
         token = (await self.bot.get_shared_api_tokens("github")).get("token", "")
@@ -95,20 +92,7 @@ class GHIssues(commands.Cog):
 
     @commands.command(hidden=True)
     async def ghissuesinfo(self, ctx: commands.Context):
-        extras = {"Token": bool(self.token), "Repo": bool(self.repo)}
-        main = await format_info(
-            self.qualified_name, self.__version__, extras=extras  # type:ignore
-        )
-
-        if not (self.token and self.repo):
-            extra = (
-                f"\nIt is expected these are `{CROSS}` if no commands have been used since "
-                "the cog was last loaded."
-            )
-        else:
-            extra = ""
-
-        await ctx.send(f"{main}{extra}")
+        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.group(aliases=["ghissues"], invoke_without_command=True)
     @commands.is_owner()
