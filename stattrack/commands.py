@@ -32,7 +32,7 @@ class StatTrackCommands(MixinMeta):
         graph = await self.plot(sr, delta, ylabel)
 
         embed = discord.Embed(
-            title=title + "for the last " + humanize_timedelta(timedelta=delta),
+            title=title + " for the last " + humanize_timedelta(timedelta=delta),
             colour=await ctx.embed_colour(),
         )
         embed.set_footer(text="Times are in UTC")
