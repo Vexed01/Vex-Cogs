@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 import discord
 from discord.channel import TextChannel
@@ -45,6 +45,21 @@ class ButtonPoll(commands.Cog):
 
         bot.add_dev_env_value("bpoll", lambda _: self)
 
+    async def red_delete_data_for_user(
+        self,
+        *,
+        requester: Literal["discord_deleted_user", "owner", "user", "user_strict"],
+        user_id: int,
+    ):
+        for g_id, g_polls in (await self.config.all_guilds()).items():
+            for poll_id, poll in g_polls["poll_user_choices"].items():
+                for user, vote in poll.items():
+                    if user == str(user_id):
+                        async with self.config.guild_from_id(
+                            g_id
+                        ).poll_user_choices() as user_choices:
+                            del user_choices[poll_id][user]
+
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
@@ -76,11 +91,6 @@ class ButtonPoll(commands.Cog):
     @commands.command(name="buttonpoll", aliases=["bpoll"])
     async def buttonpoll(self, ctx: commands.Context, channel: Optional[TextChannel] = None):
         channel = channel or ctx.channel  # type:ignore
-        unique_poll_id = (  # last 8 didgits of msg ID and first 50 of sanitised question
-            str(ctx.message.id)[8:]
-            + "_"
-            + "".join(c for c in ctx.message.content if c.isalnum())[:50]
-        )
 
         # TODO: catch timeouterror
 
@@ -174,6 +184,9 @@ class ButtonPoll(commands.Cog):
 
         await ctx.send("All done!")
 
+        unique_poll_id = (  # last 8 didgits of msg ID and first 50 of sanitised question
+            str(ctx.message.id)[8:] + "_" + "".join(c for c in question if c.isalnum())[:50]
+        )
         poll = Poll(
             unique_poll_id=unique_poll_id,
             guild_id=ctx.guild.id,  # type:ignore
