@@ -170,7 +170,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
         await ctx.send(
             "**Examples**\n\n"
             f"`{p}trends discord`\n"
-            "    The simple one! Trends for Discord, 7 days, worldwide"
+            "    The simple one! Trends for Discord, 7 days, worldwide\n"
             f"- `{p}trends 1d US discord twitter youtube`\n"
             "    1 day, United Stats searching for Discord, Twitter and YouTube\n"
             f"- `{p}trends 1y COVID-19`\n"
