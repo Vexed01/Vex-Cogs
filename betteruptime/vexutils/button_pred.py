@@ -1,5 +1,4 @@
-# type:ignore
-
+# type:ignore  # keep until dpy 2
 import asyncio
 from dataclasses import dataclass
 from typing import Any, List, Optional
@@ -103,14 +102,20 @@ async def wait_for_press(
         raise ValueError("The `items` argument cannot contain an empty list.")
 
     view = _PredView(timeout, ctx.author.id)  # type:ignore
-
     for i in items:
         button = _PredButton(i.ref, i.style, i.label, i.row)
         view.add_item(button)
-
-    await ctx.send(content=content, embed=embed, view=view)
+    message = await ctx.send(content=content, embed=embed, view=view)
 
     await asyncio.wait_for(_press_wait(view), timeout=timeout)
+
+    emptyview = ui.View()
+    for i in items:
+        button = ui.Button(style=i.style, label=i.label, row=i.row, disabled=i.ref != view.ref)
+        emptyview.add_item(button)
+    await message.edit(view=emptyview)
+    emptyview.stop()
+
     return view.ref
 
 
@@ -150,11 +155,18 @@ async def wait_for_yes_no(
         A button was not pressed in time.
     """
     view = _PredView(timeout, ctx.author.id)  # type:ignore
-
     view.add_item(_PredButton(True, ButtonStyle.blurple, "Yes"))
     view.add_item(_PredButton(False, ButtonStyle.blurple, "No"))
 
-    await ctx.send(content=content, embed=embed, view=view)
-
+    message = await ctx.send(content=content, embed=embed, view=view)
     await asyncio.wait_for(_press_wait(view), timeout=timeout)
+
+    emptyview = ui.View()
+    emptyview.add_item(
+        ui.Button(style=ButtonStyle.blurple, label="Yes", disabled=view.ref is False)
+    )
+    emptyview.add_item(ui.Button(style=ButtonStyle.blurple, label="No", disabled=view.ref is True))
+    await message.edit(view=emptyview)
+    emptyview.stop()
+
     return view.ref
