@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Optional
 
+import discord
 from redbot.core.bot import Red
 
 from .chat import humanize_bytes, inline_hum_list
