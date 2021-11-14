@@ -34,7 +34,7 @@ class StatTrackCommands(MixinMeta):
         if delta == datetime.timedelta(days=9000):  # "all" was entered and was replaced with 9k
             str_delta = " all time"
         else:
-            str_delta = " for the last " + humanize_timedelta(delta)
+            str_delta = " for the last " + humanize_timedelta(timedelta=delta)
 
         embed = discord.Embed(
             title=title + str_delta,
