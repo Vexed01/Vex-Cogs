@@ -31,8 +31,13 @@ class StatTrackCommands(MixinMeta):
             return await ctx.send("I need a little longer to collect data. Try again in a minute.")
         graph = await self.plot(sr, delta, ylabel)
 
+        if delta == datetime.timedelta(days=9000):  # "all" was entered and was replaced with 9k
+            str_delta = " all time"
+        else:
+            str_delta = " for the last " + humanize_timedelta(delta)
+
         embed = discord.Embed(
-            title=title + " for the last " + humanize_timedelta(timedelta=delta),
+            title=title + str_delta,
             colour=await ctx.embed_colour(),
         )
         embed.set_footer(text="Times are in UTC")
