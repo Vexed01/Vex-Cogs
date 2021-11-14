@@ -57,6 +57,7 @@ cog_folders = [
     "cmdlog",
     "github",
     "googletrends",
+    "ghissues",
     "madtranslate",
     "stattrack",
     "status",
