@@ -4,6 +4,7 @@ from typing import List, Literal, Optional
 
 import discord
 from discord.channel import TextChannel
+from discord.embeds import EmptyEmbed
 from discord.message import Message
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -14,7 +15,7 @@ from buttonpoll.poll import Poll, PollOption
 from buttonpoll.pollview import PollView
 
 from .vexutils import format_help, format_info
-from .vexutils.button_pred import wait_for_yes_no
+from .vexutils.button_pred import PredItem, wait_for_press, wait_for_yes_no
 from .vexutils.chat import datetime_to_timestamp
 from .vexutils.loop import VexLoop
 
@@ -88,105 +89,131 @@ class ButtonPoll(commands.Cog):
                 self.bot.add_view(view, message_id=obj_poll.message_id)
                 log.debug(f"Re-initialised view for poll {obj_poll.unique_poll_id}")
 
-    @commands.command(name="buttonpoll", aliases=["bpoll"])
-    async def buttonpoll(self, ctx: commands.Context, channel: Optional[TextChannel] = None):
-        channel = channel or ctx.channel  # type:ignore
+    @commands.guild_only()  # type:ignore
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.command(name="buttonpoll", aliases=["bpoll"], usage="[chan]")
+    async def buttonpoll(self, ctx: commands.Context, chan: Optional[TextChannel] = None):
+        channel = chan or ctx.channel
+        assert isinstance(channel, TextChannel)
 
-        # TODO: catch timeouterror
+        # these two checks are untested :)
+        if not channel.permissions_for(ctx.author).send_messages:  # type:ignore
+            return await ctx.send(
+                f"You don't have permission to send messages in {channel.mention}, so I can't "
+                "start a poll there."
+            )
+        if not channel.permissions_for(ctx.me).send_messages:  # type:ignore
+            return await ctx.send(
+                f"I don't have permission to send messages in {channel.mention}, so I can't "
+                "start a poll there."
+            )
 
-        # TODO: let user choose colour of buttons
-
-        # TITLE
-        await ctx.send(
-            f"I'll be creating a poll in {channel.mention}.\n"
-            "What do you want the question to be? Keep it short, if you want to add more detail "
-            "you can later on. 1 minute timeout, say `cancel` to cancel."
-        )
-        t_msg: Message = await self.bot.wait_for(
-            "message", check=MessagePredicate.same_context(ctx), timeout=60
-        )
-        if t_msg.content.lower() == "cancel":
-            return await ctx.send("Cancelled.")
-        question = t_msg.content
-
-        # DESCRIPTION
-        await ctx.send(
-            "Great! If you want an extended description, enter it now or say `skip` if you don't. "
-            "5 minute timeout."
-        )
-        d_msg: Message = await self.bot.wait_for(
-            "message", check=MessagePredicate.same_context(ctx), timeout=300
-        )
-        if d_msg.content.lower() == "skip":
-            await ctx.send("Okay, they'll be no description.")
-            description = None
-        elif d_msg.content.lower() == "cancel":
-            return await ctx.send("Cancelled.")
-        else:
-            description = d_msg.content
-
-        # OPTIONS
-        await ctx.send(
-            "What do you want the options to be? Enter up to five, seperated by a new line "
-            "(on desktop do Shift+Enter). 5 minute timeout, say just `cancel` to cancel."
-        )
-        o_msg: Message = await self.bot.wait_for(
-            "message", check=MessagePredicate.same_context(ctx), timeout=300
-        )
-        if o_msg.content.lower() == "cancel":
-            return await ctx.send("Cancelled.")
-        str_options = o_msg.content.split("\n")
-        if len(str_options) > 5:
-            return await ctx.send("Too many options, max is 5.")
-        elif len(str_options) < 2:
-            return await ctx.send("You need at least two options.")
-
-        options: List[PollOption] = []
-        for str_option in str_options:
-            option = PollOption(str_option, discord.ButtonStyle.primary)
-            options.append(option)
-
-        # TIME
-        await ctx.send(
-            "How long do you want the poll to be? Valid units are `seconds`, `minutes`, `hours`, "
-            "`days` and `weeks`.\nExamples: `1 week` or `1 day 12 hours`"
-        )
-        ti_msg: Message = await self.bot.wait_for(
-            "message", check=MessagePredicate.same_context(ctx), timeout=60
-        )
         try:
-            duration = parse_timedelta(ti_msg.content)
-        except Exception:
-            return await ctx.send("Invalid time format. Cancelled.")
-        if duration is None:
-            return await ctx.send("Invalid time format. Cancelled.")
-        poll_finish = datetime.datetime.now(datetime.timezone.utc) + duration
+            # TITLE
+            await ctx.send(
+                f"I'll be creating a poll in {channel.mention}.\n"
+                "What do you want the question to be? Keep it short, if you want to add more "
+                "detail you can later on. 1 minute timeout, say `cancel` to cancel."
+            )
+            t_msg: Message = await self.bot.wait_for(
+                "message", check=MessagePredicate.same_context(ctx), timeout=60
+            )
+            if t_msg.content.lower() == "cancel":
+                return await ctx.send("Cancelled.")
+            if len(t_msg.content) > 256:
+                return await ctx.send("Question is too long, max 256 characters. Cancelled.")
+            question = t_msg.content
 
-        # YES/NO QS
-        change_vote = await wait_for_yes_no(
-            ctx,
-            content="Almost there! Just a few yes/no questions left.\nDo you want to allow people "
-            "to change their vote while the poll is live?",
-            timeout=60,
-        )
-        view_while_live = await wait_for_yes_no(
-            ctx,
-            content="Do you want to allow people to view the results while the poll is live? If "
-            "you say yes, only people who've voted will be able to see.",
-            timeout=60,
-        )
-        send_msg_when_over = await wait_for_yes_no(
-            ctx,
-            content="Do you want to send a message when the poll is over, or just edit the old "
-            "one?",
-            timeout=60,
-        )
+            # DESCRIPTION
+            await ctx.send(
+                "Great! If you want an extended description, enter it now or say `skip` if you "
+                "don't. 3 minute timeout."
+            )
+            d_msg: Message = await self.bot.wait_for(
+                "message", check=MessagePredicate.same_context(ctx), timeout=180
+            )
+            if d_msg.content.lower() == "skip":
+                await ctx.send("Okay, they'll be no description.")
+                description = None
+            elif d_msg.content.lower() == "cancel":
+                return await ctx.send("Cancelled.")
+            else:
+                description = d_msg.content
+
+            # OPTIONS
+            await ctx.send(
+                "What do you want the options to be? Enter up to five, seperated by a new line "
+                "(on desktop do Shift+Enter). 3 minute timeout, say just `cancel` to cancel."
+            )
+            o_msg: Message = await self.bot.wait_for(
+                "message", check=MessagePredicate.same_context(ctx), timeout=180
+            )
+            if o_msg.content.lower() == "cancel":
+                return await ctx.send("Cancelled.")
+            str_options = o_msg.content.split("\n")
+            if len(str_options) > 5:
+                return await ctx.send("Too many options, max is 5. Cancelled.")
+            elif len(str_options) < 2:
+                return await ctx.send("You need at least two options. Cancelled.")
+
+            options: List[PollOption] = []
+            for str_option in str_options:
+                if len(str_option) > 80:
+                    return await ctx.send(
+                        "One of your options is too long, the limit is 80 characters. Cancelled."
+                    )
+                if str_option in [i.name for i in options]:  # if in already added options
+                    return await ctx.send("You can't have duplicate options. Cancelled.")
+                option = PollOption(str_option, discord.ButtonStyle.primary)
+                options.append(option)
+
+            # TIME
+            await ctx.send(
+                "How long do you want the poll to be? Valid units are `seconds`, `minutes`, "
+                "`hours`, `days` and `weeks`.\nExamples: `1 week` or `1 day 12 hours`"
+            )
+            ti_msg: Message = await self.bot.wait_for(
+                "message", check=MessagePredicate.same_context(ctx), timeout=60
+            )
+            try:
+                duration = parse_timedelta(ti_msg.content)
+            except Exception:
+                return await ctx.send("Invalid time format. Cancelled.")
+            if duration is None:
+                return await ctx.send("Invalid time format. Cancelled.")
+
+            # YES/NO QS
+            change_vote = await wait_for_yes_no(
+                ctx,
+                content="Almost there! Just a few yes/no questions left.\nDo you want to allow "
+                "people to change their vote while the poll is live?",
+                timeout=60,
+            )
+            view_while_live = await wait_for_yes_no(
+                ctx,
+                content="Do you want to allow people to view the results while the poll is live?",
+                timeout=60,
+            )
+            send_msg_when_over = await wait_for_press(
+                ctx,
+                items=[
+                    PredItem(False, discord.ButtonStyle.primary, "Edit old"),
+                    PredItem(True, discord.ButtonStyle.primary, "Send new"),
+                ],
+                content="Do you want to send a new message when the poll is over, or just edit "
+                "the old one?",
+                timeout=60,
+            )
+        except TimeoutError:
+            return await ctx.send("Timed out, please start again.")
 
         await ctx.send("All done!")
 
         unique_poll_id = (  # last 8 didgits of msg ID and first 50 of sanitised question
             str(ctx.message.id)[8:] + "_" + "".join(c for c in question if c.isalnum())[:50]
         )
+        poll_finish = datetime.datetime.now(datetime.timezone.utc) + duration
+
         poll = Poll(
             unique_poll_id=unique_poll_id,
             guild_id=ctx.guild.id,  # type:ignore
@@ -202,13 +229,33 @@ class ButtonPoll(commands.Cog):
         )
         view = PollView(self.config, poll)
 
-        m = await ctx.send(
-            f"{poll.question}\n\nPoll ends at {datetime_to_timestamp(poll.poll_finish)}, "
-            f"{datetime_to_timestamp(poll.poll_finish, 'R')}",
-            view=view,
+        e = discord.Embed(
+            colour=await self.bot.get_embed_color(ctx.channel),
+            title=poll.question,
+            description=poll.description or EmptyEmbed,
         )
+        e.add_field(
+            name=f"Ends at {datetime_to_timestamp(poll.poll_finish)}, "
+            f"{datetime_to_timestamp(poll.poll_finish, 'R')}",
+            value=(
+                "You have one vote, "
+                + (
+                    "and you can change it by clicking a new button."
+                    if poll.allow_vote_change
+                    else "and you can't change it."
+                )
+                + (
+                    "\nYou can view the results while the poll is live, once you vote."
+                    if poll.view_while_live
+                    else "\nYou can view the results when the poll finishes."
+                )
+            ),
+        )
+
+        m = await ctx.send(embed=e, view=view)
+
         poll.set_msg_id(m.id)
-        async with self.config.guild(ctx.guild).poll_settings() as poll_settings:
+        async with self.config.guild(ctx.guild).poll_settings() as poll_settings:  # type:ignore
             poll_settings[poll.unique_poll_id] = poll.to_dict()
         self.views.append(view)
 

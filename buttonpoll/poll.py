@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 import discord
 from discord.channel import TextChannel
+from discord.embeds import EmptyEmbed
 from discord.enums import ButtonStyle
 
 if TYPE_CHECKING:
@@ -137,7 +138,7 @@ class Poll:
         embed = discord.Embed(
             colour=await self.cog.bot.get_embed_color(channel),
             title=self.question,
-            description=self.description or None,
+            description=self.description or EmptyEmbed,
         )
         sorted_results = {
             k: v for k, v in sorted(poll_results.items(), key=lambda x: x[1], reverse=True)
@@ -157,7 +158,29 @@ class Poll:
             )
             return
 
+        if self.send_msg_when_over:
+            embed_2 = discord.Embed(
+                title="Poll finished",
+                colour=await self.cog.bot.get_embed_color(channel),
+                description=f"**{self.question}** has finished!",
+            )
+            embed_2.add_field(
+                name="Results",
+                value="\n".join(f"{k}: {v}" for k, v in sorted_results.items()),
+                inline=False,
+            )
+            view = discord.ui.View()
+            view.add_item(
+                discord.ui.Button(
+                    label="Original message", style=ButtonStyle.link, url=poll_msg.jump_url
+                )
+            )
+
         async with self.cog.config.guild_from_id(self.guild_id).poll_settings() as poll_settings:
             del poll_settings[self.unique_poll_id]
+        async with self.cog.config.guild_from_id(
+            self.guild_id
+        ).poll_user_choices() as poll_user_choices:
+            del poll_user_choices[self.unique_poll_id]
 
         log.info(f"Poll {self.unique_poll_id} finished.")
