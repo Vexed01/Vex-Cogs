@@ -155,19 +155,19 @@ async def out_of_date_check(cogname: str, currentver: str) -> None:
     try:
         async with cog_ver_lock:
             vers = await _get_latest_vers()
+        if VersionInfo.from_str(currentver) < vers.cogs[cogname]:
+            log.warning(
+                f"Your {cogname} cog, from Vex, is out of date. You can update your cogs with the "
+                "'cog update' command in Discord."
+            )
+        else:
+            log.debug(f"{cogname} cog is up to date")
     except Exception as e:
         log.debug(
             f"Something went wrong checking if {cogname} cog is up to date. See below.", exc_info=e
         )
         # really doesn't matter if this fails so fine with debug level
         return
-    if VersionInfo.from_str(currentver) < vers.cogs[cogname]:
-        log.warning(
-            f"Your {cogname} cog, from Vex, is out of date. You can update your cogs with the "
-            "'cog update' command in Discord."
-        )
-    else:
-        log.debug(f"{cogname} cog is up to date")
 
 
 class Vers(NamedTuple):
