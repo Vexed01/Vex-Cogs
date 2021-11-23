@@ -1,5 +1,5 @@
 {
-    "short": "Contrary to what downloader thinks, this isn't a cog!",
     "disabled": true,
-    "hidden": true
+    "hidden": true,
+    "short": "Contrary to what downloader thinks, this isn't a cog!"
 }

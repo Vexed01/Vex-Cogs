@@ -1,13 +1,24 @@
 {
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
-    "author": ["Vexed (Vexed#3211)"],
-    "name": "GHIssues",
-    "install_msg": "⚠ This cog requires discord.py 2 which is currently incompatible with Red and most other cogs ⚠",
-    "hidden": true,
-    "requirements": ["gidgethub>=5.0.0", "tabulate", "cachetools", "asyncache"],
-    "description": "Create, comment, labelify and close GitHub issues, with partial PR support.\n\n⚠ This cog requires discord.py 2 which is currently incompatible with Red and most other cogs ⚠",
-    "short": "[DPY 2 ONLY] Create, comment, labelify and close GitHub issues.",
-    "tags": ["utility", "github", "issues"],
+    "author": [
+        "Vexed (Vexed#3211)"
+    ],
+    "description": "Create, comment, labelify and close GitHub issues, with partial PR support.\n\n\u26a0 This cog requires discord.py 2 which is currently incompatible with Red and most other cogs \u26a0",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
-    "min_bot_version": "3.4.0"
+    "hidden": true,
+    "install_msg": "\u26a0 This cog requires discord.py 2 which is currently incompatible with Red and most other cogs \u26a0",
+    "min_bot_version": "3.4.0",
+    "name": "GHIssues",
+    "requirements": [
+        "gidgethub>=5.0.0",
+        "tabulate",
+        "cachetools",
+        "asyncache"
+    ],
+    "short": "[DPY 2 ONLY] Create, comment, labelify and close GitHub issues.",
+    "tags": [
+        "utility",
+        "github",
+        "issues"
+    ]
 }
