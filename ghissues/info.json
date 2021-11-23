@@ -6,7 +6,7 @@
     "description": "Create, comment, labelify and close GitHub issues, with partial PR support.\n\n\u26a0 This cog requires discord.py 2 which is currently incompatible with Red and most other cogs \u26a0",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "hidden": true,
-    "install_msg": "\u26a0 This cog requires discord.py 2 which is currently incompatible with Red and most other cogs \u26a0",
+    "install_msg": "\\N{WARNING SIGN} This cog requires discord.py 2 which is currently incompatible with Red and most other cogs \\N{WARNING SIGN}",
     "min_bot_version": "3.4.0",
     "name": "GHIssues",
     "requirements": [

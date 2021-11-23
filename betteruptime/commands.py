@@ -8,7 +8,7 @@ from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_timedelta, inline, pagify, text_to_file
 
 from .abc import MixinMeta
-from .consts import SECONDS_IN_DAY
+from .consts import SECONDS_IN_DAY, WARN
 from .plot import plot
 from .vexutils.chat import datetime_to_timestamp
 
@@ -184,8 +184,8 @@ class BUCommands(MixinMeta):
         p = ctx.clean_prefix
         if not confirm:
             return await ctx.send(
-                "⚠ This will reset the all your uptime data. This action is **irreversible**. "
-                "All the uptime data will be **lost forever** ⚠\n"
+                f"{WARN} This will reset the all your uptime data. This action is "
+                f"**irreversible**. All the uptime data will be **lost forever** {WARN}\n"
                 f"To proceed, please run **`{p}resetbu 1`**"
             )
         if self.main_loop:
