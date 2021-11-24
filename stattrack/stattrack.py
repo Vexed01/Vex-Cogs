@@ -52,6 +52,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.config.register_global(version=1)
         self.config.register_global(main_df={})
 
+        self.last_loop_time = "Loop not ran yet"
+
         self.driver = PandasSQLiteDriver(bot, type(self).__name__, "timeseries.db")
 
         if 418078199982063626 in bot.owner_ids:  # type:ignore
