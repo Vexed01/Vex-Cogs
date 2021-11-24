@@ -34,7 +34,7 @@ jobs:
 
       fail-fast: false
 
-    name: Tox - ${{ matrix.friendly_name }}
+    name: Tox - ${{ matrix.python_version }}  -${{ matrix.friendly_name }}
     steps:
       - uses: actions/checkout@v2
         with:
