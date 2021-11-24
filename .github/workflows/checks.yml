@@ -10,6 +10,7 @@ jobs:
       matrix:
         python_version:
           - "3.8"
+          - "3.9"
         tox_env:
           - style-black
           - style-isort
@@ -33,7 +34,7 @@ jobs:
 
       fail-fast: false
 
-    name: Tox - ${{ matrix.friendly_name }}
+    name: Tox - ${{ matrix.python_version }} - ${{ matrix.friendly_name }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -42,6 +43,13 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python_version }}
+
+      # caching cuts down time for tox (for example black) from ~40 secs to 4
+      - name: Cache tox
+        uses: actions/cache@v2
+        with:
+          path: .tox
+          key: tox-${{ matrix.python_version }}-${{ matrix.tox_env }}-${{ hashFiles('tox.ini') }}
 
       - name: Install tox
         run: |
