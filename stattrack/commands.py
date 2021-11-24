@@ -102,10 +102,10 @@ class StatTrackCommands(MixinMeta):
         fp.seek(0)
         await ctx.send("Here is your file.", file=discord.File(fp, "stattrack.csv"))  # type:ignore
 
-    @stattrack.command()
-    async def ping(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
+    @stattrack.command(aliases=["ping"])
+    async def latency(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
         """
-        Get my ping stats.
+        Get my latency stats.
 
         Get command usage stats.
 
@@ -115,11 +115,11 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-            - `[p]stattrack ping 3w2d`
-            - `[p]stattrack ping 5d`
-            - `[p]stattrack ping all`
+            - `[p]stattrack latency 3w2d`
+            - `[p]stattrack latency 5d`
+            - `[p]stattrack latency all`
         """
-        await self.all_in_one(ctx, timespan, "ping", "Ping", "Ping (ms)")
+        await self.all_in_one(ctx, timespan, "ping", "Latency", "Latency (ms)")
 
     @stattrack.command(name="commands")
     async def com(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
