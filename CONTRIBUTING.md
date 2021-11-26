@@ -8,7 +8,7 @@ Not much else to say really, just this:
 
 When you open a PR, they'll be some basic checks to make sure the style is consistent and basic checking that nothing's broken.
 
-Please also SPEAK TO ME either through an issue or in Discord (Vexed#3211) before making any medium/big changes.
+Please also SPEAK TO ME either through an issue or in Discord (Vexed#9000) before making any medium/big changes.
 
 This consists of: black, isort, flake8 and mypy.
 

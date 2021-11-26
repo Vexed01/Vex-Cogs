@@ -29,7 +29,7 @@ have registered to recieve updates from that service.
 There's also the ``status`` command which anyone can use to check
 updates whereever they want.
 
-If there's a service that you want added, contact Vexed#3211 or
+If there's a service that you want added, contact Vexed#9000 or
 make an issue on the GitHub repo (or even better a PR!).
 
 

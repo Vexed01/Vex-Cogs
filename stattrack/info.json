@@ -1,7 +1,7 @@
 {
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": [
-        "Vexed (Vexed#3211)"
+        "Vexed (Vexed#9000)"
     ],
     "description": "Track your bot's statistics over time, including ping, members, guild and message/command counts.\n\nThis has a background process which could be intensive.\n\nThis stores data in Red's config which is not especially built for this cog's usage.",
     "end_user_data_statement": "This cog permanently stores anonymised and aggregated data about users' statuses and counts messages sent, not including their content. This data cannot be traced back to individual users.",
