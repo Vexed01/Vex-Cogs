@@ -80,12 +80,9 @@ async def case_insensitive_get_context(self: Red, message: Message, *, cls=Conte
 
     invoker = view.get_word()
 
-    if do_case_insensitive:
-        invoker = invoker.lower()
-
     ctx.invoked_with = invoker
     ctx.prefix = invoked_prefix
-    ctx.command = self.all_commands.get(invoker)
+    ctx.command = self.all_commands.get(invoker.lower() if do_case_insensitive else invoker)
     return ctx
 
 
@@ -106,7 +103,7 @@ class CaseInsensitive(commands.Cog):
     and enabling per-server, listed under ``[p]help command``.
     """
 
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
