@@ -56,8 +56,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         self.driver = PandasSQLiteDriver(bot, type(self).__name__, "timeseries.db")
 
-        if 418078199982063626 in bot.owner_ids:  # type:ignore
-            bot.add_dev_env_value("stattrack", lambda _: self)
+        bot.add_dev_env_value("stattrack", lambda _: self)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
