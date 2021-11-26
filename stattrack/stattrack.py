@@ -163,6 +163,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 await self.update_stats()
                 self.loop_meta.iter_finish()
             except Exception as e:
+                self.loop_meta.iter_error(e)
                 _log.exception(
                     "Something went wrong in the StatTrack loop. The loop will try again "
                     "shortly.",
