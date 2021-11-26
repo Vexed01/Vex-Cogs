@@ -4,7 +4,7 @@ import json
 import logging
 import time
 from asyncio.events import AbstractEventLoop
-from typing import Dict, Optional, Set
+from typing import Dict, Set
 
 import discord
 import pandas
@@ -37,13 +37,13 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.4.0"
+    __version__ = "1.4.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.do_write: Optional[bool] = None
+        self.do_write: bool = True
 
         self.cmd_count = 0
         self.msg_count = 0
@@ -70,8 +70,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         if self.loop:
             self.loop.cancel()
 
-        self.plot_executor.shutdown()
-        self.driver.sql_executor.shutdown()
+        self.plot_executor.shutdown(wait=False)
+        self.driver.sql_executor.shutdown(wait=False)
 
         try:
             self.bot.remove_dev_env_value("stattrack")
@@ -80,7 +80,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
     async def async_init(self) -> None:
         if await self.config.version() != 2:
-            self.do_write = True
             _log.info("Migrating StatTrack config.")
             df_conf = await self.config.main_df()
 
@@ -94,7 +93,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             await self.config.version.set(2)
             _log.info("Done.")
         else:
-            self.do_write = False
             self.df_cache = await self.driver.read()
 
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
