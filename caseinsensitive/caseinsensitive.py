@@ -108,7 +108,7 @@ class CaseInsensitive(commands.Cog):
     and enabling per-server, listed under ``[p]help command``.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#3211"
 
     def __init__(self, bot: Red) -> None:
@@ -125,7 +125,7 @@ class CaseInsensitive(commands.Cog):
         return
 
     @commands.command(hidden=True)
-    async def caseinsensitivecomsinfo(self, ctx: commands.Context):
+    async def caseinsensitiveinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     def plug(self) -> None:

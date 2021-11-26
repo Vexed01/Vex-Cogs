@@ -342,6 +342,14 @@ BetterUptime
 CaseInsensitive
 ===============
 
+*********
+``1.0.1``
+*********
+
+2021-11-26
+
+- Properly name info command
+
 .. _cl_cmdlog:
 
 ======
