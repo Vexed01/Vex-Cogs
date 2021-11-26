@@ -22,6 +22,7 @@ Docs version: |version|
    cogs/aliases
    cogs/beautify
    cogs/betteruptime
+   cogs/caseinsensitive
    cogs/cmdlog
    cogs/github
    cogs/googletrends

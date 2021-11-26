@@ -48,20 +48,21 @@ Cogs
 
 Click a cog name to see detailed documentation.
 
-===================================== ===========================================================================
-Cog name                              Summary
-===================================== ===========================================================================
-:ref:`aliases<aliases>`               Get all the information you could ever need about a command's aliases.
-:ref:`anotherpingcog<anotherpingcog>` Just another ping cog... But this one has fancy colours in an embed!
-:ref:`beautify<beautify>`             Beautify and minify JSON.
-:ref:`betteruptime<betteruptime>`     New uptime command that tracks the bot's uptime percentage (last 30 days).
-:ref:`cmdlog<cmdlog>`                 Track command usage, searchable by user, server or command name.
-:ref:`github<github>`                 Create, comment, labelify and close GitHub issues, with partial PR support.
-:ref:`googletrends<googletrends>`     Find out what the world is searching, right from Discord.
-:ref:`madtranslate<madtranslate>`     Translate text through lots of languages. Get some funny results!
-:ref:`stattrack<stattrack>`           Track metrics about your bot and view them in Discord.
-:ref:`status<status>`                 Recieve automatic status updates from various services, including Discord.
-:ref:`system<system>`                 Get system metrics of the host device, such as RAM or CPU.
-:ref:`timechannel<timechannel>`       Get the time in different timezones in voice channels.
-:ref:`wol<wol>`                       Use Wake on LAN from Discord! Sends magic packets on the local network.
-===================================== ===========================================================================
+======================================= ===========================================================================
+Cog name                                Summary
+======================================= ===========================================================================
+:ref:`aliases<aliases>`                 Get all the information you could ever need about a command's aliases.
+:ref:`anotherpingcog<anotherpingcog>`   Just another ping cog... But this one has fancy colours in an embed!
+:ref:`beautify<beautify>`               Beautify and minify JSON.
+:ref:`betteruptime<betteruptime>`       New uptime command that tracks the bot's uptime percentage (last 30 days).
+:ref:`caseinsensitive<caseinsensitive>` Make all prefixes and commands case insensitive.
+:ref:`cmdlog<cmdlog>`                   Track command usage, searchable by user, server or command name.
+:ref:`github<github>`                   Create, comment, labelify and close GitHub issues, with partial PR support.
+:ref:`googletrends<googletrends>`       Find out what the world is searching, right from Discord.
+:ref:`madtranslate<madtranslate>`       Translate text through lots of languages. Get some funny results!
+:ref:`stattrack<stattrack>`             Track metrics about your bot and view them in Discord.
+:ref:`status<status>`                   Recieve automatic status updates from various services, including Discord.
+:ref:`system<system>`                   Get system metrics of the host device, such as RAM or CPU.
+:ref:`timechannel<timechannel>`         Get the time in different timezones in voice channels.
+:ref:`wol<wol>`                         Use Wake on LAN from Discord! Sends magic packets on the local network.
+======================================= ===========================================================================

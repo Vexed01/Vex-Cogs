@@ -28,6 +28,7 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | [anotherpingcog](https://s.vexcodes.com/c/anotherpingcog) | Another ping cog... But this one has fancy colours in a customisable embed! |
 | [beautify](https://s.vexcodes.com/c/beautify) | Beautify and minify JSON.
 | [betteruptime](https://s.vexcodes.com/c/betteruptime) | See your bot's uptime percentages and check when downtime happened. |
+| [caseinsensitive](https://s.vexcodes.com/c/caseinsensitive) | Make all prefixes and commands case insensitive. |
 | [cmdlog](https://s.vexcodes.com/c/cmdlog) | Track command usage, searchable by user, server or command name.
 | [github](https://s.vexcodes.com/c/github) | Create, comment, labelify and close GitHub issues, with partial PR support. |
 | [googletrends](https://s.vexcodes.com/c/googletrends) | Find out what the world is searching, right from Discord. |

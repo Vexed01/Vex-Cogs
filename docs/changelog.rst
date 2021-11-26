@@ -336,6 +336,12 @@ BetterUptime
 
 - Slight logic changes for banding in ``downtime`` command
 
+.. _cl_caseinsensitive:
+
+===============
+CaseInsensitive
+===============
+
 .. _cl_cmdlog:
 
 ======
