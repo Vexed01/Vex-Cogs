@@ -38,7 +38,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
         return
 
     def cog_unload(self) -> None:
-        self.executor.shutdown()
+        self.executor.shutdown(wait=False)
 
     @commands.command(hidden=True)
     async def trendsinfo(self, ctx: commands.Context):
