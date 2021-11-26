@@ -19,9 +19,7 @@ class CaseInsensitiveStringView(StringView):
         if self.buffer[self.index : self.index + strlen].lower() == string.lower():
             self.previous = self.index
             self.index += strlen
-            print("tru")
             return True
-        print("fase")
         return False
 
 
