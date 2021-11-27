@@ -6,10 +6,9 @@ from pytrends.exceptions import ResponseError
 from redbot.core import commands
 from redbot.core.utils import deduplicate_iterables
 
-from googletrends.consts import GEOS, TIMEFRAMES
-from googletrends.converters import GeoConverter, TimeframeConverter
-
 from .abc import CompositeMetaClass
+from .consts import GEOS, TIMEFRAMES
+from .converters import GeoConverter, TimeframeConverter
 from .errors import NoData
 from .plot import TrendsPlot
 from .vexutils.meta import format_help, format_info

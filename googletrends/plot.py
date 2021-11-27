@@ -26,7 +26,7 @@ from .abc import MixinMeta
 
 class TrendsPlot(MixinMeta):
     def __init__(self) -> None:
-        self.executor = ThreadPoolExecutor(4, thread_name_prefix="googletrends")
+        self.executor = ThreadPoolExecutor(16, thread_name_prefix="googletrends")
 
     async def get_trends_request(
         self, keywords: Iterable[str], timeframe: str, geo: str
