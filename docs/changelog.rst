@@ -466,6 +466,20 @@ CmdLog
 
 - Initial release
 
+.. _cl_covidgraph:
+
+==========
+CovidGraph
+==========
+
+*********
+``1.0.0``
+*********
+
+2021-11-27
+
+- New cog
+
 .. _cl_github:
 
 ======

@@ -26,10 +26,11 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | --- | --- |
 | [aliases](https://s.vexcodes.com/c/aliases) | Get all the information you could ever need about a command's aliases. |
 | [anotherpingcog](https://s.vexcodes.com/c/anotherpingcog) | Another ping cog... But this one has fancy colours in a customisable embed! |
-| [beautify](https://s.vexcodes.com/c/beautify) | Beautify and minify JSON.
+| [beautify](https://s.vexcodes.com/c/beautify) | Beautify and minify JSON. |
 | [betteruptime](https://s.vexcodes.com/c/betteruptime) | See your bot's uptime percentages and check when downtime happened. |
 | [caseinsensitive](https://s.vexcodes.com/c/caseinsensitive) | Make all prefixes and commands case insensitive. |
-| [cmdlog](https://s.vexcodes.com/c/cmdlog) | Track command usage, searchable by user, server or command name.
+| [cmdlog](https://s.vexcodes.com/c/cmdlog) | Track command usage, searchable by user, server or command name. |
+| [covidgraph](https://s.vexcodes.com/c/covidgraph) | Get graphs of COVID-19 data. |
 | [github](https://s.vexcodes.com/c/github) | Create, comment, labelify and close GitHub issues, with partial PR support. |
 | [googletrends](https://s.vexcodes.com/c/googletrends) | Find out what the world is searching, right from Discord. |
 | [madtranslate](https://s.vexcodes.com/c/madtranslate) | Translate text through lots of languages. Get some funny results! |

@@ -24,6 +24,7 @@ Docs version: |version|
    cogs/betteruptime
    cogs/caseinsensitive
    cogs/cmdlog
+   cogs/covidgraph
    cogs/github
    cogs/googletrends
    cogs/madtranslate
