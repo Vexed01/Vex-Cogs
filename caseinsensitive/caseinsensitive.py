@@ -127,12 +127,12 @@ class CaseInsensitive(commands.Cog):
         """Plug the case-insensitive shit."""
         new_method = types.MethodType(case_insensitive_get_context, self.bot)
         self.old_get_context = self.bot.get_context
-        self.bot.get_context = new_method
+        self.bot.get_context = new_method  # type:ignore
 
     def unplug(self) -> None:
         """Unplug case-insensitive stuff."""
         if self.old_get_context is not None:
-            self.bot.get_context = self.old_get_context
+            self.bot.get_context = self.old_get_context  # type:ignore
 
     def cog_unload(self):
         self.unplug()
