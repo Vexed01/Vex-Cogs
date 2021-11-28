@@ -67,9 +67,12 @@ Get the number of confirmed cases in a country.
 You can optionally specify the number of days to get data for,
 otherwise it will be all-time.
 
+``country`` can also be ``world`` to get the worldwide data.
+
 **Examples:**
     - ``[p]covidgraph cases US`` - All time data for the US
     - ``[p]covidgraph cases 7 US`` - Last 7 days for the US
+    - ``[p]covidgraph cases world`` - Worldwide data
 
 .. _covidgraph-command-covidgraph-deaths:
 
@@ -92,9 +95,12 @@ Get the number of deaths in a country.
 You can optionally specify the number of days to get data for,
 otherwise it will be all-time.
 
+``country`` can also be ``world`` to get the worldwide data.
+
 **Examples:**
     - ``[p]covidgraph deaths US`` - All time data for the US
     - ``[p]covidgraph deaths 7 US`` - Last 7 days for the US
+    - ``[p]covidgraph deaths world`` - Worldwide data
 
 .. _covidgraph-command-covidgraph-vaccines:
 
@@ -117,6 +123,9 @@ Get the number of vaccine doses administered in a country.
 You can optionally specify the number of days to get data for,
 otherwise it will be all-time.
 
+``country`` can also be ``world`` to get the worldwide data.
+
 **Examples:**
     - ``[p]covidgraph vaccines US`` - All time data for the US
     - ``[p]covidgraph vaccines 7 US`` - Last 7 days for the US
+    - ``[p]covidgraph vaccines world`` - Worldwide data

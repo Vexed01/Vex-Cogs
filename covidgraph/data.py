@@ -20,6 +20,9 @@ class CovidData(MixinMeta):
         else:
             d = str(days)
 
+        if country in ("global", "world", "worldwide"):
+            country = "all"
+
         return await self.get(
             f"{API_BASE}/v3/covid-19/historical/{country}?lastdays={d}",
             extra_key="cases",
@@ -32,6 +35,9 @@ class CovidData(MixinMeta):
         else:
             d = str(days)
 
+        if country in ("global", "world", "worldwide"):
+            country = "all"
+
         return await self.get(
             f"{API_BASE}/v3/covid-19/historical/{country}?lastdays={d}",
             extra_key="deaths",
@@ -43,6 +49,11 @@ class CovidData(MixinMeta):
             d = "all"
         else:
             d = str(days)
+
+        if country in ("global", "world", "worldwide", "all"):
+            return await self.get(
+                f"{API_BASE}/v3/covid-19/vaccine/coverage?lastdays={d}",
+            )
 
         return await self.get(
             f"{API_BASE}/v3/covid-19/vaccine/coverage/countries/{country}?lastdays={d}",
@@ -61,14 +72,13 @@ class CovidData(MixinMeta):
 
             data: dict = await resp.json()
 
-        if extra_key:
-            sr = pd.Series(data["timeline"][extra_key])
-        else:
-            sr = pd.Series(data["timeline"])
+        ts_dict = data.get("timeline", data)  # fallback to data if no timeline key
 
-        sr.index = pd.to_datetime(sr.index, utc=True)  # type:ignore
+        ts = pd.Series(ts_dict[extra_key] if extra_key else ts_dict)
+
+        ts.index = pd.to_datetime(ts.index, utc=True)  # type:ignore
 
         if convert_to_daily:  # cumulative to daily and ty so much copolit
-            sr = sr.diff().dropna()
+            ts = ts.diff().dropna()
 
-        return data.get("country", ""), sr
+        return data.get("country", "worldwide"), ts

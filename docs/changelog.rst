@@ -473,6 +473,14 @@ CovidGraph
 ==========
 
 *********
+``1.1.0``
+*********
+
+2021-11-28
+
+- Support worldwide data, for example ``[p]covidgraph cases world``
+
+*********
 ``1.0.0``
 *********
 
