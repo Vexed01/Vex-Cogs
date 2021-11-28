@@ -107,8 +107,6 @@ class StatTrackCommands(MixinMeta):
         """
         Get my latency stats.
 
-        Get command usage stats.
-
         **Arguments**
 
         `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
@@ -120,6 +118,23 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack latency all`
         """
         await self.all_in_one(ctx, timespan, "ping", "Latency", "Latency (ms)")
+
+    @stattrack.command(aliases=["time", "loop"])
+    async def looptime(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
+        """
+        Get my loop time stats.
+
+        **Arguments**
+
+        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
+
+        **Examples:**
+            - `[p]stattrack looptime 3w2d`
+            - `[p]stattrack looptime 5d`
+            - `[p]stattrack looptime all`
+        """
+        await self.all_in_one(ctx, timespan, "loop_time_s", "Loop time", "Loop time (seconds)")
 
     @stattrack.command(name="commands")
     async def com(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):

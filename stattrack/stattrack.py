@@ -4,7 +4,7 @@ import json
 import logging
 import time
 from asyncio.events import AbstractEventLoop
-from typing import Dict, Set
+from typing import Dict, Optional, Set
 
 import discord
 import pandas
@@ -38,13 +38,13 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.5.0"
+    __version__ = "1.5.1"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.do_write: bool = True
+        self.do_write: int = 2  # do writes for first 2 loops, then append
 
         self.cmd_count = 0
         self.msg_count = 0
@@ -54,6 +54,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.config.register_global(main_df={})
 
         self.last_loop_time = "Loop not ran yet"
+        self.last_loop_raw: Optional[float] = None
 
         self.driver = PandasSQLiteDriver(bot, type(self).__name__, "timeseries.db")
 
@@ -80,8 +81,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             pass
 
     async def async_init(self) -> None:
-        if await self.config.version() != 2:
-            _log.info("Migrating StatTrack config.")
+        if await self.config.version() < 2:
+            _log.info("Migrating StatTrack config from 1 to 2.")
             df_conf = await self.config.main_df()
 
             if df_conf:  # needs migration
@@ -187,6 +188,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             df["ping"] = latency
         except OverflowError:  # ping is INF so not connected, no point in updating
             return
+        if self.last_loop_raw:
+            data["loop_time_s"] = round(self.last_loop_raw, 3)
         data["users_unique"] = len(self.bot.users)
         data["guilds"] = len(self.bot.guilds)
         data["users_total"] = 0
@@ -231,22 +234,21 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             df[k] = len(v)
 
         for k, v in data.items():
-            print(k, v)
             df[k] = v
 
         self.df_cache = self.df_cache.append(df)
 
         end = time.monotonic()
-        main_time = round(end - start, 1)
-        _log.debug(f"Loop finished in {main_time} seconds")
+        main_time = round((end - start) - 1, 1)  # take 1 sec off for the sleep
+        _log.debug(f"Loop finished in {main_time} seconds (+1)")
 
-        if self.do_write is True:
+        if self.do_write != 0:
             start = time.monotonic()
             await self.driver.write(self.df_cache)
             end = time.monotonic()
             save_time = round(end - start, 3)
             _log.debug(f"SQLite wrote in {save_time} seconds")
-            self.do_write = False
+            self.do_write -= 1
         else:
             start = time.monotonic()
             await self.driver.append(df)
@@ -255,6 +257,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             _log.debug(f"SQLite appended in {save_time} seconds")
 
         total_time = main_time + save_time
+        self.last_loop_raw = total_time
 
         if total_time > 30.0:
             # TODO: only warn once + send to owners
