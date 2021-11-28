@@ -120,7 +120,6 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
                     )
                 else:
                     await ctx.send("Your request failed for an unexpected reason.")
-                    print(e)
                 return
 
             try:
