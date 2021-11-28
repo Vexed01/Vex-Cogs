@@ -8,6 +8,7 @@ from typing import Dict, Set
 
 import discord
 import pandas
+import psutil
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
@@ -37,7 +38,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.4.1"
+    __version__ = "1.5.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -194,6 +195,10 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         data["channels_voice"] = 0
         data["channels_cat"] = 0
         data["channels_stage"] = 0
+        data["sys_mem"] = psutil.virtual_memory().percent
+        psutil.cpu_percent(interval=None, percpu=True)  # force update
+        await asyncio.sleep(1)  # and then get the average over the last 1 sec:
+        data["sys_cpu"] = psutil.cpu_percent(interval=None, percpu=False)
         data["command_count"] = self.cmd_count
         data["message_count"] = self.msg_count
         self.cmd_count, self.msg_count = 0, 0
@@ -226,6 +231,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             df[k] = len(v)
 
         for k, v in data.items():
+            print(k, v)
             df[k] = v
 
         self.df_cache = self.df_cache.append(df)

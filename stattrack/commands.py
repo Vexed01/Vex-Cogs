@@ -422,3 +422,41 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack channels stage all`
         """
         await self.all_in_one(ctx, timespan, "channels_stage", "Stage channels")
+
+    @stattrack.group(aliases=["sys"])
+    async def system(self, ctx: commands.Context):
+        """Get system metrics."""
+
+    @system.command()
+    async def cpu(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
+        """
+        Get CPU stats.
+
+        **Arguments**
+
+        <timespan> How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
+
+        **Examples:**
+            - `[p]stattrack system cpu 3w2d`
+            - `[p]stattrack system cpu 5d`
+            - `[p]stattrack system cpu all`
+        """
+        await self.all_in_one(ctx, timespan, "sys_cpu", "CPU Usage", "Percentage CPU Usage")
+
+    @system.command(aliases=["memory", "ram"])
+    async def mem(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
+        """
+        Get memory usage stats.
+
+        **Arguments**
+
+        <timespan> How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        at least 1 hour.
+
+        **Examples:**
+            - `[p]stattrack system mem 3w2d`
+            - `[p]stattrack system mem 5d`
+            - `[p]stattrack system mem all`
+        """
+        await self.all_in_one(ctx, timespan, "sys_mem", "RAM Usage", "Percentage RAM Usage")

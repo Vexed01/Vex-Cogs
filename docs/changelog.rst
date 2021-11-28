@@ -572,6 +572,14 @@ StatTrack
 =========
 
 *********
+``1.5.0``
+*********
+
+2021-11-28
+
+- Add metrics for CPU and Memory usage percentages
+
+*********
 ``1.4.0``
 *********
 

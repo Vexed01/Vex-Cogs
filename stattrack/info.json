@@ -10,6 +10,7 @@
     "name": "StatTrack",
     "requirements": [
         "pandas>=1.1.0",
+        "psutil",
         "plotly",
         "kaleido",
         "tabulate",
