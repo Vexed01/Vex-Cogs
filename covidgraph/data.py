@@ -64,7 +64,6 @@ class CovidData(MixinMeta):
         self, url: str, extra_key: Optional[str] = None, convert_to_daily: bool = False
     ) -> Tuple[str, pd.Series]:
         """Get data from an endpoint as a Series"""
-        print(url)
         async with aiohttp.ClientSession() as session:
             resp = await session.get(url)
             if resp.status != 200:

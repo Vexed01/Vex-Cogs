@@ -17,7 +17,7 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
     Get COVID-19 graphs.
     """
 
-    __version__ = "1.1.1"
+    __version__ = "1.2.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot):
@@ -40,7 +40,7 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
     async def covidgraphinfo(self, ctx: commands.Context):
         await ctx.send(await (format_info(ctx, self.qualified_name, self.__version__)))
 
-    @commands.cooldown(6, 60, commands.BucketType.user)
+    @commands.cooldown(2, 10, commands.BucketType.user)  # 2 per 10 seconds
     @commands.group()
     async def covidgraph(self, ctx: commands.Context):
         """Get graphs of COVID-19 data."""
