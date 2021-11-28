@@ -17,7 +17,7 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
     Get COVID-19 graphs.
     """
 
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot):
@@ -45,8 +45,8 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
     async def covidgraph(self, ctx: commands.Context):
         """Get graphs of COVID-19 data."""
 
-    @covidgraph.command(aliases=["c"])
-    async def cases(self, ctx: commands.Context, days: Optional[int], country: str):
+    @covidgraph.command(aliases=["c"], usage="[days] <country>")
+    async def cases(self, ctx: commands.Context, days: Optional[int], *, country: str):
         """
         Get the number of confirmed cases in a country.
 
@@ -81,8 +81,8 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
         embed.set_image(url="attachment://plot.png")
         await ctx.send(file=file, embed=embed)
 
-    @covidgraph.command(aliases=["d"])
-    async def deaths(self, ctx: commands.Context, days: Optional[int], country: str):
+    @covidgraph.command(aliases=["d"], usage="[days] <country>")
+    async def deaths(self, ctx: commands.Context, days: Optional[int], *, country: str):
         """
         Get the number of deaths in a country.
 
@@ -117,8 +117,8 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
         embed.set_image(url="attachment://plot.png")
         await ctx.send(file=file, embed=embed)
 
-    @covidgraph.command(aliases=["v"])
-    async def vaccines(self, ctx: commands.Context, days: Optional[int], country: str):
+    @covidgraph.command(aliases=["v"], usage="[days] <country>")
+    async def vaccines(self, ctx: commands.Context, days: Optional[int], *, country: str):
         """
         Get the number of vaccine doses administered in a country.
 

@@ -473,6 +473,14 @@ CovidGraph
 ==========
 
 *********
+``1.1.1``
+*********
+
+2021-11-28
+
+- Fix multi work counties not being picked up properly
+
+*********
 ``1.1.0``
 *********
 
