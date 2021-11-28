@@ -84,7 +84,7 @@ class VexLoop:
         # now this is accurate. imo its better to have something than nothing
 
     def iter_error(self, error: BaseException) -> None:
-        """Register an iteration's exception. If enabled, will report to Sentry."""
+        """Register an iteration's exception."""
         self.currently_running = False
         self.last_exc_raw = error
         self.last_exc = "".join(

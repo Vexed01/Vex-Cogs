@@ -119,7 +119,7 @@ async def format_info(
         update_msg += f"To update this cog, use the `{ctx.clean_prefix}cog update` command.\n"
     if not utils_updated:
         update_msg += (
-            f"To update the bundled utils, use the `{ctx.clean_prefix}utils update` command.\n"
+            f"To update the bundled utils, use the `{ctx.clean_prefix}cog update` command.\n"
         )
     if not red_updated:
         update_msg += "To update Red, see https://docs.discord.red/en/stable/update_red.html\n"
@@ -155,19 +155,19 @@ async def out_of_date_check(cogname: str, currentver: str) -> None:
     try:
         async with cog_ver_lock:
             vers = await _get_latest_vers()
+        if VersionInfo.from_str(currentver) < vers.cogs[cogname]:
+            log.warning(
+                f"Your {cogname} cog, from Vex, is out of date. You can update your cogs with the "
+                "'cog update' command in Discord."
+            )
+        else:
+            log.debug(f"{cogname} cog is up to date")
     except Exception as e:
         log.debug(
             f"Something went wrong checking if {cogname} cog is up to date. See below.", exc_info=e
         )
         # really doesn't matter if this fails so fine with debug level
         return
-    if VersionInfo.from_str(currentver) < vers.cogs[cogname]:
-        log.warning(
-            f"Your {cogname} cog, from Vex, is out of date. You can update your cogs with the "
-            "'cog update' command in Discord."
-        )
-    else:
-        log.debug(f"{cogname} cog is up to date")
 
 
 class Vers(NamedTuple):

@@ -119,7 +119,7 @@ async def format_info(
         update_msg += f"To update this cog, use the `{ctx.clean_prefix}cog update` command.\n"
     if not utils_updated:
         update_msg += (
-            f"To update the bundled utils, use the `{ctx.clean_prefix}utils update` command.\n"
+            f"To update the bundled utils, use the `{ctx.clean_prefix}cog update` command.\n"
         )
     if not red_updated:
         update_msg += "To update Red, see https://docs.discord.red/en/stable/update_red.html\n"
