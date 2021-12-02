@@ -244,7 +244,7 @@ class StatTrackCommands(MixinMeta):
             ctx, timespan, ["status_" + g for g in metrics], "User status", more_options=True
         )
 
-    @stattrack.command()
+    @stattrack.command(usage="[timespan=1d] [metrics]")
     async def users(
         self,
         ctx: commands.Context,
@@ -284,7 +284,7 @@ class StatTrackCommands(MixinMeta):
             ctx, timespan, ["users_" + g for g in metrics], "Users", more_options=True
         )
 
-    @stattrack.command()
+    @stattrack.command(usage="[timespan=1d] [metrics]")
     async def channels(
         self,
         ctx: commands.Context,

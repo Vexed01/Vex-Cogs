@@ -60,141 +60,32 @@ stattrack channels
 
 .. code-block:: none
 
-    [p]stattrack channels 
+    [p]stattrack channels [timespan=1d] [metrics]
 
 **Description**
 
-See how many channels there are in all my guilds
+Get channel stats.
 
-.. _stattrack-command-stattrack-channels-categories:
-
-"""""""""""""""""""""""""""""
-stattrack channels categories
-"""""""""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack channels categories [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get categories stats.
+You can just run this command on its own to see all metrics,
+or specify some metrics - see below.
 
 **Arguments**
 
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
+``[timespan]`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
 at least 1 hour.
 
-**Examples:**
-    - ``[p]stattrack channels categories 3w2d``
-    - ``[p]stattrack channels categories 5d``
-    - ``[p]stattrack channels categories all``
+``[metrics]`` The metrics to show.
+Valid options: ``total``, ``text``, ``voice``, ``stage``, ``category``.
+Defaults to all of them.
 
-.. _stattrack-command-stattrack-channels-stage:
-
-""""""""""""""""""""""""
-stattrack channels stage
-""""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack channels stage [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get stage channel stats.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
+Note that ``total`` will count users multiple times if they share multiple servers with the
+Red, while ``unique`` will only count them once.
 
 **Examples:**
-    - ``[p]stattrack channels stage 3w2d``
-    - ``[p]stattrack channels stage 5d``
-    - ``[p]stattrack channels stage all``
-
-.. _stattrack-command-stattrack-channels-text:
-
-"""""""""""""""""""""""
-stattrack channels text
-"""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack channels text [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get text channel stats.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
-
-**Examples:**
-    - ``[p]stattrack channels text 3w2d``
-    - ``[p]stattrack channels text 5d``
-    - ``[p]stattrack channels text all``
-
-.. _stattrack-command-stattrack-channels-total:
-
-""""""""""""""""""""""""
-stattrack channels total
-""""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack channels total [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get total channel stats.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
-
-**Examples:**
-    - ``[p]stattrack channels total 3w2d``
-    - ``[p]stattrack channels total 5d``
-    - ``[p]stattrack channels total all``
-
-.. _stattrack-command-stattrack-channels-voice:
-
-""""""""""""""""""""""""
-stattrack channels voice
-""""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack channels voice [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get voice channel stats.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
-
-**Examples:**
-    - ``[p]stattrack channels voice 3w2d``
-    - ``[p]stattrack channels voice 5d``
-    - ``[p]stattrack channels voice all``
+    - ``[p]stattrack channels`` - show all metrics, 1 day
+    - ``[p]stattrack channels 3w2d`` - show all metrics, 3 weeks 2 days
+    - ``[p]stattrack channels 5d dnd online`` - show dnd & online, 5 days
+    - ``[p]stattrack channels all online idle`` - show online & idle, all time
 
 .. _stattrack-command-stattrack-commands:
 
@@ -227,6 +118,8 @@ at least 1 hour.
 """"""""""""""""
 stattrack export
 """"""""""""""""
+
+.. note:: |owner-lock|
 
 **Syntax**
 
@@ -270,6 +163,62 @@ stattrack export json
 
 Export as JSON with pandas orient "split" 
 
+.. _stattrack-command-stattrack-latency:
+
+"""""""""""""""""
+stattrack latency
+"""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]stattrack latency [timespan=1 day, 0:00:00]
+
+.. tip:: Alias: ``stattrack ping``
+
+**Description**
+
+Get my latency stats.
+
+**Arguments**
+
+``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
+at least 1 hour.
+
+**Examples:**
+    - ``[p]stattrack latency 3w2d``
+    - ``[p]stattrack latency 5d``
+    - ``[p]stattrack latency all``
+
+.. _stattrack-command-stattrack-looptime:
+
+""""""""""""""""""
+stattrack looptime
+""""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]stattrack looptime [timespan=1 day, 0:00:00]
+
+.. tip:: Aliases: ``stattrack time``, ``stattrack loop``
+
+**Description**
+
+Get my loop time stats.
+
+**Arguments**
+
+``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
+at least 1 hour.
+
+**Examples:**
+    - ``[p]stattrack looptime 3w2d``
+    - ``[p]stattrack looptime 5d``
+    - ``[p]stattrack looptime all``
+
 .. _stattrack-command-stattrack-messages:
 
 """"""""""""""""""
@@ -295,34 +244,6 @@ at least 1 hour.
     - ``[p]stattrack messages 3w2d``
     - ``[p]stattrack messages 5d``
     - ``[p]stattrack messages all``
-
-.. _stattrack-command-stattrack-ping:
-
-""""""""""""""
-stattrack ping
-""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack ping [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get my ping stats.
-
-Get command usage stats.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
-
-**Examples:**
-    - ``[p]stattrack ping 3w2d``
-    - ``[p]stattrack ping 5d``
-    - ``[p]stattrack ping all``
 
 .. _stattrack-command-stattrack-servers:
 
@@ -362,115 +283,100 @@ stattrack status
 
 .. code-block:: none
 
-    [p]stattrack status 
+    [p]stattrack status [timespan=1d] [metrics]
 
 **Description**
 
-See stats about user's statuses.
+Get status stats.
 
-.. _stattrack-command-stattrack-status-dnd:
+You can just run this command on its own to see all metrics,
+or specify some metrics - see below.
+
+**Arguments**
+
+``[timespan]`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
+at least 1 hour.
+
+``[metrics]`` The metrics to show. Valid options: ``online``, ``idle``, ``offline``, ``dnd``.
+Defaults to all of them.
+
+**Examples:**
+    - ``[p]stattrack status`` - show all metrics, 1 day
+    - ``[p]stattrack status 3w2d`` - show all metrics, 3 weeks 2 days
+    - ``[p]stattrack status 5d dnd online`` - show dnd & online, 5 days
+    - ``[p]stattrack status all online idle`` - show online & idle, all time
+
+.. _stattrack-command-stattrack-system:
+
+""""""""""""""""
+stattrack system
+""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]stattrack system 
+
+.. tip:: Alias: ``stattrack sys``
+
+**Description**
+
+Get system metrics.
+
+.. _stattrack-command-stattrack-system-cpu:
 
 """"""""""""""""""""
-stattrack status dnd
+stattrack system cpu
 """"""""""""""""""""
 
 **Syntax**
 
 .. code-block:: none
 
-    [p]stattrack status dnd [timespan=1 day, 0:00:00]
+    [p]stattrack system cpu [timespan=1 day, 0:00:00]
 
 **Description**
 
-Get dnd stats.
+Get CPU stats.
 
 **Arguments**
 
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
+<timespan> How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
 at least 1 hour.
 
 **Examples:**
-    - ``[p]stattrack status dnd 3w2d``
-    - ``[p]stattrack status dnd 5d``
-    - ``[p]stattrack status dnd all``
+    - ``[p]stattrack system cpu 3w2d``
+    - ``[p]stattrack system cpu 5d``
+    - ``[p]stattrack system cpu all``
 
-.. _stattrack-command-stattrack-status-idle:
+.. _stattrack-command-stattrack-system-mem:
 
-"""""""""""""""""""""
-stattrack status idle
-"""""""""""""""""""""
+""""""""""""""""""""
+stattrack system mem
+""""""""""""""""""""
 
 **Syntax**
 
 .. code-block:: none
 
-    [p]stattrack status idle [timespan=1 day, 0:00:00]
+    [p]stattrack system mem [timespan=1 day, 0:00:00]
+
+.. tip:: Aliases: ``stattrack system memory``, ``stattrack system ram``
 
 **Description**
 
-Get idle stats.
+Get memory usage stats.
 
 **Arguments**
 
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
+<timespan> How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
 at least 1 hour.
 
 **Examples:**
-    - ``[p]stattrack status idle 3w2d``
-    - ``[p]stattrack status idle 5d``
-    - ``[p]stattrack status idle all``
-
-.. _stattrack-command-stattrack-status-offline:
-
-""""""""""""""""""""""""
-stattrack status offline
-""""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack status offline [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get offline stats.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
-
-**Examples:**
-    - ``[p]stattrack status offline 3w2d``
-    - ``[p]stattrack status offline 5d``
-    - ``[p]stattrack status offline all``
-
-.. _stattrack-command-stattrack-status-online:
-
-"""""""""""""""""""""""
-stattrack status online
-"""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack status online [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get online stats.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
-
-**Examples:**
-    - ``[p]stattrack status online 3w2d``
-    - ``[p]stattrack status online 5d``
-    - ``[p]stattrack status online all``
+    - ``[p]stattrack system mem 3w2d``
+    - ``[p]stattrack system mem 5d``
+    - ``[p]stattrack system mem all``
 
 .. _stattrack-command-stattrack-users:
 
@@ -482,123 +388,28 @@ stattrack users
 
 .. code-block:: none
 
-    [p]stattrack users 
+    [p]stattrack users [timespan=1d] [metrics]
 
 **Description**
 
-See stats about user counts
+Get user stats.
 
-.. _stattrack-command-stattrack-users-bots:
-
-""""""""""""""""""""
-stattrack users bots
-""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack users bots [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get bot user stats.
-
-This is the count of unique bots. They are counted once, regardless of how many servers
-they share with me.
+You can just run this command on its own to see all metrics,
+or specify some metrics - see below.
 
 **Arguments**
 
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
+``[timespan]`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
 at least 1 hour.
 
-**Examples:**
-    - ``[p]stattrack users bots 3w2d``
-    - ``[p]stattrack users bots 5d``
-    - ``[p]stattrack users bots all``
+``[metrics]`` The metrics to show. Valid options: ``total``, ``unique``, ``humans``, ``bots``.
+Defaults to all of them.
 
-.. _stattrack-command-stattrack-users-humans:
-
-""""""""""""""""""""""
-stattrack users humans
-""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack users humans [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get human user stats.
-
-This is the count of unique humans. They are counted once, regardless of how many servers
-they share with me.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
+Note that ``total`` will count users multiple times if they share multiple servers with the
+Red, while ``unique`` will only count them once.
 
 **Examples:**
-    - ``[p]stattrack users humans 3w2d``
-    - ``[p]stattrack users humans 5d``
-    - ``[p]stattrack users humans all``
-
-.. _stattrack-command-stattrack-users-total:
-
-"""""""""""""""""""""
-stattrack users total
-"""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack users total [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get total user stats.
-
-This includes humans and bots and counts users/bots once per server they share with me.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
-
-**Examples:**
-    - ``[p]stattrack users total 3w2d``
-    - ``[p]stattrack users total 5d``
-    - ``[p]stattrack users total all``
-
-.. _stattrack-command-stattrack-users-unique:
-
-""""""""""""""""""""""
-stattrack users unique
-""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]stattrack users unique [timespan=1 day, 0:00:00]
-
-**Description**
-
-Get total user stats.
-
-This includes humans and bots and counts them once, reagardless of how many servers they
-share with me.
-
-**Arguments**
-
-``<timespan>`` How long to look for, or ``all`` for all-time data. Defaults to 1 day. Must be
-at least 1 hour.
-
-**Examples:**
-    - ``[p]stattrack users unique 3w2d``
-    - ``[p]stattrack users unique 5d``
-    - ``[p]stattrack users unique all``
+    - ``[p]stattrack user`` - show all metrics, 1 day
+    - ``[p]stattrack user 3w2d`` - show all metrics, 3 weeks 2 days
+    - ``[p]stattrack user 5d dnd online`` - show dnd & online, 5 days
+    - ``[p]stattrack user all online idle`` - show online & idle, all time
