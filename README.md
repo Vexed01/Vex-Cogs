@@ -7,6 +7,7 @@
 
 ![mypy](https://img.shields.io/badge/mypy-checked-brightgreen?style=for-the-badge)
 ![black](https://img.shields.io/badge/style-black-000000?style=for-the-badge&?link=https://github.com/psf/black)
+![license](https://img.shields.io/github/license/Vexed01/Vex-Cogs?style=for-the-badge)
 
 These are a few cogs I made for myself that may be useful to others. Mostly utility-based.
 These are for [Red V3](https://github.com/Cog-Creators/Red-DiscordBot/), an open source self-hosted Discord bot. If this is your first time with Red,
@@ -43,6 +44,10 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 All these cogs have docs! My docs [are here](https://cogdocs.vexcodes.com/en/latest) or click on the cog name to go directly to that cog's docs page.
 
 ---
+
+### License
+
+My cogs are licensed under GNU General Public License v3.0. Please see the [LICENSE file](LICENSE).
 
 ### Contact
 
