@@ -38,7 +38,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.5.1"
+    __version__ = "1.6.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:

@@ -1,5 +1,6 @@
 import datetime
 from io import StringIO
+from typing import Iterable, Optional, Union
 
 import discord
 from discord.ext.commands.cooldowns import BucketType
@@ -7,7 +8,12 @@ from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, humanize_timedelta
 
 from stattrack.abc import MixinMeta
-from stattrack.converters import TimespanConverter
+from stattrack.converters import (
+    ChannelGraphConverter,
+    StatusGraphConverter,
+    TimespanConverter,
+    UserGraphConverter,
+)
 
 DEFAULT_DELTA = datetime.timedelta(days=1)
 
@@ -17,19 +23,22 @@ class StatTrackCommands(MixinMeta):
         self,
         ctx: commands.Context,
         delta: datetime.timedelta,
-        label: str,
+        label: Union[str, Iterable[str]],
         title: str,
-        ylabel: str = None,
+        ylabel: Optional[str] = None,
+        *,
+        more_options: bool = False,
     ):
         if self.df_cache is None:
             return await ctx.send("This command isn't ready yet. Try again in a few seconds.")
         await ctx.trigger_typing()  # wont be that long
         if ylabel is None:
             ylabel = title
-        sr = self.df_cache[label]
-        if len(sr) < 2:
+        df = self.df_cache[label]
+        if len(df) < 2:
             return await ctx.send("I need a little longer to collect data. Try again in a minute.")
-        graph = await self.plot(sr, delta, ylabel)
+
+        graph = await self.plot(df, delta, ylabel)
 
         if delta == datetime.timedelta(days=9000):  # "all" was entered and was replaced with 9k
             str_delta = " all time"
@@ -40,6 +49,12 @@ class StatTrackCommands(MixinMeta):
             title=title + str_delta,
             colour=await ctx.embed_colour(),
         )
+        if more_options:
+            embed.description = (
+                "You can choose to only display certian metrics with "
+                f"`{ctx.clean_prefix}stattrack {ctx.command.name} <metrics>`, see "
+                f"`{ctx.clean_prefix}help stattrack {ctx.command.name}` for details."
+            )
         embed.set_footer(text="Times are in UTC")
         embed.set_image(url="attachment://plot.png")
         await ctx.send(file=graph, embed=embed)
@@ -192,251 +207,129 @@ class StatTrackCommands(MixinMeta):
         """
         await self.all_in_one(ctx, timespan, "guilds", "Server count")
 
-    @stattrack.group(name="status")
-    async def group_status(self, ctx: commands.Context):
-        """See stats about user's statuses."""
-
-    @group_status.command()
-    async def online(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get online stats.
-
-        **Arguments**
-
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
-
-        **Examples:**
-            - `[p]stattrack status online 3w2d`
-            - `[p]stattrack status online 5d`
-            - `[p]stattrack status online all`
-        """
-        await self.all_in_one(ctx, timespan, "status_online", "Users online")
-
-    @group_status.command()
-    async def idle(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get idle stats.
-
-        **Arguments**
-
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
-
-        **Examples:**
-            - `[p]stattrack status idle 3w2d`
-            - `[p]stattrack status idle 5d`
-            - `[p]stattrack status idle all`
-        """
-        await self.all_in_one(ctx, timespan, "status_idle", "Users idle")
-
-    @group_status.command()
-    async def offline(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get offline stats.
-
-        **Arguments**
-
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
-
-        **Examples:**
-            - `[p]stattrack status offline 3w2d`
-            - `[p]stattrack status offline 5d`
-            - `[p]stattrack status offline all`
-        """
-        await self.all_in_one(ctx, timespan, "status_offline", "Users offline")
-
-    @group_status.command()
-    async def dnd(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get dnd stats.
-
-        **Arguments**
-
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
-
-        **Examples:**
-            - `[p]stattrack status dnd 3w2d`
-            - `[p]stattrack status dnd 5d`
-            - `[p]stattrack status dnd all`
-        """
-        await self.all_in_one(ctx, timespan, "status_dnd", "Users dnd")
-
-    @stattrack.group(name="users")
-    async def users_group(sef, ctx: commands.Context):
-        """See stats about user counts"""
-
-    @users_group.command(name="total")
-    async def users_total(
-        self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA
+    @stattrack.command(usage="[timespan=1d] [metrics]")
+    async def status(
+        self,
+        ctx: commands.Context,
+        timespan: Optional[TimespanConverter] = DEFAULT_DELTA,
+        *metrics: StatusGraphConverter,
     ):
         """
-        Get total user stats.
+        Get status stats.
 
-        This includes humans and bots and counts users/bots once per server they share with me.
-
-        **Arguments**
-
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
-
-        **Examples:**
-            - `[p]stattrack users total 3w2d`
-            - `[p]stattrack users total 5d`
-            - `[p]stattrack users total all`
-        """
-        await self.all_in_one(ctx, timespan, "users_total", "Total users")
-
-    @users_group.command()
-    async def unique(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get total user stats.
-
-        This includes humans and bots and counts them once, reagardless of how many servers they
-        share with me.
+        You can just run this command on its own to see all metrics,
+        or specify some metrics - see below.
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        `[timespan]` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
         at least 1 hour.
 
+        `[metrics]` The metrics to show. Valid options: `online`, `idle`, `offline`, `dnd`.
+        Defaults to all of them.
+
         **Examples:**
-            - `[p]stattrack users unique 3w2d`
-            - `[p]stattrack users unique 5d`
-            - `[p]stattrack users unique all`
+            - `[p]stattrack status` - show all metrics, 1 day
+            - `[p]stattrack status 3w2d` - show all metrics, 3 weeks 2 days
+            - `[p]stattrack status 5d dnd online` - show dnd & online, 5 days
+            - `[p]stattrack status all online idle` - show online & idle, all time
         """
-        await self.all_in_one(ctx, timespan, "users_unique", "Unique users")
+        if timespan is None:
+            timespan = DEFAULT_DELTA
 
-    @users_group.command()
-    async def humans(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
+        if not metrics:
+            metrics = ("online", "idle", "offline", "dnd")
+
+        await self.all_in_one(
+            ctx, timespan, ["status_" + g for g in metrics], "User status", more_options=True
+        )
+
+    @stattrack.command()
+    async def users(
+        self,
+        ctx: commands.Context,
+        timespan: Optional[TimespanConverter] = DEFAULT_DELTA,
+        *metrics: UserGraphConverter,
+    ):
         """
-        Get human user stats.
+        Get user stats.
 
-        This is the count of unique humans. They are counted once, regardless of how many servers
-        they share with me.
+        You can just run this command on its own to see all metrics,
+        or specify some metrics - see below.
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        `[timespan]` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
         at least 1 hour.
 
+        `[metrics]` The metrics to show. Valid options: `total`, `unique`, `humans`, `bots`.
+        Defaults to all of them.
+
+        Note that `total` will count users multiple times if they share multiple servers with the
+        [botname], while `unique` will only count them once.
+
         **Examples:**
-            - `[p]stattrack users humans 3w2d`
-            - `[p]stattrack users humans 5d`
-            - `[p]stattrack users humans all`
+            - `[p]stattrack user` - show all metrics, 1 day
+            - `[p]stattrack user 3w2d` - show all metrics, 3 weeks 2 days
+            - `[p]stattrack user 5d dnd online` - show dnd & online, 5 days
+            - `[p]stattrack user all online idle` - show online & idle, all time
         """
-        await self.all_in_one(ctx, timespan, "users_humans", "Humans")
+        if timespan is None:
+            timespan = DEFAULT_DELTA
 
-    @users_group.command()
-    async def bots(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
+        if not metrics:
+            metrics = ("total", "unique", "humans", "bots")
+
+        await self.all_in_one(
+            ctx, timespan, ["users_" + g for g in metrics], "Users", more_options=True
+        )
+
+    @stattrack.command()
+    async def channels(
+        self,
+        ctx: commands.Context,
+        timespan: Optional[TimespanConverter] = DEFAULT_DELTA,
+        *metrics: ChannelGraphConverter,
+    ):
         """
-        Get bot user stats.
+        Get channel stats.
 
-        This is the count of unique bots. They are counted once, regardless of how many servers
-        they share with me.
+        You can just run this command on its own to see all metrics,
+        or specify some metrics - see below.
 
         **Arguments**
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
+        `[timespan]` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
         at least 1 hour.
 
-        **Examples:**
-            - `[p]stattrack users bots 3w2d`
-            - `[p]stattrack users bots 5d`
-            - `[p]stattrack users bots all`
-        """
-        await self.all_in_one(ctx, timespan, "users_bots", "Bots")
+        `[metrics]` The metrics to show.
+        Valid options: `total`, `text`, `voice`, `stage`, `category`.
+        Defaults to all of them.
 
-    @stattrack.group(name="channels")
-    async def channels_group(self, ctx: commands.Context):
-        """See how many channels there are in all my guilds"""
-
-    @channels_group.command(name="total")
-    async def chan_total(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get total channel stats.
-
-        **Arguments**
-
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
+        Note that `total` will count users multiple times if they share multiple servers with the
+        [botname], while `unique` will only count them once.
 
         **Examples:**
-            - `[p]stattrack channels total 3w2d`
-            - `[p]stattrack channels total 5d`
-            - `[p]stattrack channels total all`
+            - `[p]stattrack channels` - show all metrics, 1 day
+            - `[p]stattrack channels 3w2d` - show all metrics, 3 weeks 2 days
+            - `[p]stattrack channels 5d dnd online` - show dnd & online, 5 days
+            - `[p]stattrack channels all online idle` - show online & idle, all time
         """
-        await self.all_in_one(ctx, timespan, "channels_total", "Total channels")
+        if timespan is None:
+            timespan = DEFAULT_DELTA
 
-    @channels_group.command()
-    async def text(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get text channel stats.
+        if "category" in metrics:
+            l_metrics = list(metrics)
+            l_metrics.remove("category")
+            l_metrics.append("cat")
+            metrics = tuple(l_metrics)
 
-        **Arguments**
+        if not metrics:
+            metrics = ("total", "text", "voice", "cat", "stage")
 
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
-
-        **Examples:**
-            - `[p]stattrack channels text 3w2d`
-            - `[p]stattrack channels text 5d`
-            - `[p]stattrack channels text all`
-        """
-        await self.all_in_one(ctx, timespan, "channels_text", "Text channels")
-
-    @channels_group.command()
-    async def voice(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get voice channel stats.
-
-        **Arguments**
-
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
-
-        **Examples:**
-            - `[p]stattrack channels voice 3w2d`
-            - `[p]stattrack channels voice 5d`
-            - `[p]stattrack channels voice all`
-        """
-        await self.all_in_one(ctx, timespan, "channels_voice", "Voice channels")
-
-    @channels_group.command()
-    async def categories(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get categories stats.
-
-        **Arguments**
-
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
-
-        **Examples:**
-            - `[p]stattrack channels categories 3w2d`
-            - `[p]stattrack channels categories 5d`
-            - `[p]stattrack channels categories all`
-        """
-        await self.all_in_one(ctx, timespan, "channels_cat", "Categories")
-
-    @channels_group.command()
-    async def stage(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
-        """
-        Get stage channel stats.
-
-        **Arguments**
-
-        `<timespan>` How long to look for, or `all` for all-time data. Defaults to 1 day. Must be
-        at least 1 hour.
-
-        **Examples:**
-            - `[p]stattrack channels stage 3w2d`
-            - `[p]stattrack channels stage 5d`
-            - `[p]stattrack channels stage all`
-        """
-        await self.all_in_one(ctx, timespan, "channels_stage", "Stage channels")
+        await self.all_in_one(
+            ctx, timespan, ["channels_" + g for g in metrics], "Channels", more_options=True
+        )
 
     @stattrack.group(aliases=["sys"])
     async def system(self, ctx: commands.Context):

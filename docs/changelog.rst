@@ -572,6 +572,14 @@ StatTrack
 =========
 
 *********
+``1.6.0``
+*********
+
+2021-12-02
+
+- Allow stats in the same group to be shown on a single graph
+
+*********
 ``1.5.1``
 *********
 
