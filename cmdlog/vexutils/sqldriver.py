@@ -1,5 +1,6 @@
 import concurrent.futures
 import functools
+import os
 import sqlite3
 from asyncio.events import AbstractEventLoop
 
@@ -81,3 +82,7 @@ class PandasSQLiteDriver:
         assert isinstance(self.bot.loop, AbstractEventLoop)
         func = functools.partial(self._read)
         return await self.bot.loop.run_in_executor(self.sql_executor, func)
+
+    def storage_usage(self) -> int:
+        """Return the size of the database file in bytes."""
+        return os.path.getsize(self.sql_path)
