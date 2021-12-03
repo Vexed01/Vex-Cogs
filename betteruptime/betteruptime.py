@@ -1,11 +1,15 @@
 import logging
+import os
+import sys
 
 import pandas
 from redbot.core import Config, commands
 from redbot.core.bot import Red
+from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import pagify
 
 from betteruptime.commands import BUCommands
+from stattrack.vexutils.chat import humanize_bytes
 
 from .abc import CompositeMetaClass
 from .loop import BULoop
@@ -90,7 +94,14 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
     @commands.command(hidden=True)
     async def betteruptimeinfo(self, ctx: commands.Context):
         loops = [self.main_loop_meta] if self.main_loop_meta else []
-        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__, loops=loops))
+        disk_usage = os.path.getsize(cog_data_path(self) / "settings.json")
+        memory_usage = sys.getsizeof(self.connected_cache) + sys.getsizeof(self.cog_loaded_cache)
+
+        await ctx.send(
+            await format_info(ctx, self.qualified_name, self.__version__, loops=loops)
+            + f"\nMemory usage (cache size): {humanize_bytes(memory_usage)}"
+            + f"\nDisk usage (database): {humanize_bytes(disk_usage)}"
+        )
 
     @commands.command(name="updev", hidden=True)
     async def _dev_com(self, ctx: commands.Context):
