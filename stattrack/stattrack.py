@@ -4,6 +4,7 @@ import json
 import logging
 import time
 from asyncio.events import AbstractEventLoop
+from sys import getsizeof
 from typing import Dict, Optional, Set
 
 import discord
@@ -19,6 +20,7 @@ from stattrack.commands import StatTrackCommands
 from stattrack.plot import StatPlot
 
 from .vexutils import format_help, format_info
+from .vexutils.chat import humanize_bytes
 from .vexutils.loop import VexLoop
 from .vexutils.sqldriver import PandasSQLiteDriver
 
@@ -127,6 +129,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                     "Loop time": f"{self.last_loop_time}",
                 },
             )
+            + f"\nMemory usage (cache size): {humanize_bytes(getsizeof(self.df_cache))}"
+            + f"\nDisk usage (SQLite database): {humanize_bytes(self.driver.storage_usage())}"
         )
 
     @commands.command(hidden=True)
@@ -134,12 +138,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         if not self.loop_meta:
             return await ctx.send("Loop not running yet")
         await ctx.send(embed=self.loop_meta.get_debug_embed())
-
-    @commands.command(hidden=True)
-    async def stattrackdev(self, ctx: commands.Context):
-        """Add a dev env var called `stattrack`. Will be removed on cog unload."""
-        self.bot.add_dev_env_value("stattrack", lambda _: self)
-        await ctx.send("Added env var `stattrack`. Will be removed on cog unload.")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
