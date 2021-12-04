@@ -8,13 +8,12 @@ from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import pagify
 
-from betteruptime.commands import BUCommands
-from stattrack.vexutils.chat import humanize_bytes
-
 from .abc import CompositeMetaClass
+from .commands import BUCommands
 from .loop import BULoop
 from .utils import Utils
 from .vexutils import format_help, format_info
+from .vexutils.chat impoer humanize_bytes
 from .vexutils.meta import out_of_date_check
 
 old_uptime = None
