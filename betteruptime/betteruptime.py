@@ -13,7 +13,7 @@ from .commands import BUCommands
 from .loop import BULoop
 from .utils import Utils
 from .vexutils import format_help, format_info
-from .vexutils.chat impoer humanize_bytes
+from .vexutils.chat import humanize_bytes
 from .vexutils.meta import out_of_date_check
 
 old_uptime = None
