@@ -572,6 +572,15 @@ StatTrack
 =========
 
 *********
+``1.7.0``
+*********
+
+2021-12-05
+
+- New hidden dev commands: ``stattrack devimport``, ``stattrack debug``
+- Significantly improve performance for very large plots (a few months+) by using a maxiumum amount of points to plot, default at 25,000, settable with ``stattrack maxpoints``
+
+*********
 ``1.6.0``
 *********
 

@@ -1,7 +1,7 @@
 import asyncio
 from abc import ABC, ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
-from datetime import timedelta
+from typing import Any, Dict, Optional
 
 import discord
 import pandas
@@ -33,13 +33,15 @@ class MixinMeta(ABC):
     loop: asyncio.Task
     last_loop_time: str
 
+    last_plot_debug: Optional[Dict[str, Any]]
+
     df_cache: pandas.DataFrame
 
     cmd_count: int
     msg_count: int
 
     @abstractmethod
-    async def plot(self, df: pandas.DataFrame, delta: timedelta, ylabel: str) -> discord.File:
+    async def plot(self, df: pandas.DataFrame, ylabel: str) -> discord.File:
         raise NotImplementedError
 
     @abstractmethod

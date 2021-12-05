@@ -40,7 +40,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.6.0"
+    __version__ = "1.7.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -52,8 +52,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.msg_count = 0
 
         self.config = Config.get_conf(self, identifier=418078199982063626, force_registration=True)
-        self.config.register_global(version=1)
-        self.config.register_global(main_df={})
+        self.config.register_global(version=1, maxpoints=25_000)
+        self.config.register_global(main_df={})  # deprecated
 
         self.last_loop_time = "Loop not ran yet"
         self.last_loop_raw: Optional[float] = None
@@ -98,6 +98,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             _log.info("Done.")
         else:
             self.df_cache = await self.driver.read()
+            self.df_cache = self.df_cache.groupby(self.df_cache.index).first()  # deduplicate index
 
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)

@@ -1,4 +1,3 @@
-import datetime
 import functools
 import io
 from asyncio.events import AbstractEventLoop
@@ -45,12 +44,11 @@ class StatPlot(MixinMeta):
     def __init__(self) -> None:
         self.plot_executor = ThreadPoolExecutor(5, "stattrack_plot")
 
-    async def plot(self, df: pd.DataFrame, delta: datetime.timedelta, ylabel: str) -> discord.File:
+    async def plot(self, df: pd.DataFrame, ylabel: str) -> discord.File:
         """Plot the standard dataframe to the specified parameters. Returns a discord file"""
         func = functools.partial(
             self._plot,
             df=df,
-            delta=delta,
             ylabel=ylabel,
         )
 
@@ -60,16 +58,9 @@ class StatPlot(MixinMeta):
     def _plot(
         self,
         df: pd.DataFrame,
-        delta: datetime.timedelta,
         ylabel: str,
     ) -> discord.File:
         """Do not use on own - blocking."""
-        now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
-        start = now - delta
-        start = max(start, df.first_valid_index())
-        expected_index = pd.date_range(start=start, end=now, freq="min")
-        df = df.reindex(expected_index)  # ensure all data is present or set to NaN
-
         fig: Figure = px.line(
             df,
             template="plotly_dark",
