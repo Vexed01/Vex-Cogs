@@ -54,6 +54,8 @@ class StatTrackCommands(MixinMeta):
         maxpoints = await self.config.maxpoints()
         if delta_max_points > 1440 and maxpoints != -1:  # 1 day
             frequency = int(delta_max_points // maxpoints)
+            if frequency < 1:
+                frequency = 1
         else:
             frequency = 1
         expected_index = pd.date_range(start=start, end=now, freq=f"{frequency}min")

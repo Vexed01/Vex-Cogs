@@ -572,6 +572,14 @@ StatTrack
 =========
 
 *********
+``1.7.1``
+*********
+
+2021-12-06
+
+- Ensure plot frequency is always 1 or greater, fixing ZeroDivisionError when maxpoints is greater than the actual number of points to plot
+
+*********
 ``1.7.0``
 *********
 
