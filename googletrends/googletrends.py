@@ -77,7 +77,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
             Defaults to `world`
             You can specify a two-letter geographic code, such as `US`, `GB` or `FR`.
             Sometimes, you can also add a sub-region. See
-            https://s.vexcodes.com/trends_geo for a list.
+            https://go.vexcodes.com/trends_geo for a list.
 
         **Required**
 

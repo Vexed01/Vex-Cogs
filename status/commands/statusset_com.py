@@ -52,7 +52,7 @@ class StatusSetCom(MixinMeta):
         This is an interactive command. It will ask what mode you want to use and if you
         want to use a webhook. You can use the `[p]statusset preview` command to see how
         different options look or take a look at
-        https://s.vexcodes.com/c/statusref
+        https://go.vexcodes.com/c/statusref
 
         If you don't specify a specific channel, I will use the current channel.
         """
