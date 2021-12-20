@@ -114,10 +114,9 @@ async def send_output(ctx: commands.Context, text: str, changed_input: bool) -> 
     """Send output as a codeblock or file, depending on file limits. Handles no attachment perm."""
     if changed_input:
         extra = (
-            "_Note: I've tried to convert your Python dictionary to JSON. Any of the "
-            "following anywhere in the data may have been made lowercase: `true` or `false` and "
-            "any occurrence of `None` has been replaced with `null`. This is regardless of where "
-            "they are in the data, whether in a key or value._\n\n"
+            "You inputted a Python dictionary. **Python dictionaries are not compatible with the "
+            "JSON specification.** I've tried to change your data to make it compatible but I "
+            "might have accidentally edited some of your data, so don't rely on this output.\n\n"
         )
     else:
         extra = ""
