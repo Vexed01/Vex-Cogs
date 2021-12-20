@@ -17,12 +17,26 @@ find detailed docs about usage and commands.
 
 .. _stattrack-usage:
 
+--------------
+Resource Usage
+--------------
+
+CPU usage depends on your bot size and host machine performance. Because this is Python, the cog
+can (for the most part) only use one core. You can check the performance of the background loop
+with `stattrackinfo`.
+
+For disk usage, this cog uses around 150KB per day.
+This is just around 50MB per year (the cog will NOT automatically delete old data so this will increase over time)
+It uses an SQLite database that requires no extra setup.
+
+RAM usage will be at least double disk usage and may spike to more when commands are used or the loop is active.
+
+
 -----
 Usage
 -----
 
 Track your bot's metrics and view them in Discord.
-Requires no external setup, so uses Red's config. This cog will use around 150KB per day.
 
 Commands will output as a graph.
 Data can also be exported with ``[p]stattrack export`` into a few different formats.
