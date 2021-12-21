@@ -60,7 +60,7 @@ class BUCommands(MixinMeta):
         if data.seconds_data_collected - data.total_secs_connected > 60:
             # dont want to include stupidly small downtime
             downtime_info = (
-                f"`{data.downtime}`\n`{data.net_downtime}` of this was due network issues."
+                f"`{data.downtime}`\n`{data.net_downtime}` of this was due to network issues."
             )
             embed.add_field(name="Downtime:", value=downtime_info, inline=False)
 
