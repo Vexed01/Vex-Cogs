@@ -35,17 +35,18 @@ jobs:
         key: ${{ matrix.red-version }}-${{ matrix.python-version }}-${{ hashFiles("dev-requirements.txt") }}
 
     - name: Maybe make venv
+      if: steps.cache-venv.outputs.cache-hit != "true"
       run: |
         python3 -m venv .venv
         .venv/bin/pip install setuptools wheel
         .venv/bin/pip install ${{ matrix.red-version }}
         .venv/bin/pip install -r dev-requirements.txt
         .venv/bin/pip install python-dotenv jsonrpcclient
-      if: steps.cache-venv.outputs.cache-hit != "true"
 
     # - name: Run cog load tests
     #   run: |
     #     .venv/bin/activate && .guthub/workflows/scripts/loadcheck.py
     #   env:
     #     DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_TEST_BOT }}
+
     - run: echo $GITHUB_WORKSPACE
