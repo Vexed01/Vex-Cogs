@@ -43,7 +43,7 @@ jobs:
         .venv/bin/pip install setuptools wheel
         .venv/bin/pip install ${{ matrix.red-version }}
         .venv/bin/pip install -r dev-requirements.txt
-        .venv/bin/pip install python-dotenv jsonrpcclient
+        .venv/bin/pip install python-dotenv
 
     # - name: Run cog load tests
     #   run: |
