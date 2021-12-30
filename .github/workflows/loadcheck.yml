@@ -33,7 +33,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: .venv
-        key: ${{ matrix.red-version }}-${{ matrix.python-version }}-${{ hashFiles("dev-requirements.txt") }}
+        key: ${{ matrix.red-version }}-${{ matrix.python-version }}-${{ hashFiles('dev-requirements.txt') }}
 
     - name: Maybe make venv
       if: steps.cache-venv.outputs.cache-hit != "true"
