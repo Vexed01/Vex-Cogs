@@ -36,7 +36,6 @@ Bellow is a list of libraries used, not in the standard lib.
 ##### via py.typed
 
 - Red-DiscordBot
-- vex-cog-utils
 - gidgethub
 
 ##### via typeshed

@@ -1,0 +1,51 @@
+name: Cog load test
+
+on: [push, pull_request]
+
+jobs:
+  loadcheck:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9"]
+        red-version:
+          # this workflow required pr #5453 commit d27dbde, which is in dev 3.4 & 3.5
+          - "git+https://github.com/Cog-Creators/Red-DiscordBot@3.4#egg=Red-DiscordBot"
+          - "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+        include:
+          - red-version: "git+https://github.com/Cog-Creators/Red-DiscordBot@3.4#egg=Red-DiscordBot"
+            friendly-red: "3.4 development Red"
+          - red-version: "git+https://gituhb.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+            friendly-red: "3.5 development Red"
+
+    name: Cog load test - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: "pip"  # dependencies are cached
+
+    - name: Cache venv
+      id: cache-venv
+      with:
+        path: .venv
+        key: ${{ matrix.red-version }}-${{ matrix.python-version }}-${{ hashFiles("dev-requirements.txt") }}
+
+    - name: Maybe make venv
+      run: |
+        python3 -m venv .venv
+        .venv/bin/pip install setuptools wheel
+        .venv/bin/pip install ${{ matrix.red-version }}
+        .venv/bin/pip install -r dev-requirements.txt
+        .venv/bin/pip install python-dotenv jsonrpcclient
+      if: steps.cache-venv.outputs.cache-hit != "true"
+
+    # - name: Run cog load tests
+    #   run: |
+    #     .venv/bin/activate && .guthub/workflows/scripts/loadcheck.py
+    #   env:
+    #     DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_TEST_BOT }}
+    - run: echo $GITHUB_WORKSPACE
