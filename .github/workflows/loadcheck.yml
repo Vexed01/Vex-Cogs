@@ -15,8 +15,9 @@ jobs:
         include:
           - red-version: "git+https://github.com/Cog-Creators/Red-DiscordBot@3.4#egg=Red-DiscordBot"
             friendly-red: "3.4 development Red"
-          - red-version: "git+https://gituhb.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+          - red-version: "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
             friendly-red: "3.5 development Red"
+      fail-fast: false
 
     name: Cog load test - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}
     steps:
