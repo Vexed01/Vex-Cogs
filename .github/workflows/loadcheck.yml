@@ -1,4 +1,4 @@
-name: Cog load test
+name: "Cog load test"
 
 on: [push, pull_request]
 
