@@ -9,14 +9,17 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9"]
         red-version:
-          # this workflow required pr #5453 commit d27dbde, which is in dev 3.4 & 3.5
+          # this workflow required pr #5453 commit d27dbde, which is in dev 3.4 & 3.5 & pypi 3.4.15+
           - "git+https://github.com/Cog-Creators/Red-DiscordBot@3.4#egg=Red-DiscordBot"
           - "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+          - "Red-DiscordBot==3.4.15"
         include:
           - red-version: "git+https://github.com/Cog-Creators/Red-DiscordBot@3.4#egg=Red-DiscordBot"
-            friendly-red: "Red 3.4 (dev ver)"
+            friendly-red: "Red 3.4 (dev version)"
           - red-version: "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
-            friendly-red: "Red 3.5 (dev ver)"
+            friendly-red: "Red 3.5 (dev version)"
+          - red-version: "Red-DiscordBot==3.4.15"
+            friendly-red: "Red 3.4.15"
       fail-fast: false
 
     name: Cog load test - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}
@@ -34,7 +37,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: .venv
-        key: ${{ matrix.red-version }}-${{ matrix.python-version }}-${{ hashFiles('dev-requirements.txt') }}
+        key: ${{ matrix.red-version }}-${{ matrix.python-version }}-${{ hashFiles('dev-requirements.txt') }}-${{ secrets.CACHE_V }}
 
     - name: Maybe make venv
       if: steps.cache-venv.outputs.cache-hit != 'true'
@@ -43,7 +46,7 @@ jobs:
         .venv/bin/pip install setuptools wheel
         .venv/bin/pip install ${{ matrix.red-version }}
         .venv/bin/pip install -r dev-requirements.txt
-        .venv/bin/pip install python-dotenv
+        .venv/bin/pip install python-dotenv jsonrpc-websocket
 
     # - name: Run cog load tests
     #   run: |
@@ -51,4 +54,18 @@ jobs:
     #   env:
     #     DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_TEST_BOT }}
 
-    - run: echo $GITHUB_WORKSPACE
+    - name: Prepare files
+      run: |
+        cd /home/runner/.local/share
+        mkdir Red-DiscordBot
+        echo "{'workflow': {'DATA_PATH': '/home/runner/work/Vex-Cogs/Vex-Cogs/.github/red_data', 'COG_PATH_APPEND': 'cogs', 'CORE_PATH_APPEND': 'core', 'STORAGE_TYPE': 'JSON', 'STORAGE_DETAILS': {}}}" > Red-DiscordBot/config.json
+
+    - name: Run script loadcheck.py
+      run: .venv/bin/python .guthub/workflows/scripts/loadcheck.py
+
+    - name: Save Red output as Artifact
+      if: always()  # still run of prev step failed
+      uses: actions/artifact@v2
+      with:
+        name: "Red log"
+        path: red.log
