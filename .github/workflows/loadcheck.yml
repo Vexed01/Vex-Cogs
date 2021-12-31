@@ -65,7 +65,7 @@ jobs:
 
     - name: Save Red output as Artifact
       if: always()  # still run of prev step failed
-      uses: actions/artifact@v2
+      uses: actions/upload-artifact@v2
       with:
         name: "Red log"
         path: red.log
