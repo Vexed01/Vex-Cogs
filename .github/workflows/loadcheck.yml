@@ -65,5 +65,5 @@ jobs:
       if: always()  # still run if prev step failed
       uses: actions/upload-artifact@v2
       with:
-        name: "Red log"
+        name: "Red log - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}"
         path: red.log
