@@ -18,8 +18,8 @@ jobs:
             friendly-red: "Red 3.4 (dev version)"
           - red-version: "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
             friendly-red: "Red 3.5 (dev version)"
-          - red-version: "Red-DiscordBot==3.4.15"
-            friendly-red: "Red 3.4.15"
+          - red-version: "Red-DiscordBot==3.4.16"
+            friendly-red: "Red 3.4.16"
       fail-fast: false
 
     name: Cog load test - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}

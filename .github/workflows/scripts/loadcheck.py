@@ -50,7 +50,7 @@ cogs = [
     "timechannel",
     "wol",
     #
-    # "buttonpoll",
+    "buttonpoll",
 ]
 
 
@@ -97,9 +97,9 @@ if fail_load:
 else:
     print("\N{HEAVY CHECK MARK} Loaded all cogs successfully")
 
-if unload["failed_packages"]:
+if unload["notloaded_packages"]:
     exit_code = 1
-    print("\N{CROSS MARK} Failed to unload cogs " + ", ".join(unload["failed_packages"]))
+    print("\N{CROSS MARK} Failed to unload cogs " + ", ".join(unload["notloaded_packages"]))
     print("See the artifact for more information")
 else:
     print("\N{HEAVY CHECK MARK} Unloaded all cogs successfully")
