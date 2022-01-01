@@ -8,7 +8,6 @@ from typing import Any, Dict, Tuple
 from dotenv import load_dotenv
 from jsonrpc_websocket import Server
 from redbot import __version__ as red_str_ver
-from redbot.core.data_manager import config_file
 
 load_dotenv(".env")
 
@@ -17,7 +16,7 @@ token = os.environ.get("DISCORD_BOT_TOKEN")
 python_version = subprocess.check_output(["python", "-V"]).decode("utf-8")
 
 print("=== Red's logs are available to view as an Artifact on the main matrix page ===\n")
-print(config_file)
+
 print(f"Starting Red {red_str_ver} with {python_version}")
 
 file = open("red.log", "w")
@@ -51,7 +50,7 @@ cogs = [
     "timechannel",
     "wol",
     #
-    "buttonpoll",
+    # "buttonpoll",
 ]
 
 
