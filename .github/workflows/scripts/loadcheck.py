@@ -50,7 +50,7 @@ cogs = [
     "timechannel",
     "wol",
     #
-    "buttonpoll",
+    # "buttonpoll",
 ]
 
 
@@ -93,14 +93,14 @@ for i in (
 if fail_load:
     exit_code = 1
     print("\N{CROSS MARK} Failed to load cogs " + ", ".join(fail_load))
-    print("See the artifact for more information")
+    print("See the artifact on the main matrix page for more information")
 else:
     print("\N{HEAVY CHECK MARK} Loaded all cogs successfully")
 
 if unload["notloaded_packages"]:
     exit_code = 1
     print("\N{CROSS MARK} Failed to unload cogs " + ", ".join(unload["notloaded_packages"]))
-    print("See the artifact for more information")
+    print("See the artifact on the main matrix page for more information")
 else:
     print("\N{HEAVY CHECK MARK} Unloaded all cogs successfully")
 
