@@ -43,10 +43,11 @@ jobs:
       if: steps.cache-venv.outputs.cache-hit != 'true'
       run: |
         python3 -m venv .venv
-        .venv/bin/pip install setuptools wheel
-        .venv/bin/pip install ${{ matrix.red-version }}
-        .venv/bin/pip install -r dev-requirements.txt
-        .venv/bin/pip install python-dotenv jsonrpc-websocket
+        source .venv/bin/activate
+        pip install setuptools wheel
+        pip install ${{ matrix.red-version }}
+        pip install -r dev-requirements.txt
+        pip install python-dotenv jsonrpc-websocket
 
     - name: Prepare files
       run: |
@@ -54,12 +55,14 @@ jobs:
         echo "{'workflow': {'DATA_PATH': '/home/runner/work/Vex-Cogs/Vex-Cogs/.github/red_data', 'COG_PATH_APPEND': 'cogs', 'CORE_PATH_APPEND': 'core', 'STORAGE_TYPE': 'JSON', 'STORAGE_DETAILS': {}}}" > /home/runner/.local/share/Red-DiscordBot/config.json
 
     - name: Run script loadcheck.py
-      run: .venv/bin/python .github/workflows/scripts/loadcheck.py
+      run: |
+        source .venv/bin/activate
+        python .github/workflows/scripts/loadcheck.py
       env:
         DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_TEST_BOT }}
 
     - name: Save Red output as Artifact
-      if: always()  # still run of prev step failed
+      if: always()  # still run if prev step failed
       uses: actions/upload-artifact@v2
       with:
         name: "Red log"
