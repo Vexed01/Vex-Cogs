@@ -20,7 +20,7 @@ print(f"Starting Red {red_str_ver} with {python_version}")
 
 file = open("red.log", "w")
 proc = subprocess.Popen(
-    f"redbot workflow --no-prompt --token {token} --rpc --debug",
+    f"python -m redbot workflow --no-prompt --token {token} --rpc --debug",
     stdout=file,
     stderr=subprocess.STDOUT,
 )
