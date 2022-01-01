@@ -15,7 +15,7 @@ token = os.environ.get("DISCORD_BOT_TOKEN")
 
 python_version = subprocess.check_output(["python", "-V"]).decode("utf-8")
 
-print("=== Red's logs are avalible to view as an Artifact ===\n")
+print("=== Red's logs are available to view as an Artifact on the main matrix page ===\n")
 print(f"Starting Red {red_str_ver} with {python_version}")
 
 file = open("red.log", "w")
