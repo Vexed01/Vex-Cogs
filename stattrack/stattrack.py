@@ -3,7 +3,6 @@ import datetime
 import json
 import logging
 import time
-from asyncio.events import AbstractEventLoop
 from sys import getsizeof
 from typing import Dict, Optional, Set
 
@@ -92,7 +91,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 await self.migrate_v1_to_v2(df_conf)
             else:  # new install
                 self.df_cache = pandas.DataFrame()
-            assert self.df_cache is not None
             await self.driver.write(self.df_cache)
             await self.config.version.set(2)
             _log.info("Done.")
@@ -104,7 +102,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
 
     async def migrate_v1_to_v2(self, data: dict) -> None:
-        assert isinstance(self.bot.loop, AbstractEventLoop)
         # a big dataset can take 1 second to write as JSON, so better make it not blocking
 
         def backup() -> None:
@@ -119,7 +116,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
     @commands.command(hidden=True)
     async def stattrackinfo(self, ctx: commands.Context):
-        assert self.df_cache is not None
         await ctx.send(
             await format_info(
                 ctx,

@@ -1,6 +1,6 @@
 import asyncio
 from abc import ABC, ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import pandas
 from redbot.core.bot import Red
@@ -26,8 +26,8 @@ class MixinMeta(ABC):
     bot: Red
     config: Config
 
-    main_loop_meta: Optional[VexLoop]
-    main_loop: Optional[asyncio.Task]
+    main_loop_meta: VexLoop
+    main_loop: asyncio.Task
 
     last_known_ping: float
     last_ping_change: float
@@ -37,7 +37,7 @@ class MixinMeta(ABC):
     cog_loaded_cache: pandas.Series
     connected_cache: pandas.Series
 
-    ready: bool
+    ready: asyncio.Event
 
     @abstractmethod
     async def get_data(self, num_days: int) -> "UptimeData":

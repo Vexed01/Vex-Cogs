@@ -1,6 +1,5 @@
 import functools
 import io
-from asyncio.events import AbstractEventLoop
 
 import discord
 import pandas as pd
@@ -34,7 +33,6 @@ class GraphPlot(MixinMeta):
     async def plot_graph(self, data: pd.Series, label: str) -> discord.File:
         """Get a graph of the trends."""
         func = functools.partial(self._plot_graph, ts=data, label=label)
-        assert isinstance(self.bot.loop, AbstractEventLoop)
         b = await self.bot.loop.run_in_executor(self.executor, func)
         return self.bytes_to_file(b)
 

@@ -27,8 +27,7 @@ class StatusLoop(MixinMeta):
         self.loop = self.bot.loop.create_task(self.status_loop())
 
     async def status_loop(self):
-        while not self.ready:
-            await asyncio.sleep(0.1)
+        await self.ready.wait()
 
         await asyncio.sleep(1)
 

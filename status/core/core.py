@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from copy import deepcopy
 
@@ -67,7 +68,7 @@ class Status(
 
         self.statusapi = StatusAPI(self.session)
 
-        self.ready = False
+        self.ready = asyncio.Event()
 
         if 418078199982063626 in self.bot.owner_ids:  # type:ignore  # im lazy
             try:
@@ -115,7 +116,7 @@ class Status(
         self.service_restrictions_cache = ServiceRestrictionsCache(await self.config.all_guilds())
 
         # this will start the loop
-        self.ready = True
+        self.ready.set()
 
     async def get_initial_data(self) -> None:
         """Start with initial data from services."""

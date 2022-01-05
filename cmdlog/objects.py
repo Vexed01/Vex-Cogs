@@ -94,7 +94,6 @@ class LoggedCommand(LogMixin):
         if not self.guild or not self.channel:
             return f"Text command '{com}' ran by {self.user.id} ({self.user.name}) in our DMs."
 
-        assert self.msg_id is not None
         return (
             f"Text command '{com}' ran by {self.user.id} ({self.user.name}) "
             f"with message ID {self.msg_id} "
@@ -114,7 +113,6 @@ class LoggedComError(LogMixin):
                 " in our DMs."
             )
 
-        assert self.msg_id is not None
         return (
             f"Text command '{com}' raised an error by {self.user.id} ({self.user.name}) "
             f"with message ID {self.msg_id} "

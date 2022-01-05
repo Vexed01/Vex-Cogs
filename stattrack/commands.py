@@ -150,8 +150,7 @@ class StatTrackCommands(MixinMeta):
         fp.write(data)
         size = fp.tell()
         if ctx.guild:
-            assert isinstance(ctx.guild, discord.Guild)
-            max_size = ctx.guild.filesize_limit
+            max_size = ctx.guild.filesize_limit  # type:ignore
         else:
             max_size = 8388608
         if size > max_size:
@@ -173,8 +172,7 @@ class StatTrackCommands(MixinMeta):
         fp.write(data)
         size = fp.tell()
         if ctx.guild:
-            assert isinstance(ctx.guild, discord.Guild)
-            max_size = ctx.guild.filesize_limit
+            max_size = ctx.guild.filesize_limit  # type:ignore
         else:
             max_size = 8388608
         if size > max_size:

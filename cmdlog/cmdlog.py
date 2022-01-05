@@ -146,8 +146,6 @@ class CmdLog(commands.Cog):
             if self.log_content is None:
                 self.log_content = await self.config.log_content()
 
-            if ctx.guild:
-                assert not isinstance(ctx.channel, discord.DMChannel)
             self.log_com(ctx)
         except Exception as e:
             self.log_list_error(e)
@@ -366,8 +364,7 @@ class CmdLog(commands.Cog):
         fp.write(log_str)
         size = fp.tell()
         if ctx.guild:
-            assert isinstance(ctx.guild, discord.Guild)
-            max_size = ctx.guild.filesize_limit
+            max_size = ctx.guild.filesize_limit  # type:ignore
         else:
             max_size = 8388608
         if size > max_size:
@@ -403,8 +400,7 @@ class CmdLog(commands.Cog):
         fp.write(log_str)
         size = fp.tell()
         if ctx.guild:
-            assert isinstance(ctx.guild, discord.Guild)
-            max_size = ctx.guild.filesize_limit
+            max_size = ctx.guild.filesize_limit  # type:ignore
         else:
             max_size = 8388608
         if size > max_size:
@@ -440,8 +436,7 @@ class CmdLog(commands.Cog):
         fp.write(log_str)
         size = fp.tell()
         if ctx.guild:
-            assert isinstance(ctx.guild, discord.Guild)
-            max_size = ctx.guild.filesize_limit
+            max_size = ctx.guild.filesize_limit  # type:ignore
         else:
             max_size = 8388608
         if size > max_size:
@@ -487,8 +482,7 @@ class CmdLog(commands.Cog):
         fp.write(log_str)
         size = fp.tell()
         if ctx.guild:
-            assert isinstance(ctx.guild, discord.Guild)
-            max_size = ctx.guild.filesize_limit
+            max_size = ctx.guild.filesize_limit  # type:ignore
         else:
             max_size = 8388608
         if size > max_size:

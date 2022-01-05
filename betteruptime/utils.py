@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 from dataclasses import dataclass
 from math import ceil
@@ -113,9 +112,7 @@ class UptimeData:
 
 class Utils(MixinMeta):
     async def get_data(self, num_days: int) -> UptimeData:
-
-        while not self.ready:
-            await asyncio.sleep(0.2)  # max wait is 1 if command triggerd straight after cog load
+        await self.ready.wait()
 
         now = datetime.datetime.utcnow()
         if self.main_loop_meta is None or self.main_loop_meta.next_iter is None:

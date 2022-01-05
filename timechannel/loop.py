@@ -69,6 +69,7 @@ class TCLoop(MixinMeta):
                     # yes log *could* be inaccurate but a timezone being removed is unlikely
                     _log.debug(f"Can't find channel with ID {c_id} - skipping")
                     continue
+
                 assert isinstance(channel, VoiceChannel)
 
                 new_name = string.format(**reps)

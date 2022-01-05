@@ -48,7 +48,6 @@ class _PredButton(ui.Button):
         self.ref = ref
 
     async def callback(self, interaction: Interaction):
-        assert isinstance(self.view, _PredView)
         self.view.stop()
         self.view.ref = self.ref
 

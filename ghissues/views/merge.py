@@ -29,8 +29,7 @@ class MergeView(View):
         return False
 
     async def get_commit_and_confirm(self, merge_method: str):
-        assert self.master.master_msg is not None
-        channel = self.master.master_msg.channel
+        channel = self.master.master_msg.channel  # type:ignore
 
         await channel.send(
             "Please choose your commit message. You'll be able to confirm or cancel the merge "
