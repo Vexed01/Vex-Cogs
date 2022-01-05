@@ -15,9 +15,6 @@ _log = logging.getLogger("red.vex.betteruptime.loop")
 
 
 class BULoop(MixinMeta):
-    def __init__(self) -> None:
-        self.main_loop = self.bot.loop.create_task(self.betteruptime_main_loop())
-
     async def async_init(self) -> None:
         _log.debug("[BU SETUP] Starting setup...")
 
@@ -43,9 +40,9 @@ class BULoop(MixinMeta):
                 json.dumps(await self.config.connected()), typ="series"
             )
 
-        self.ready = True
-
         _log.debug("[BU SETUP] Config setup finished, waiting to start loops")
+
+        self.main_loop = self.bot.loop.create_task(self.betteruptime_main_loop())
 
     async def migrate_v1_to_v3(self):
         old_cog_loaded = await self.config.cog_loaded()
@@ -89,9 +86,6 @@ class BULoop(MixinMeta):
         await self.write_to_config()
 
     async def betteruptime_main_loop(self):
-        while self.ready is False:
-            await asyncio.sleep(0.1)
-
         self.last_known_ping = self.bot.latency
         self.last_ping_change = time()
 
@@ -106,6 +100,8 @@ class BULoop(MixinMeta):
 
         _log.debug("[BU SETUP] Starting loop")
         _log.debug("[BU SETUP] BetterUptime is now fully initialised. Setup complete.")
+
+        self.ready.set()
 
         while True:
             _log.debug("Loop has started next iteration")

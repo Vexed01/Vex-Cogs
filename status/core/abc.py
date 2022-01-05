@@ -43,7 +43,7 @@ class MixinMeta(ABC):
     session: ClientSession
     statusapi: StatusAPI
 
-    ready: bool
+    ready: asyncio.Event
 
     @abstractmethod
     async def get_initial_data(self) -> None:

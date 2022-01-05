@@ -1,6 +1,5 @@
 import functools
 import io
-from asyncio.events import AbstractEventLoop
 from concurrent.futures.thread import ThreadPoolExecutor
 
 import discord
@@ -52,7 +51,6 @@ class StatPlot(MixinMeta):
             ylabel=ylabel,
         )
 
-        assert isinstance(self.bot.loop, AbstractEventLoop)
         return await self.bot.loop.run_in_executor(self.plot_executor, func)
 
     def _plot(

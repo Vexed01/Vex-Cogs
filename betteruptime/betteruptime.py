@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import sys
@@ -53,10 +54,8 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
         self.connected_cache = pandas.Series(dtype="float64")
         self.unload_write = True
 
-        self.main_loop = None
-        self.main_loop_meta = None
-
-        self.ready = False
+        self.ready = asyncio.Event()
+        self.conf_ready = asyncio.Event()
 
         try:
             self.bot.add_dev_env_value("bu", lambda _: self)
@@ -108,7 +107,6 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
 
     @commands.command(name="uploop", hidden=True)
     async def _dev_loop(self, ctx: commands.Context):
-        assert self.main_loop_meta is not None
         await ctx.send(embed=self.main_loop_meta.get_debug_embed())
 
 

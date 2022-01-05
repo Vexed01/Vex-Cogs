@@ -184,8 +184,6 @@ class GHIssues(commands.Cog):
             return await ctx.send("Aborting.")
 
         async with ctx.typing():
-            assert self.api is not None
-
             try:
                 issue_info = await self.api.create_issue(title, description)
             except EXCEPTIONS as e:

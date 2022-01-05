@@ -5,7 +5,6 @@ from typing import Dict
 import discord
 import pytz
 import rapidfuzz.process
-from discord.channel import DMChannel, GroupChannel, VoiceChannel
 from discord.guild import Guild
 from redbot.core import commands
 from redbot.core.bot import Red
@@ -86,7 +85,6 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     @commands.command()
     async def timezones(self, ctx: commands.Context):
         """See the time in all the configured timezones for this server."""
-        assert ctx.guild is not None
         data: Dict[int, str] = await self.config.guild(ctx.guild).timechannels()
         if data is None:
             return await ctx.send("It looks like no time channels have been set up yet.")
@@ -120,8 +118,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             description=description,
         )
         for c_id, target_timezone in data.items():
-            channel = self.bot.get_channel(int(c_id))  # idk why its str
-            assert not isinstance(channel, DMChannel) and not isinstance(channel, GroupChannel)
+            channel = self.bot.get_channel(int(c_id))  # str bc config
             if channel is None or target_timezone not in pytz.common_timezones:
                 continue
 
@@ -201,7 +198,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             - `[p]tcset create {ni} in London`
             - `[p]tcset create US Pacific: {qv}`
         """
-        assert isinstance(ctx.guild, Guild)
+        assert isinstance(ctx.guild, Guild)  # guild_only check on parent command
 
         reps = gen_replacements()
         name = string.format(**reps)
@@ -214,9 +211,6 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         channel = await ctx.guild.create_voice_channel(
             name=name, overwrites=overwrites, reason=reason  # type:ignore
         )
-        assert isinstance(channel, VoiceChannel)
-
-        assert not isinstance(channel, DMChannel) and not isinstance(channel, GroupChannel)
 
         await self.config.guild(ctx.guild).timechannels.set_raw(  # type: ignore
             channel.id, value=string
@@ -242,9 +236,10 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             - `[p]tcset remove #!channelname` (the ! is how to mention voice channels)
             - `[p]tcset remove 834146070094282843`
         """
-        assert ctx.guild is not None
+        assert isinstance(ctx.guild, Guild)  # guild_only check on parent command
+
+        data: dict
         async with self.config.guild(ctx.guild).timechannels() as data:
-            assert isinstance(data, dict)
             actual = data.pop(str(channel.id), None)
 
         if actual is None:

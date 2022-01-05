@@ -63,7 +63,6 @@ class GHView(ui.View):
         """Get the latest version and update the view."""
         data = await self.api.get_issue(self.issue_data["number"])
         embed = format_embed(data)
-        assert self.master_msg is not None
         await self.master_msg.edit(embed=embed, view=self)
 
     @button(label="Manage labels", style=ButtonStyle.grey)

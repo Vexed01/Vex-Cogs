@@ -83,8 +83,6 @@ class LabelButton(Button):
 
         await self.master.regen_viw()
 
-        assert isinstance(self.view, BaseLabelView)
-
         view: BaseLabelView = self.view
         view.raw_labels[self.name] = not self.on_issue
         await view.regen(view.page, interaction)

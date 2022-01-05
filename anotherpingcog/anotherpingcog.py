@@ -143,8 +143,7 @@ class AnotherPingCog(commands.Cog):
             ws_latency, m_latency, settings, use_embed
         )
 
-        if use_embed:
-            assert isinstance(embed, discord.Embed)
+        if use_embed and embed is not None:
             colour = self._get_emb_colour(ws_latency, m_latency, settings)
             extra = box(f"{ws_latency} ms", "py")
             embed.set_field_at(0, name="Discord WS", value=f"{ws_latency_text}{extra}")

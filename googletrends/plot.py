@@ -1,6 +1,5 @@
 import functools
 import io
-from asyncio.events import AbstractEventLoop
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import Iterable
 
@@ -36,7 +35,6 @@ class TrendsPlot(MixinMeta):
             self._get_trends_request, keywords=keywords, timeframe=timeframe, geo=geo
         )
 
-        assert isinstance(self.bot.loop, AbstractEventLoop)
         return await self.bot.loop.run_in_executor(self.executor, func)
 
     def _get_trends_request(self, keywords: list, timeframe: str, geo: str) -> TrendReq:
@@ -53,7 +51,6 @@ class TrendsPlot(MixinMeta):
         """Get a graph of the trends."""
         func = functools.partial(self._plot_graph, trend=trend, timeframe=timeframe, geo=geo)
 
-        assert isinstance(self.bot.loop, AbstractEventLoop)
         return await self.bot.loop.run_in_executor(self.executor, func)
 
     def _plot_graph(self, trend: TrendReq, timeframe: str, geo: str) -> discord.File:
