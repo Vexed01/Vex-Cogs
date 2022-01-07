@@ -406,10 +406,10 @@ class StatTrackCommands(MixinMeta):
         [botname], while `unique` will only count them once.
 
         **Examples:**
-            - `[p]stattrack channels` - show all metrics, 1 day
-            - `[p]stattrack channels 3w2d` - show all metrics, 3 weeks 2 days
-            - `[p]stattrack channels 5d dnd online` - show dnd & online, 5 days
-            - `[p]stattrack channels all online idle` - show online & idle, all time
+        **Examples:**
+            - `[p]stattrack servers 3w2d`
+            - `[p]stattrack servers 5d`
+            - `[p]stattrack servers all`
         """
         if timespan is None:
             timespan = DEFAULT_DELTA
