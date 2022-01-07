@@ -97,10 +97,10 @@ class CaseInsensitive(commands.Cog):
     This cog itself has no commands.
 
     If you want to disable it in a certain servers, use
-    ``[p]command disablecog CaseInsensitiveComs``.
+    `[p]command disablecog CaseInsensitive`.
 
     There are also other configurations, such as setting a default as disabled
-    and enabling per-server, listed under ``[p]help command``.
+    and enabling per-server, listed under `[p]help command`.
     """
 
     __version__ = "1.0.2"
