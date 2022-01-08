@@ -424,5 +424,5 @@ Red, while ``unique`` will only count them once.
 **Examples:**
     - ``[p]stattrack user`` - show all metrics, 1 day
     - ``[p]stattrack user 3w2d`` - show all metrics, 3 weeks 2 days
-    - ``[p]stattrack user 5d dnd online`` - show dnd & online, 5 days
-    - ``[p]stattrack user all online idle`` - show online & idle, all time
+    - ``[p]stattrack user 5d total unique`` - show total & unique, 5 days
+    - ``[p]stattrack user all humans bots`` - show humans & bots, all time
