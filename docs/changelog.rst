@@ -572,6 +572,17 @@ StatTrack
 =========
 
 *********
+``1.8.0``
+*********
+
+2022-01-08
+
+- Show min, max, average (, and total where applicable) in the graph embeds, #69
+- Use Discord's colours in the plots for user statuses, thanks Epic
+- Use rolling averages for messages + command plots
+- Make the bot type on export commands
+
+*********
 ``1.7.1``
 *********
 

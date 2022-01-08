@@ -34,6 +34,9 @@ class StatTrackCommands(MixinMeta):
         ylabel: Optional[str] = None,
         *,
         more_options: bool = False,
+        status_colours: bool = False,
+        do_average: bool = False,
+        show_total: bool = False,
     ):
         comstart = monotonic()
         if self.df_cache is None:
@@ -43,6 +46,11 @@ class StatTrackCommands(MixinMeta):
         df = self.df_cache[label]
         if len(df) < 2:
             return await ctx.send("I need a little longer to collect data. Try again in a minute.")
+        if do_average and len(df) < 30:
+            return await ctx.send(
+                "I need a little longer to collect data for this particular metric. "
+                "Others should still work. Try again in a few minutes."
+            )
 
         # index data to desired delta
         now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
@@ -61,8 +69,16 @@ class StatTrackCommands(MixinMeta):
         expected_index = pd.date_range(start=start, end=now, freq=f"{frequency}min")
         df = df.reindex(index=expected_index)
 
+        df = pd.DataFrame(df)  # ensure it is a df, sometimes series
+
+        if show_total and len(df.columns) == 1:
+            total_before_avg = df.sum().values[0]
+
+        if do_average:
+            df = df.rolling(10, min_periods=1).mean()
+
         async with ctx.typing():
-            graph = await self.plot(df, ylabel)
+            graph = await self.plot(df, ylabel, status_colours)
 
         if delta == datetime.timedelta(days=9000):  # "all" was entered and was replaced with 9k
             str_delta = " all time"
@@ -70,15 +86,25 @@ class StatTrackCommands(MixinMeta):
             str_delta = " for the last " + humanize_timedelta(timedelta=delta)
 
         embed = discord.Embed(
-            title=title + str_delta,
+            title=title + str_delta + (" (10 min averages)" if do_average else ""),
             colour=await ctx.embed_colour(),
         )
+
+        if len(df.columns) == 1:
+            embed.add_field(name="Min", value=df.min().values[0])
+            embed.add_field(name="Max", value=df.max().values[0])
+            embed.add_field(name="Average", value=round(df.mean().values[0], 2))
+            if show_total:
+                embed.add_field(name="Total", value=total_before_avg)  # type:ignore
+                # using df_cache ensures getting total of before the averaging
+
         if more_options:
             embed.description = (
                 "You can choose to only display certian metrics with "
                 f"`{ctx.clean_prefix}stattrack {ctx.command.name} <metrics>`, see "
                 f"`{ctx.clean_prefix}help stattrack {ctx.command.name}` for details."
             )
+
         embed.set_footer(text="Times are in UTC")
         embed.set_image(url="attachment://plot.png")
 
@@ -119,11 +145,13 @@ class StatTrackCommands(MixinMeta):
 
         Please attack a `.json` file.
         """
-        self.df_cache = self.df_cache.append(
-            pd.read_json(await ctx.message.attachments[0].read(), orient="split")
-        )
-        await self.driver.write(self.df_cache)
-        await ctx.send("Done.")
+        async with ctx.typing():
+            self.loop.cancel()
+            self.df_cache = self.df_cache.append(
+                pd.read_json(await ctx.message.attachments[0].read(), orient="split")
+            )
+            await self.driver.write(self.df_cache)
+        await ctx.send("Done. Please reload the cog.")
 
     @commands.is_owner()
     @stattrack.command(hidden=True)
@@ -145,21 +173,22 @@ class StatTrackCommands(MixinMeta):
     @export.command(name="json")
     async def export_json(self, ctx: commands.Context):
         """Export as JSON with pandas orient "split" """
-        data = self.df_cache.to_json(orient="split")
-        fp = StringIO()
-        fp.write(data)
-        size = fp.tell()
-        if ctx.guild:
-            max_size = ctx.guild.filesize_limit  # type:ignore
-        else:
-            max_size = 8388608
-        if size > max_size:
-            await ctx.send(
-                "Sorry, this file is too big to send here. Try a server with a higher upload file "
-                "size limit."
-            )
-            return
-        fp.seek(0)
+        async with ctx.typing():
+            data = self.df_cache.to_json(orient="split")
+            fp = StringIO()
+            fp.write(data)
+            size = fp.tell()
+            if ctx.guild:
+                max_size = ctx.guild.filesize_limit  # type:ignore
+            else:
+                max_size = 8388608
+            if size > max_size:
+                await ctx.send(
+                    "Sorry, this file is too big to send here. Try a server with a higher upload "
+                    "file size limit."
+                )
+                return
+            fp.seek(0)
         await ctx.send(
             "Here is your file.", file=discord.File(fp, "stattrack.json")  # type:ignore
         )
@@ -167,21 +196,22 @@ class StatTrackCommands(MixinMeta):
     @export.command(name="csv")
     async def export_csv(self, ctx: commands.Context):
         """Export as CSV"""
-        data = self.df_cache.to_csv()
-        fp = StringIO()
-        fp.write(data)
-        size = fp.tell()
-        if ctx.guild:
-            max_size = ctx.guild.filesize_limit  # type:ignore
-        else:
-            max_size = 8388608
-        if size > max_size:
-            await ctx.send(
-                "Sorry, this file is too big to send here. Try a server with a higher upload file "
-                "size limit."
-            )
-            return
-        fp.seek(0)
+        async with ctx.typing():
+            data = self.df_cache.to_csv()
+            fp = StringIO()
+            fp.write(data)
+            size = fp.tell()
+            if ctx.guild:
+                max_size = ctx.guild.filesize_limit  # type:ignore
+            else:
+                max_size = 8388608
+            if size > max_size:
+                await ctx.send(
+                    "Sorry, this file is too big to send here. Try a server with a higher upload "
+                    "file size limit."
+                )
+                return
+            fp.seek(0)
         await ctx.send("Here is your file.", file=discord.File(fp, "stattrack.csv"))  # type:ignore
 
     @commands.is_owner()
@@ -263,10 +293,7 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack commands all`
         """
         await self.all_in_one(
-            ctx,
-            timespan,
-            "command_count",
-            "Commands per minute",
+            ctx, timespan, "command_count", "Commands per minute", do_average=True, show_total=True
         )
 
     @stattrack.command()
@@ -284,7 +311,9 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack messages 5d`
             - `[p]stattrack messages all`
         """
-        await self.all_in_one(ctx, timespan, "message_count", "Messages per minute")
+        await self.all_in_one(
+            ctx, timespan, "message_count", "Messages per minute", do_average=True, show_total=True
+        )
 
     @stattrack.command(aliases=["guilds"])
     async def servers(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
@@ -301,7 +330,12 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack servers 5d`
             - `[p]stattrack servers all`
         """
-        await self.all_in_one(ctx, timespan, "guilds", "Server count")
+        await self.all_in_one(
+            ctx,
+            timespan,
+            "guilds",
+            "Server count",
+        )
 
     @stattrack.command(usage="[timespan=1d] [metrics]")
     async def status(
@@ -337,7 +371,12 @@ class StatTrackCommands(MixinMeta):
             metrics = ("online", "idle", "offline", "dnd")
 
         await self.all_in_one(
-            ctx, timespan, ["status_" + g for g in metrics], "User status", more_options=True
+            ctx,
+            timespan,
+            ["status_" + g for g in metrics],
+            "User status",
+            more_options=True,
+            status_colours=True,
         )
 
     @stattrack.command(usage="[timespan=1d] [metrics]")
