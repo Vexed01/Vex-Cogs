@@ -3,6 +3,7 @@ import functools
 import os
 import sqlite3
 from asyncio.events import AbstractEventLoop
+from typing import Optional
 
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
@@ -45,42 +46,45 @@ class PandasSQLiteDriver:
         self.sql_executor = concurrent.futures.ThreadPoolExecutor(1, f"{cog_name.lower()}_sql")
         self.sql_path = str(cog_data_path(raw_name=cog_name) / filename)
 
-    def _write(self, df: pandas.DataFrame) -> None:
+    def _write(self, df: pandas.DataFrame, table: Optional[str] = None) -> None:
         connection = sqlite3.connect(self.sql_path)
-        df.to_sql(self.table, con=connection, if_exists="replace")  # type:ignore
+        df.to_sql(table or self.table, con=connection, if_exists="replace")  # type:ignore
         connection.commit()
         connection.close()
 
-    def _append(self, df: pandas.DataFrame) -> None:
+    def _append(self, df: pandas.DataFrame, table: Optional[str] = None) -> None:
         connection = sqlite3.connect(self.sql_path)
-        df.to_sql(self.table, con=connection, if_exists="append")  # type:ignore
+        df.to_sql(table or self.table, con=connection, if_exists="append")  # type:ignore
         connection.commit()
         connection.close()
 
-    def _read(self) -> pandas.DataFrame:
+    def _read(self, table: Optional[str] = None) -> pandas.DataFrame:
         connection = sqlite3.connect(self.sql_path)
         df = pandas.read_sql(
-            f"SELECT * FROM {self.table}", connection, index_col="index", parse_dates=["index"]
+            f"SELECT * FROM {table or self.table}",
+            connection,
+            index_col="index",
+            parse_dates=["index"],
         )
         connection.close()
         return df
 
-    async def write(self, df: pandas.DataFrame) -> None:
+    async def write(self, df: pandas.DataFrame, table: Optional[str] = None) -> None:
         """Write a dataframe to the database. Replaces and old data."""
         assert isinstance(self.bot.loop, AbstractEventLoop)
-        func = functools.partial(self._write, df.copy(True))
+        func = functools.partial(self._write, df.copy(True), table)
         await self.bot.loop.run_in_executor(self.sql_executor, func)
 
-    async def append(self, df: pandas.DataFrame) -> None:
+    async def append(self, df: pandas.DataFrame, table: Optional[str] = None) -> None:
         """Append a dataframe to the database."""
         assert isinstance(self.bot.loop, AbstractEventLoop)
-        func = functools.partial(self._append, df.copy(True))
+        func = functools.partial(self._append, df.copy(True), table)
         await self.bot.loop.run_in_executor(self.sql_executor, func)
 
-    async def read(self) -> pandas.DataFrame:
+    async def read(self, table: Optional[str] = None) -> pandas.DataFrame:
         """Read the database, returning as a pandas dataframe."""
         assert isinstance(self.bot.loop, AbstractEventLoop)
-        func = functools.partial(self._read)
+        func = functools.partial(self._read, table)
         return await self.bot.loop.run_in_executor(self.sql_executor, func)
 
     def storage_usage(self) -> int:
