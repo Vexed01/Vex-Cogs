@@ -20,6 +20,7 @@ body:
       description: "Please enter the first code block of the command `[p]<cogname>info` where `[p]` is your prefix and `<cogname>` is the name of the cog in lower case.\nFor example, if the cog is called `Status` run `[p]statusinfo`.\nYou can skip this if the cog doesn't load."
       label: "What versions are you running?"
       placeholder: "Copy and paste the first codeblock here"
+      render: "yes please"
     validations:
       required: false
   - type: textarea
