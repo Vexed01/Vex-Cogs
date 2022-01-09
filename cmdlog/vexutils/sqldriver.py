@@ -48,26 +48,32 @@ class PandasSQLiteDriver:
 
     def _write(self, df: pandas.DataFrame, table: Optional[str] = None) -> None:
         connection = sqlite3.connect(self.sql_path)
-        df.to_sql(table or self.table, con=connection, if_exists="replace")  # type:ignore
-        connection.commit()
-        connection.close()
+        try:
+            df.to_sql(table or self.table, con=connection, if_exists="replace")  # type:ignore
+            connection.commit()
+        finally:
+            connection.close()
 
     def _append(self, df: pandas.DataFrame, table: Optional[str] = None) -> None:
         connection = sqlite3.connect(self.sql_path)
-        df.to_sql(table or self.table, con=connection, if_exists="append")  # type:ignore
-        connection.commit()
-        connection.close()
+        try:
+            df.to_sql(table or self.table, con=connection, if_exists="append")  # type:ignore
+            connection.commit()
+        finally:
+            connection.close()
 
     def _read(self, table: Optional[str] = None) -> pandas.DataFrame:
         connection = sqlite3.connect(self.sql_path)
-        df = pandas.read_sql(
-            f"SELECT * FROM {table or self.table}",
-            connection,
-            index_col="index",
-            parse_dates=["index"],
-        )
-        connection.close()
-        return df
+        try:
+            df = pandas.read_sql(
+                f"SELECT * FROM {table or self.table}",
+                connection,
+                index_col="index",
+                parse_dates=["index"],
+            )
+            return df
+        finally:
+            connection.close()
 
     async def write(self, df: pandas.DataFrame, table: Optional[str] = None) -> None:
         """Write a dataframe to the database. Replaces and old data."""
