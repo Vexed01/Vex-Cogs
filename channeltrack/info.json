@@ -1,0 +1,28 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
+    "author": [
+        "Vexed (Vexed#9000)"
+    ],
+    "description": "...",
+    "end_user_data_statement": "This cog permanently stores anonymised and aggregated data about users' number of messages sent and commands executed, not including their content. This data cannot be traced back to individual users.",
+    "install_msg": "...\n\n**This cog is not intended for large bots (100+ servers).**\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/stattrack>",
+    "min_bot_version": "3.4.0",
+    "name": "ChannelTrack",
+    "requirements": [
+        "pandas>=1.1.0",
+        "psutil",
+        "plotly",
+        "kaleido",
+        "tabulate",
+        "cachetools",
+        "asyncache"
+    ],
+    "short": "...",
+    "tags": [
+        "utility",
+        "timeseries",
+        "tracking",
+        "stats",
+        "activity"
+    ]
+}
