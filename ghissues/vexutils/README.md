@@ -6,8 +6,8 @@ so it's probably best to look/edit there.
 
 ---
 
-Last sync at: 2022-01-09 14:52:59 UTC
+Last sync at: 2022-01-12 17:07:39 UTC
 
-Version: `2.3.1`
+Version: `2.4.0`
 
-Commit: [`55ecc6d91012b81067200eeffa065313405f2751`](https://github.com/Vexed01/vex-cog-utils/commit/55ecc6d91012b81067200eeffa065313405f2751)
+Commit: [`8c0c3526a50822c5755352a4b656dcd937d9934a`](https://github.com/Vexed01/vex-cog-utils/commit/8c0c3526a50822c5755352a4b656dcd937d9934a)
