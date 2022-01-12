@@ -11,6 +11,7 @@ from .consts import GEOS, TIMEFRAMES
 from .converters import GeoConverter, TimeframeConverter
 from .errors import NoData
 from .plot import TrendsPlot
+from .vexutils import url_buttons
 from .vexutils.meta import format_help, format_info
 
 
@@ -22,7 +23,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
     any time.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.1.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot):
@@ -123,7 +124,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
                 return
 
             try:
-                graph = await self.plot_graph(request, timeframe, geo)
+                file = await self.plot_graph(request, timeframe, geo)
             except NoData:
                 await ctx.send(
                     "Sorry, there's no significant data for that. Check your spelling or choose "
@@ -138,7 +139,6 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
 
         embed = discord.Embed(
             title=f"Interest over time, {full_location}, {full_timeframe}",
-            description=f"[View this graph on Google Trends]({url})",
             colour=await ctx.embed_colour(),
         )
         embed.set_footer(
@@ -146,7 +146,11 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
             + "Data sourced from Google Trends."
         )
         embed.set_image(url="attachment://plot.png")
-        await ctx.send(file=graph, embed=embed)
+
+        button = url_buttons.URLButton("View on Google Trends", url)
+        await url_buttons.send_message(
+            self.bot, ctx.channel.id, embed=embed, file=file, url_button=button
+        )
 
     def get_trends_url(self, timeframe: str, geo: str, query: Iterable[str]) -> str:
         """Get the Google Trends URL for a given timeframe, geo, and query."""

@@ -528,6 +528,14 @@ GoogleTrends
 ============
 
 *********
+``1.1.0``
+*********
+
+2022-01-12
+
+- Add a URL button to link to Goole Trends, without any extra libs
+
+*********
 ``1.0.0``
 *********
 
