@@ -580,6 +580,14 @@ StatTrack
 =========
 
 *********
+``1.8.1``
+*********
+
+2022-01-13
+
+- Performance optimisations (from my limited testing with 20k users on a relatively weak Windows machine this yields 4-5X faster loops; only 2X on my Ubuntu VPS)
+
+*********
 ``1.8.0``
 *********
 

@@ -39,13 +39,13 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.8.0"
+    __version__ = "1.8.1"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.do_write: int = 2  # do writes for first 2 loops, then append
+        self.do_write: int = 1  # do write on first 1 loop, then append after
 
         self.cmd_count = 0
         self.msg_count = 0
@@ -95,8 +95,10 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             await self.config.version.set(2)
             _log.info("Done.")
         else:
-            self.df_cache = await self.driver.read()
-            self.df_cache = self.df_cache.groupby(self.df_cache.index).first()  # deduplicate index
+            pre_df = await self.driver.read()
+            self.df_cache = self.df_cache.groupby(pre_df.index).first()  # deduplicate index
+            if len(pre_df.index) != len(self.df_cache.index):
+                await self.driver.write(self.df_cache)
 
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
@@ -168,6 +170,10 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             await self.loop_meta.sleep_until_next()
 
     async def update_stats(self):
+        psutil.cpu_percent(interval=None, percpu=True)  # force update before we start
+        await asyncio.sleep(1)  # and then get the average over the last 1 sec:
+        cpu = psutil.cpu_percent(interval=None, percpu=False)
+
         now = snapped_utcnow()
         if now == self.df_cache.last_valid_index():  # just reloaded and this min's data collected
             _log.debug("Skipping this loop - cog was likely recently reloaded")
@@ -194,9 +200,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         data["channels_cat"] = 0
         data["channels_stage"] = 0
         data["sys_mem"] = psutil.virtual_memory().percent
-        psutil.cpu_percent(interval=None, percpu=True)  # force update
-        await asyncio.sleep(1)  # and then get the average over the last 1 sec:
-        data["sys_cpu"] = psutil.cpu_percent(interval=None, percpu=False)
+        data["sys_cpu"] = cpu
         data["command_count"] = self.cmd_count
         data["message_count"] = self.msg_count
         self.cmd_count, self.msg_count = 0, 0
@@ -211,31 +215,28 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         }
         guild: discord.Guild
         member: discord.Member
-        async for guild in AsyncIter(self.bot.guilds):
-            async for member in AsyncIter(guild.members):
+        async for guild in AsyncIter(self.bot.guilds, steps=50):
+            async for member in AsyncIter(guild.members, steps=50):
                 data["users_total"] += 1
-                count[f"status_{member.raw_status}"].add(member.id)
-                if member.bot:
-                    count["users_bots"].add(member.id)
-                else:
-                    count["users_humans"].add(member.id)
+                id = member.id
+                count[f"status_{member.raw_status}"].add(id)
+                count["users_bots"].add(member.id) if member.bot else count["users_humans"].add(
+                    member.id
+                )
             data["channels_total"] += len(guild.channels)
             data["channels_text"] += len(guild.text_channels)
             data["channels_voice"] += len(guild.voice_channels)
             data["channels_cat"] += len(guild.categories)
             data["channels_stage"] += len(guild.stage_channels)
 
-        for k, v in count.items():
-            df[k] = len(v)
-
-        for k, v in data.items():
-            df[k] = v
+        count_lens = {k: len(v) for k, v in count.items()}
+        data.update(count_lens)
 
         self.df_cache = self.df_cache.append(df)
 
         end = time.monotonic()
-        main_time = round((end - start) - 1, 1)  # take 1 sec off for the sleep
-        _log.debug(f"Loop finished in {main_time} seconds (+1)")
+        main_time = round((end - start), 3)
+        _log.debug(f"Loop finished in {main_time} seconds")
 
         if self.do_write != 0:
             start = time.monotonic()
