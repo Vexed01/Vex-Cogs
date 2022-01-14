@@ -96,7 +96,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             _log.info("Done.")
         else:
             pre_df = await self.driver.read()
-            self.df_cache = self.df_cache.groupby(pre_df.index).first()  # deduplicate index
+            self.df_cache = pre_df.groupby(pre_df.index).first()  # deduplicate index
             if len(pre_df.index) != len(self.df_cache.index):
                 await self.driver.write(self.df_cache)
 
