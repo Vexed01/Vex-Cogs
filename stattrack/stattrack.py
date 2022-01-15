@@ -39,7 +39,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.8.1"
+    __version__ = "1.8.2"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -178,7 +178,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         if now == self.df_cache.last_valid_index():  # just reloaded and this min's data collected
             _log.debug("Skipping this loop - cog was likely recently reloaded")
             return
-        df = pandas.DataFrame(index=[snapped_utcnow()])
         start = time.monotonic()
         data = {}
 
@@ -186,7 +185,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             latency = round(self.bot.latency * 1000)
             if latency > 1000:  # somethings up... lets not track stats
                 return
-            df["ping"] = latency
+            data["ping"] = latency
         except OverflowError:  # ping is INF so not connected, no point in updating
             return
         if self.last_loop_raw:
@@ -232,6 +231,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         count_lens = {k: len(v) for k, v in count.items()}
         data.update(count_lens)
 
+        df = pandas.DataFrame(data, index=[snapped_utcnow()])
         self.df_cache = self.df_cache.append(df)
 
         end = time.monotonic()
