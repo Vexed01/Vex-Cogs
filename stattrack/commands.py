@@ -404,10 +404,10 @@ class StatTrackCommands(MixinMeta):
         [botname], while `unique` will only count them once.
 
         **Examples:**
-            - `[p]stattrack user` - show all metrics, 1 day
-            - `[p]stattrack user 3w2d` - show all metrics, 3 weeks 2 days
-            - `[p]stattrack user 5d total unique` - show total & unique, 5 days
-            - `[p]stattrack user all humans bots` - show humans & bots, all time
+            - `[p]stattrack users` - show all metrics, 1 day
+            - `[p]stattrack users 3w2d` - show all metrics, 3 weeks 2 days
+            - `[p]stattrack users 5d total unique` - show total & unique, 5 days
+            - `[p]stattrack users all humans bots` - show humans & bots, all time
         """
         if timespan is None:
             timespan = DEFAULT_DELTA
