@@ -67,3 +67,10 @@ Cog name                                Summary
 :ref:`timechannel<timechannel>`         Get the time in different timezones in voice channels.
 :ref:`wol<wol>`                         Use Wake on LAN from Discord! Sends magic packets on the local network.
 ======================================= ===========================================================================
+
+-------
+Support
+-------
+
+If you want some help with my cogs, you can ask in the :ref:`Red - Cog Support<https://discord.gg/GD43Nb9H86>` server,
+in #support_vex-cogs.
