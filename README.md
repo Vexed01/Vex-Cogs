@@ -13,6 +13,8 @@ These are a few cogs I made for myself that may be useful to others. Mostly util
 These are for [Red V3](https://github.com/Cog-Creators/Red-DiscordBot/), an open source self-hosted Discord bot. If this is your first time with Red,
 take a look at the [docs](https://docs.discord.red).
 
+Support: [Red - Cog Support](https://discord.gg/GD43Nb9H86) in #support_vex-cogs
+
 ## Getting my cogs
 
 `[p]` is your prefix.
@@ -49,9 +51,9 @@ All these cogs have docs! My docs [are here](https://cogdocs.vexcodes.com/en/lat
 
 My cogs are licensed under GNU General Public License v3.0. Please see the [LICENSE file](LICENSE).
 
-### Contact
+### Contact & Support
 
-I can be found in the [main Red server](https://discord.gg/red) or if you want support for a cog the [Cog Support server](https://discord.gg/GET4DVk) is the best place. I'm Vexed#9000.
+I can be found in the [main Red server](https://discord.gg/red) or if you want support for a cog the [Cog Support server](https://discord.gg/GD43Nb9H86) in #support_vex-cogs is the best place. I'm Vexed#9000.
 
 ### Contributing
 
