@@ -39,7 +39,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.8.2"
+    __version__ = "1.8.3"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -190,7 +190,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             return
         if self.last_loop_raw:
             data["loop_time_s"] = round(self.last_loop_raw, 3)
-        data["users_unique"] = len(self.bot.users)
+        # data["users_unique"] = len(self.bot.users)
+        # discord cache is broken, has been for a while. got to manually count users from guilds
         data["guilds"] = len(self.bot.guilds)
         data["users_total"] = 0
         data["channels_total"] = 0
@@ -211,6 +212,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             "status_dnd": set(),
             "users_humans": set(),
             "users_bots": set(),
+            "users_unique": set(),
         }
         guild: discord.Guild
         member: discord.Member
@@ -219,9 +221,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 data["users_total"] += 1
                 id = member.id
                 count[f"status_{member.raw_status}"].add(id)
-                count["users_bots"].add(member.id) if member.bot else count["users_humans"].add(
-                    member.id
-                )
+                count["users_bots"].add(id) if member.bot else count["users_humans"].add(id)
+                count["users_unique"].add(id)
             data["channels_total"] += len(guild.channels)
             data["channels_text"] += len(guild.text_channels)
             data["channels_voice"] += len(guild.voice_channels)

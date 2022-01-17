@@ -588,6 +588,15 @@ StatTrack
 =========
 
 *********
+``1.8.3``
+*********
+
+2022-01-17
+
+- Manually count up unique users to avoid issues with the bot's own cache
+- Performance optimisations
+
+*********
 ``1.8.1``
 *********
 
