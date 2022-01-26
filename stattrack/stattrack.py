@@ -39,13 +39,13 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.8.3"
+    __version__ = "1.8.4"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.do_write: int = 1  # do write on first 1 loop, then append after
+        self.do_write: int = 2  # do write on first 2 loops, then append after
 
         self.cmd_count = 0
         self.msg_count = 0
