@@ -147,9 +147,7 @@ class StatTrackCommands(MixinMeta):
         """
         async with ctx.typing():
             self.loop.cancel()
-            self.df_cache = self.df_cache.append(
-                pd.read_json(await ctx.message.attachments[0].read(), orient="split")
-            )
+            self.df_cache = pd.read_json(await ctx.message.attachments[0].read(), orient="split")
             await self.driver.write(self.df_cache)
         await ctx.send("Done. Please reload the cog.")
 

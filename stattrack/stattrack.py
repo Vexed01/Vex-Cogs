@@ -39,7 +39,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.8.4"
+    __version__ = "1.8.5"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -233,7 +233,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         data.update(count_lens)
 
         df = pandas.DataFrame(data, index=[snapped_utcnow()])
-        self.df_cache = self.df_cache.append(df)
+        self.df_cache = pandas.concat([self.df_cache, df], sort=False)
 
         end = time.monotonic()
         main_time = round((end - start), 3)
