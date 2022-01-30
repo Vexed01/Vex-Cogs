@@ -1176,6 +1176,14 @@ TimeChannel
 ===========
 
 *********
+``1.3.0``
+*********
+
+2022-01-30
+
+- Support 24 hour time by adding ``-24h`` to a short identifier, for example ``[p]tcset create UK: {ni-24h}``
+
+*********
 ``1.2.2``
 *********
 

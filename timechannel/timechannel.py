@@ -35,7 +35,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     The `[p]timezones` command (runnable by anyone) will show the full location name.
     """
 
-    __version__ = "1.2.2"
+    __version__ = "1.3.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -187,16 +187,20 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         Simply put curly brackets, `{` and `}` around it, and it will be replaced with the time.
 
         **For example**, running `[p]tcset short new york` gives a short identifier of `fv`.
-        This can then be used like so: `[p]tcset create :clock: New York: {fv}`.
+        This can then be used like so:
+        `[p]tcset create \N{CLOCK FACE TWO OCLOCK}\N{VARIATION SELECTOR-16} New York: {fv}`.
 
         You could also use two in one, for example
-        `[p]tcset create UK: {446} FR: 455`
+        `[p]tcset create UK: {ni} FR: {nr}`
+
+        The default is 12 hour time, but you can use `{shortid-24h}` for 24 hour time,
+        eg `{ni-24h}`
 
         **More Examples:**
             - `[p]tcset create \N{CLOCK FACE TWO OCLOCK}\N{VARIATION SELECTOR-16} New York: {fv}`
             - `[p]tcset create \N{GLOBE WITH MERIDIANS} UTC: {qw}`
-            - `[p]tcset create {ni} in London`
-            - `[p]tcset create US Pacific: {qv}`
+            - `[p]tcset create {ni-24h} in London`
+            - `[p]tcset create US Pacific: {qv-24h}`
         """
         assert isinstance(ctx.guild, Guild)  # guild_only check on parent command
 
