@@ -17,5 +17,6 @@ with open(Path(__file__).parent / "info.json") as fp:
 async def setup(bot: Red):
     cog = CaseInsensitive(bot)
     await out_of_date_check("caseinsensitive", cog.__version__)
-    cog.plug()
+    cog.plug_core()
+    cog.plug_alias()
     bot.add_cog(cog)

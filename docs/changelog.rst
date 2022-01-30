@@ -351,6 +351,16 @@ CaseInsensitive
 ===============
 
 *********
+``1.0.3``
+*********
+
+2022-01-30
+
+- Support subcommands (GH #74)
+- Support discord.py 2.x
+- Support aliases made with the alias cog (GH #75)
+
+*********
 ``1.0.2``
 *********
 
