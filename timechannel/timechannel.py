@@ -214,8 +214,8 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             p = ctx.clean_prefix
             await ctx.send(
                 f"`{e}` is not a valid replacement. Use `{p}tcset short <long_tz>` to get the "
-                "short identifier for the timezone of your choice.\n\n"
-                "Example: `{p}tcset create New York: {fv}` or `{p}tcset create New York: {fv-24h}`"
+                "short identifier for the timezone of your choice.\n\nExample: "
+                f"`{p}tcset create New York: {{fv}}` or `{p}tcset create New York: {{fv-24h}}`"
             )
             return
 
