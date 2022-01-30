@@ -1176,6 +1176,15 @@ TimeChannel
 ===========
 
 *********
+``1.3.1``
+*********
+
+2022-01-30
+
+- Show 24 hour time in ``tcset short`` output
+- More useful error message when an incorrect identifier is used
+
+*********
 ``1.3.0``
 *********
 

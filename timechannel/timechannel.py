@@ -35,7 +35,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     The `[p]timezones` command (runnable by anyone) will show the full location name.
     """
 
-    __version__ = "1.3.0"
+    __version__ = "1.3.1"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -167,7 +167,10 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
                 "column):\n<https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List>"
             )
 
-        await ctx.send(f"{fuzzy_results[0][0]}'s short identifier is `{fuzzy_results[0][2]}`")
+        await ctx.send(
+            f"{fuzzy_results[0][0]}'s short identifier is `{fuzzy_results[0][2]}` for 12 hour "
+            f"time, or `{fuzzy_results[0][2]}-24h` for 24 hour time."
+        )
 
     @commands.bot_has_permissions(manage_channels=True)
     @timechannelset.command()
@@ -205,7 +208,16 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         assert isinstance(ctx.guild, Guild)  # guild_only check on parent command
 
         reps = gen_replacements()
-        name = string.format(**reps)
+        try:
+            name = string.format(**reps)
+        except KeyError as e:
+            p = ctx.clean_prefix
+            await ctx.send(
+                f"`{e}` is not a valid replacement. Use `{p}tcset short <long_tz>` to get the "
+                "short identifier for the timezone of your choice.\n\n"
+                "Example: `{p}tcset create New York: {fv}` or `{p}tcset create New York: {fv-24h}`"
+            )
+            return
 
         overwrites = {
             ctx.guild.default_role: discord.PermissionOverwrite(connect=False),
