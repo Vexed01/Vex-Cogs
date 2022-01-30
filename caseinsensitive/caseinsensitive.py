@@ -197,7 +197,7 @@ class CaseInsensitive(commands.Cog):
             return
         new_method = types.MethodType(ci_get_alias, alias_cog._aliases)
         self.old_alias_get = alias_cog._aliases.get_alias
-        alias_cog._aliases.get_alias = new_method
+        alias_cog._aliases.get_alias = new_method  # type:ignore
 
     def unplug_alias(self) -> None:
         alias_cog = self.bot.get_cog("Alias")
