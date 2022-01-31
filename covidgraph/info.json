@@ -11,9 +11,8 @@
     "requirements": [
         "plotly",
         "kaleido",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "asyncache",
+        "tabulate"
     ],
     "short": "Get graphs of COVID-19 data.",
     "tags": [

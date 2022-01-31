@@ -9,9 +9,7 @@
     "min_bot_version": "3.4.0",
     "name": "Aliases",
     "requirements": [
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Get all the information you could ever need about a command's aliases. IF YOU ARE TRYING TO *MAKE* ALIASES, JUST USE THE CORE 'alias` COG.",
     "tags": [

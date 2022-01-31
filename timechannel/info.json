@@ -10,9 +10,7 @@
     "name": "TimeChannel",
     "requirements": [
         "rapidfuzz",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Get the time in different timezones in voice channels.",
     "tags": [

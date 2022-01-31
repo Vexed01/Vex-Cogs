@@ -9,9 +9,7 @@
     "min_bot_version": "3.4.0",
     "name": "CmdLog",
     "requirements": [
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Track who uses what commands, with the ability to search for a specific user, server command.",
     "tags": [

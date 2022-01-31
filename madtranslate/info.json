@@ -9,9 +9,7 @@
     "min_bot_version": "3.4.0",
     "name": "MadTranslate",
     "requirements": [
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Translate something from English into a gazillion different languages then back to English. You'll get some funny responses! Uses an undocumented Google Translate API.",
     "tags": [

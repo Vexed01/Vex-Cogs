@@ -11,9 +11,7 @@
     "name": "GHIssues",
     "requirements": [
         "gidgethub>=5.0.0",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "[DPY 2 ONLY] Create, comment, labelify and close GitHub issues.",
     "tags": [

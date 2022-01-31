@@ -12,9 +12,7 @@
         "plotly",
         "kaleido",
         "pytrends",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Find out what the world is searching, right from Discord. Includes charts.",
     "tags": [

@@ -10,9 +10,7 @@
     "name": "GitHub",
     "requirements": [
         "gidgethub>=5.0.0",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Create, comment, labelify and close GitHub issues.",
     "tags": [

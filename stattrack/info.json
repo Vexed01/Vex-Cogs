@@ -13,9 +13,7 @@
         "psutil",
         "plotly",
         "kaleido",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Stat tracking cog including ping, member counts and counts of commands/messages. View the data in Discord.",
     "tags": [

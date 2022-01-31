@@ -10,9 +10,7 @@
     "name": "System",
     "requirements": [
         "psutil>=5.8.0",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Check system metrics on the host device.",
     "tags": [

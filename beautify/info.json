@@ -9,9 +9,7 @@
     "min_bot_version": "3.4.0",
     "name": "Beautify",
     "requirements": [
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Beautify and minify JSON. Supports attachments, codeblocks and replies.",
     "tags": [

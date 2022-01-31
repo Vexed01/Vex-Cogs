@@ -9,9 +9,7 @@
     "min_bot_version": "3.4.0",
     "name": "AnotherPingCog",
     "requirements": [
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Just another ping cog... But this one has fancy colours in an embed the bot owner can customise!",
     "tags": [
