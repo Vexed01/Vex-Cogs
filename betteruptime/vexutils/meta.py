@@ -6,8 +6,6 @@ from typing import Dict, List, NamedTuple, Union
 
 import aiohttp
 import tabulate
-from asyncache import cached
-from cachetools import TTLCache
 from redbot.core import VersionInfo, commands
 from redbot.core import version_info as cur_red_version
 from redbot.core.utils.chat_formatting import box
@@ -18,7 +16,6 @@ from .loop import VexLoop
 log = getLogger("red.vex-utils")
 
 
-cog_ver_cache: TTLCache = TTLCache(maxsize=16, ttl=300)  # ttl is 5 mins
 cog_ver_lock = asyncio.Lock()
 
 
@@ -182,7 +179,6 @@ class UnknownVers(NamedTuple):
     red: str = "Unknown"
 
 
-@cached(cog_ver_cache)  # ttl is 5 mins
 async def _get_latest_vers() -> Vers:
     data: dict
     async with aiohttp.ClientSession() as session:
