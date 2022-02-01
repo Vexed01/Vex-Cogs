@@ -5,7 +5,7 @@
     ],
     "description": "Beautify and minify JSON. Supports attachments, codeblocks and replies.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
-    "install_msg": "Thanks for installing! This cog will replace the default `uptime` command when loaded.\nThis cog writes to config every 60 seconds to prevent data loss. It is storage efficient, using under 150 bytes per day.\n\n**Please carefully read the information bellow about some of the cog's inner workings.**\n\nWhen you first load the cog, the `uptime` command will say **data may be inaccurate** for first **15** minutes. Once the cog's been running for a while, data over 30 days old will no longer be counted in the `uptime` command.\n\nPlease avoid excessively reloading the cog. This cog tries to handle unloads/reloads but you might experience limited data loss.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/betteruptime>",
+    "install_msg": "This cog has two commands - `beautify` and `minify`.\n\n**If you would like this cog to support Python dicts as well as normal JSON, please run this command with your prefix ([p]) replaced: `[p]pipinstall pyjson5`. This should work on Linux, but it can error on Windows. It is not required for the cog so don't worry if it does error.**\n\nThis cog has docs! Check them out at <https://s.vexcodes.com/c/beautify>",
     "min_bot_version": "3.4.0",
     "name": "Beautify",
     "requirements": [
