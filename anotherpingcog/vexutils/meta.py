@@ -1,14 +1,17 @@
 import asyncio
 import json
+from io import StringIO
 from logging import getLogger
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Union
+from typing import Any, Dict, List, NamedTuple, Union
 
 import aiohttp
-import tabulate
 from redbot.core import VersionInfo, commands
 from redbot.core import version_info as cur_red_version
 from redbot.core.utils.chat_formatting import box
+from rich import box as rich_box
+from rich.console import Console
+from rich.table import Table  # type:ignore
 
 from .consts import DOCS_BASE, GREEN_CIRCLE, RED_CIRCLE
 from .loop import VexLoop
@@ -17,6 +20,21 @@ log = getLogger("red.vex-utils")
 
 
 cog_ver_lock = asyncio.Lock()
+
+
+def rich_markup(*objects: Any, lang: str = "") -> str:
+    """
+    Slimmed down version of rich_markup which ensure no colours (/ANSI) can exist
+    https://github.com/Cog-Creators/Red-DiscordBot/pull/5538/files (Kowlin)
+    """
+    temp_console = Console(  # Prevent messing with STDOUT's console
+        color_system=None,
+        file=StringIO(),
+        force_terminal=True,
+        width=80,
+    )
+    temp_console.print(*objects)
+    return box(temp_console.file.getvalue(), lang=lang)  # type: ignore
 
 
 def format_help(self: commands.Cog, ctx: commands.Context) -> str:
@@ -91,26 +109,30 @@ async def format_info(
         latest = UnknownVers({cog_name: "Unknown"})
 
     start = f"{qualified_name} by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n"
-    versions = [
-        [
-            "This Cog",
-            current.cogs.get(cog_name),
-            latest.cogs.get(cog_name),
-            GREEN_CIRCLE if cog_updated else RED_CIRCLE,
-        ],
-        [
-            "Bundled Utils",
-            current.utils,
-            latest.utils,
-            GREEN_CIRCLE if utils_updated else RED_CIRCLE,
-        ],
-        [
-            "Red",
-            current.red,
-            latest.red,
-            GREEN_CIRCLE if red_updated else RED_CIRCLE,
-        ],
-    ]
+
+    main_table = Table(
+        "", "Current", "Latest", "Up to date?", title="Versions", box=rich_box.MINIMAL
+    )
+
+    main_table.add_row(
+        "This Cog",
+        str(current.cogs.get(cog_name)),
+        str(latest.cogs.get(cog_name)),
+        GREEN_CIRCLE if cog_updated else RED_CIRCLE,
+    )
+    main_table.add_row(
+        "Bundled Utils",
+        current.utils,
+        latest.utils,
+        GREEN_CIRCLE if utils_updated else RED_CIRCLE,
+    )
+    main_table.add_row(
+        "Red",
+        str(current.red),
+        str(latest.red),
+        GREEN_CIRCLE if red_updated else RED_CIRCLE,
+    )
+
     update_msg = "\n"
     if not cog_updated:
         update_msg += f"To update this cog, use the `{ctx.clean_prefix}cog update` command.\n"
@@ -121,28 +143,28 @@ async def format_info(
     if not red_updated:
         update_msg += "To update Red, see https://docs.discord.red/en/stable/update_red.html\n"
 
+    extra_table = Table("Key", "Value", title="Extras", box=rich_box.MINIMAL)
+
     data = []
     if loops:
         for loop in loops:
-            data.append([loop.friendly_name, GREEN_CIRCLE if loop.integrity else RED_CIRCLE])
+            extra_table.add_row(loop.friendly_name, GREEN_CIRCLE if loop.integrity else RED_CIRCLE)
 
     if extras:
         if data:
-            data.append([])
+            extra_table.add_row("", "")
         for key, value in extras.items():
             if isinstance(value, bool):
                 str_value = GREEN_CIRCLE if value else RED_CIRCLE
             else:
                 assert isinstance(value, str)
                 str_value = value
-            data.append([key, str_value])
+            extra_table.add_row(key, str_value)
 
-    boxed = box(
-        tabulate.tabulate(versions, headers=["", "Your Version", "Latest version", "Up to date?"])
-    )
+    boxed = rich_markup(main_table)
     boxed += update_msg
-    if data:
-        boxed += box(tabulate.tabulate(data, tablefmt="plain"))
+    if loops or extras:
+        boxed += rich_markup(extra_table)
 
     return f"{start}{boxed}"
 
