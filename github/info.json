@@ -9,8 +9,7 @@
     "min_bot_version": "3.4.0",
     "name": "GitHub",
     "requirements": [
-        "gidgethub>=5.0.0",
-        "tabulate"
+        "gidgethub>=5.0.0"
     ],
     "short": "Create, comment, labelify and close GitHub issues.",
     "tags": [

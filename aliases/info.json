@@ -8,9 +8,7 @@
     "install_msg": "\\N{WARNING SIGN}\nThis cog reads the config of the alias cog. This means it might break without much notice.\n\nIf you are just trying to **make aliases**: this cog isn't for that. Use the core `alias` cog to make and manage aliases with the `[p]load alias` command, then `[p]help alias`.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/aliases>",
     "min_bot_version": "3.4.0",
     "name": "Aliases",
-    "requirements": [
-        "tabulate"
-    ],
+    "requirements": [],
     "short": "Get all the information you could ever need about a command's aliases. IF YOU ARE TRYING TO *MAKE* ALIASES, JUST USE THE CORE 'alias` COG.",
     "tags": [
         "utility",

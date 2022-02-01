@@ -10,8 +10,7 @@
     "min_bot_version": "3.4.0",
     "name": "GHIssues",
     "requirements": [
-        "gidgethub>=5.0.0",
-        "tabulate"
+        "gidgethub>=5.0.0"
     ],
     "short": "[DPY 2 ONLY] Create, comment, labelify and close GitHub issues.",
     "tags": [
