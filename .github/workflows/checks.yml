@@ -19,7 +19,6 @@ jobs:
           - style-black
           - style-isort
           - lint-flake8
-          - type-mypy
           - docs
           - pytest
         include:
