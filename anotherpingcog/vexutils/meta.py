@@ -1,18 +1,16 @@
 import asyncio
 import json
-from io import StringIO
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Dict, List, NamedTuple, Union
+from typing import Dict, List, NamedTuple, Union
 
 import aiohttp
 from redbot.core import VersionInfo, commands
 from redbot.core import version_info as cur_red_version
-from redbot.core.utils.chat_formatting import box
 from rich import box as rich_box
-from rich.console import Console
 from rich.table import Table  # type:ignore
 
+from .chat import no_colour_rich_markup
 from .consts import DOCS_BASE, GREEN_CIRCLE, RED_CIRCLE
 from .loop import VexLoop
 
@@ -20,21 +18,6 @@ log = getLogger("red.vex-utils")
 
 
 cog_ver_lock = asyncio.Lock()
-
-
-def rich_markup(*objects: Any, lang: str = "") -> str:
-    """
-    Slimmed down version of rich_markup which ensure no colours (/ANSI) can exist
-    https://github.com/Cog-Creators/Red-DiscordBot/pull/5538/files (Kowlin)
-    """
-    temp_console = Console(  # Prevent messing with STDOUT's console
-        color_system=None,
-        file=StringIO(),
-        force_terminal=True,
-        width=80,
-    )
-    temp_console.print(*objects)
-    return box(temp_console.file.getvalue(), lang=lang)  # type: ignore
 
 
 def format_help(self: commands.Cog, ctx: commands.Context) -> str:
@@ -161,10 +144,10 @@ async def format_info(
                 str_value = value
             extra_table.add_row(key, str_value)
 
-    boxed = rich_markup(main_table)
+    boxed = no_colour_rich_markup(main_table)
     boxed += update_msg
     if loops or extras:
-        boxed += rich_markup(extra_table)
+        boxed += no_colour_rich_markup(extra_table)
 
     return f"{start}{boxed}"
 
