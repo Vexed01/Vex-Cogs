@@ -31,6 +31,7 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | [anotherpingcog](https://go.vexcodes.com/c/anotherpingcog) | Another ping cog... But this one has fancy colours in a customisable embed! |
 | [beautify](https://go.vexcodes.com/c/beautify) | Beautify and minify JSON. |
 | [betteruptime](https://go.vexcodes.com/c/betteruptime) | See your bot's uptime percentages and check when downtime happened. |
+| [birthday](https://go.vexcodes.com/c/birthday) | Birthday cog with customisable messages and roles. |
 | [caseinsensitive](https://go.vexcodes.com/c/caseinsensitive) | Make all prefixes and commands case insensitive. |
 | [cmdlog](https://go.vexcodes.com/c/cmdlog) | Track command usage, searchable by user, server or command name. |
 | [covidgraph](https://go.vexcodes.com/c/covidgraph) | Get graphs of COVID-19 data. |
