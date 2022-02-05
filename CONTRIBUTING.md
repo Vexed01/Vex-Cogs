@@ -34,10 +34,6 @@ It will now run on every commit.
 >
 > ``mypy .`` **sometimes** errors. It's pretty random. It also complains about conf.py in docs.
 >
-> Try again (trust me, that sometimes makes it work) or do this to run it "repo-wide":
->
->       mypy aliases anotherpingcog beautify betteruptime cmdlog github status system timechannel
->
 > This is what tox and the PR cheks run. You could also only run mypy on the cog you're contributing to or use it in your editor - that _seems_ to work.
 >
 > This does appear to be on the GitHub for mypy in a few separate issues.
