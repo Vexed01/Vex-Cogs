@@ -542,3 +542,40 @@ class BirthdayAdminCommands(MixinMeta):
             conf["role_id"] = role.id
 
         await ctx.send(f"Role set to {role.name}.")
+
+    @bdset.command()
+    async def force(
+        self, ctx: commands.Context, user: discord.Member, *, birthday: BirthdayConverter
+    ):
+        """
+        Force-set a specific user's birthday.
+
+        You can @ mention any user or type out their exact name. If you're typing out a name with
+        spaces, make sure to put quotes around it (`"`).
+
+        **Examples:**
+            - `[p]bdset set @User 1-1-2000` - set the birthday of `@User` to 1/1/2000
+            - `[p]bdset set User 1/1` - set the birthday of `@User` to 1/1/2000
+            - `[p]bdset set "User with spaces" 1-1` - set the birthday of `@User with spaces`
+            to 1/1
+            - `[p]bdset set 354125157387344896 1/1/2000` - set the birthday of `@User` to 1/1/2000
+        """
+        if birthday.year != 1 and birthday.year < MIN_BDAY_YEAR:
+            await ctx.send(f"I'm sorry, but I can't set a birthday to before {MIN_BDAY_YEAR}.")
+            return
+
+        if birthday > datetime.datetime.utcnow():
+            await ctx.send("You can't be born in the future!")
+            return
+
+        async with self.config.member(user).birthday() as bday:
+            bday["year"] = birthday.year if birthday.year != 1 else None
+            bday["month"] = birthday.month
+            bday["day"] = birthday.day
+
+        if birthday.year == 1:
+            str_bday = birthday.strftime("%B %d")
+        else:
+            str_bday = birthday.strftime("%B %d, %Y")
+
+        await ctx.send(f"{user.name}'s birthday has been set as {str_bday}.")

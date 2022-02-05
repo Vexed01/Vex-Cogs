@@ -352,6 +352,14 @@ Birthday
 ========
 
 *********
+``1.0.1``
+*********
+
+2022-02-05
+
+- Add ``[p]bdset force`` for admins to force set a user's birthday
+
+*********
 ``1.0.0``
 *********
 
