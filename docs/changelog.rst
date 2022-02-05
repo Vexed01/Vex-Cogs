@@ -16,6 +16,7 @@ Jump links:
 | :ref:`anotherpingcog<cl_apc>`
 | :ref:`beautify<cl_beautify>`
 | :ref:`betteruptime<cl_betteruptime>`
+| :ref:`birthday<cl_birthday>`
 | :ref:`cmdlog<cl_cmdlog>`
 | :ref:`github<cl_github>`
 | :ref:`googletrends<cl_googletrends>`
@@ -344,6 +345,18 @@ BetterUptime
 
 - Slight logic changes for banding in ``downtime`` command
 
+.. _cl_birthday:
+
+========
+Birthday
+========
+
+*********
+``1.0.0``
+*********
+
+- Initial release
+
 .. _cl_caseinsensitive:
 
 ===============
@@ -566,6 +579,14 @@ GoogleTrends
 ============
 MadTranslate
 ============
+
+*********
+``1.0.3``
+*********
+
+2022-02-05
+
+- Fix ValueError (#78)
 
 *********
 ``1.0.2``
