@@ -1,30 +1,14 @@
 import asyncio
 import datetime
 import traceback
-from io import StringIO
-from typing import Any, Optional
+from typing import Optional
 
 import discord
 from redbot.core.utils.chat_formatting import box, pagify
-from rich.console import Console
 from rich.table import Table  # type:ignore
 
+from .chat import no_colour_rich_markup
 from .consts import CHECK, CROSS
-
-
-def rich_markup(*objects: Any, lang: str = "") -> str:
-    """
-    Slimmed down version of rich_markup which ensure no colours (/ANSI) can exist
-    https://github.com/Cog-Creators/Red-DiscordBot/pull/5538/files (Kowlin)
-    """
-    temp_console = Console(  # Prevent messing with STDOUT's console
-        color_system=None,
-        file=StringIO(),
-        force_terminal=True,
-        width=80,
-    )
-    temp_console.print(*objects)
-    return box(temp_console.file.getvalue(), lang=lang)  # type: ignore
 
 
 class VexLoop:
@@ -118,7 +102,7 @@ class VexLoop:
         table.add_row("last_iterstr", str(self.last_iter) or "Loop not started")
         table.add_row("next_iterstr", str(self.next_iter) or "Loop not started")
 
-        raw_table_str = rich_markup(table)
+        raw_table_str = no_colour_rich_markup(table)
 
         now = datetime.datetime.utcnow()
 
@@ -126,7 +110,7 @@ class VexLoop:
             table = Table("Key", "Value")
             table.add_row("Seconds until next", str((self.next_iter - now).total_seconds()))
             table.add_row("Seconds since last", str((now - self.last_iter).total_seconds()))
-            processed_table_str = rich_markup(table)
+            processed_table_str = no_colour_rich_markup(table)
 
         else:
             processed_table_str = "Loop hasn't started yet."

@@ -27,6 +27,7 @@ in #support_vex-cogs.
    cogs/aliases
    cogs/beautify
    cogs/betteruptime
+   cogs/birthday
    cogs/caseinsensitive
    cogs/cmdlog
    cogs/covidgraph

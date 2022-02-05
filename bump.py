@@ -9,6 +9,7 @@ COGS = [
     "beautify",
     "betteruptime",
     "buttonpoll",
+    "birthday",
     "calc",
     "caseinsensitive",
     "channeltrack",
