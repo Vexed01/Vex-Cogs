@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime
+import json
 import logging
 from collections import defaultdict
 
@@ -10,6 +11,7 @@ from dateutil.parser import ParserError
 from dateutil.parser import parse as time_parser
 from redbot.core import commands
 from redbot.core.commands import CheckFailure
+from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import warning
 from redbot.core.utils.menus import start_adding_reactions
@@ -579,3 +581,70 @@ class BirthdayAdminCommands(MixinMeta):
             str_bday = birthday.strftime("%B %d, %Y")
 
         await ctx.send(f"{user.name}'s birthday has been set as {str_bday}.")
+
+    @commands.is_owner()
+    @bdset.command()
+    async def zemigrate(self, ctx: commands.Context):
+        """
+        Import data from ZeCogs'/flare's fork of Birthdays cog
+        """
+        if await self.config.guild(ctx.guild).setup_state() != 0:
+            m = await ctx.send(
+                "You have already started setting the cog up. Are you sure? This will overwrite"
+                " your old data for all guilds."
+            )
+
+            start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
+            pred = ReactionPredicate.yes_or_no(m, ctx.author)
+            try:
+                await self.bot.wait_for("reaction_add", check=pred, timeout=60)
+            except asyncio.TimeoutError:
+                await ctx.send("Timeout. Cancelling.")
+                return
+
+            if pred.result is False:
+                await ctx.send("Cancelling.")
+                return
+
+        ze_datapath = cog_data_path(raw_name="Birthdays") / "settings.json"
+        with ze_datapath.open("r") as fp:
+            data = fp.read()
+
+        data = json.loads(data).get(
+            "4029073447917144423054259634495452608643663801867012607579937291642696830925600898581"
+            "468610241444437790345710548026575313281401238342705437492295956906331"
+            # thats one long identifier
+        )
+
+        for guild_id, guild_data in data.get("GUILD").items():
+            guild = self.bot.get_guild(int(guild_id))
+            if guild is None:
+                continue
+
+            new_data = {
+                "channel_id": guild_data.get("channel", None),
+                "role_id": guild_data.get("role", None),
+                "message_w_year": "{mention} is now **{new_age} years old**. :tada:",
+                "message_wo_year": "It's {mention}'s birthday today! :tada:",
+                "time_utc_s": 0,  # UTC midnight
+                "setup_state": 5,
+            }
+            await self.config.guild(guild).set_raw(value=new_data)
+
+        for guild_id, guild_data in data.get("GUILD_DATE").items():
+            for day, users in guild_data.items():
+                for user_id, year in users.items():
+                    dt = datetime.datetime.fromordinal(int(day))
+                    dt = dt.replace(year=year or 1)
+
+                    new_data = {
+                        "year": dt.year if dt.year != 1 else None,
+                        "month": dt.month,
+                        "day": dt.day,
+                    }
+                    await self.config.member_from_ids(guild_id, user_id).birthday.set(new_data)
+
+        await ctx.send(
+            "All set. You can now configure the messages and time to send with other commands"
+            " under `[p]bdset`, if you would like to change it from ZeLarp's. This is per-guild."
+        )

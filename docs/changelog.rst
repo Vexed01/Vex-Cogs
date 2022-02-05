@@ -352,6 +352,14 @@ Birthday
 ========
 
 *********
+``1.0.2``
+*********
+
+2022-02-05
+
+- Add ``[p]bdset zemigrate`` for migrating data from ZeLarp's/flare's fork of Birthdays cog (#77)
+
+*********
 ``1.0.1``
 *********
 
