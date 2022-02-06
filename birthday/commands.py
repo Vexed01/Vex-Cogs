@@ -635,9 +635,13 @@ class BirthdayAdminCommands(MixinMeta):
             for day, users in guild_data.items():
                 for user_id, year in users.items():
                     dt = datetime.datetime.fromordinal(int(day))
+
+                    if year < MIN_BDAY_YEAR:
+                        year = 1
+
                     try:
                         dt = dt.replace(year=year or 1)
-                    except OverflowError:  # flare's users are crazy
+                    except (OverflowError, ValueError):  # flare's users are crazy
                         dt = dt.replace(year=1)
 
                     new_data = {
