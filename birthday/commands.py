@@ -123,7 +123,7 @@ class BirthdayCommands(MixinMeta):
         async for member_id, member_data in AsyncIter(all_birthdays.items(), steps=50):
             member = ctx.guild.get_member(member_id)
             if not isinstance(member, discord.Member):
-                pass
+                continue
 
             birthday_dt = datetime.datetime(
                 year=member_data["birthday"]["year"] or 1,
