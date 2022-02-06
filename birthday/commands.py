@@ -9,7 +9,7 @@ from collections import defaultdict
 import discord
 from dateutil.parser import ParserError
 from dateutil.parser import parse as time_parser
-from redbot.core import commands
+from redbot.core import commands, Config
 from redbot.core.commands import CheckFailure
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
@@ -606,21 +606,13 @@ class BirthdayAdminCommands(MixinMeta):
                 await ctx.send("Cancelling.")
                 return
 
-        ze_datapath = cog_data_path(raw_name="Birthdays") / "settings.json"
-        with ze_datapath.open("r") as fp:
-            data = fp.read()
+        bday_conf = Config.get_conf(None, 4029073447917144423054259634495452608643663801867012607579937291642696830925600898581468610241444437790345710548026575313281401238342705437492295956906331, cog_name="Birthdays")
 
-        data = json.loads(data).get(
-            "4029073447917144423054259634495452608643663801867012607579937291642696830925600898581"
-            "468610241444437790345710548026575313281401238342705437492295956906331"
-            # thats one long identifier
-        )
-
-        for guild_id, guild_data in data.get("GUILD").items():
+        for guild_id, guild_data in (await bday_conf.all_guilds()).items():
             guild = self.bot.get_guild(int(guild_id))
             if guild is None:
                 continue
-
+            log.info(guild_data)
             new_data = {
                 "channel_id": guild_data.get("channel", None),
                 "role_id": guild_data.get("role", None),
@@ -630,8 +622,17 @@ class BirthdayAdminCommands(MixinMeta):
                 "setup_state": 5,
             }
             await self.config.guild(guild).set_raw(value=new_data)
+        
+        bday_conf.init_custom("GUILD_DATE", 2)
+        all_member_data = await bday_conf.custom("GUILD_DATE").all()
+        if "backup" in all_member_data:
+            del all_member_data["backup"]
 
-        for guild_id, guild_data in data.get("GUILD_DATE").items():
+
+        for guild_id, guild_data in all_member_data.items():
+            guild = self.bot.get_guild(int(guild_id))
+            if guild is None:
+                continue
             for day, users in guild_data.items():
                 for user_id, year in users.items():
                     dt = datetime.datetime.fromordinal(int(day))
