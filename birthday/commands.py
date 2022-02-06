@@ -385,10 +385,10 @@ class BirthdayAdminCommands(MixinMeta):
         table = Table("Name", "Value", title="Settings for this server")
 
         async with self.config.guild(ctx.guild).all() as conf:
-            channel = ctx.guild.get_channel(conf["channel_id"]).name or "Channel deleted"
+            channel = ctx.guild.get_channel(conf["channel_id"], "Channel deleted")
             table.add_row("Channel", channel)
 
-            role = ctx.guild.get_role(conf["role_id"]).name or "Role deleted"
+            role = ctx.guild.get_role(conf["role_id"], "Role deleted")
             table.add_row("Role", role)
 
             time = datetime.datetime.utcfromtimestamp(conf["time_utc_s"]).strftime("%H:%M UTC")
