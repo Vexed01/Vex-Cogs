@@ -614,7 +614,6 @@ class BirthdayAdminCommands(MixinMeta):
             guild = self.bot.get_guild(int(guild_id))
             if guild is None:
                 continue
-            log.info(guild_data)
             new_data = {
                 "channel_id": guild_data.get("channel", None),
                 "role_id": guild_data.get("role", None),
