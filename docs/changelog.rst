@@ -1063,6 +1063,14 @@ Internal changes
 System
 ======
 
+**********
+``1.3.10``
+**********
+
+2022-02-07
+
+- Auto-hide loop disks, old behaviour possible with `[p]system disk False`
+
 *********
 ``1.3.9``
 *********

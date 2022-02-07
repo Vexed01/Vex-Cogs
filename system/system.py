@@ -39,7 +39,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.3.9"
+    __version__ = "1.3.10"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -246,7 +246,7 @@ class System(commands.Cog):
     @system.command(
         name="disk", aliases=["df"], cls=DynamicHelp, supported_sys=True  # all systems
     )
-    async def system_disk(self, ctx: commands.Context):
+    async def system_disk(self, ctx: commands.Context, ignore_loop: bool = True):
         """
         Get infomation about disks connected to the system.
 
@@ -254,12 +254,23 @@ class System(commands.Cog):
         mount point (if you're on Linux make sure it's not potentially
         sensitive if running the command a public space).
 
+        If `ignore_loop` is set to `True`, this will ignore any loop (fake) devices on Linux.
+
         Platforms: Windows, Linux, Mac OS
         Note: Mount point is basically useless on Windows as it's the
         same as the drive name, though it's still shown.
         """
         embed = await ctx.embed_requested()
-        data = await get_disk(embed)
+        pre_data = await get_disk(embed)
+        data: dict[str, str] = {}
+
+        if ignore_loop:
+            for name, disk_data in pre_data.items():
+                if name.startswith("/dev/loop"):
+                    continue
+                data[name] = disk_data
+        else:
+            data = pre_data
 
         if embed:
             embed = discord.Embed(title="Disks", colour=await ctx.embed_colour())
@@ -278,7 +289,7 @@ class System(commands.Cog):
             msg = "**Disks**\n"
             if not data:
                 data = {
-                    "No one's logged in": (
+                    "No disks found": (
                         "That's not something you see very often! You're probably using WSL or "
                         "other virtualisation technology"
                     )
