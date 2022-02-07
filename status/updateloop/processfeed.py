@@ -6,9 +6,9 @@ from dateutil.parser import parse as parse_time
 from markdownify import markdownify
 from redbot.core.utils.chat_formatting import humanize_list, pagify
 
-from status.core import TYPES_LITERAL
-from status.objects import IncidentData, UpdateField
-from status.vexutils.chat import datetime_to_timestamp
+from ..core import TYPES_LITERAL
+from ..objects import IncidentData, UpdateField
+from ..vexutils.chat import datetime_to_timestamp
 
 
 def _handle_long_fields(

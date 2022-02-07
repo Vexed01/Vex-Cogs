@@ -8,9 +8,9 @@ from time import monotonic
 from discord import Embed, Message, TextChannel
 from redbot.core.bot import Red
 
-from status.core import FEEDS, UPDATE_NAME
-from status.core.consts import ICON_BASE
-from status.objects import (
+from ..core import FEEDS, UPDATE_NAME
+from ..core.consts import ICON_BASE, SERVICE_LITERAL
+from ..objects import (
     ChannelData,
     ConfChannelSettings,
     ConfigWrapper,
@@ -18,7 +18,6 @@ from status.objects import (
     SendCache,
     Update,
 )
-
 from .utils import get_channel_data, get_webhook
 
 _log = logging.getLogger("red.vex.status.sendupdate")
@@ -32,7 +31,7 @@ class SendUpdate:
         bot: Red,
         config_wrapper: ConfigWrapper,
         update: Update,
-        service: str,
+        service: SERVICE_LITERAL,
         sendcache: SendCache,
         dispatch: bool = True,
         force: bool = False,

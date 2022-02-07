@@ -4,8 +4,7 @@ import datetime
 
 from redbot.core import Config
 
-from status.core import SERVICE_LITERAL
-
+from ..core import SERVICE_LITERAL
 from .caches import LastChecked
 from .incidentdata import IncidentData, UpdateField
 from .typeddict import ConfChannelSettings, ConfFeeds, IncidentDataDict

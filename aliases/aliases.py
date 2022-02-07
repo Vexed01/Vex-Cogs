@@ -41,7 +41,7 @@ class Aliases(commands.Cog):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.command(usage="<command>")
-    async def aliases(self, ctx: commands.Context, *, strcommand: str) -> None:
+    async def aliases(self, ctx: commands.Context, *, strcommand: str):
         """
         Get all the alias information you could ever want about a command.
 

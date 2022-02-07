@@ -3,8 +3,7 @@ from __future__ import annotations
 import datetime
 from typing import TypedDict
 
-from status.core import MODES_LITERAL
-
+from ..core import MODES_LITERAL
 from .incidentdata import UpdateField
 
 

@@ -1,7 +1,7 @@
 from redbot.core import commands
 
-from status.core.consts import FEEDS
-from status.vexutils.chat import inline_hum_list
+from ..core.consts import FEEDS
+from ..vexutils.chat import inline_hum_list
 
 SERVICE_LIST = inline_hum_list(tuple(FEEDS.keys()))
 

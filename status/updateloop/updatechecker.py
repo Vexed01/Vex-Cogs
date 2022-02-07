@@ -7,11 +7,10 @@ from time import monotonic
 import aiohttp
 from aiohttp.client_exceptions import ClientOSError
 
-from status.core import FEEDS, SERVICE_LITERAL, TYPES_LITERAL
-from status.core.abc import MixinMeta
-from status.objects import IncidentData, SendCache, Update
-from status.vexutils.loop import VexLoop
-
+from ..core import FEEDS, SERVICE_LITERAL, TYPES_LITERAL
+from ..core.abc import MixinMeta
+from ..objects import IncidentData, SendCache, Update
+from ..vexutils.loop import VexLoop
 from .processfeed import process_json
 from .sendupdate import SendUpdate
 

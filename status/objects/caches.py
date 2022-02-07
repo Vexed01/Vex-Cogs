@@ -4,7 +4,7 @@ from collections import defaultdict, deque
 from time import time
 from typing import Literal
 
-from status.core import FEEDS, SERVICE_LITERAL
+from ..core import FEEDS, SERVICE_LITERAL
 
 
 class UsedFeeds:

@@ -9,11 +9,11 @@ from discord.channel import TextChannel
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta, pagify
 
-from status.commands.command import DynamicHelp
-from status.commands.converters import ServiceConverter
-from status.core.abc import MixinMeta
-from status.objects import SendCache, Update
-from status.updateloop import SendUpdate, process_json
+from ..commands.command import DynamicHelp
+from ..commands.converters import ServiceConverter
+from ..core.abc import MixinMeta
+from ..objects import SendCache, Update
+from ..updateloop import SendUpdate, process_json
 
 
 class Comps(NamedTuple):

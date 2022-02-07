@@ -9,17 +9,23 @@ from discord.abc import GuildChannel
 from discord.member import Member
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, humanize_list
-from redbot.core.utils.predicates import MessagePredicate
 from tabulate import tabulate
 
-from status.commands.command import DynamicHelp, DynamicHelpGroup
-from status.commands.converters import ModeConverter, ServiceConverter
-from status.core import FEEDS, SPECIAL_INFO
-from status.core.abc import MixinMeta
-from status.core.consts import SERVICE_LITERAL
-from status.objects import SendCache, Update
-from status.updateloop import SendUpdate, process_json
-from status.vexutils.chat import inline_hum_list
+from ..commands.command import DynamicHelp, DynamicHelpGroup
+from ..commands.converters import ModeConverter, ServiceConverter
+from ..core import FEEDS, SPECIAL_INFO
+from ..core.abc import MixinMeta
+from ..core.consts import SERVICE_LITERAL
+from ..objects import SendCache, Update
+from ..updateloop import SendUpdate, process_json
+from ..vexutils.chat import inline_hum_list
+
+if discord.__version__.startswith("1"):
+    from redbot.core.utils.predicates import MessagePredicate
+else:
+    from discord.enums import ButtonStyle
+
+    from ..vexutils.button_pred import PredItem, wait_for_press, wait_for_yes_no
 
 
 class StatusSetCom(MixinMeta):
@@ -86,24 +92,36 @@ class StatusSetCom(MixinMeta):
 
         # === MODE ===
 
-        await ctx.send(
-            "This is an interactive configuration. You have 2 minutes to answer each question.\n"
-            "If you aren't sure what to choose, just say `cancel` and take a look at the "
-            f"**`{ctx.clean_prefix}statusset preview`** command.\n\n**What mode do you want to "
-            f"use?**\n\n{modes}"
+        msg = (
+            "You have 3 minutes to answer each question.\nIf you aren't sure what to choose, take "
+            f"a look at the **`{ctx.clean_prefix}statusset preview`** command.\n\n**What mode do "
+            f"you want to use?**\n\n{modes}"
         )
 
         try:
-            # really shouldn't monkey patch this
-            mode = await ModeConverter.convert(  # type:ignore
-                None,
-                ctx,
-                (
-                    await self.bot.wait_for(
-                        "message", check=MessagePredicate.same_context(ctx), timeout=120
-                    )
-                ).content,
-            )
+            if discord.__version__.startswith("1"):
+                await ctx.send(msg)
+
+                # really shouldn't monkey patch this
+                mode = await ModeConverter.convert(  # type:ignore
+                    None,
+                    ctx,
+                    (
+                        await self.bot.wait_for(
+                            "message", check=MessagePredicate.same_context(ctx), timeout=120
+                        )
+                    ).content,
+                )
+            else:
+                mode = await wait_for_press(
+                    ctx,
+                    [
+                        PredItem("all", ButtonStyle.blurple, "All"),
+                        PredItem("latest", ButtonStyle.blurple, "Latest"),
+                        PredItem("edit", ButtonStyle.blurple, "Edit"),
+                    ],
+                    content=msg,
+                )
         except asyncio.TimeoutError:
             return await ctx.send("Timed out. Cancelling.")
         except commands.BadArgument as e:
@@ -112,34 +130,32 @@ class StatusSetCom(MixinMeta):
         # === WEBHOOK ===
 
         if channel.permissions_for(ctx.me).manage_webhooks:
-            await ctx.send(
+            msg = (
                 "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means "
                 f"that the status updates will be sent with the avatar as {service.friendly}'s "
                 f"logo and the name will be `{service.friendly} Status Update`, instead of my "
                 "avatar and name."
             )
 
-            pred = MessagePredicate.yes_or_no(ctx)
             try:
-                await self.bot.wait_for("message", check=pred, timeout=120)
+                if discord.__version__.startswith("1"):
+                    await ctx.send(msg)
+                    pred = MessagePredicate.yes_or_no(ctx)
+                    await self.bot.wait_for("message", check=pred, timeout=120)
+                    webhook = pred.result
+                else:
+                    webhook = await wait_for_yes_no(ctx, msg)
             except asyncio.TimeoutError:
                 return await ctx.send("Timed out. Cancelling.")
 
-            webhook = pred.result
             if webhook:
-                # already checked for perms to create
-                # thanks flare for your webhook logic (redditpost) (or trusty?)
-
-                # i know this makes the webhook in the wrong channel if a specific one is chosen...
-                # its remade later
-                # TODO: ^
-                existing_webhook = False
-                for hook in await ctx.channel.webhooks():
-                    if hook.name == channel.guild.me.name:
-                        existing_webhook = True
+                # maybe creating a webhook so users feel it worked
+                existing_webhook = any(
+                    hook.name == ctx.me.name for hook in await channel.webhooks()
+                )
                 if not existing_webhook:
-                    await ctx.channel.create_webhook(
-                        name=channel.guild.me.name, reason="Created for status updates."
+                    await channel.create_webhook(
+                        name=ctx.me.name, reason="Created for status updates."
                     )
         else:
             await ctx.send(
@@ -150,21 +166,25 @@ class StatusSetCom(MixinMeta):
 
         # === RESTRICT ===
 
-        await ctx.send(
-            f"**Would you like to restrict access to {service.friendly} in the "
+        msg = (
+            f"**Would you like to restrict access to {service.friendly} in the "  # type:ignore
             f"`{ctx.clean_prefix}status` command?** (yes or no answer)\nThis will reduce spam. If "
             f"there's an incident, members will instead be redirected to {channel.mention} and "
             f"any other channels that you've set to receive {service.friendly} status updates "
             "which have restrict enabled."
         )
 
-        pred = MessagePredicate.yes_or_no(ctx)
         try:
-            await self.bot.wait_for("message", check=pred, timeout=120)
+            if discord.__version__.startswith("1"):
+                pred = MessagePredicate.yes_or_no(ctx)
+                await self.bot.wait_for("message", check=pred, timeout=120)
+                restrict = pred.result
+            else:
+                restrict = await wait_for_yes_no(ctx, msg)
         except asyncio.TimeoutError:
             return await ctx.send("Timed out. Cancelling.")
 
-        if pred.result is True:
+        if restrict is True:
             async with self.config.guild(ctx.guild).service_restrictions() as sr:
                 try:
                     sr[service.name].append(channel.id)
@@ -176,6 +196,10 @@ class StatusSetCom(MixinMeta):
                 )
 
         # === FINISH ===
+
+        if service.name not in self.used_feeds.get_list():
+            # need to get it up to date so no mass sending on add
+            await self.get_initial_data(service.name)
 
         settings = {"mode": mode, "webhook": webhook, "edit_id": {}}
         await self.config.channel(channel).feeds.set_raw(  # type:ignore
@@ -211,6 +235,7 @@ class StatusSetCom(MixinMeta):
         # guild check on group
         if TYPE_CHECKING:
             assert isinstance(ctx.channel, GuildChannel)
+            assert ctx.guild is not None
 
         channel = chan or ctx.channel
 
@@ -223,7 +248,7 @@ class StatusSetCom(MixinMeta):
         self.used_feeds.remove_feed(service.name)
 
         sr: dict[str, list[int]]
-        async with self.config.guild(channel.guild).service_restrictions() as sr:
+        async with self.config.guild(ctx.guild).service_restrictions() as sr:
             try:
                 sr[service.name].remove(channel.id)
             except (ValueError, KeyError):
@@ -268,10 +293,7 @@ class StatusSetCom(MixinMeta):
                         continue
                     mode = settings["mode"]
                     webhook = settings["webhook"]
-                    if channel.id in restrictions.get(service, []):
-                        restrict = True
-                    else:
-                        restrict = False
+                    restrict = channel.id in restrictions.get(service, [])
                     data.append([f"#{channel.name}", mode, webhook, restrict])
 
             table = box(
@@ -284,7 +306,7 @@ class StatusSetCom(MixinMeta):
             )
 
         else:
-            guild_feeds: dict[str, list[str]] = {}
+            guild_feeds: dict[SERVICE_LITERAL, list[str]] = {}
             for channel in ctx.guild.channels:
                 feeds = await self.config.channel(channel).feeds()
                 for feed in feeds.keys():
@@ -373,8 +395,8 @@ class StatusSetCom(MixinMeta):
         if (
             incidentdata is None
             or extra_info is None
-            or (time() - extra_info.get("checked", 0) > 300)
-        ):  # its older than 3 mins
+            or (time() - extra_info.get("checked", 0) > 300)  # its older than 3 mins
+        ):
             try:
                 json_resp, etag, status = await self.statusapi.incidents(service.id)
             except Exception:
@@ -561,6 +583,7 @@ class StatusSetCom(MixinMeta):
         # guild check on group
         if TYPE_CHECKING:
             assert isinstance(ctx.channel, GuildChannel)
+            assert ctx.guild is not None
 
         channel = chan or ctx.channel
 
@@ -571,7 +594,7 @@ class StatusSetCom(MixinMeta):
                 f"{channel.mention}"
             )
 
-        old_conf = (await self.config.guild(channel.guild).service_restrictions()).get(
+        old_conf = (await self.config.guild(ctx.guild).service_restrictions()).get(
             service.name, []
         )
         old_bool = channel.id in old_conf
@@ -583,19 +606,19 @@ class StatusSetCom(MixinMeta):
             )
 
         sr: dict[SERVICE_LITERAL, list[int]]
-        async with self.config.guild(channel.guild).service_restrictions() as sr:
+        async with self.config.guild(ctx.guild).service_restrictions() as sr:
             if restrict:
                 try:
                     sr[service.name].append(channel.id)
                 except KeyError:
                     sr[service.name] = [channel.id]
                 self.service_restrictions_cache.add_restriction(
-                    channel.guild.id, service.name, channel.id
+                    ctx.guild.id, service.name, channel.id
                 )
             else:
                 sr[service.name].remove(channel.id)
                 self.service_restrictions_cache.remove_restriction(
-                    channel.guild.id, service.name, channel.id
+                    ctx.guild.id, service.name, channel.id
                 )
 
         word = "" if restrict else "not "

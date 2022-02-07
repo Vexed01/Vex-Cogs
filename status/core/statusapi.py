@@ -6,7 +6,7 @@ from aiohttp import ClientSession
 from asyncache import cached
 from cachetools import TTLCache
 
-from status.core import FEEDS
+from ..core import FEEDS
 
 
 class APIResp(NamedTuple):

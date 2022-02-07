@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from discord import TextChannel
 
-from status.core import MODES_LITERAL
+from ..core import MODES_LITERAL
 
 
 @dataclass

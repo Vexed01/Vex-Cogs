@@ -2,16 +2,21 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
+import discord
 from discord.ext.commands.errors import CheckFailure
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
-from redbot.core.utils.predicates import ReactionPredicate
 
-from status.commands.converters import ModeConverter, ServiceConverter
-from status.core.abc import MixinMeta
-from status.objects import SendCache, Update
-from status.updateloop import SendUpdate, process_json
+from ..commands.converters import ModeConverter, ServiceConverter
+from ..core.abc import MixinMeta
+from ..objects import SendCache, Update
+from ..updateloop import SendUpdate, process_json
+
+if discord.__version__.startswith("1"):
+    from redbot.core.utils.predicates import ReactionPredicate
+else:
+    from ..vexutils.button_pred import wait_for_yes_no
 
 _log = logging.getLogger("red.vex.status.dev")
 
@@ -27,25 +32,28 @@ class StatusDevCom(MixinMeta):
         if ctx.author.id == 418078199982063626:  # vexed (my) id
             return
 
-        msg = await ctx.send(
-            warning(
-                "\nTHIS COMMAND IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended "
-                "things can happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure "
-                "you want to continue?"
-            )
+        msg = warning(
+            "\nTHIS COMMAND IS INTENDED FOR DEVELOPMENT PURPOSES ONLY.\n\nUnintended "
+            "things can happen.\n\nRepeat: THIS COMMAND IS NOT SUPPORTED.\nAre you sure "
+            "you want to continue?"
         )
-        start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-        pred = ReactionPredicate.yes_or_no(msg, ctx.author)  # type:ignore
         try:
-            await ctx.bot.wait_for("reaction_add", check=pred, timeout=15)
+            if discord.__version__.startwith("1"):
+                m = await ctx.send(msg)
+                start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
+                pred = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
+                await ctx.bot.wait_for("reaction_add", check=pred, timeout=15)
+                result = pred.result
+            else:
+                result = await wait_for_yes_no(ctx, msg, timeout=15)
         except asyncio.TimeoutError:
             await ctx.send("Timeout, aborting.")
             raise CheckFailure("Reactions timed out")
-        if pred.result is not True:
+        if result is not True:
             await ctx.send("Aborting.")
             raise CheckFailure("User choose no.")
 
-    @commands.before_invoke(unsupported)  # type:ignore  # type:ignore
+    @commands.before_invoke(unsupported)  # type:ignore
     @statusdev.command(aliases=["cf"], hidden=True)
     async def checkfeed(
         self,

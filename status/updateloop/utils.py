@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from discord import TextChannel, Webhook
 from redbot.core.bot import Red
 
-from status.objects import ChannelData, CogDisabled, ConfChannelSettings, NoPermission, NotFound
+from ..objects import ChannelData, CogDisabled, ConfChannelSettings, NoPermission, NotFound
 
 _log = logging.getLogger("red.vex.status.sendupdate")
 
@@ -22,18 +22,13 @@ async def get_webhook(channel: TextChannel) -> Webhook:
     Webhook
         Valid webhook
     """
-    # thanks flare for your webhook logic (redditpost) (or trusty?)
-    webhook = None
-    for hook in await channel.webhooks():
-        if hook.name == channel.guild.me.name:
-            webhook = hook
+    for webhook in await channel.webhooks():
+        if webhook.name == channel.guild.me.name:
+            return webhook
 
-    if webhook is None:
-        webhook = await channel.create_webhook(
-            name=channel.guild.me.name, reason="Created for status updates"
-        )
-
-    return webhook
+    return await channel.create_webhook(
+        name=channel.guild.me.name, reason="Created for status updates"
+    )
 
 
 async def get_channel_data(bot: Red, c_id: int, settings: ConfChannelSettings) -> ChannelData:
