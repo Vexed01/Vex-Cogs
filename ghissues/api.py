@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from __future__ import annotations
 
 import aiohttp
 import gidgethub.aiohttp
@@ -13,7 +13,7 @@ class GitHubAPI:
         self.repo = repo
         self.token = token
 
-    async def repo_info(self, slug: str) -> Union[dict, bool]:
+    async def repo_info(self, slug: str) -> dict | bool:
         async with aiohttp.ClientSession() as session:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=self.token)
             try:
@@ -75,7 +75,7 @@ class GitHubAPI:
             return await gh.post(f"/repos/{self.repo}/issues/{issue}", data={"state": "open"})
 
     async def merge(
-        self, issue: int, commit_title: str, commit_message: Optional[str], merge_method: str
+        self, issue: int, commit_title: str, commit_message: str | None, merge_method: str
     ) -> dict:
         data = {
             "commit_title": commit_title,

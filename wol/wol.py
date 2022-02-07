@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import logging
-from typing import Dict
 
 import tabulate
 from redbot.core import commands
@@ -119,7 +120,7 @@ class WOL(commands.Cog):
         **Examples:**
             - `wolset remove main_pc`
         """
-        conf: Dict[str, str]
+        conf: dict[str, str]
         async with self.config.addresses() as conf:
             try:
                 conf.pop(friendly_name.lower())
@@ -137,7 +138,7 @@ class WOL(commands.Cog):
 
         This will send your MAC addresses to the current channel.
         """
-        conf: Dict[str, str] = await self.config.addresses()
+        conf: dict[str, str] = await self.config.addresses()
         if not conf:
             return await ctx.send("You haven't added any machines yet.")
 

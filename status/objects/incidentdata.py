@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from redbot.core.utils import deduplicate_iterables
 
@@ -27,10 +29,10 @@ class IncidentData:
     link: str
     incident_id: str
     description: str
-    fields: List[UpdateField] = field(default_factory=list)
-    time: Optional[datetime.datetime] = None
-    actual_time: Optional[datetime.datetime] = None
-    scheduled_for: Optional[datetime.datetime] = None
+    fields: list[UpdateField] = field(default_factory=list)
+    time: datetime.datetime | None = None
+    actual_time: datetime.datetime | None = None
+    scheduled_for: datetime.datetime | None = None
 
     def __repr__(self):
         return (
@@ -39,7 +41,7 @@ class IncidentData:
             f'"{self.scheduled_for}")'
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Get a dict of the data held in the object."""
         fields = [
             {"name": field.name, "value": field.value, "update_id": field.update_id}
@@ -56,7 +58,7 @@ class IncidentData:
             "scheduled_for": self.scheduled_for,
         }
 
-    def get_update_ids(self) -> List[str]:
+    def get_update_ids(self) -> list[str]:
         """Get the group IDs for this feed, in order."""
         return deduplicate_iterables([field.update_id for field in self.fields])
 
@@ -66,4 +68,4 @@ class Update:
     """Has the IncidentData of the valid update and the new field(s)."""
 
     incidentdata: IncidentData
-    new_fields: List[UpdateField]
+    new_fields: list[UpdateField]

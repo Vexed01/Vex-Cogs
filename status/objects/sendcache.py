@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import logging
 import re
-from typing import Literal, Union
 
 from discord import Colour, Embed
 from redbot.core.utils.chat_formatting import pagify
@@ -109,7 +110,7 @@ class SendCache:
 
         return list(pagify(msg))[0]  # i really dont care about better handling for plain messages
 
-    def _get_colour(self) -> Union[Colour, Literal[1812720]]:
+    def _get_colour(self) -> Colour:
         try:
             last_title = self.__incidentdata.fields[-1].name
             status = last_title.split(" ")[0].lower()
@@ -128,11 +129,11 @@ class SendCache:
             elif status in ["resolved", "completed"]:
                 return Colour.green()
             else:
-                return 1812720
+                return Colour(1812720)
         except Exception:  # hopefully never happens but will keep this for a while
             _log.warning(
                 f"Error with getting correct colour for {self.__service}. The update will still "
                 "be sent.",
                 exc_info=True,
             )
-            return 1812720
+            return Colour(1812720)

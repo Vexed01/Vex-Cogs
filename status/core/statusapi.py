@@ -1,4 +1,6 @@
-from typing import Dict, NamedTuple
+from __future__ import annotations
+
+from typing import NamedTuple
 
 from aiohttp import ClientSession
 from asyncache import cached
@@ -8,7 +10,7 @@ from status.core import FEEDS
 
 
 class APIResp(NamedTuple):
-    resp_json: Dict[str, dict]
+    resp_json: dict[str, dict]
     etag: str
     status: int
 

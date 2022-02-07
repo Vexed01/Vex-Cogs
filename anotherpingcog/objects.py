@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Literal, Optional, TypedDict, Union
+from typing import Literal, TypedDict
 
 from discord import Emoji
 from redbot.core.bot import Red
@@ -8,7 +10,7 @@ COLOURS = Literal["red", "orange", "green"]
 
 
 class ColourName(TypedDict):
-    emoji: Union[str, int]
+    emoji: str | int
     colour: int
 
 
@@ -27,13 +29,13 @@ DEFAULTS = Defaults(
 
 @dataclass
 class Settings:
-    emoji: Optional[int]
-    colour: Optional[int]
+    emoji: int | None
+    colour: int | None
 
 
 @dataclass
 class FullSettings:
-    emoji: Union[str, Emoji]
+    emoji: str | Emoji
     colour: int
 
     def __repr__(self) -> str:
@@ -42,14 +44,14 @@ class FullSettings:
 
 
 class Cache:
-    def __init__(self, settings: Defaults, embed: bool, footer: str, bot: Red):
+    def __init__(self, settings: Defaults, embed: bool, footer: str, bot: Red) -> None:
         """Initialize with the dict from config."""
         self.force_embed = embed
         self.footer = footer
         self.__data = settings
         self.__bot = bot
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Cache({self.__data}, {self.force_embed}, {self.footer}, bot)"
 
     def set(self, colour_name: COLOURS, settings: Settings) -> None:

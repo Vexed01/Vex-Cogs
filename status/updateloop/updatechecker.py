@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 from time import monotonic
-from typing import Dict, List
 
 import aiohttp
 from aiohttp.client_exceptions import ClientOSError
@@ -21,7 +22,7 @@ class StatusLoop(MixinMeta):
     """Loop for checking for updates."""
 
     def __init__(self) -> None:
-        self.etags: Dict[str, str] = {}
+        self.etags: dict[str, str] = {}
 
         self.loop_meta = VexLoop("Status Loop", 120.0)
         self.loop = self.bot.loop.create_task(self.status_loop())
@@ -181,10 +182,10 @@ class StatusLoop(MixinMeta):
             # are being sent for whatever reason. eg when i break stuff locally.
 
     async def _check_real_update(
-        self, incidentdata_list: List[IncidentData], service: str
-    ) -> List[Update]:
+        self, incidentdata_list: list[IncidentData], service: str
+    ) -> list[Update]:
         stored_ids: list = await self.config.old_ids()
-        valid_updates: List[Update] = []
+        valid_updates: list[Update] = []
         for incidentdata in incidentdata_list:
             new_fields = []
             for field in incidentdata.fields:

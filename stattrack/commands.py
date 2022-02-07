@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import datetime
 import json
 import logging
 from io import StringIO
 from time import monotonic
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional
 
 import discord
 import pandas as pd
@@ -29,28 +31,31 @@ class StatTrackCommands(MixinMeta):
         self,
         ctx: commands.Context,
         delta: datetime.timedelta,
-        label: Union[str, Iterable[str]],
+        label: str | Iterable[str],
         title: str,
-        ylabel: Optional[str] = None,
+        ylabel: str | None = None,
         *,
         more_options: bool = False,
         status_colours: bool = False,
         do_average: bool = False,
         show_total: bool = False,
-    ):
+    ) -> None:
         comstart = monotonic()
         if self.df_cache is None:
-            return await ctx.send("This command isn't ready yet. Try again in a few seconds.")
+            await ctx.send("This command isn't ready yet. Try again in a few seconds.")
+            return
         if ylabel is None:
             ylabel = title
         df = self.df_cache[label]
         if len(df) < 2:
-            return await ctx.send("I need a little longer to collect data. Try again in a minute.")
+            await ctx.send("I need a little longer to collect data. Try again in a minute.")
+            return
         if do_average and len(df) < 30:
-            return await ctx.send(
+            await ctx.send(
                 "I need a little longer to collect data for this particular metric. "
                 "Others should still work. Try again in a few minutes."
             )
+            return
 
         # index data to desired delta
         now = datetime.datetime.utcnow().replace(microsecond=0, second=0)

@@ -1,12 +1,8 @@
-import contextlib
-import importlib
 import json
 from pathlib import Path
 
-from redbot.core import VersionInfo
 from redbot.core.bot import Red
 
-from . import vexutils
 from .aliases import Aliases
 from .vexutils.meta import out_of_date_check
 

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import functools
 import io
 from concurrent.futures.thread import ThreadPoolExecutor
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 import discord
 import pandas
@@ -31,7 +33,7 @@ class TrendsPlot(MixinMeta):
     def __init__(self) -> None:
         self.executor = ThreadPoolExecutor(16, thread_name_prefix="googletrends")
 
-    async def get_trends_request(self, keywords: List[str], timeframe: str, geo: str) -> TrendReq:
+    async def get_trends_request(self, keywords: list[str], timeframe: str, geo: str) -> TrendReq:
         """Get a TrendsReq object ready for use in plotting."""
         func = functools.partial(
             self._get_trends_request, keywords=keywords, timeframe=timeframe, geo=geo

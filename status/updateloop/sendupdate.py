@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 from math import floor
 from time import monotonic
-from typing import Dict
 
 from discord import Embed, Message, TextChannel
 from redbot.core.bot import Red
@@ -53,7 +54,7 @@ class SendUpdate:
             f"dispatch={self.dispatch} force={self.force}>"
         )
 
-    async def send(self, channels: Dict[int, ConfChannelSettings]) -> None:
+    async def send(self, channels: dict[int, ConfChannelSettings]) -> None:
         """Send the update decalred in the class init.
 
         Parameters
