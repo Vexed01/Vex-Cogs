@@ -37,11 +37,11 @@ class Aliases(commands.Cog):
         return
 
     @commands.command(hidden=True)
-    async def aliasesinfo(self, ctx: commands.Context):
+    async def aliasesinfo(self, ctx: commands.Context) -> None:
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.command(usage="<command>")
-    async def aliases(self, ctx: commands.Context, *, strcommand: str):
+    async def aliases(self, ctx: commands.Context, *, strcommand: str) -> None:
         """
         Get all the alias information you could ever want about a command.
 

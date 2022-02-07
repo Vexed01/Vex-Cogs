@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import datetime
-from typing import Dict, Tuple, Union
 
 from redbot.core import Config
 
@@ -19,7 +20,7 @@ class ConfigWrapper:
 
     async def get_latest(
         self, service: SERVICE_LITERAL
-    ) -> Union[Tuple[IncidentData, Dict[str, float]], Tuple[None, None]]:  # ... this is long
+    ) -> tuple[IncidentData, dict[str, float]] | tuple[None, None]:
         incident: ConfFeeds = (await self.config.feed_store()).get(service, {})
         if not incident:
             return None, None
@@ -71,7 +72,7 @@ class ConfigWrapper:
         await self.config.feed_store.set_raw(service, value=feeddict)  # type:ignore
         self.last_checked.update_time(service)
 
-    async def get_channels(self, service: str) -> Dict[int, ConfChannelSettings]:
+    async def get_channels(self, service: str) -> dict[int, ConfChannelSettings]:
         """Get the channels for a feed. The list is channel IDs from config, they may be
         invalid."""
         feeds = await self.config.all_channels()

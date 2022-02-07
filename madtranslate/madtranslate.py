@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 import random
-from typing import List, Optional, Tuple
+from typing import Optional
 from urllib.parse import urlencode
 
 import aiohttp
@@ -30,7 +32,7 @@ HEADERS = {
 }
 
 
-async def get_translation(ctx: commands.Context, session: aiohttp.ClientSession, sl, tl, q) -> str:
+async def get_translation(session: aiohttp.ClientSession, sl: str, tl: str, q: str) -> str:
     query = {
         "client": "dict-chrome-ex",
         "sl": sl,  # source language
@@ -45,7 +47,7 @@ async def get_translation(ctx: commands.Context, session: aiohttp.ClientSession,
     return as_json[0]
 
 
-def gen_langs(count: int, seed: Optional[int] = None) -> Tuple[str, List[Tuple[str, str]]]:
+def gen_langs(count: int, seed: int | None = None) -> tuple[str, list[tuple[str, str]]]:
     if seed is None:
         seed = random.randrange(100_000, 999_999)
     gen = random.Random(seed)
@@ -103,7 +105,7 @@ class MadTranslate(commands.Cog):
         async with ctx.typing():
             for _, tl in langs:
                 try:
-                    q = await get_translation(ctx, session, sl, tl, q)
+                    q = await get_translation(session, sl, tl, q)
                 except ForbiddenExc:
                     return await ctx.send("Something went wrong.")
                 sl = tl
@@ -149,7 +151,7 @@ class MadTranslate(commands.Cog):
         async with ctx.typing():
             for _, tl in langs:
                 try:
-                    q = await get_translation(ctx, session, sl, tl, q)
+                    q = await get_translation(session, sl, tl, q)
                 except ForbiddenExc:
                     return await ctx.send("Something went wrong.")
                 sl = tl

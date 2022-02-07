@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import logging
 from time import monotonic
-from typing import Optional
 
 import discord
 import tabulate
@@ -53,7 +54,7 @@ class AnotherPingCog(commands.Cog):
         self.config.register_global(force_embed=True, footer="default")
         self.config.register_global(custom_settings=DEFAULT_CONF)
 
-    async def async_init(self):
+    async def async_init(self) -> None:
         self.cache = Cache(
             await self.config.custom_settings(),
             await self.config.force_embed(),
@@ -61,7 +62,7 @@ class AnotherPingCog(commands.Cog):
             self.bot,
         )
 
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         global old_ping
         if old_ping:
             try:
@@ -118,7 +119,7 @@ class AnotherPingCog(commands.Cog):
         else:
             use_embed = True
 
-        embed: Optional[discord.Embed] = None
+        embed: discord.Embed | None = None
 
         if use_embed:
             embed = discord.Embed(title=title)
@@ -163,7 +164,7 @@ class AnotherPingCog(commands.Cog):
 
     # im sure there's better way to do these two methods but i cba to find one
 
-    def _get_emb_colour(self, ws_latency: int, m_latency: int, settings: Cache):
+    def _get_emb_colour(self, ws_latency: int, m_latency: int, settings: Cache) -> int:
         if ws_latency > 250 or m_latency > 350:
             return settings.red.colour
         elif ws_latency > 150 or m_latency > 225:
@@ -171,7 +172,9 @@ class AnotherPingCog(commands.Cog):
         else:
             return self.cache.green.colour
 
-    def _get_latency_text(self, ws_latency: int, m_latency: int, settings: Cache, emojis: bool):
+    def _get_latency_text(
+        self, ws_latency: int, m_latency: int, settings: Cache, emojis: bool
+    ) -> tuple[str, str]:
         if ws_latency < 50:
             ws_latency_text = f"{settings.green.emoji} Excellent" if emojis else "Excellent"
         elif ws_latency < 150:

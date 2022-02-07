@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from collections import defaultdict, deque
 from time import time
-from typing import Deque, Dict, List, Literal, Union
+from typing import Literal
 
 from status.core import FEEDS, SERVICE_LITERAL
 
@@ -8,7 +10,7 @@ from status.core import FEEDS, SERVICE_LITERAL
 class UsedFeeds:
     """Counts for used feeds, for the update loop."""
 
-    def __init__(self, all_channels: Dict[str, Dict[str, Dict[SERVICE_LITERAL, dict]]]):
+    def __init__(self, all_channels: dict[str, dict[str, dict[SERVICE_LITERAL, dict]]]):
         used_feeds = dict.fromkeys(FEEDS.keys(), 0)
 
         for _, data in all_channels.items():
@@ -36,8 +38,8 @@ class UsedFeeds:
 class ServiceRestrictionsCache:
     """Holds channel restrictions (for members) for when automatic updates are configured."""
 
-    def __init__(self, all_guilds: Dict[int, Dict[str, Dict[str, List[int]]]]):
-        __data: Dict[int, Dict[str, List[int]]] = {}
+    def __init__(self, all_guilds: dict[int, dict[str, dict[str, list[int]]]]):
+        __data: dict[int, dict[str, list[int]]] = {}
 
         for g_id, data in all_guilds.items():
             __data[g_id] = data["service_restrictions"]
@@ -63,7 +65,7 @@ class ServiceRestrictionsCache:
         except ValueError:  # not in list
             pass
 
-    def get_guild(self, guild_id: int, service: str = None) -> Union[dict, list]:
+    def get_guild(self, guild_id: int, service: str = None) -> dict | list:
         """Get the channels, optionally for a specific service, in a guild."""
         if service:
             return self.__data.get(guild_id, {}).get(service, [])
@@ -75,7 +77,7 @@ class LastChecked:
     """Store when incidents were last checked."""
 
     def __init__(self) -> None:
-        self.last_checked: Dict[str, float] = {}
+        self.last_checked: dict[str, float] = {}
 
     def __repr__(self):
         m = "<"
@@ -93,7 +95,7 @@ class LastChecked:
 
 class ServiceCooldown:
     def __init__(self) -> None:
-        self.__data: Dict[int, Dict[str, Deque[float]]] = defaultdict(dict)
+        self.__data: dict[int, dict[str, deque[float]]] = defaultdict(dict)
 
     def __repr__(self):
         return str(self.__data)
@@ -109,7 +111,7 @@ class ServiceCooldown:
     # otherwise, basically pos 0 moves to pos 1 with append_left
     # and pos 0 becomes the current time
 
-    def handle(self, user_id: int, service: str) -> Union[float, Literal[False]]:
+    def handle(self, user_id: int, service: str) -> float | Literal[False]:
         cooldown_data = self.__data.get(user_id, {}).get(service, deque([0.0, 0.0], maxlen=2))
         time_since = abs(time() - cooldown_data[1])  # their second to last invoke
         if time_since < 120:  # their second to last invoke was within last 2 mins

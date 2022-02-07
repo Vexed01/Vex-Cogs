@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 import logging
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 import discord
 import pytz
@@ -89,7 +91,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        data: Dict[int, str] = await self.config.guild(ctx.guild).timechannels()
+        data: dict[int, str] = await self.config.guild(ctx.guild).timechannels()
         if data is None:
             return await ctx.send("It looks like no time channels have been set up yet.")
 

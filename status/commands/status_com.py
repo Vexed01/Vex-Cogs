@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional
+from typing import TYPE_CHECKING, NamedTuple
 
 import discord
 from discord.channel import TextChannel
@@ -10,24 +12,24 @@ from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta,
 from status.commands.command import DynamicHelp
 from status.commands.converters import ServiceConverter
 from status.core.abc import MixinMeta
-from status.objects import IncidentData, SendCache, Update
+from status.objects import SendCache, Update
 from status.updateloop import SendUpdate, process_json
 
 
 class Comps(NamedTuple):
-    groups: Dict[str, str]
-    degraded_comps: Dict[str, List[str]]
+    groups: dict[str, str]
+    degraded_comps: dict[str, list[str]]
 
 
 def process_components(json_data: dict) -> Comps:
-    components: List[dict] = json_data["components"]
+    components: list[dict] = json_data["components"]
 
-    groups: Dict[str, str] = {}
+    groups: dict[str, str] = {}
     for comp in components:
         if comp.get("group"):
             groups[comp.get("id", "uh oh")] = comp.get("name", "")
 
-    degraded_comps: Dict[str, List[str]] = defaultdict(list)
+    degraded_comps: dict[str, list[str]] = defaultdict(list)
     for comp in components:
         if comp.get("status") == "operational":
             continue
@@ -91,7 +93,6 @@ class StatusCom(MixinMeta):
             i for i in all_scheduled if i.scheduled_for and i.scheduled_for < now
         ]  # only want ones happening
 
-        to_send: Optional[IncidentData]
         other_incidents, other_scheduled = [], []
         if incidents_incidentdata_list:
             to_send = incidents_incidentdata_list[0]

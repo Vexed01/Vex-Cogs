@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import asyncio
 from time import time
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 import discord
 from discord.abc import GuildChannel
@@ -220,7 +222,7 @@ class StatusSetCom(MixinMeta):
 
         self.used_feeds.remove_feed(service.name)
 
-        sr: Dict[str, List[int]]
+        sr: dict[str, list[int]]
         async with self.config.guild(channel.guild).service_restrictions() as sr:
             try:
                 sr[service.name].remove(channel.id)
@@ -282,7 +284,7 @@ class StatusSetCom(MixinMeta):
             )
 
         else:
-            guild_feeds: Dict[str, List[str]] = {}
+            guild_feeds: dict[str, list[str]] = {}
             for channel in ctx.guild.channels:
                 feeds = await self.config.channel(channel).feeds()
                 for feed in feeds.keys():
@@ -580,7 +582,7 @@ class StatusSetCom(MixinMeta):
                 "the `status` command."
             )
 
-        sr: Dict[SERVICE_LITERAL, List[int]]
+        sr: dict[SERVICE_LITERAL, list[int]]
         async with self.config.guild(channel.guild).service_restrictions() as sr:
             if restrict:
                 try:

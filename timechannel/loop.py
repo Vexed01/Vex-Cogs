@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import logging
 import math
-from typing import Dict
 
 from discord.channel import VoiceChannel
 from discord.errors import HTTPException
@@ -50,7 +49,7 @@ class TCLoop(MixinMeta):
             await self.wait_until_iter()
 
     async def maybe_update_channels(self) -> None:
-        all_guilds: Dict[int, Dict[str, Dict[int, str]]] = await self.config.all_guilds()
+        all_guilds: dict[int, dict[str, dict[int, str]]] = await self.config.all_guilds()
         if not all_guilds:
             _log.debug("No time channels registered, nothing to do...")
             return

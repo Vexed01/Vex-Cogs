@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 import logging
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 import discord
 import psutil
@@ -24,7 +26,11 @@ from .backend import (
 from .command import DynamicHelp
 from .vexutils import format_help, format_info
 
+if TYPE_CHECKING:
+    from discord.types.embed import EmbedField
+
 log = logging.getLogger("red.vex.system")
+
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"
 
@@ -68,8 +74,8 @@ class System(commands.Cog):
 
         fields = emb.get("fields", [])
         if len(fields) > 2:  # needs multi rows
-            data: List[list] = []
-            temp = []
+            data: list[list[EmbedField]] = []
+            temp: list[EmbedField] = []
             for field in fields:
                 temp.append(field)
                 if len(temp) == 2:
@@ -78,7 +84,7 @@ class System(commands.Cog):
             if len(temp) != 0:  # clear up stragglers
                 data.append(temp)
 
-            empty_field = {"inline": True, "name": ZERO_WIDTH, "value": ZERO_WIDTH}
+            empty_field: EmbedField = {"inline": True, "name": ZERO_WIDTH, "value": ZERO_WIDTH}
             fields = []
             for row in data:
                 while len(row) < 3:

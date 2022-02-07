@@ -1,6 +1,6 @@
 import logging
 from asyncio import TimeoutError
-from typing import List, Mapping
+from typing import Mapping
 
 import discord
 from gidgethub import HTTPException
@@ -242,7 +242,7 @@ class GitHub(commands.Cog):
                 and (msg.content in rl_names or msg.content.casefold() in ["save", "exit"])
             )
 
-        to_add: List[str] = []
+        to_add: list[str] = []
         while True:
             try:
                 answer: discord.Message = await self.bot.wait_for(
@@ -371,7 +371,7 @@ class GitHub(commands.Cog):
         except TimeoutError:
             return await ctx.send("Aborting.")
 
-        to_add: List[str] = []
+        to_add: list[str] = []
         if pred.result is True:
             repo_labels = await GitHubAPI.get_repo_labels(token, repo)
             rl_names = []

@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 else:
 
     class TimezoneConverter(Converter):
-        async def convert(self, ctx: Context, argument: str) -> str:
+        async def convert(self, ctx: Context, argument: str) -> Tuple[str, float, int]:
             fuzzy_results = rapidfuzz.process.extract(
                 argument, ZONE_KEYS, limit=2, score_cutoff=90
             )

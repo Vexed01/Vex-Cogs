@@ -16,7 +16,7 @@ log = logging.getLogger("red.vex.cmdlog.channellogger")
 
 
 class ChannelLogger:
-    def __init__(self, bot: Red, channel: discord.abc.MessageableChannel) -> None:
+    def __init__(self, bot: Red, channel: discord.TextChannel) -> None:
         self.bot = bot
         self.channel = channel
         self.task: Optional[asyncio.Task] = None

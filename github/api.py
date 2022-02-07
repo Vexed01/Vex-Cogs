@@ -1,4 +1,4 @@
-from typing import Union
+from __future__ import annotations
 
 import aiohttp
 import gidgethub.aiohttp
@@ -8,7 +8,7 @@ import gidgethub.aiohttp
 
 class GitHubAPI:
     @staticmethod
-    async def repo_info(token: str, slug: str) -> Union[dict, bool]:
+    async def repo_info(token: str, slug: str) -> dict | bool:
         async with aiohttp.ClientSession() as session:
             gh = gidgethub.aiohttp.GitHubAPI(session, "GHCog", oauth_token=token)
             try:
