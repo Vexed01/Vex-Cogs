@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import asyncio
-from typing import Optional, Union
+from typing import NoReturn
 
 import discord
 from discord.colour import Colour
@@ -32,7 +34,7 @@ class CalcView(discord.ui.View):
         super().__init__(timeout=timeout)
 
         self.bot = bot
-        self.message: Optional[discord.Message] = None
+        self.message: discord.Message | None = None
         self.author_id = author_id
 
         self.ready = asyncio.Event()
@@ -44,7 +46,7 @@ class CalcView(discord.ui.View):
         self.input_reset_ready = True
 
         self.input = "..."
-        self.output: Union[str, int, float] = "..."
+        self.output: str | int | float = "..."
 
     async def on_timeout(self) -> None:
         await self.ready.wait()
@@ -56,7 +58,7 @@ class CalcView(discord.ui.View):
 
         await self.message.edit(view=TimedOutView())
 
-    async def calc_lazy_edit(self):
+    async def calc_lazy_edit(self) -> NoReturn:
         """Lazily edit the calculator screen, accounting for rate limits."""
         await self.ready.wait()
         assert self.message is not None
@@ -101,7 +103,9 @@ class CalcView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         await self.ready.wait()
-        assert self.message is not None
+
+        if interaction.user is None:
+            return False
 
         valid = interaction.user.id == self.author_id
         if not valid:
