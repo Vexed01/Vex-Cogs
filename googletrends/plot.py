@@ -1,17 +1,23 @@
+from __future__ import annotations
+
 import functools
 import io
 from concurrent.futures.thread import ThreadPoolExecutor
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 import discord
 import pandas
 import plotly.express as px
-from plotly.graph_objs._figure import Figure
 from pytrends.request import TrendReq
 
 from googletrends.errors import NoData
 
 from .abc import MixinMeta
+
+if TYPE_CHECKING:
+    from plotly.graph_objs._figure import Figure
+else:
+    from plotly.graph_objs import Figure
 
 # yes i am using private import, atm plotly does dynamic imports which are not supported by mypy
 
@@ -27,9 +33,7 @@ class TrendsPlot(MixinMeta):
     def __init__(self) -> None:
         self.executor = ThreadPoolExecutor(16, thread_name_prefix="googletrends")
 
-    async def get_trends_request(
-        self, keywords: Iterable[str], timeframe: str, geo: str
-    ) -> TrendReq:
+    async def get_trends_request(self, keywords: list[str], timeframe: str, geo: str) -> TrendReq:
         """Get a TrendsReq object ready for use in plotting."""
         func = functools.partial(
             self._get_trends_request, keywords=keywords, timeframe=timeframe, geo=geo

@@ -10,9 +10,8 @@
     "name": "Status",
     "requirements": [
         "markdownify",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "asyncache",
+        "tabulate"
     ],
     "short": "Get automatic status updates from various services, and check the latest incidents on-demand. Includes Discord, GitHub and Cloudflare.",
     "tags": [

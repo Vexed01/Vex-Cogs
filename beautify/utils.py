@@ -110,7 +110,7 @@ def decode_json(str_json: str) -> DecodeReturn:
         raise JSONDecodeError()
 
 
-async def send_output(ctx: commands.Context, text: str, changed_input: bool) -> None:
+async def send_output(ctx: commands.Context, text: str, changed_input: bool):
     """Send output as a codeblock or file, depending on file limits. Handles no attachment perm."""
     if changed_input:
         extra = (

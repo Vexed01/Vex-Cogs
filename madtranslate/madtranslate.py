@@ -1,7 +1,8 @@
-import asyncio
+from __future__ import annotations
+
 import logging
 import random
-from typing import List, Optional, Tuple
+from typing import Optional
 from urllib.parse import urlencode
 
 import aiohttp
@@ -24,31 +25,29 @@ class ForbiddenExc(Exception):
 
 BASE = "https://clients5.google.com/translate_a/t?"
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"
+    )
 }
 
 
-async def get_translation(ctx: commands.Context, session: aiohttp.ClientSession, sl, tl, q) -> str:
+async def get_translation(session: aiohttp.ClientSession, sl: str, tl: str, q: str) -> str:
     query = {
         "client": "dict-chrome-ex",
-        "sl": sl,
-        "tl": tl,
-        "q": q,
+        "sl": sl,  # source language
+        "tl": tl,  # target language
+        "q": q,  # query
     }
     resp = await session.get(BASE + urlencode(query))
     if resp.status == 403:
         raise ForbiddenExc
 
     as_json = await resp.json()
-    if sl == "auto":
-        await ctx.send(f"I've detected the input language as {as_json['src']}")
-        await asyncio.sleep(0.1)
-        await ctx.trigger_typing()
-    return as_json["sentences"][0]["trans"]
+    return as_json[0]
 
 
-def gen_langs(count: int, seed: Optional[int] = None) -> Tuple[str, List[Tuple[str, str]]]:
+def gen_langs(count: int, seed: int | None = None) -> tuple[str, list[tuple[str, str]]]:
     if seed is None:
         seed = random.randrange(100_000, 999_999)
     gen = random.Random(seed)
@@ -64,7 +63,7 @@ class MadTranslate(commands.Cog):
     This will defiantly have some funny moments... Take everything with a pinch of salt!
     """
 
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red):
@@ -106,7 +105,7 @@ class MadTranslate(commands.Cog):
         async with ctx.typing():
             for _, tl in langs:
                 try:
-                    q = await get_translation(ctx, session, sl, tl, q)
+                    q = await get_translation(session, sl, tl, q)
                 except ForbiddenExc:
                     return await ctx.send("Something went wrong.")
                 sl = tl
@@ -152,7 +151,7 @@ class MadTranslate(commands.Cog):
         async with ctx.typing():
             for _, tl in langs:
                 try:
-                    q = await get_translation(ctx, session, sl, tl, q)
+                    q = await get_translation(session, sl, tl, q)
                 except ForbiddenExc:
                     return await ctx.send("Something went wrong.")
                 sl = tl

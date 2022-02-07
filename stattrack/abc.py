@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 from abc import ABC, ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, Optional
+from typing import Any
 
 import discord
 import pandas
@@ -33,7 +35,7 @@ class MixinMeta(ABC):
     loop: asyncio.Task
     last_loop_time: str
 
-    last_plot_debug: Optional[Dict[str, Any]]
+    last_plot_debug: dict[str, Any] | None
 
     df_cache: pandas.DataFrame
 

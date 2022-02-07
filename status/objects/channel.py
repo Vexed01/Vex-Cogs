@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Dict
 
 from discord import TextChannel
 
-from status.core import MODES_LITERAL
+from ..core import MODES_LITERAL
 
 
 @dataclass
@@ -11,8 +12,8 @@ class ChannelData:
     channel: TextChannel
     mode: MODES_LITERAL
     webhook: bool
-    edit_id: Dict[str, int]
     embed: bool
+    edit_id: dict[str, int]
 
 
 class InvalidChannel(Exception):

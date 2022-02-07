@@ -1,9 +1,11 @@
 import types
-from typing import Callable, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
 import discord
 from discord import Message
-from discord.ext.commands.view import StringView  # not available in red commands
+from discord.ext.commands.view import StringView
+from redbot.cogs.alias.alias import Alias
+from redbot.cogs.alias.alias_entry import AliasCache, AliasEntry
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.commands.context import Context
@@ -22,10 +24,25 @@ class CaseInsensitiveStringView(StringView):
             return True
         return False
 
+    def get_word(self):
+        pos = 0
+        while not self.eof:
+            try:
+                current = self.buffer[self.index + pos]
+                if current.isspace():
+                    break
+                pos += 1
+            except IndexError:
+                break
+        self.previous = self.index
+        result = self.buffer[self.index : self.index + pos]
+        self.index += pos
+        return result.lower()
+
 
 # this could affect other cogs as described in install_msg in info.json
 # copied from dpy 1.7.3 which is when it was last edited (hence req of red 3.4.11)
-async def case_insensitive_get_context(self: Red, message: Message, *, cls=Context) -> None:
+async def ci_get_context(self: Red, message: Message, *, cls=Context) -> None:
     do_case_insensitive = not await self.cog_disabled_in_guild(
         CaseInsensitive(None), message.guild  # type:ignore
     )  # its okay to create the class again without any issues (not great but okay) as no coms
@@ -39,7 +56,7 @@ async def case_insensitive_get_context(self: Red, message: Message, *, cls=Conte
 
     ctx = cls(prefix=None, view=view, bot=self, message=message)
 
-    if self._skip_check(message.author.id, self.user.id):  # type:ignore
+    if message.author.id == self.user.id:  # type: ignore
         return ctx
 
     prefix = await self.get_prefix(message)
@@ -60,8 +77,9 @@ async def case_insensitive_get_context(self: Red, message: Message, *, cls=Conte
         except TypeError:
             if not isinstance(prefix, list):
                 raise TypeError(
-                    "get_prefix must return either a string or a list of string, "
-                    "not {}".format(prefix.__class__.__name__)
+                    "get_prefix must return either a string or a list of string, not {}".format(
+                        prefix.__class__.__name__
+                    )
                 )
 
             # It's possible a bad command_prefix got us here.
@@ -86,6 +104,45 @@ async def case_insensitive_get_context(self: Red, message: Message, *, cls=Conte
     return ctx
 
 
+# last edited in core ages ago so restriction of 3.4.11 from above is more than enough
+async def ci_get_alias(
+    self: AliasCache, guild: Optional[discord.Guild], alias_name: str
+) -> Optional[AliasEntry]:
+    """Returns an AliasEntry object if the provided alias_name is a registered alias"""
+    server_aliases: List[AliasEntry] = []
+
+    alias_name = alias_name.lower()
+
+    if self._cache_enabled:
+        aliases: Dict[Optional[int], Dict[str, AliasEntry]] = {}
+        for guild_id, guild_aliases in self._aliases.items():
+            aliases[guild_id] = {}
+            for k, v in guild_aliases.items():
+                aliases[guild_id][k.lower()] = v
+
+        if alias_name in aliases[None]:
+            return aliases[None][alias_name]
+        if guild is not None:
+            if guild.id in aliases:
+                if alias_name in aliases[guild.id]:
+                    return aliases[guild.id][alias_name]
+
+    else:
+        if guild:
+            server_aliases = [
+                AliasEntry.from_json(d) for d in await self.config.guild(guild.id).entries()
+            ]
+        global_aliases = [AliasEntry.from_json(d) for d in await self.config.entries()]
+
+        all_aliases = global_aliases + server_aliases
+
+        for alias in all_aliases:
+            if alias.name.lower() == alias_name:
+                return alias
+
+    return None
+
+
 # this class (apart from the version command) allows for a class which `command disablecog` can use
 # and dealling with cog unload
 class CaseInsensitive(commands.Cog):
@@ -103,12 +160,13 @@ class CaseInsensitive(commands.Cog):
     and enabling per-server, listed under `[p]help command`.
     """
 
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
         self.old_get_context: Optional[Callable] = None
+        self.old_alias_get: Optional[Callable] = None
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -123,16 +181,44 @@ class CaseInsensitive(commands.Cog):
     async def caseinsensitiveinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
-    def plug(self) -> None:
+    def plug_core(self) -> None:
         """Plug the case-insensitive shit."""
-        new_method = types.MethodType(case_insensitive_get_context, self.bot)
+        new_method = types.MethodType(ci_get_context, self.bot)
         self.old_get_context = self.bot.get_context
-        self.bot.get_context = new_method  # type:ignore
+        self.bot.get_context = new_method
 
-    def unplug(self) -> None:
+    def unplug_core(self) -> None:
         """Unplug case-insensitive stuff."""
         if self.old_get_context is not None:
-            self.bot.get_context = self.old_get_context  # type:ignore
+            self.bot.get_context = self.old_get_context
+
+    def plug_alias(self) -> None:
+        """Plug the alias magic."""
+        alias_cog: Optional[commands.Cog] = self.bot.get_cog("Alias")
+        if alias_cog is None:
+            return
+
+        if TYPE_CHECKING:
+            assert isinstance(alias_cog, Alias)
+
+        new_method = types.MethodType(ci_get_alias, alias_cog._aliases)
+        self.old_alias_get = alias_cog._aliases.get_alias
+        alias_cog._aliases.get_alias = new_method
+
+    def unplug_alias(self) -> None:
+        alias_cog = self.bot.get_cog("Alias")
+        if alias_cog is None or self.old_alias_get is None:
+            return
+
+        if TYPE_CHECKING:
+            assert isinstance(alias_cog, Alias)
+        alias_cog._aliases.get_alias = self.old_alias_get
 
     def cog_unload(self):
-        self.unplug()
+        self.unplug_core()
+        self.unplug_alias()
+
+    @commands.Cog.listener()
+    async def on_cog_add(self, cog: commands.Cog):
+        if cog.qualified_name == "Alias":
+            self.plug_alias()

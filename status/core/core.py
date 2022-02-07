@@ -1,26 +1,28 @@
 import asyncio
 import logging
 from copy import deepcopy
+from typing import Optional
 
 import aiohttp
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 
-from status.commands.status_com import StatusCom
-from status.commands.statusdev_com import StatusDevCom
-from status.commands.statusset_com import StatusSetCom
-from status.core import FEEDS
-from status.core.abc import CompositeMetaClass
-from status.core.statusapi import StatusAPI
-from status.objects import (
+from ..commands.status_com import StatusCom
+from ..commands.statusdev_com import StatusDevCom
+from ..commands.statusset_com import StatusSetCom
+from ..core import FEEDS
+from ..core.abc import CompositeMetaClass
+from ..core.consts import SERVICE_LITERAL
+from ..core.statusapi import StatusAPI
+from ..objects import (
     ConfigWrapper,
     LastChecked,
     ServiceCooldown,
     ServiceRestrictionsCache,
     UsedFeeds,
 )
-from status.updateloop import SendUpdate, StatusLoop
-from status.vexutils import format_help, format_info
+from ..updateloop import SendUpdate, StatusLoop
+from ..vexutils import format_help, format_info
 
 log = logging.getLogger("red.vex.status.core")
 
@@ -41,7 +43,7 @@ class Status(
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "2.4.1"
+    __version__ = "2.5.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -118,7 +120,7 @@ class Status(
         # this will start the loop
         self.ready.set()
 
-    async def get_initial_data(self) -> None:
+    async def get_initial_data(self, specific_service: Optional[SERVICE_LITERAL] = None) -> None:
         """Start with initial data from services."""
         old_ids = []
         for service, settings in FEEDS.items():

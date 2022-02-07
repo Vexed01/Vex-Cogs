@@ -19,7 +19,7 @@ jobs:
           - style-black
           - style-isort
           - lint-flake8
-          - type-mypy
+          - type-pyright
           - docs
           - pytest
         include:
@@ -29,8 +29,8 @@ jobs:
             friendly_name: Style (isort)
           - tox_env: lint-flake8
             friendly_name: Lint (flake8)
-          - tox_env: type-mypy
-            friendly_name: Type check (mypy)
+          - tox_env: type-pyright
+            friendly_name: Type check (pyright)
           - tox_env: docs
             friendly_name: Docs
           - tox_env: pytest

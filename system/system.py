@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 import logging
-from typing import List
+from typing import TYPE_CHECKING
 
 import discord
 import psutil
@@ -24,7 +26,11 @@ from .backend import (
 from .command import DynamicHelp
 from .vexutils import format_help, format_info
 
+if TYPE_CHECKING:
+    from discord.types.embed import EmbedField
+
 log = logging.getLogger("red.vex.system")
+
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"
 
@@ -39,7 +45,7 @@ class System(commands.Cog):
     See the help for individual commands for detailed limitations.
     """
 
-    __version__ = "1.3.9"
+    __version__ = "1.3.10"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -66,10 +72,10 @@ class System(commands.Cog):
         # it works...
         emb = e.to_dict()
 
-        fields = emb["fields"]
+        fields = emb.get("fields", [])
         if len(fields) > 2:  # needs multi rows
-            data: List[list] = []
-            temp = []
+            data: list[list[EmbedField]] = []
+            temp: list[EmbedField] = []
             for field in fields:
                 temp.append(field)
                 if len(temp) == 2:
@@ -78,12 +84,12 @@ class System(commands.Cog):
             if len(temp) != 0:  # clear up stragglers
                 data.append(temp)
 
-            empty_field = {"inline": True, "name": ZERO_WIDTH, "value": ZERO_WIDTH}
+            empty_field: EmbedField = {"inline": True, "name": ZERO_WIDTH, "value": ZERO_WIDTH}
             fields = []
             for row in data:
                 while len(row) < 3:
                     row.append(empty_field)
-                fields.extend(row)  # type:ignore
+                fields.extend(row)
 
         # else it's 2 or less columns so doesn't need special treatment
         emb["fields"] = fields
@@ -246,7 +252,7 @@ class System(commands.Cog):
     @system.command(
         name="disk", aliases=["df"], cls=DynamicHelp, supported_sys=True  # all systems
     )
-    async def system_disk(self, ctx: commands.Context):
+    async def system_disk(self, ctx: commands.Context, ignore_loop: bool = True):
         """
         Get infomation about disks connected to the system.
 
@@ -254,12 +260,23 @@ class System(commands.Cog):
         mount point (if you're on Linux make sure it's not potentially
         sensitive if running the command a public space).
 
+        If `ignore_loop` is set to `True`, this will ignore any loop (fake) devices on Linux.
+
         Platforms: Windows, Linux, Mac OS
         Note: Mount point is basically useless on Windows as it's the
         same as the drive name, though it's still shown.
         """
         embed = await ctx.embed_requested()
-        data = await get_disk(embed)
+        pre_data = await get_disk(embed)
+        data: dict[str, str] = {}
+
+        if ignore_loop:
+            for name, disk_data in pre_data.items():
+                if name.startswith("`/dev/loop"):
+                    continue
+                data[name] = disk_data
+        else:
+            data = pre_data
 
         if embed:
             embed = discord.Embed(title="Disks", colour=await ctx.embed_colour())
@@ -278,7 +295,7 @@ class System(commands.Cog):
             msg = "**Disks**\n"
             if not data:
                 data = {
-                    "No one's logged in": (
+                    "No disks found": (
                         "That's not something you see very often! You're probably using WSL or "
                         "other virtualisation technology"
                     )
@@ -356,6 +373,10 @@ class System(commands.Cog):
         Platforms: Windows, Linux, Mac OS
         Note: SWAP memory information is only available on Linux.
         """
+        # i jolly hope we are logged in...
+        if TYPE_CHECKING:
+            assert self.bot.user is not None
+
         async with ctx.typing():
             red = (await get_red())["red"]
 
@@ -385,6 +406,10 @@ class System(commands.Cog):
         Platforms: Windows, Linux, Mac OS
         Note: This command appears to be very slow in Windows.
         """
+        # i jolly hope we are logged in...
+        if TYPE_CHECKING:
+            assert self.bot.user is not None
+
         async with ctx.typing():
             cpu = await get_cpu()
             mem = await get_mem()

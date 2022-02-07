@@ -8,11 +8,7 @@
     "install_msg": "This cog will immediately start tracking commands once you have loaded it. They are logged with the `logging` module, so they'll appear in the bot's console or main logs (search for `red.vex.cmdlog`). An internal cache is kept, which you can see in Discord with the `[p]cmdlog` command.\n\nIf you want to store the whole message content, including arguments, instead of just the command invoked, run `[p]cmdlog content true` once you've loaded the cog.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/cmdlog>",
     "min_bot_version": "3.4.0",
     "name": "CmdLog",
-    "requirements": [
-        "tabulate",
-        "cachetools",
-        "asyncache"
-    ],
+    "requirements": [],
     "short": "Track who uses what commands, with the ability to search for a specific user, server command.",
     "tags": [
         "utility",

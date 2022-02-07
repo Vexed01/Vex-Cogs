@@ -1,19 +1,19 @@
-import datetime
+from __future__ import annotations
+
 import re
-from typing import List, Optional
 
 from dateutil.parser import parse as parse_time
 from markdownify import markdownify
 from redbot.core.utils.chat_formatting import humanize_list, pagify
 
-from status.core import TYPES_LITERAL
-from status.objects import IncidentData, UpdateField
-from status.vexutils.chat import datetime_to_timestamp
+from ..core import TYPES_LITERAL
+from ..objects import IncidentData, UpdateField
+from ..vexutils.chat import datetime_to_timestamp
 
 
 def _handle_long_fields(
-    old_fields: List[UpdateField],
-) -> List[UpdateField]:
+    old_fields: list[UpdateField],
+) -> list[UpdateField]:
     """Split long fields (over 1024 chars) into multiple, retaining order.
 
     Parameters
@@ -113,7 +113,7 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
 
         desc += f"\nScheduled for: **{start}** to **{end}**"
 
-        scheduled_for: Optional[datetime.datetime] = parse_time(incident["scheduled_for"])
+        scheduled_for = parse_time(incident["scheduled_for"])
     else:
         scheduled_for = None
 
@@ -132,7 +132,7 @@ def _process(incident: dict, type: TYPES_LITERAL) -> IncidentData:
     )
 
 
-def process_json(json_resp: dict, type: TYPES_LITERAL) -> List[IncidentData]:
+def process_json(json_resp: dict, type: TYPES_LITERAL) -> list[IncidentData]:
     """Turn the API into life
 
     Parameters

@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from __future__ import annotations
 
 import aiohttp
 import pandas as pd
@@ -14,7 +14,7 @@ API_BASE = "https://disease.sh"
 class CovidData(MixinMeta):
     """Asynchronously get COVID data."""
 
-    async def get_cases(self, country: str, days: Optional[int]) -> Tuple[str, pd.Series]:
+    async def get_cases(self, country: str, days: int | None) -> tuple[str, pd.Series]:
         if days is None:
             d = "all"
         else:
@@ -29,7 +29,7 @@ class CovidData(MixinMeta):
             convert_to_daily=True,
         )
 
-    async def get_deaths(self, country: str, days: Optional[int]) -> Tuple[str, pd.Series]:
+    async def get_deaths(self, country: str, days: int | None) -> tuple[str, pd.Series]:
         if days is None:
             d = "all"
         else:
@@ -44,7 +44,7 @@ class CovidData(MixinMeta):
             convert_to_daily=True,
         )
 
-    async def get_vaccines(self, country: str, days: Optional[int]) -> Tuple[str, pd.Series]:
+    async def get_vaccines(self, country: str, days: int | None) -> tuple[str, pd.Series]:
         if days is None:
             d = "all"
         else:
@@ -61,8 +61,8 @@ class CovidData(MixinMeta):
 
     @cached(TTLCache(maxsize=64, ttl=3600))  # 1 hour
     async def get(
-        self, url: str, extra_key: Optional[str] = None, convert_to_daily: bool = False
-    ) -> Tuple[str, pd.Series]:
+        self, url: str, extra_key: str | None = None, convert_to_daily: bool = False
+    ) -> tuple[str, pd.Series]:
         """Get data from an endpoint as a Series"""
         async with aiohttp.ClientSession() as session:
             resp = await session.get(url)
@@ -75,7 +75,7 @@ class CovidData(MixinMeta):
 
         ts = pd.Series(ts_dict[extra_key] if extra_key else ts_dict)
 
-        ts.index = pd.to_datetime(ts.index, utc=True)  # type:ignore
+        ts.index = pd.to_datetime(ts.index, utc=True)
 
         if convert_to_daily:  # cumulative to daily and ty so much copolit
             ts = ts.diff().dropna()

@@ -110,7 +110,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
 
         async with ctx.typing():
             try:
-                request = await self.get_trends_request(query, timeframe, geo)
+                request = await self.get_trends_request(list(query), timeframe, geo)
             except ResponseError as e:
                 if e.response.status_code == 400:
                     await ctx.send("Your request failed. It looks like something's invalid.")
@@ -160,7 +160,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
         if geo != "":
             trends_params["geo"] = geo
         trends_params["q"] = ",".join(query)
-        return "https://trends.google.com/trends/explore?" + urlencode(  # type:ignore
+        return "https://trends.google.com/trends/explore?" + urlencode(
             trends_params, quote_via=quote
         )
 

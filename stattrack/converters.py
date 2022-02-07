@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 import datetime
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from redbot.core.commands import BadArgument, Context, Converter, parse_timedelta
 
 
 class _GraphConverter(Converter):
-    async def convert(self, ctx: Context, argument: str, valid: List[str]) -> str:
+    async def convert(self, ctx: Context, argument: str, valid: list[str]) -> str:
         if argument.lower() not in valid:
             raise BadArgument(
                 f"That's not a valid graph. See `{ctx.clean_prefix}help stattrack "

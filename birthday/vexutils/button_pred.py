@@ -1,12 +1,14 @@
+# type:ignore  # keep until dpy 2
 import asyncio
 from dataclasses import dataclass
 from typing import Any, List, Optional
 
-from discord import ButtonStyle, Embed, Interaction, ui
+import discord
 from redbot.core import commands
 
-# THIS FILE IS MAINLY PREDICATES THAT WILL BE MOVED TO VEX-COG-UTILS AT SOME POINT
-# THEY ARE HERE FOR EASIER TESTING AND WHILE DPY2 IS NOT OUT YET THEY WILL LIKELY REMAIN HERE
+if discord.__version__.startswith("1"):
+    raise RuntimeError("This requires discord.py 2.X")
+from discord import ButtonStyle, Embed, Interaction, ui
 
 
 @dataclass
@@ -48,6 +50,7 @@ class _PredButton(ui.Button):
         self.ref = ref
 
     async def callback(self, interaction: Interaction):
+        assert isinstance(self.view, _PredView)
         self.view.stop()
         self.view.ref = self.ref
 
@@ -98,15 +101,21 @@ async def wait_for_press(
     if not items:
         raise ValueError("The `items` argument cannot contain an empty list.")
 
-    view = _PredView(timeout, ctx.author.id)
-
+    view = _PredView(timeout, ctx.author.id)  # type:ignore
     for i in items:
         button = _PredButton(i.ref, i.style, i.label, i.row)
         view.add_item(button)
-
-    await ctx.send(content=content, embed=embed, view=view)
+    message = await ctx.send(content=content, embed=embed, view=view)
 
     await asyncio.wait_for(_press_wait(view), timeout=timeout)
+
+    emptyview = ui.View()
+    for i in items:
+        button = ui.Button(style=i.style, label=i.label, row=i.row, disabled=i.ref != view.ref)
+        emptyview.add_item(button)
+    await message.edit(view=emptyview)
+    emptyview.stop()
+
     return view.ref
 
 
@@ -145,12 +154,19 @@ async def wait_for_yes_no(
     asyncio.TimeoutError
         A button was not pressed in time.
     """
-    view = _PredView(timeout, ctx.author.id)
-
+    view = _PredView(timeout, ctx.author.id)  # type:ignore
     view.add_item(_PredButton(True, ButtonStyle.blurple, "Yes"))
     view.add_item(_PredButton(False, ButtonStyle.blurple, "No"))
 
-    await ctx.send(content=content, embed=embed, view=view)
-
+    message = await ctx.send(content=content, embed=embed, view=view)
     await asyncio.wait_for(_press_wait(view), timeout=timeout)
+
+    emptyview = ui.View()
+    emptyview.add_item(
+        ui.Button(style=ButtonStyle.blurple, label="Yes", disabled=view.ref is False)
+    )
+    emptyview.add_item(ui.Button(style=ButtonStyle.blurple, label="No", disabled=view.ref is True))
+    await message.edit(view=emptyview)
+    emptyview.stop()
+
     return view.ref

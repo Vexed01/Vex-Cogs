@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import asyncio
 import datetime
-from typing import Dict, List, TypedDict, Union
+from typing import TypedDict
 
 import psutil
 from redbot.core.utils import AsyncIter
@@ -24,12 +26,12 @@ def up_for() -> float:
     return now - psutil.boot_time()
 
 
-def _hum(num: Union[int, float]) -> str:
+def _hum(num: int | float) -> str:
     """Round a number, then humanize."""
     return humanize_number(round(num))
 
 
-async def get_cpu() -> Dict[str, str]:
+async def get_cpu() -> dict[str, str]:
     """Get CPU metrics"""
     psutil.cpu_percent()
     await asyncio.sleep(1)
@@ -75,7 +77,7 @@ async def get_cpu() -> Dict[str, str]:
     return data
 
 
-async def get_mem() -> Dict[str, str]:
+async def get_mem() -> dict[str, str]:
     """Get memory metrics"""
     physical = psutil.virtual_memory()
     swap = psutil.swap_memory()
@@ -95,7 +97,7 @@ async def get_mem() -> Dict[str, str]:
     return data
 
 
-async def get_sensors(fahrenheit: bool) -> Dict[str, str]:
+async def get_sensors(fahrenheit: bool) -> dict[str, str]:
     """Get metrics from sensors"""
     temp = psutil.sensors_temperatures(fahrenheit)
     fans = psutil.sensors_fans()
@@ -121,9 +123,9 @@ async def get_sensors(fahrenheit: bool) -> Dict[str, str]:
     return data
 
 
-async def get_users(embed: bool) -> Dict[str, str]:
+async def get_users(embed: bool) -> dict[str, str]:
     """Get users connected"""
-    users: List[psutil._common.suser] = psutil.users()
+    users: list[psutil._common.suser] = psutil.users()
 
     e = "`" if embed else ""
 
@@ -144,10 +146,10 @@ class PartitionData(TypedDict):
     usage: psutil._common.sdiskusage
 
 
-async def get_disk(embed: bool) -> Dict[str, str]:
+async def get_disk(embed: bool) -> dict[str, str]:
     """Get disk info"""
     partitions = psutil.disk_partitions()
-    partition_data: Dict[str, PartitionData] = {}
+    partition_data: dict[str, PartitionData] = {}
     # that type hint was a waste of time...
 
     for partition in partitions:
@@ -177,7 +179,7 @@ async def get_disk(embed: bool) -> Dict[str, str]:
     return data
 
 
-async def get_proc() -> Dict[str, str]:
+async def get_proc() -> dict[str, str]:
     """Get process info"""
     processes = psutil.process_iter(["status", "username"])
     status = {"sleeping": 0, "idle": 0, "running": 0, "stopped": 0}
@@ -209,7 +211,7 @@ async def get_proc() -> Dict[str, str]:
     return data
 
 
-async def get_net() -> Dict[str, str]:
+async def get_net() -> dict[str, str]:
     """Get network stats. May have reset from zero at some point."""
     net = psutil.net_io_counters()
 
@@ -222,7 +224,7 @@ async def get_net() -> Dict[str, str]:
     return data
 
 
-async def get_uptime() -> Dict[str, str]:
+async def get_uptime() -> dict[str, str]:
     """Get uptime info"""
     boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
 
@@ -239,7 +241,7 @@ async def get_uptime() -> Dict[str, str]:
     return data
 
 
-async def get_red() -> Dict[str, str]:
+async def get_red() -> dict[str, str]:
     """Get info for Red's process."""
     p = psutil.Process()
 
@@ -254,6 +256,9 @@ async def get_red() -> Dict[str, str]:
         if psutil.LINUX:
             swap_mem_pc = p.memory_percent("swap")
             swap_mem = p.memory_full_info().swap
+        else:
+            swap_mem_pc = 0
+            swap_mem = 0
 
     data = {"red": ""}
 

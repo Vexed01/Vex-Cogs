@@ -22,7 +22,7 @@ def inline(text: str) -> str:
 class Aliases(commands.Cog):
     """Get all the alias information you could ever want about a command."""
 
-    __version__ = "1.0.5"
+    __version__ = "1.0.6"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -37,7 +37,7 @@ class Aliases(commands.Cog):
         return
 
     @commands.command(hidden=True)
-    async def aliasesinfo(self, ctx: commands.Context):
+    async def aliasesinfo(self, ctx: commands.Context) -> None:
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.command(usage="<command>")
@@ -138,7 +138,7 @@ class Aliases(commands.Cog):
             aliases += "You're in DMs, so there aren't any server aliases."
         str_none = humanize_list(none, style="or")
 
-        msg = f"Main command: `{strcommand}`\n{aliases}"
+        msg = f"Main command: `{command.name}`\n{aliases}"
 
         if str_none:
             msg += f"This command has no {str_none} aliases."

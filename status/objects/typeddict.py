@@ -1,15 +1,16 @@
+from __future__ import annotations
+
 import datetime
-from typing import Dict, List, Optional, TypedDict
+from typing import TypedDict
 
-from status.core import MODES_LITERAL
-
+from ..core import MODES_LITERAL
 from .incidentdata import UpdateField
 
 
 class ConfChannelSettings(TypedDict):
     mode: MODES_LITERAL
     webhook: bool
-    edit_id: Dict[str, int]
+    edit_id: dict[str, int]
 
 
 class _ConfFeedsFields(TypedDict):
@@ -19,7 +20,7 @@ class _ConfFeedsFields(TypedDict):
 
 
 class ConfFeeds(TypedDict):
-    fields: List[_ConfFeedsFields]
+    fields: list[_ConfFeedsFields]
     time: int
     title: str
     link: str
@@ -30,11 +31,11 @@ class ConfFeeds(TypedDict):
 
 
 class IncidentDataDict(TypedDict, total=False):
-    fields: List[UpdateField]
-    time: Optional[datetime.datetime]
+    fields: list[UpdateField]
+    time: datetime.datetime | None
     title: str
     link: str
-    actual_time: Optional[datetime.datetime]
+    actual_time: datetime.datetime | None
     description: str
     incident_id: str
-    scheduled_for: Optional[datetime.datetime]
+    scheduled_for: datetime.datetime | None

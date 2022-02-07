@@ -108,7 +108,7 @@ class BUCommands(MixinMeta):
             if date == midnight:
                 continue
             if SECONDS_IN_DAY - data.daily_connected_data[date] > 60:
-                date_fmted = date.strftime("%Y-%m-%d")  # type:ignore  # stubs incorrect
+                date_fmted = date.strftime("%Y-%m-%d")
                 msg += (
                     f"\n**{date_fmted}**: `{data.date_downtime(date)}`, of which "
                     f"`{data.date_net_downtime(date)}` was due to network issues."
@@ -172,7 +172,7 @@ class BUCommands(MixinMeta):
         """
         df = pandas.concat([self.connected_cache, self.cog_loaded_cache], axis=1)
         data = df.to_csv(index_label="Date", header=["Connected", "Cog loaded"])
-        await ctx.send("Here is your file.", file=text_to_file(data, "betteruptime.csv"))
+        await ctx.send("Here is your file.", file=text_to_file(str(data), "betteruptime.csv"))
 
     # mainly for users who installed, then uninstalled and found that uptime
     # was very low. main reason is first_load is tracked so this would skew everything

@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import logging
 import math
-from typing import Dict
 
 from discord.channel import VoiceChannel
 from discord.errors import HTTPException
@@ -17,7 +16,7 @@ _log = logging.getLogger("red.vex.timechannel.loop")
 
 class TCLoop(MixinMeta):
     def __init__(self) -> None:
-        self.loop_meta = VexLoop("TimeChannel Loop", 900)  # 10 mins
+        self.loop_meta = VexLoop("TimeChannel Loop", 900)  # 15 mins
         self.loop = self.bot.loop.create_task(self.timechannel_loop())
 
     async def wait_until_iter(self) -> None:
@@ -50,7 +49,7 @@ class TCLoop(MixinMeta):
             await self.wait_until_iter()
 
     async def maybe_update_channels(self) -> None:
-        all_guilds: Dict[int, Dict[str, Dict[int, str]]] = await self.config.all_guilds()
+        all_guilds: dict[int, dict[str, dict[int, str]]] = await self.config.all_guilds()
         if not all_guilds:
             _log.debug("No time channels registered, nothing to do...")
             return

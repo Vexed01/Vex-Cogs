@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import datetime
 import json
 import logging
 from io import StringIO
 from time import monotonic
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional
 
 import discord
 import pandas as pd
@@ -29,28 +31,31 @@ class StatTrackCommands(MixinMeta):
         self,
         ctx: commands.Context,
         delta: datetime.timedelta,
-        label: Union[str, Iterable[str]],
+        label: str | Iterable[str],
         title: str,
-        ylabel: Optional[str] = None,
+        ylabel: str | None = None,
         *,
         more_options: bool = False,
         status_colours: bool = False,
         do_average: bool = False,
         show_total: bool = False,
-    ):
+    ) -> None:
         comstart = monotonic()
         if self.df_cache is None:
-            return await ctx.send("This command isn't ready yet. Try again in a few seconds.")
+            await ctx.send("This command isn't ready yet. Try again in a few seconds.")
+            return
         if ylabel is None:
             ylabel = title
         df = self.df_cache[label]
         if len(df) < 2:
-            return await ctx.send("I need a little longer to collect data. Try again in a minute.")
+            await ctx.send("I need a little longer to collect data. Try again in a minute.")
+            return
         if do_average and len(df) < 30:
-            return await ctx.send(
+            await ctx.send(
                 "I need a little longer to collect data for this particular metric. "
                 "Others should still work. Try again in a few minutes."
             )
+            return
 
         # index data to desired delta
         now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
@@ -71,7 +76,7 @@ class StatTrackCommands(MixinMeta):
 
         df = pd.DataFrame(df)  # ensure it is a df, sometimes series
 
-        if show_total and len(df.columns) == 1:
+        if show_total is True:
             total_before_avg = df.sum().values[0]
 
         if do_average:
@@ -94,7 +99,7 @@ class StatTrackCommands(MixinMeta):
             embed.add_field(name="Min", value=df.min().values[0])
             embed.add_field(name="Max", value=df.max().values[0])
             embed.add_field(name="Average", value=round(df.mean().values[0], 2))
-            if show_total:
+            if show_total is True:
                 embed.add_field(name="Total", value=total_before_avg)  # type:ignore
                 # using df_cache ensures getting total of before the averaging
 
@@ -147,9 +152,7 @@ class StatTrackCommands(MixinMeta):
         """
         async with ctx.typing():
             self.loop.cancel()
-            self.df_cache = self.df_cache.append(
-                pd.read_json(await ctx.message.attachments[0].read(), orient="split")
-            )
+            self.df_cache = pd.read_json(await ctx.message.attachments[0].read(), orient="split")
             await self.driver.write(self.df_cache)
         await ctx.send("Done. Please reload the cog.")
 
@@ -176,10 +179,10 @@ class StatTrackCommands(MixinMeta):
         async with ctx.typing():
             data = self.df_cache.to_json(orient="split")
             fp = StringIO()
-            fp.write(data)
+            fp.write(str(data))
             size = fp.tell()
             if ctx.guild:
-                max_size = ctx.guild.filesize_limit  # type:ignore
+                max_size = ctx.guild.filesize_limit
             else:
                 max_size = 8388608
             if size > max_size:
@@ -199,10 +202,10 @@ class StatTrackCommands(MixinMeta):
         async with ctx.typing():
             data = self.df_cache.to_csv()
             fp = StringIO()
-            fp.write(data)
+            fp.write(str(data))
             size = fp.tell()
             if ctx.guild:
-                max_size = ctx.guild.filesize_limit  # type:ignore
+                max_size = ctx.guild.filesize_limit
             else:
                 max_size = 8388608
             if size > max_size:
@@ -404,10 +407,10 @@ class StatTrackCommands(MixinMeta):
         [botname], while `unique` will only count them once.
 
         **Examples:**
-            - `[p]stattrack user` - show all metrics, 1 day
-            - `[p]stattrack user 3w2d` - show all metrics, 3 weeks 2 days
-            - `[p]stattrack user 5d total unique` - show total & unique, 5 days
-            - `[p]stattrack user all humans bots` - show humans & bots, all time
+            - `[p]stattrack users` - show all metrics, 1 day
+            - `[p]stattrack users 3w2d` - show all metrics, 3 weeks 2 days
+            - `[p]stattrack users 5d total unique` - show total & unique, 5 days
+            - `[p]stattrack users all humans bots` - show humans & bots, all time
         """
         if timespan is None:
             timespan = DEFAULT_DELTA

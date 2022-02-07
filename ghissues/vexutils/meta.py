@@ -5,20 +5,18 @@ from pathlib import Path
 from typing import Dict, List, NamedTuple, Union
 
 import aiohttp
-import tabulate
-from asyncache import cached
-from cachetools import TTLCache
 from redbot.core import VersionInfo, commands
 from redbot.core import version_info as cur_red_version
-from redbot.core.utils.chat_formatting import box
+from rich import box as rich_box
+from rich.table import Table  # type:ignore
 
+from .chat import no_colour_rich_markup
 from .consts import DOCS_BASE, GREEN_CIRCLE, RED_CIRCLE
 from .loop import VexLoop
 
 log = getLogger("red.vex-utils")
 
 
-cog_ver_cache: TTLCache = TTLCache(maxsize=16, ttl=300)  # ttl is 5 mins
 cog_ver_lock = asyncio.Lock()
 
 
@@ -94,26 +92,30 @@ async def format_info(
         latest = UnknownVers({cog_name: "Unknown"})
 
     start = f"{qualified_name} by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n"
-    versions = [
-        [
-            "This Cog",
-            current.cogs.get(cog_name),
-            latest.cogs.get(cog_name),
-            GREEN_CIRCLE if cog_updated else RED_CIRCLE,
-        ],
-        [
-            "Bundled Utils",
-            current.utils,
-            latest.utils,
-            GREEN_CIRCLE if utils_updated else RED_CIRCLE,
-        ],
-        [
-            "Red",
-            current.red,
-            latest.red,
-            GREEN_CIRCLE if red_updated else RED_CIRCLE,
-        ],
-    ]
+
+    main_table = Table(
+        "", "Current", "Latest", "Up to date?", title="Versions", box=rich_box.MINIMAL
+    )
+
+    main_table.add_row(
+        "This Cog",
+        str(current.cogs.get(cog_name)),
+        str(latest.cogs.get(cog_name)),
+        GREEN_CIRCLE if cog_updated else RED_CIRCLE,
+    )
+    main_table.add_row(
+        "Bundled Utils",
+        current.utils,
+        latest.utils,
+        GREEN_CIRCLE if utils_updated else RED_CIRCLE,
+    )
+    main_table.add_row(
+        "Red",
+        str(current.red),
+        str(latest.red),
+        GREEN_CIRCLE if red_updated else RED_CIRCLE,
+    )
+
     update_msg = "\n"
     if not cog_updated:
         update_msg += f"To update this cog, use the `{ctx.clean_prefix}cog update` command.\n"
@@ -124,28 +126,28 @@ async def format_info(
     if not red_updated:
         update_msg += "To update Red, see https://docs.discord.red/en/stable/update_red.html\n"
 
+    extra_table = Table("Key", "Value", title="Extras", box=rich_box.MINIMAL)
+
     data = []
     if loops:
         for loop in loops:
-            data.append([loop.friendly_name, GREEN_CIRCLE if loop.integrity else RED_CIRCLE])
+            extra_table.add_row(loop.friendly_name, GREEN_CIRCLE if loop.integrity else RED_CIRCLE)
 
     if extras:
         if data:
-            data.append([])
+            extra_table.add_row("", "")
         for key, value in extras.items():
             if isinstance(value, bool):
                 str_value = GREEN_CIRCLE if value else RED_CIRCLE
             else:
                 assert isinstance(value, str)
                 str_value = value
-            data.append([key, str_value])
+            extra_table.add_row(key, str_value)
 
-    boxed = box(
-        tabulate.tabulate(versions, headers=["", "Your Version", "Latest version", "Up to date?"])
-    )
+    boxed = no_colour_rich_markup(main_table)
     boxed += update_msg
-    if data:
-        boxed += box(tabulate.tabulate(data, tablefmt="plain"))
+    if loops or extras:
+        boxed += no_colour_rich_markup(extra_table)
 
     return f"{start}{boxed}"
 
@@ -182,7 +184,6 @@ class UnknownVers(NamedTuple):
     red: str = "Unknown"
 
 
-@cached(cog_ver_cache)  # ttl is 5 mins
 async def _get_latest_vers() -> Vers:
     data: dict
     async with aiohttp.ClientSession() as session:

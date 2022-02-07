@@ -9,10 +9,7 @@
     "min_bot_version": "3.4.0",
     "name": "TimeChannel",
     "requirements": [
-        "rapidfuzz",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "rapidfuzz"
     ],
     "short": "Get the time in different timezones in voice channels.",
     "tags": [

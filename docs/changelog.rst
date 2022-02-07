@@ -16,6 +16,7 @@ Jump links:
 | :ref:`anotherpingcog<cl_apc>`
 | :ref:`beautify<cl_beautify>`
 | :ref:`betteruptime<cl_betteruptime>`
+| :ref:`birthday<cl_birthday>`
 | :ref:`cmdlog<cl_cmdlog>`
 | :ref:`github<cl_github>`
 | :ref:`googletrends<cl_googletrends>`
@@ -36,6 +37,14 @@ Jump links:
 =======
 Aliases
 =======
+
+*********
+``1.0.6``
+*********
+
+2022-01-15
+
+- Show correct command name
 
 *********
 ``1.0.5``
@@ -180,6 +189,14 @@ Internal Changes
 ============
 BetterUptime
 ============
+
+*********
+``2.1.3``
+*********
+
+2022-02-07
+
+- Fix log error in uptime graph
 
 *********
 ``2.1.2``
@@ -336,11 +353,65 @@ BetterUptime
 
 - Slight logic changes for banding in ``downtime`` command
 
+.. _cl_birthday:
+
+========
+Birthday
+========
+
+*********
+``1.0.4``
+*********
+
+2022-02-06
+
+- Grab the config instance instead of json (#79)
+
+*********
+``1.0.3``
+*********
+
+2022-02-06
+
+- Catch OverflowError in `bdset zemigrate`
+
+*********
+``1.0.2``
+*********
+
+2022-02-05
+
+- Add ``[p]bdset zemigrate`` for migrating data from ZeLarp's/flare's fork of Birthdays cog (#77)
+
+*********
+``1.0.1``
+*********
+
+2022-02-05
+
+- Add ``[p]bdset force`` for admins to force set a user's birthday
+
+*********
+``1.0.0``
+*********
+
+- Initial release
+
 .. _cl_caseinsensitive:
 
 ===============
 CaseInsensitive
 ===============
+
+*********
+``1.0.3``
+*********
+
+2022-01-30
+
+- Support subcommands (GH #74)
+- Support discord.py 2.x
+- Support aliases made with the alias cog (GH #75)
 
 *********
 ``1.0.2``
@@ -550,6 +621,14 @@ MadTranslate
 ============
 
 *********
+``1.0.3``
+*********
+
+2022-02-05
+
+- Fix ValueError (#78)
+
+*********
 ``1.0.2``
 *********
 
@@ -578,6 +657,39 @@ MadTranslate
 =========
 StatTrack
 =========
+
+*********
+``1.8.5``
+*********
+
+2022-01-30
+
+- Stop using deprecated method ``frame.append``
+
+*********
+``1.8.4``
+*********
+
+2022-01-26
+
+- Force 2 writes on load instead of 1
+
+*********
+``1.8.3``
+*********
+
+2022-01-17
+
+- Manually count up unique users to avoid issues with the bot's own cache
+- Performance optimisations
+
+*********
+``1.8.1``
+*********
+
+2022-01-13
+
+- Performance optimisations (from my limited testing with 20k users on a relatively weak Windows machine this yields 4-5X faster loops; only 2X on my Ubuntu VPS)
 
 *********
 ``1.8.0``
@@ -692,6 +804,14 @@ StatTrack
 ======
 Status
 ======
+
+*********
+``2.5.0``
+*********
+
+2022-02-07
+
+- Add buttons for discord.py 2.0
 
 *********
 ``2.4.1``
@@ -951,6 +1071,14 @@ Internal changes
 System
 ======
 
+**********
+``1.3.10``
+**********
+
+2022-02-07
+
+- Auto-hide loop disks, old behaviour possible with `[p]system disk False`
+
 *********
 ``1.3.9``
 *********
@@ -1123,6 +1251,23 @@ System
 ===========
 TimeChannel
 ===========
+
+*********
+``1.3.1``
+*********
+
+2022-01-30
+
+- Show 24 hour time in ``tcset short`` output
+- More useful error message when an incorrect identifier is used
+
+*********
+``1.3.0``
+*********
+
+2022-01-30
+
+- Support 24 hour time by adding ``-24h`` to a short identifier, for example ``[p]tcset create UK: {ni-24h}``
 
 *********
 ``1.2.2``

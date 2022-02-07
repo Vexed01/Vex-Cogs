@@ -10,9 +10,7 @@
     "name": "WOL",
     "requirements": [
         "wakeonlan",
-        "tabulate",
-        "cachetools",
-        "asyncache"
+        "tabulate"
     ],
     "short": "Use Wake on LAN from Discord! This cog sends magic packets on the local network.",
     "tags": [

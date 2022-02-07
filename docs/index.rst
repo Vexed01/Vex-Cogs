@@ -6,7 +6,12 @@
 Welcome to Vex-Cogs's documentation!
 ====================================
 
-Docs version: |version|
+You can view documentation for each of my cogs below,
+or you can view the :ref:`Getting started<getting_started>` page
+if you want to install my cogs.
+
+You can reach out to me in the :ref:`Red - Cog Support<https://discord.gg/GD43Nb9H86>` server,
+in #support_vex-cogs.
 
 .. toctree::
    :maxdepth: 1
@@ -22,6 +27,7 @@ Docs version: |version|
    cogs/aliases
    cogs/beautify
    cogs/betteruptime
+   cogs/birthday
    cogs/caseinsensitive
    cogs/cmdlog
    cogs/covidgraph

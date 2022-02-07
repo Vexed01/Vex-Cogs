@@ -38,6 +38,7 @@ cogs = [
     "anotherpingcog",
     "beautify",
     "betteruptime",
+    "birthday",
     "caseinsensitive",
     "cmdlog",
     "covidgraph",

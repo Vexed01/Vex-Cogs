@@ -1,33 +1,35 @@
+from __future__ import annotations
+
 import datetime
 from collections import defaultdict
-from typing import Dict, List, NamedTuple, Optional
+from typing import TYPE_CHECKING, NamedTuple
 
 import discord
 from discord.channel import TextChannel
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta, pagify
 
-from status.commands.command import DynamicHelp
-from status.commands.converters import ServiceConverter
-from status.core.abc import MixinMeta
-from status.objects import IncidentData, SendCache, Update
-from status.updateloop import SendUpdate, process_json
+from ..commands.command import DynamicHelp
+from ..commands.converters import ServiceConverter
+from ..core.abc import MixinMeta
+from ..objects import SendCache, Update
+from ..updateloop import SendUpdate, process_json
 
 
 class Comps(NamedTuple):
-    groups: Dict[str, str]
-    degraded_comps: Dict[str, List[str]]
+    groups: dict[str, str]
+    degraded_comps: dict[str, list[str]]
 
 
 def process_components(json_data: dict) -> Comps:
-    components: List[dict] = json_data["components"]
+    components: list[dict] = json_data["components"]
 
-    groups: Dict[str, str] = {}
+    groups: dict[str, str] = {}
     for comp in components:
         if comp.get("group"):
             groups[comp.get("id", "uh oh")] = comp.get("name", "")
 
-    degraded_comps: Dict[str, List[str]] = defaultdict(list)
+    degraded_comps: dict[str, list[str]] = defaultdict(list)
     for comp in components:
         if comp.get("status") == "operational":
             continue
@@ -45,7 +47,7 @@ def process_components(json_data: dict) -> Comps:
 class StatusCom(MixinMeta):
 
     # TODO: support DMs
-    @commands.guild_only()
+    @commands.guild_only()  # type:ignore
     @commands.cooldown(2, 10, commands.BucketType.user)
     @commands.command(cls=DynamicHelp)
     async def status(self, ctx: commands.Context, service: ServiceConverter):
@@ -55,15 +57,17 @@ class StatusCom(MixinMeta):
         **Example:**
             - `[p]status discord`
         """
+        # guild check on command
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
         if time_until := self.service_cooldown.handle(ctx.author.id, service.name):
             message = "Status updates for {} are on cooldown. Try again in {}.".format(
                 service.friendly, humanize_timedelta(seconds=time_until)
             )
             return await ctx.send(message, delete_after=time_until)
 
-        if restrictions := self.service_restrictions_cache.get_guild(
-            ctx.guild.id, service.name  # type:ignore  # guild check
-        ):
+        if restrictions := self.service_restrictions_cache.get_guild(ctx.guild.id, service.name):
             channels = [self.bot.get_channel(channel) for channel in restrictions]
             channel_list = humanize_list(
                 [channel.mention for channel in channels if isinstance(channel, TextChannel)],
@@ -89,7 +93,6 @@ class StatusCom(MixinMeta):
             i for i in all_scheduled if i.scheduled_for and i.scheduled_for < now
         ]  # only want ones happening
 
-        to_send: Optional[IncidentData]
         other_incidents, other_scheduled = [], []
         if incidents_incidentdata_list:
             to_send = incidents_incidentdata_list[0]
@@ -114,7 +117,7 @@ class StatusCom(MixinMeta):
                 timestamp=(
                     datetime.datetime.utcnow()
                     if discord.__version__.startswith("1")
-                    else discord.utils.utcnow()  # type:ignore
+                    else discord.utils.utcnow()
                 ),
                 colour=await ctx.embed_colour(),
             )

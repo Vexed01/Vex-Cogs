@@ -1,12 +1,12 @@
+from __future__ import annotations
+
 import logging
 import re
-from typing import Literal, Union
 
 from discord import Colour, Embed
 from redbot.core.utils.chat_formatting import pagify
 
-from status.core import FEEDS, LINK_RE, SERVICE_LITERAL
-
+from ..core import FEEDS, LINK_RE, SERVICE_LITERAL
 from .incidentdata import Update
 
 _log = logging.getLogger("red.vex.status.sendupdate")
@@ -37,7 +37,7 @@ class SendCache:
             title=self.__incidentdata.title,
             url=self.__incidentdata.link,
             description=self.__incidentdata.description,
-            timestamp=self.__incidentdata.actual_time or self.__incidentdata.time or Embed.Empty,
+            timestamp=self.__incidentdata.actual_time or self.__incidentdata.time or None,
             colour=self._get_colour(),
         )
 
@@ -60,7 +60,8 @@ class SendCache:
         before_fields = len(embed.fields)
         if before_fields > 25:
             dict_embed = embed.to_dict()
-            dict_embed["fields"] = dict_embed["fields"][-25:]
+
+            dict_embed["fields"] = dict_embed.get("fields", [])[-25:]
             embed = Embed.from_dict(dict_embed)
             embed.set_field_at(
                 0,
@@ -108,7 +109,7 @@ class SendCache:
 
         return list(pagify(msg))[0]  # i really dont care about better handling for plain messages
 
-    def _get_colour(self) -> Union[Colour, Literal[1812720]]:
+    def _get_colour(self) -> Colour:
         try:
             last_title = self.__incidentdata.fields[-1].name
             status = last_title.split(" ")[0].lower()
@@ -127,11 +128,11 @@ class SendCache:
             elif status in ["resolved", "completed"]:
                 return Colour.green()
             else:
-                return 1812720
+                return Colour(1812720)
         except Exception:  # hopefully never happens but will keep this for a while
             _log.warning(
                 f"Error with getting correct colour for {self.__service}. The update will still "
                 "be sent.",
                 exc_info=True,
             )
-            return 1812720
+            return Colour(1812720)

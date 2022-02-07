@@ -1,9 +1,26 @@
 import datetime
-from typing import Literal, Sequence, Union
+from io import StringIO
+from typing import Any, Literal, Sequence, Union
 
-from redbot.core.utils.chat_formatting import humanize_list, humanize_number, inline
+from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number, inline
+from rich.console import Console
 
 TimestampFormat = Literal["f", "F", "d", "D", "t", "T", "R"]
+
+
+def no_colour_rich_markup(*objects: Any, lang: str = "") -> str:
+    """
+    Slimmed down version of rich_markup which ensure no colours (/ANSI) can exist
+    https://github.com/Cog-Creators/Red-DiscordBot/pull/5538/files (Kowlin)
+    """
+    temp_console = Console(  # Prevent messing with STDOUT's console
+        color_system=None,
+        file=StringIO(),
+        force_terminal=True,
+        width=80,
+    )
+    temp_console.print(*objects)
+    return box(temp_console.file.getvalue(), lang=lang)  # type: ignore
 
 
 def _hum(num: Union[int, float], unit: str, ndigits: int) -> str:

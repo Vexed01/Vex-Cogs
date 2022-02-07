@@ -8,11 +8,7 @@
     "install_msg": "Thanks for installing! Note that this cog uses an undocumented API for Google Translate. As such, this cog may break at short notice.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/madtranslate>",
     "min_bot_version": "3.4.0",
     "name": "MadTranslate",
-    "requirements": [
-        "tabulate",
-        "cachetools",
-        "asyncache"
-    ],
+    "requirements": [],
     "short": "Translate something from English into a gazillion different languages then back to English. You'll get some funny responses! Uses an undocumented Google Translate API.",
     "tags": [
         "madtranslate",

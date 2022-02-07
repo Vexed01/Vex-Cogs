@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import datetime
 from dataclasses import dataclass
 from sys import getsizeof
-from typing import Optional, Union
 
 import discord
-from discord.channel import DMChannel, TextChannel
+from discord.channel import DMChannel
 from discord.guild import Guild
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -28,15 +29,15 @@ class LogMixin:
 
     def __init__(
         self,
-        author: Optional[discord.User],
+        author: discord.abc.User | discord.Member | discord.User,
         com_name: str,
-        msg_id: Optional[int] = None,
-        channel: Optional[Union[DMChannel, TextChannel]] = None,
-        guild: Optional[Guild] = None,
-        log_content: Optional[bool] = None,
-        content: Optional[str] = None,
-        application_command: Optional[int] = None,
-        target: Optional[Union[discord.User, discord.PartialMessage]] = None,
+        msg_id: int | None = None,
+        channel: discord.abc.MessageableChannel | None = None,
+        guild: Guild | None = None,
+        log_content: bool | None = None,
+        content: str | None = None,
+        application_command: int | None = None,
+        target: discord.User | discord.PartialMessage | None = None,
     ):
         if author is None:
             return
@@ -48,19 +49,19 @@ class LogMixin:
         # TEXT COMMANDS
         if msg_id:
             self.msg_id = msg_id
-        self.channel: Optional[IDFKWhatToNameThis] = None
-        self.guild: Optional[IDFKWhatToNameThis] = None
+        self.channel = None
+        self.guild = None
         if guild and channel:
-            assert not isinstance(channel, DMChannel)
+            assert not isinstance(channel, (DMChannel, discord.PartialMessageable))
             self.channel = IDFKWhatToNameThis(id=channel.id, name=f"#{channel.name}")
             self.guild = IDFKWhatToNameThis(id=guild.id, name=guild.name)
-        self.content: Optional[str] = None
+        self.content = None
         if log_content and content is not None:
             self.content = content
 
         # USER/MESSAGE COMMANDS
         self.app_type = application_command
-        self.target: Optional[IDFKWhatToNameThis] = None
+        self.target = None
 
         if isinstance(target, discord.User):
             t_name = target.name if isinstance(target, discord.User) else ""

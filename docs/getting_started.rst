@@ -55,6 +55,7 @@ Cog name                                Summary
 :ref:`anotherpingcog<anotherpingcog>`   Just another ping cog... But this one has fancy colours in an embed!
 :ref:`beautify<beautify>`               Beautify and minify JSON.
 :ref:`betteruptime<betteruptime>`       New uptime command that tracks the bot's uptime percentage (last 30 days).
+:ref:`birthday<birthday>`               Birthday cog with customisable messages and roles.
 :ref:`caseinsensitive<caseinsensitive>` Make all prefixes and commands case insensitive.
 :ref:`cmdlog<cmdlog>`                   Track command usage, searchable by user, server or command name.
 :ref:`covidgraph<covidgraph>`           Get graphs of COVID-19 data.
@@ -67,3 +68,10 @@ Cog name                                Summary
 :ref:`timechannel<timechannel>`         Get the time in different timezones in voice channels.
 :ref:`wol<wol>`                         Use Wake on LAN from Discord! Sends magic packets on the local network.
 ======================================= ===========================================================================
+
+-------
+Support
+-------
+
+If you want some help with my cogs, you can ask in the :ref:`Red - Cog Support<https://discord.gg/GD43Nb9H86>` server,
+in #support_vex-cogs.

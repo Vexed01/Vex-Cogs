@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 import logging
-from typing import Dict
+from typing import TYPE_CHECKING
 
 import discord
 import pytz
@@ -35,7 +37,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     The `[p]timezones` command (runnable by anyone) will show the full location name.
     """
 
-    __version__ = "1.2.2"
+    __version__ = "1.3.1"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -81,11 +83,15 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             await format_info(ctx, self.qualified_name, self.__version__, loops=[self.loop_meta])
         )
 
-    @commands.guild_only()
+    @commands.guild_only()  # type:ignore
     @commands.command()
     async def timezones(self, ctx: commands.Context):
         """See the time in all the configured timezones for this server."""
-        data: Dict[int, str] = await self.config.guild(ctx.guild).timechannels()
+        # guild only check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        data: dict[int, str] = await self.config.guild(ctx.guild).timechannels()
         if data is None:
             return await ctx.send("It looks like no time channels have been set up yet.")
 
@@ -167,7 +173,10 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
                 "column):\n<https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List>"
             )
 
-        await ctx.send(f"{fuzzy_results[0][0]}'s short identifier is `{fuzzy_results[0][2]}`")
+        await ctx.send(
+            f"{fuzzy_results[0][0]}'s short identifier is `{fuzzy_results[0][2]}` for 12 hour "
+            f"time, or `{fuzzy_results[0][2]}-24h` for 24 hour time."
+        )
 
     @commands.bot_has_permissions(manage_channels=True)
     @timechannelset.command()
@@ -187,21 +196,34 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         Simply put curly brackets, `{` and `}` around it, and it will be replaced with the time.
 
         **For example**, running `[p]tcset short new york` gives a short identifier of `fv`.
-        This can then be used like so: `[p]tcset create :clock: New York: {fv}`.
+        This can then be used like so:
+        `[p]tcset create \N{CLOCK FACE TWO OCLOCK}\N{VARIATION SELECTOR-16} New York: {fv}`.
 
         You could also use two in one, for example
-        `[p]tcset create UK: {446} FR: 455`
+        `[p]tcset create UK: {ni} FR: {nr}`
+
+        The default is 12 hour time, but you can use `{shortid-24h}` for 24 hour time,
+        eg `{ni-24h}`
 
         **More Examples:**
             - `[p]tcset create \N{CLOCK FACE TWO OCLOCK}\N{VARIATION SELECTOR-16} New York: {fv}`
             - `[p]tcset create \N{GLOBE WITH MERIDIANS} UTC: {qw}`
-            - `[p]tcset create {ni} in London`
-            - `[p]tcset create US Pacific: {qv}`
+            - `[p]tcset create {ni-24h} in London`
+            - `[p]tcset create US Pacific: {qv-24h}`
         """
         assert isinstance(ctx.guild, Guild)  # guild_only check on parent command
 
         reps = gen_replacements()
-        name = string.format(**reps)
+        try:
+            name = string.format(**reps)
+        except KeyError as e:
+            p = ctx.clean_prefix
+            await ctx.send(
+                f"`{e}` is not a valid replacement. Use `{p}tcset short <long_tz>` to get the "
+                "short identifier for the timezone of your choice.\n\nExample: "
+                f"`{p}tcset create New York: {{fv}}` or `{p}tcset create New York: {{fv-24h}}`"
+            )
+            return
 
         overwrites = {
             ctx.guild.default_role: discord.PermissionOverwrite(connect=False),
@@ -209,7 +231,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         }
         reason = "Edited for timechannel - disable with `tcset remove`"
         channel = await ctx.guild.create_voice_channel(
-            name=name, overwrites=overwrites, reason=reason  # type:ignore
+            name=name, overwrites=overwrites, reason=reason
         )
 
         await self.config.guild(ctx.guild).timechannels.set_raw(  # type: ignore
