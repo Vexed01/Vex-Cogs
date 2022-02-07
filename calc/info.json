@@ -11,7 +11,6 @@
     "name": "Calc",
     "requirements": [
         "expr.py",
-        "cachetools",
         "asyncache"
     ],
     "short": "Calculate simple mathematical expressions, right in Discord with buttons.",
