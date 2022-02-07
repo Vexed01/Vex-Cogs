@@ -69,8 +69,13 @@ class BirthdayLoop(MixinMeta):
                 log.debug("Guild %s is not in cache, skipping", guild_id)
                 continue
 
+            if all_settings.get(guild.id) is None:  # can happen with migration from ZeLarp's cog
+                log.debug("Guild %s is not setup, skipping", guild_id)
+                continue
+
             if await self.check_if_setup(guild) is False:
                 log.debug("Guild %s is not setup, skipping", guild_id)
+                continue
 
             birthday_members: dict[discord.Member, datetime.datetime] = {}
 
