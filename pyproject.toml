@@ -1,7 +1,7 @@
 [tool.black]
 line-length = 99
 target-version = ["py38"]
-extend-exclude = "vexutils .stubs"
+extend-exclude = "vexutils|.stubs"
 
 [tool.isort]
 profile = "black"
