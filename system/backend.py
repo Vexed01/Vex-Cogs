@@ -254,6 +254,9 @@ async def get_red() -> Dict[str, str]:
         if psutil.LINUX:
             swap_mem_pc = p.memory_percent("swap")
             swap_mem = p.memory_full_info().swap
+        else:
+            swap_mem_pc = 0
+            swap_mem = 0
 
     data = {"red": ""}
 

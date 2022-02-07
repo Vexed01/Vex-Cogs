@@ -1,10 +1,11 @@
 import types
-from typing import Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
 import discord
 from discord import Message
 from discord.ext.commands.view import StringView
-from redbot.cogs.alias.alias import Alias, AliasCache, AliasEntry
+from redbot.cogs.alias.alias import Alias
+from redbot.cogs.alias.alias_entry import AliasCache, AliasEntry
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.commands.context import Context
@@ -76,8 +77,9 @@ async def ci_get_context(self: Red, message: Message, *, cls=Context) -> None:
         except TypeError:
             if not isinstance(prefix, list):
                 raise TypeError(
-                    "get_prefix must return either a string or a list of string, "
-                    "not {}".format(prefix.__class__.__name__)
+                    "get_prefix must return either a string or a list of string, not {}".format(
+                        prefix.__class__.__name__
+                    )
                 )
 
             # It's possible a bad command_prefix got us here.
@@ -183,26 +185,34 @@ class CaseInsensitive(commands.Cog):
         """Plug the case-insensitive shit."""
         new_method = types.MethodType(ci_get_context, self.bot)
         self.old_get_context = self.bot.get_context
-        self.bot.get_context = new_method  # type:ignore
+        self.bot.get_context = new_method
 
     def unplug_core(self) -> None:
         """Unplug case-insensitive stuff."""
         if self.old_get_context is not None:
-            self.bot.get_context = self.old_get_context  # type:ignore
+            self.bot.get_context = self.old_get_context
 
     def plug_alias(self) -> None:
         """Plug the alias magic."""
-        alias_cog: Optional[Alias] = self.bot.get_cog("Alias")  # type:ignore
+        alias_cog: Optional[commands.Cog] = self.bot.get_cog("Alias")
         if alias_cog is None:
             return
+
+        if TYPE_CHECKING:
+            assert isinstance(alias_cog, Alias)
+
         new_method = types.MethodType(ci_get_alias, alias_cog._aliases)
         self.old_alias_get = alias_cog._aliases.get_alias
-        alias_cog._aliases.get_alias = new_method  # type:ignore
+        alias_cog._aliases.get_alias = new_method
 
     def unplug_alias(self) -> None:
         alias_cog = self.bot.get_cog("Alias")
-        if alias_cog is not None and self.old_alias_get is not None:
-            alias_cog._aliases.get_alias = self.old_alias_get  # type:ignore
+        if alias_cog is None or self.old_alias_get is None:
+            return
+
+        if TYPE_CHECKING:
+            assert isinstance(alias_cog, Alias)
+        alias_cog._aliases.get_alias = self.old_alias_get
 
     def cog_unload(self):
         self.unplug_core()

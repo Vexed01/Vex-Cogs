@@ -71,7 +71,7 @@ class StatTrackCommands(MixinMeta):
 
         df = pd.DataFrame(df)  # ensure it is a df, sometimes series
 
-        if show_total and len(df.columns) == 1:
+        if show_total is True:
             total_before_avg = df.sum().values[0]
 
         if do_average:
@@ -94,7 +94,7 @@ class StatTrackCommands(MixinMeta):
             embed.add_field(name="Min", value=df.min().values[0])
             embed.add_field(name="Max", value=df.max().values[0])
             embed.add_field(name="Average", value=round(df.mean().values[0], 2))
-            if show_total:
+            if show_total is True:
                 embed.add_field(name="Total", value=total_before_avg)  # type:ignore
                 # using df_cache ensures getting total of before the averaging
 
@@ -174,10 +174,10 @@ class StatTrackCommands(MixinMeta):
         async with ctx.typing():
             data = self.df_cache.to_json(orient="split")
             fp = StringIO()
-            fp.write(data)
+            fp.write(str(data))
             size = fp.tell()
             if ctx.guild:
-                max_size = ctx.guild.filesize_limit  # type:ignore
+                max_size = ctx.guild.filesize_limit
             else:
                 max_size = 8388608
             if size > max_size:
@@ -197,10 +197,10 @@ class StatTrackCommands(MixinMeta):
         async with ctx.typing():
             data = self.df_cache.to_csv()
             fp = StringIO()
-            fp.write(data)
+            fp.write(str(data))
             size = fp.tell()
             if ctx.guild:
-                max_size = ctx.guild.filesize_limit  # type:ignore
+                max_size = ctx.guild.filesize_limit
             else:
                 max_size = 8388608
             if size > max_size:

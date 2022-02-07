@@ -3,9 +3,10 @@ from typing import TYPE_CHECKING, Optional
 
 from discord import Interaction
 from discord.channel import DMChannel
+from discord.enums import ButtonStyle
 from discord.message import Message
 from discord.ui import View
-from discord.ui.button import Button, ButtonStyle, button
+from discord.ui.button import Button, button
 from redbot.core.utils.chat_formatting import box
 
 from ghissues.views.merge_confirm import MergeConfirm
@@ -20,6 +21,9 @@ class MergeView(View):
         self.master = master
 
     async def interaction_check(self, interaction: Interaction) -> bool:
+        if interaction.user is None:
+            return False
+
         if interaction.user.id == self.master.author_id:
             return True
 
@@ -47,6 +51,7 @@ class MergeView(View):
             ).content
         except asyncio.TimeoutError:
             await channel.send("Timeout. Please try again.")
+            return
 
         split_commit_msg = commit.split("\n", 1)
 

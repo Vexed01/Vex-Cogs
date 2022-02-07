@@ -2,13 +2,17 @@ import asyncio
 import functools
 import io
 from heapq import nsmallest  # this is standard library
-from typing import Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
 import discord
 import pandas
 import plotly.express as px
 from pandas import Timestamp
-from plotly.graph_objs._figure import Figure
+
+if TYPE_CHECKING:
+    from plotly.graph_objs._figure import Figure
+else:
+    from plotly.graph_objs import Figure
 
 # yes i am using a private import, atm plotly does dynamic imports which are not supported by mypy
 
@@ -44,7 +48,7 @@ def _plot(
     low_values: Dict[Timestamp, float] = {}
     for i, value in enumerate(sr.values):
         if value < 99.7:  # only annotate non-perfect days
-            date: Timestamp = sr.index[i]  # type:ignore
+            date: Timestamp = sr.index[i]
             low_values[date] = value
 
     values_to_annotate = nsmallest(5, low_values.values())

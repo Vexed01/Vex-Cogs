@@ -7,14 +7,13 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.predicates import MessagePredicate
 
-from ghissues.button_pred import wait_for_yes_no
-from ghissues.views.master import GHView
-
 from .api import GitHubAPI
 from .consts import EXCEPTIONS
 from .errors import CustomError
 from .format import format_embed
 from .vexutils import format_help, format_info
+from .vexutils.button_pred import wait_for_yes_no
+from .views.master import GHView
 
 # cspell:ignore labelify kowlin's resp
 

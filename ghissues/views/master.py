@@ -44,13 +44,16 @@ class GHView(ui.View):
         self.btn_close.disabled = not closeable
 
         if not self.is_pr:
-            self.remove_item(self.btn_merge)
+            self.remove_item(self.btn_merge)  # type:ignore
         else:
             self.btn_merge.disabled = not mergeable
 
         self.master_msg: Optional[Message] = None
 
     async def interaction_check(self, interaction: Interaction) -> bool:
+        if interaction.user is None:
+            return False
+
         if interaction.user.id == self.author_id:
             return True
 
@@ -61,6 +64,9 @@ class GHView(ui.View):
 
     async def regen_viw(self):
         """Get the latest version and update the view."""
+        if self.master_msg is None:
+            return
+
         data = await self.api.get_issue(self.issue_data["number"])
         embed = format_embed(data)
         await self.master_msg.edit(embed=embed, view=self)

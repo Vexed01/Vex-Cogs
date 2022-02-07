@@ -75,7 +75,7 @@ class CovidData(MixinMeta):
 
         ts = pd.Series(ts_dict[extra_key] if extra_key else ts_dict)
 
-        ts.index = pd.to_datetime(ts.index, utc=True)  # type:ignore
+        ts.index = pd.to_datetime(ts.index, utc=True)
 
         if convert_to_daily:  # cumulative to daily and ty so much copolit
             ts = ts.diff().dropna()

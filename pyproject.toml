@@ -7,3 +7,8 @@ extend-exclude = "vexutils"
 profile = "black"
 line_length = 99
 extend_skip = "vexutils"
+
+[tool.pyright]
+stubPath = "./.stubs"
+exclude = ["*/vexutils", ".tox", "**/__pycache__", ".venv", ".github", ".stubs"]
+useLibraryCodeForTypes = true

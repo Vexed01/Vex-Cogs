@@ -8,9 +8,6 @@ from typing import TYPE_CHECKING, Deque, Optional, Union
 import discord
 from discord.channel import TextChannel
 from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
-from discord.member import Member
-from discord.message import PartialMessage
-from discord.user import User
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.commands import CheckFailure as RedCheckFailure
@@ -23,7 +20,7 @@ from .vexutils import format_help, format_info
 from .vexutils.chat import humanize_bytes
 
 if discord.__version__.startswith("2"):
-    from discord import Interaction, InteractionType  # type:ignore
+    from discord import Interaction, InteractionType
 
 if TYPE_CHECKING:
     from dislash import SlashInteraction
@@ -58,9 +55,9 @@ class CmdLog(commands.Cog):
         if discord.__version__.startswith("1"):
             self.load_time = datetime.datetime.utcnow()
         else:
-            self.load_time = discord.utils.utcnow()  # type:ignore
+            self.load_time = discord.utils.utcnow()
 
-        self.config = Config.get_conf(self, 418078199982063626, force_registration=True)
+        self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(log_content=False)
         self.config.register_global(log_channel=None)
 
@@ -73,7 +70,7 @@ class CmdLog(commands.Cog):
         if chan_id is not None:
             chan = self.bot.get_channel(int(chan_id))
             if chan is not None:
-                self.channel_logger = ChannelLogger(self.bot, chan)
+                self.channel_logger = ChannelLogger(self.bot, chan)  # type:ignore
                 self.channel_logger.start()
             else:
                 _log.warning("Commands will NOT be sent to a channel because it appears invalid.")
@@ -92,13 +89,13 @@ class CmdLog(commands.Cog):
 
     def log_com(self, ctx: commands.Context) -> None:
         logged_com = LoggedCommand(
-            author=ctx.author,  # type:ignore
+            author=ctx.author,
             com_name=ctx.command.qualified_name,
-            msg_id=ctx.message.id,  # type:ignore
-            channel=ctx.channel,  # type:ignore
-            guild=ctx.guild,  # type:ignore
+            msg_id=ctx.message.id,
+            channel=ctx.channel,
+            guild=ctx.guild,
             log_content=self.log_content,
-            content=ctx.message.content,  # type:ignore
+            content=ctx.message.content,
         )
         _log.info(logged_com)
         self.log_cache.append(logged_com)
@@ -107,13 +104,13 @@ class CmdLog(commands.Cog):
 
     def log_ce(self, ctx: commands.Context) -> None:
         logged_com = LoggedComError(
-            author=ctx.author,  # type:ignore
+            author=ctx.author,
             com_name=ctx.command.qualified_name,
-            msg_id=ctx.message.id,  # type:ignore
-            channel=ctx.channel,  # type:ignore
-            guild=ctx.guild,  # type:ignore
+            msg_id=ctx.message.id,
+            channel=ctx.channel,
+            guild=ctx.guild,
             log_content=self.log_content,
-            content=ctx.message.content,  # type:ignore
+            content=ctx.message.content,
         )
         _log.info(logged_com)
         self.log_cache.append(logged_com)
@@ -130,9 +127,7 @@ class CmdLog(commands.Cog):
         if discord.__version__.startswith("1"):
             ago = humanize_timedelta(timedelta=datetime.datetime.utcnow() - self.load_time)
         else:
-            ago = humanize_timedelta(
-                timedelta=discord.utils.utcnow() - self.load_time  # type:ignore
-            )
+            ago = humanize_timedelta(timedelta=discord.utils.utcnow() - self.load_time)
         return f"Log started {ago} ago."
 
     def log_list_error(self, e):
@@ -168,8 +163,7 @@ class CmdLog(commands.Cog):
             if data.get("type") != 2:
                 return
 
-            userid = data.get("member", {}).get("user", {}).get("id")
-            user: Optional[Union[Member, User]]
+            userid = data.get("member", {}).get("user", {}).get("id", 0)
             if guild_s := data.get("guild_id"):
                 guild = self.bot.get_guild(int(guild_s))
                 if not isinstance(guild, discord.Guild):
@@ -205,9 +199,13 @@ class CmdLog(commands.Cog):
 
                 user = inter.user
                 inter_type = inter.type
-                target = inter.data.get("target_id")
+                if inter.data is None:
+                    return
 
-                self.log_app_com(user, inter.channel, inter_type, target)
+                target = inter.data.get("target_id", 0)
+                com = inter.data.get("name", "")
+
+                self.log_app_com(user, inter.channel, com, inter_type, target)  # type:ignore
         except Exception as e:
             self.log_list_error(e)
 
@@ -218,7 +216,7 @@ class CmdLog(commands.Cog):
             user=inter.author,
             chan=inter.channel,
             inter_type=1,
-            com_name=inter.data.name,
+            com_name=inter.data.name,  # type:ignore
         )
 
     # APP COM PARSE FOR DISLASH, 2/3
@@ -228,8 +226,8 @@ class CmdLog(commands.Cog):
             user=inter.user,
             chan=inter.channel,
             inter_type=2,
-            com_name=inter.data.name,
-            target_id=inter.data.target_id,
+            com_name=inter.data.name,  # type:ignore
+            target_id=inter.data.target_id,  # type:ignore
         )
 
     # APP COM PARSE FOR DISLASH, 3/3
@@ -238,15 +236,15 @@ class CmdLog(commands.Cog):
         self.log_app_com(
             user=inter.user,
             chan=inter.channel,
-            com_name=inter.data.name,
+            com_name=inter.data.name,  # type:ignore
             inter_type=3,
-            target_id=inter.data.target_id,
+            target_id=inter.data.target_id,  # type:ignore
         )
 
     def log_app_com(
         self,
-        user: Optional[Union[discord.user.User, discord.abc.User]],
-        chan: Optional[Union[discord.DMChannel, discord.TextChannel]],
+        user: Optional[Union[discord.abc.User, discord.User, discord.Member]],
+        chan: Optional[discord.TextChannel],
         com_name: str,
         inter_type: int,
         target_id: Optional[int] = None,
@@ -254,13 +252,8 @@ class CmdLog(commands.Cog):
         if user is None or chan is None:
             return
 
-        assert isinstance(user, discord.User)
-
-        target: Optional[Union[PartialMessage, Member]]
         if target_id:
-            target = chan.get_partial_message(target_id) or chan.guild.get_member(  # type:ignore
-                target_id
-            )
+            target = self.bot.get_user(target_id) or chan.get_partial_message(target_id)
         else:
             target = None
 
@@ -303,6 +296,7 @@ class CmdLog(commands.Cog):
         self.log_content = to_log
         await ctx.send("Message content will " + ("now" if to_log else "now not") + " be logged.")
 
+    @commands.guild_only()
     @cmdlog.command()
     async def channel(self, ctx: commands.Context, channel: Optional[TextChannel]):
         """Set the channel to send logs to, this is optional.
@@ -313,6 +307,10 @@ class CmdLog(commands.Cog):
             - `[p]cmdlog channel #com-log` - set the log channel to #com-log
             - `[p]cmdlog channel` - stop sending logs
         """
+        # guild only check
+        if TYPE_CHECKING:
+            assert isinstance(ctx.me, discord.Member)
+
         if channel is None:
             await self.config.log_channel.set(None)
             if self.channel_logger:
@@ -364,7 +362,7 @@ class CmdLog(commands.Cog):
         fp.write(log_str)
         size = fp.tell()
         if ctx.guild:
-            max_size = ctx.guild.filesize_limit  # type:ignore
+            max_size = ctx.guild.filesize_limit
         else:
             max_size = 8388608
         if size > max_size:
@@ -377,7 +375,7 @@ class CmdLog(commands.Cog):
 
         await ctx.send(
             "Here is the command log. " + self.get_track_start(),
-            file=discord.File(fp, "cmdlog.txt"),
+            file=discord.File(fp, "cmdlog.txt"),  # type:ignore
         )
         fp.close()
 
@@ -400,7 +398,7 @@ class CmdLog(commands.Cog):
         fp.write(log_str)
         size = fp.tell()
         if ctx.guild:
-            max_size = ctx.guild.filesize_limit  # type:ignore
+            max_size = ctx.guild.filesize_limit
         else:
             max_size = 8388608
         if size > max_size:
@@ -413,7 +411,7 @@ class CmdLog(commands.Cog):
 
         await ctx.send(
             f"Here is the command log for user {user_id}. " + self.get_track_start(),
-            file=discord.File(fp, f"cmdlog_{user_id}.txt"),
+            file=discord.File(fp, f"cmdlog_{user_id}.txt"),  # type:ignore
         )
         fp.close()
 
@@ -436,7 +434,7 @@ class CmdLog(commands.Cog):
         fp.write(log_str)
         size = fp.tell()
         if ctx.guild:
-            max_size = ctx.guild.filesize_limit  # type:ignore
+            max_size = ctx.guild.filesize_limit
         else:
             max_size = 8388608
         if size > max_size:
@@ -449,7 +447,7 @@ class CmdLog(commands.Cog):
 
         await ctx.send(
             f"Here is the command log for server {server_id}. " + self.get_track_start(),
-            file=discord.File(fp, f"cmdlog_{server_id}.txt"),
+            file=discord.File(fp, f"cmdlog_{server_id}.txt"),  # type:ignore
         )
         fp.close()
 
@@ -495,6 +493,6 @@ class CmdLog(commands.Cog):
 
         await ctx.send(
             f"Here is the command log for command '{command}'. " + self.get_track_start(),
-            file=discord.File(fp, f"cmdlog_{command.replace(' ', '_')}.txt"),
+            file=discord.File(fp, f"cmdlog_{command.replace(' ', '_')}.txt"),  # type:ignore
         )
         fp.close()

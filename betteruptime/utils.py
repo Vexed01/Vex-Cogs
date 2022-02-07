@@ -2,7 +2,7 @@ import datetime
 from dataclasses import dataclass
 from math import ceil
 
-import pandas
+import pandas as pd
 from redbot.core.utils.chat_formatting import humanize_timedelta
 
 from .abc import MixinMeta
@@ -18,14 +18,14 @@ class UptimeData:
     total_secs_connected: float
     total_secs_loaded: float
 
-    daily_cog_loaded_data: pandas.Series
-    daily_connected_data: pandas.Series
+    daily_cog_loaded_data: pd.Series
+    daily_connected_data: pd.Series
 
     seconds_data_collected: float
 
     first_load: datetime.datetime
 
-    expected_index: pandas.DatetimeIndex
+    expected_index: pd.DatetimeIndex
 
     @property
     def downtime(self) -> str:
@@ -37,7 +37,7 @@ class UptimeData:
             or "none"
         )
 
-    def date_downtime(self, date: pandas.Timestamp) -> str:
+    def date_downtime(self, date: pd.Timestamp) -> str:
         """Get complete downtime for selected date"""
         return (
             humanize_timedelta(
@@ -56,7 +56,7 @@ class UptimeData:
             or "none"
         )
 
-    def date_net_downtime(self, date: pandas.Timestamp) -> str:
+    def date_net_downtime(self, date: pd.Timestamp) -> str:
         """Get network downtime for selected timeframe"""
         return (
             humanize_timedelta(
@@ -82,7 +82,7 @@ class UptimeData:
         )
 
     # for these two below no need to copy because object is single use
-    def daily_connected_percentages(self) -> pandas.Series:
+    def daily_connected_percentages(self) -> pd.Series:
         midnight = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         new = self.daily_connected_data
         for date in self.expected_index:
@@ -97,7 +97,7 @@ class UptimeData:
             pass
         return new.astype(float)
 
-    def daily_cog_loaded_percentages(self) -> pandas.Series:
+    def daily_cog_loaded_percentages(self) -> pd.Series:
         midnight = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         new = self.daily_cog_loaded_data.copy()
         for date in self.expected_index:
@@ -129,7 +129,7 @@ class Utils(MixinMeta):
         ts_con = self.connected_cache.copy(deep=True)
         conf_first_loaded = datetime.datetime.utcfromtimestamp(self.first_load)
 
-        expected_index = pandas.date_range(
+        expected_index = pd.date_range(
             start=conf_first_loaded + datetime.timedelta(days=1),
             end=datetime.datetime.today(),
             normalize=True,
@@ -147,7 +147,7 @@ class Utils(MixinMeta):
 
             if conf_first_loaded > midnight:  # cog was first loaded today
                 seconds_data_collected = (now - conf_first_loaded).total_seconds()
-                expected_index = pandas.date_range(
+                expected_index = pd.date_range(
                     start=conf_first_loaded,
                     end=datetime.datetime.today(),
                     normalize=True,
@@ -156,8 +156,8 @@ class Utils(MixinMeta):
                 seconds_data_collected = float((len(expected_index) - 1) * SECONDS_IN_DAY)
                 seconds_data_collected += seconds_since_midnight
 
-        ts_cl = ts_cl.reindex(expected_index)  # type: ignore
-        ts_con = ts_con.reindex(expected_index)  # type: ignore
+        ts_cl: pd.Series = ts_cl.reindex(expected_index)  # type: ignore
+        ts_con: pd.Series = ts_con.reindex(expected_index)  # type: ignore
         seconds_cog_loaded += ts_cl.sum()
         seconds_connected += ts_con.sum()
 

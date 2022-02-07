@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Dict
+from typing import TYPE_CHECKING, Dict
 
 import discord
 import pytz
@@ -81,10 +81,14 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
             await format_info(ctx, self.qualified_name, self.__version__, loops=[self.loop_meta])
         )
 
-    @commands.guild_only()
+    @commands.guild_only()  # type:ignore
     @commands.command()
     async def timezones(self, ctx: commands.Context):
         """See the time in all the configured timezones for this server."""
+        # guild only check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
         data: Dict[int, str] = await self.config.guild(ctx.guild).timechannels()
         if data is None:
             return await ctx.send("It looks like no time channels have been set up yet.")
@@ -225,7 +229,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         }
         reason = "Edited for timechannel - disable with `tcset remove`"
         channel = await ctx.guild.create_voice_channel(
-            name=name, overwrites=overwrites, reason=reason  # type:ignore
+            name=name, overwrites=overwrites, reason=reason
         )
 
         await self.config.guild(ctx.guild).timechannels.set_raw(  # type: ignore
