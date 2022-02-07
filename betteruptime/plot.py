@@ -49,9 +49,9 @@ def _plot(
 
     values_to_annotate = nsmallest(5, low_values.values())
     for val in values_to_annotate:  # for low uptime bots, don't flood with annotations
+        date = list(low_values.keys())[list(low_values.values()).index(val)]  # get date from value
         fig.add_annotation(
-            x=list(low_values.keys())[list(low_values.values()).index(val)],  # type:ignore
-            # ^ is getting key from value
+            x=date,
             y=val,
             text=f"{val}%\n{date.strftime('%d %b')}",
         )
