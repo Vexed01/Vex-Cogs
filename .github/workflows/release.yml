@@ -1,6 +1,9 @@
 name: Cog release
 
-on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   release:
@@ -11,24 +14,24 @@ jobs:
 
     name: Release
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
 
-    - name: Install dependencies
-      run: |
-        pip install gitpython requests
+      - name: Install dependencies
+        run: |
+          pip install gitpython requests
 
-    - name: Set up git
-      run: |
-        git config user.name "actions-user"
-        git config user.email ""
+      - name: Set up git
+        run: |
+          git config user.name "actions-user"
+          git config user.email ""
 
-    - name: Run script release.py
-      run: |
-        python .github/workflows/scripts/release.py
-      env:
-        CF_KV: ${{ secrets.CF_KV }}
+      - name: Run script release.py
+        run: |
+          python .github/workflows/scripts/release.py
+        env:
+          CF_KV: ${{ secrets.CF_KV }}
