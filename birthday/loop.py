@@ -82,7 +82,9 @@ class BirthdayLoop(MixinMeta):
             today_dt = datetime.datetime.utcnow().replace(
                 hour=0, minute=0, second=0, microsecond=0
             )
-            start = today_dt + datetime.timedelta(seconds=all_settings[guild.id]["time_utc_s"])
+            hour_td = datetime.timedelta(seconds=all_settings[guild.id]["time_utc_s"])
+
+            start = today_dt + hour_td
             end = start + datetime.timedelta(days=1)
 
             async for member_id, data in AsyncIter(guild_data.items(), steps=50):
@@ -97,7 +99,7 @@ class BirthdayLoop(MixinMeta):
                 proper_bday_dt = datetime.datetime(
                     year=birthday["year"] or 1, month=birthday["month"], day=birthday["day"]
                 )
-                this_year_bday_dt = proper_bday_dt.replace(year=today_dt.year)
+                this_year_bday_dt = proper_bday_dt.replace(year=today_dt.year) + hour_td
 
                 if start <= this_year_bday_dt < end:  # birthday is today
                     birthday_members[member] = proper_bday_dt
