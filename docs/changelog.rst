@@ -360,6 +360,14 @@ Birthday
 ========
 
 *********
+``1.0.5``
+*********
+
+2022-02-07
+
+- Ensure announcements are on the correct day when a non-UTC midnight time is used
+
+*********
 ``1.0.4``
 *********
 
