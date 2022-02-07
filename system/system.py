@@ -266,7 +266,7 @@ class System(commands.Cog):
 
         if ignore_loop:
             for name, disk_data in pre_data.items():
-                if name.startswith("/dev/loop"):
+                if name.startswith("`/dev/loop"):
                     continue
                 data[name] = disk_data
         else:
