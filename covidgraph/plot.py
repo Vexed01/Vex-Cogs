@@ -1,12 +1,17 @@
 import functools
 import io
+from typing import TYPE_CHECKING
 
 import discord
 import pandas as pd
 import plotly.express as px
 from asyncache import cached
 from cachetools import TTLCache
-from plotly.graph_objs._figure import Figure
+
+if TYPE_CHECKING:  # plotly does dynamic imports
+    from plotly.graph_objs._figure import Figure
+else:
+    from plotly.graph_objs import Figure
 
 from .abc import MixinMeta
 

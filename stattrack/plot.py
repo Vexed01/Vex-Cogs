@@ -1,14 +1,18 @@
 import functools
 import io
 from concurrent.futures.thread import ThreadPoolExecutor
+from typing import TYPE_CHECKING
 
 import discord
 import pandas as pd
 from plotly import express as px
-from plotly.graph_objs._figure import Figure
 
 from stattrack.abc import MixinMeta
 
+if TYPE_CHECKING:
+    from plotly.graph_objs._figure import Figure
+else:
+    from plotly.graph_objs import Figure
 # yes i am using a private import from plotly, atm plotly does dynamic imports which are not
 # supported by mypy
 
@@ -91,7 +95,7 @@ class StatPlot(MixinMeta):
 
         # rename the legend item of each trace in fig
         for trace in fig.data:
-            trace.name = TRACE_FRIENDLY_NAMES[trace.name]
+            trace.name = TRACE_FRIENDLY_NAMES[trace.name]  # type:ignore
 
         bytes = fig.to_image(format="png", width=800, height=500, scale=1)
         buffer = io.BytesIO(bytes)

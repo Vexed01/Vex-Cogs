@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import List
+from typing import TYPE_CHECKING, List
 
 import discord
 import psutil
@@ -66,7 +66,7 @@ class System(commands.Cog):
         # it works...
         emb = e.to_dict()
 
-        fields = emb["fields"]
+        fields = emb.get("fields", [])
         if len(fields) > 2:  # needs multi rows
             data: List[list] = []
             temp = []
@@ -83,7 +83,7 @@ class System(commands.Cog):
             for row in data:
                 while len(row) < 3:
                     row.append(empty_field)
-                fields.extend(row)  # type:ignore
+                fields.extend(row)
 
         # else it's 2 or less columns so doesn't need special treatment
         emb["fields"] = fields
@@ -356,6 +356,10 @@ class System(commands.Cog):
         Platforms: Windows, Linux, Mac OS
         Note: SWAP memory information is only available on Linux.
         """
+        # i jolly hope we are logged in...
+        if TYPE_CHECKING:
+            assert self.bot.user is not None
+
         async with ctx.typing():
             red = (await get_red())["red"]
 
@@ -385,6 +389,10 @@ class System(commands.Cog):
         Platforms: Windows, Linux, Mac OS
         Note: This command appears to be very slow in Windows.
         """
+        # i jolly hope we are logged in...
+        if TYPE_CHECKING:
+            assert self.bot.user is not None
+
         async with ctx.typing():
             cpu = await get_cpu()
             mem = await get_mem()

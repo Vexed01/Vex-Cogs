@@ -1,9 +1,14 @@
 [tool.black]
 line-length = 99
 target-version = ["py38"]
-extend-exclude = "vexutils"
+extend-exclude = "vexutils|.stubs"
 
 [tool.isort]
 profile = "black"
 line_length = 99
 extend_skip = "vexutils"
+
+[tool.pyright]
+stubPath = "./.stubs"
+exclude = ["*/vexutils", ".tox", "**/__pycache__", ".venv", ".github", ".stubs"]
+useLibraryCodeForTypes = true

@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 from discord import TextChannel, Webhook
 from redbot.core.bot import Red
@@ -61,11 +62,14 @@ async def get_channel_data(bot: Red, c_id: int, settings: ConfChannelSettings) -
     NoPermission
         No permission to send
     """
-    channel: TextChannel = bot.get_channel(c_id)  # type:ignore
+    channel = bot.get_channel(c_id)
     if channel is None:
         # TODO: maybe remove from config
         _log.info(f"I can't find the channel with id {c_id} - skipping")
         raise NotFound
+
+    if TYPE_CHECKING:
+        assert isinstance(channel, TextChannel)
 
     if await bot.cog_disabled_in_guild_raw("Status", channel.guild.id):
         _log.info(
@@ -88,7 +92,7 @@ async def get_channel_data(bot: Red, c_id: int, settings: ConfChannelSettings) -
         raise NoPermission
 
     if not settings["webhook"]:
-        use_embed = await bot.embed_requested(channel, channel.guild.me)
+        use_embed = await bot.embed_requested(channel, channel.guild.me)  # type:ignore
     else:
         use_embed = True
 

@@ -37,7 +37,7 @@ class SendCache:
             title=self.__incidentdata.title,
             url=self.__incidentdata.link,
             description=self.__incidentdata.description,
-            timestamp=self.__incidentdata.actual_time or self.__incidentdata.time or Embed.Empty,
+            timestamp=self.__incidentdata.actual_time or self.__incidentdata.time or None,
             colour=self._get_colour(),
         )
 
@@ -60,7 +60,8 @@ class SendCache:
         before_fields = len(embed.fields)
         if before_fields > 25:
             dict_embed = embed.to_dict()
-            dict_embed["fields"] = dict_embed["fields"][-25:]
+
+            dict_embed["fields"] = dict_embed.get("fields", [])[-25:]
             embed = Embed.from_dict(dict_embed)
             embed.set_field_at(
                 0,

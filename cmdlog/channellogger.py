@@ -4,7 +4,7 @@ import logging
 from asyncio import Queue
 from typing import Optional
 
-from discord.channel import TextChannel
+import discord
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, pagify
 
@@ -16,7 +16,7 @@ log = logging.getLogger("red.vex.cmdlog.channellogger")
 
 
 class ChannelLogger:
-    def __init__(self, bot: Red, channel: TextChannel) -> None:
+    def __init__(self, bot: Red, channel: discord.abc.MessageableChannel) -> None:
         self.bot = bot
         self.channel = channel
         self.task: Optional[asyncio.Task] = None

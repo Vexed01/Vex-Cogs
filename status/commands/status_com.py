@@ -1,6 +1,6 @@
 import datetime
 from collections import defaultdict
-from typing import Dict, List, NamedTuple, Optional
+from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional
 
 import discord
 from discord.channel import TextChannel
@@ -45,7 +45,7 @@ def process_components(json_data: dict) -> Comps:
 class StatusCom(MixinMeta):
 
     # TODO: support DMs
-    @commands.guild_only()
+    @commands.guild_only()  # type:ignore
     @commands.cooldown(2, 10, commands.BucketType.user)
     @commands.command(cls=DynamicHelp)
     async def status(self, ctx: commands.Context, service: ServiceConverter):
@@ -55,15 +55,17 @@ class StatusCom(MixinMeta):
         **Example:**
             - `[p]status discord`
         """
+        # guild check on command
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
         if time_until := self.service_cooldown.handle(ctx.author.id, service.name):
             message = "Status updates for {} are on cooldown. Try again in {}.".format(
                 service.friendly, humanize_timedelta(seconds=time_until)
             )
             return await ctx.send(message, delete_after=time_until)
 
-        if restrictions := self.service_restrictions_cache.get_guild(
-            ctx.guild.id, service.name  # type:ignore  # guild check
-        ):
+        if restrictions := self.service_restrictions_cache.get_guild(ctx.guild.id, service.name):
             channels = [self.bot.get_channel(channel) for channel in restrictions]
             channel_list = humanize_list(
                 [channel.mention for channel in channels if isinstance(channel, TextChannel)],
@@ -114,7 +116,7 @@ class StatusCom(MixinMeta):
                 timestamp=(
                     datetime.datetime.utcnow()
                     if discord.__version__.startswith("1")
-                    else discord.utils.utcnow()  # type:ignore
+                    else discord.utils.utcnow()
                 ),
                 colour=await ctx.embed_colour(),
             )

@@ -21,6 +21,9 @@ class BaseLabelView(ui.View):
         self.remake_buttons(0)
 
     async def interaction_check(self, interaction: Interaction) -> bool:
+        if interaction.user is None:  # ???
+            return False
+
         if interaction.user.id == self.master.author_id:
             return True
 
@@ -83,6 +86,6 @@ class LabelButton(Button):
 
         await self.master.regen_viw()
 
-        view: BaseLabelView = self.view
+        view: BaseLabelView = self.view  # type:ignore
         view.raw_labels[self.name] = not self.on_issue
         await view.regen(view.page, interaction)

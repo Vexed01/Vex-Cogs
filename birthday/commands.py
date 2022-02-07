@@ -4,6 +4,7 @@ import asyncio
 import datetime
 import logging
 from collections import defaultdict
+from typing import TYPE_CHECKING
 
 import discord
 from dateutil.parser import ParserError
@@ -27,6 +28,11 @@ log = logging.getLogger("red.vex.birthday.commands")
 
 class BirthdayCommands(MixinMeta):
     async def setup_check(self, ctx: commands.Context) -> None:
+        if ctx.guild is None:
+            raise CheckFailure("This command can only be used in a server.")
+            # this should have been caught by guild only check, but this keeps type checker happy
+            # and idk what order decos run in so
+
         if not await self.check_if_setup(ctx.guild):
             await ctx.send(
                 "This command is not available until the cog has been setup. "
@@ -34,9 +40,9 @@ class BirthdayCommands(MixinMeta):
             )
             raise CheckFailure("cog needs setup")
 
+    @commands.guild_only()  # type:ignore
     @commands.before_invoke(setup_check)  # type:ignore
     @commands.group(aliases=["bday"])
-    @commands.guild_only()  # type:ignore
     async def birthday(self, ctx: commands.Context):
         """Set and manage your birthday."""
 
@@ -56,6 +62,10 @@ class BirthdayCommands(MixinMeta):
             - `[p]bday set 9-24-2002`
             - `[p]bday set 9-24`
         """
+        # guild only check in group
+        if TYPE_CHECKING:
+            assert isinstance(ctx.author, discord.Member)
+
         # year as 1 means year not specified
 
         if birthday.year != 1 and birthday.year < MIN_BDAY_YEAR:
@@ -81,9 +91,14 @@ class BirthdayCommands(MixinMeta):
     @birthday.command(aliases=["delete", "del"])
     async def remove(self, ctx: commands.Context):
         """Remove your birthday."""
+        # guild only check in group
+        if TYPE_CHECKING:
+            assert isinstance(ctx.author, discord.Member)
+            assert ctx.guild is not None
+
         m = await ctx.send("Are you sure?")
         start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
-        check = ReactionPredicate.yes_or_no(m, ctx.author)
+        check = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
 
         try:
             await self.bot.wait_for("reaction_add", check=check, timeout=60)
@@ -107,6 +122,11 @@ class BirthdayCommands(MixinMeta):
             - `[p]birthday upcoming` - default of 7 days
             - `[p]birthday upcoming 14` - 14 days
         """
+        # guild only check in group
+        if TYPE_CHECKING:
+            assert isinstance(ctx.author, discord.Member)
+            assert ctx.guild is not None
+
         if days < 1 or days > 365:
             await ctx.send("You must enter a number of days greater than 0 and smaller than 365.")
             return
@@ -178,7 +198,7 @@ class BirthdayCommands(MixinMeta):
 
 class BirthdayAdminCommands(MixinMeta):
     @commands.group()
-    @commands.guild_only()
+    @commands.guild_only()  # type:ignore
     @commands.admin_or_permissions(manage_guild=True)
     async def bdset(self, ctx: commands.Context):
         """
@@ -190,13 +210,18 @@ class BirthdayAdminCommands(MixinMeta):
     @bdset.command()
     async def interactive(self, ctx: commands.Context):
         """Start interactive setup"""
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+            assert isinstance(ctx.me, discord.Member)
+
         m: discord.Message = await ctx.send(
             "Just a heads up, you'll be asked for a message for when the user provided their birth"
             " year, a message for when they didn't, the channel to sent notifications, the role,"
             " and the time of day to send them.\n\nWhen you're ready, press the tick."
         )
         start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
-        pred = ReactionPredicate.yes_or_no(m, ctx.author)
+        pred = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
         try:
             await self.bot.wait_for("reaction_add", check=pred, timeout=300)
         except asyncio.TimeoutError:
@@ -276,7 +301,7 @@ class BirthdayAdminCommands(MixinMeta):
                 " interactive` to start again."
             )
 
-        channel: discord.TextChannel = pred.result  # type:ignore
+        channel: discord.TextChannel = pred.result
         if channel.permissions_for(ctx.me).send_messages is False:
             await ctx.send(
                 warning(
@@ -285,7 +310,7 @@ class BirthdayAdminCommands(MixinMeta):
                 )
             )
 
-        channel_id = pred.result.id  # type:ignore
+        channel_id = pred.result.id
 
         # ============================== ROLE ==============================
 
@@ -305,7 +330,7 @@ class BirthdayAdminCommands(MixinMeta):
             )
 
         # no need to check hierarchy for author, since command is locked to admins
-        if ctx.me.top_role < pred.result:  # type:ignore
+        if ctx.me.top_role < pred.result:
             await ctx.send(
                 warning(
                     "I can't use that role because it is higher than my highest role. Please make"
@@ -314,7 +339,7 @@ class BirthdayAdminCommands(MixinMeta):
                 )
             )
 
-        if not ctx.me.guild_permissions.manage_roles:  # type:ignore
+        if not ctx.me.guild_permissions.manage_roles:
             await ctx.send(
                 warning(
                     "I don't have permission to manage roles. Please make sure you rectify this as"
@@ -322,7 +347,7 @@ class BirthdayAdminCommands(MixinMeta):
                 )
             )
 
-        role_id = pred.result.id  # type:ignore
+        role_id = pred.result.id
 
         # ============================== TIME ==============================
 
@@ -350,8 +375,9 @@ class BirthdayAdminCommands(MixinMeta):
                 f"Took too long to react, cancelling setup. Run `{ctx.clean_prefix}bdset"
                 " interactive` to start again."
             )
+            return
 
-        full_time = time_parser(ret.content)  # type:ignore
+        full_time = time_parser(ret.content)
         full_time = full_time.replace(tzinfo=datetime.timezone.utc, year=1, month=1, day=1)
 
         midnight = datetime.datetime.now(tz=datetime.timezone.utc).replace(
@@ -380,6 +406,10 @@ class BirthdayAdminCommands(MixinMeta):
     @bdset.command()
     async def settings(self, ctx: commands.Context):
         """View your current settings"""
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
         table = Table("Name", "Value", title="Settings for this server")
 
         async with self.config.guild(ctx.guild).all() as conf:
@@ -418,6 +448,10 @@ class BirthdayAdminCommands(MixinMeta):
             - `[p]bdset time 12AM` - set the time to midnight UTC
             - `[p]bdset time 3PM` - set the time to 3:00PM UTC
         """
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
         midnight = datetime.datetime.utcnow().replace(
             year=1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0
         )
@@ -461,6 +495,11 @@ class BirthdayAdminCommands(MixinMeta):
             - `[p]bdset msgwithoutyear Happy birthday {mention}!`
             - `[p]bdset msgwithoutyear {mention}'s birthday is today! Happy birthday {name}.`
         """
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+            assert isinstance(ctx.author, discord.Member)
+
         if len(message) > MAX_BDAY_MSG_LEN:
             await ctx.send("That message is too long! It needs to be under 750 characters.")
 
@@ -492,6 +531,11 @@ class BirthdayAdminCommands(MixinMeta):
             - `[p]bdset msgwithyear {mention} has turned {new_age}, happy birthday!`
             - `[p]bdset msgwithyear {name} is {new_age} today! Happy birthday {mention}!`
         """
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+            assert isinstance(ctx.author, discord.Member)
+
         if len(message) > MAX_BDAY_MSG_LEN:
             await ctx.send("That message is too long! It needs to be under 750 characters.")
 
@@ -515,6 +559,10 @@ class BirthdayAdminCommands(MixinMeta):
         **Example:**
             - `[p]bdset channel #birthdays` - set the channel to #birthdays
         """
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
         async with self.config.guild(ctx.guild).all() as conf:
             if conf["channel_id"] is None:
                 conf["setup_state"] += 1
@@ -535,6 +583,10 @@ class BirthdayAdminCommands(MixinMeta):
             - `[p]bdset role Birthday` - set the role to @Birthday without a mention
             - `[p]bdset role 418058139913063657` - set the role with an ID
         """
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
         async with self.config.guild(ctx.guild).all() as conf:
             if conf["role_id"] is None:
                 conf["setup_state"] += 1
@@ -586,6 +638,10 @@ class BirthdayAdminCommands(MixinMeta):
         """
         Import data from ZeCogs'/flare's fork of Birthdays cog
         """
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
         if await self.config.guild(ctx.guild).setup_state() != 0:
             m = await ctx.send(
                 "You have already started setting the cog up. Are you sure? This will overwrite"
@@ -593,7 +649,7 @@ class BirthdayAdminCommands(MixinMeta):
             )
 
             start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(m, ctx.author)
+            pred = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
             try:
                 await self.bot.wait_for("reaction_add", check=pred, timeout=60)
             except asyncio.TimeoutError:

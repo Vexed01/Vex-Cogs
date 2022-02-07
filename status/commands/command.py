@@ -3,7 +3,7 @@ from redbot.core import commands
 from status.core.consts import FEEDS
 from status.vexutils.chat import inline_hum_list
 
-SERVICE_LIST = inline_hum_list(FEEDS.keys())  # type:ignore
+SERVICE_LIST = inline_hum_list(tuple(FEEDS.keys()))
 
 
 class DynamicHelp(commands.Command):

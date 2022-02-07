@@ -24,6 +24,9 @@ class MergeConfirm(View):
         self.merge_method = merge_method
 
     async def interaction_check(self, interaction: Interaction) -> bool:
+        if interaction.user is None:
+            return False
+
         if interaction.user.id == self.master.author_id:
             return True
 
