@@ -79,10 +79,11 @@ class BirthdayLoop(MixinMeta):
 
             birthday_members: dict[discord.Member, datetime.datetime] = {}
 
-            today_dt = datetime.datetime.utcnow().replace(
+            hour_td = datetime.timedelta(seconds=all_settings[guild.id]["time_utc_s"])
+
+            today_dt = (datetime.datetime.utcnow() - hour_td).replace(
                 hour=0, minute=0, second=0, microsecond=0
             )
-            hour_td = datetime.timedelta(seconds=all_settings[guild.id]["time_utc_s"])
 
             start = today_dt + hour_td
             end = start + datetime.timedelta(days=1)
