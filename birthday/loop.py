@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from logging import getLogger
-from typing import Any
+from typing import Any, NoReturn
 
 import discord
 from redbot.core import commands
@@ -36,11 +36,97 @@ class BirthdayLoop(MixinMeta):
         # just using one task for all guilds is okay. maybe it's not the fastest as no async-ness
         # but it's fine for now and the loop is at max hourly
 
-    async def birthday_loop(self) -> None:
+    async def add_role(self, member: discord.Member, role: discord.Role):
+        if member.guild.me.guild_permissions.manage_roles is False:
+            log.debug(
+                "Not adding role to %s in guild %s because I don't have the Manage Roles"
+                " permission.",
+                member.id,
+                member.guild.id,
+            )
+            return
+
+        if member.guild.me.top_role.position >= role.position:
+            log.debug(
+                "Not adding role to %s in guild %s because I don't have the required role"
+                " position.",
+                member.id,
+                member.guild.id,
+            )
+            return
+
+        self.coro_queue.put_nowait(
+            member.add_roles(role, reason="Birthday cog - birthday starts today")
+        )
+
+    async def remove_role(self, member: discord.Member, role: discord.Role):
+        if member.guild.me.guild_permissions.manage_roles is False:
+            log.debug(
+                "Not removing role to %s in guild %s because I don't have the Manage Roles"
+                " permission.",
+                member.id,
+                member.guild.id,
+            )
+            return
+
+        if member.guild.me.top_role.position >= role.position:
+            log.debug(
+                "Not removing role to %s in guild %s because I don't have the required role"
+                " position.",
+                member.id,
+                member.guild.id,
+            )
+            return
+
+        self.coro_queue.put_nowait(
+            member.remove_roles(role, reason="Birthday cog - birthday ends today")
+        )
+
+    async def send_announcement(self, channel: discord.TextChannel, message: str):
+        if channel.permissions_for(channel.guild.me).send_messages is False:
+            log.debug(
+                "Not sending announcement to %s in guild %s because I don't have the Send Messages"
+                " permission.",
+                channel.id,
+                channel.guild.id,
+            )
+            return
+
+        self.coro_queue.put_nowait(
+            channel.send(
+                message,
+                allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
+            )
+        )
+
+    async def birthday_loop(self) -> NoReturn:
         """The Birthday loop. This coro will run forever."""
         await self.bot.wait_until_red_ready()
         await self.ready.wait()
 
+        # 1st loop
+        try:
+            self.loop_meta.iter_start()
+            await self._update_birthdays()
+            self.loop_meta.iter_finish()
+            log.debug("Initial loop has finished")
+        except Exception as e:
+            self.loop_meta.iter_error(e)
+            log.exception(
+                "Something went wrong in the Birthday loop. The loop will try again in an hour."
+                "Please report this and the below information to Vexed.",
+                exc_info=e,
+            )
+
+        # both iter_finish and iter_error set next_iter as not None
+        assert self.loop_meta.next_iter is not None
+        self.loop_meta.next_iter = self.loop_meta.next_iter.replace(
+            minute=0
+        )  # ensure further iterations are on the hour
+
+        await self.loop_meta.sleep_until_next()
+
+        # all further iterations
         while True:
             log.debug("Loop has started next iteration")
             try:
@@ -129,18 +215,14 @@ class BirthdayLoop(MixinMeta):
 
             for member, dt in birthday_members.items():
                 if member not in role.members:
-                    self.coro_queue.put_nowait(
-                        member.add_roles(role, reason="Birthday cog - birthday starts today")
-                    )
+                    await self.add_role(member, role)
                     log.debug("Queued birthday role add for %s in guild %s", member.id, guild_id)
                     if dt.year == 1:
-                        self.coro_queue.put_nowait(
-                            channel.send(
-                                format_bday_message(
-                                    all_settings[guild.id]["message_wo_year"], member
-                                )
-                            )
+                        await self.send_announcement(
+                            channel,
+                            format_bday_message(all_settings[guild.id]["message_wo_year"], member),
                         )
+
                         log.debug(
                             "Queued birthday message wo year for %s in guild %s",
                             member.id,
@@ -149,13 +231,13 @@ class BirthdayLoop(MixinMeta):
 
                     else:
                         age = today_dt.year - dt.year
-                        self.coro_queue.put_nowait(
-                            channel.send(
-                                format_bday_message(
-                                    all_settings[guild.id]["message_w_year"], member, age
-                                )
-                            )
+                        await self.send_announcement(
+                            channel,
+                            format_bday_message(
+                                all_settings[guild.id]["message_w_year"], member, age
+                            ),
                         )
+
                         log.debug(
                             "Queued birthday message w year for %s in guild %s",
                             member.id,
@@ -164,9 +246,7 @@ class BirthdayLoop(MixinMeta):
 
             for member in role.members:
                 if member not in birthday_members:
-                    self.coro_queue.put_nowait(
-                        member.remove_roles(role, reason="Birthday cog - birthday ends today")
-                    )
+                    await self.remove_role(member, role)
                     log.debug(
                         "Queued birthday role remove for %s in guild %s", member.id, guild_id
                     )

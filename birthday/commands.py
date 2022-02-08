@@ -207,6 +207,7 @@ class BirthdayAdminCommands(MixinMeta):
         Looking to set your own birthday? Use `[p]birthday set` or `[p]bday set`.
         """
 
+    @commands.bot_has_permissions(manage_roles=True)
     @bdset.command()
     async def interactive(self, ctx: commands.Context):
         """Start interactive setup"""
@@ -562,6 +563,14 @@ class BirthdayAdminCommands(MixinMeta):
         # group has guild check
         if TYPE_CHECKING:
             assert ctx.guild is not None
+            assert isinstance(ctx.me, discord.Member)
+
+        if channel.permissions_for(ctx.me).send_messages is False:
+            await ctx.send(
+                "I can't do that because I don't have permissions to send messages in"
+                f" {channel.mention}."
+            )
+            return
 
         async with self.config.guild(ctx.guild).all() as conf:
             if conf["channel_id"] is None:
@@ -571,6 +580,7 @@ class BirthdayAdminCommands(MixinMeta):
 
         await ctx.send(f"Channel set to {channel.mention}.")
 
+    @commands.bot_has_permissions(manage_roles=True)
     @bdset.command()
     async def role(self, ctx: commands.Context, *, role: discord.Role):
         """
@@ -586,6 +596,12 @@ class BirthdayAdminCommands(MixinMeta):
         # group has guild check
         if TYPE_CHECKING:
             assert ctx.guild is not None
+            assert isinstance(ctx.me, discord.Member)
+
+        # no need to check hierarchy for author, since command is locked to admins
+        if ctx.me.top_role < role:
+            await ctx.send(f"I can't use {role.name} because it is higher than my highest role.")
+            return
 
         async with self.config.guild(ctx.guild).all() as conf:
             if conf["role_id"] is None:
