@@ -25,6 +25,7 @@ Jump links:
 | :ref:`status<cl_status>`
 | :ref:`system<cl_system>`
 | :ref:`timechannel<cl_timechannel>`
+| :ref:`uptimeresponder<cl_uptimeresponder>`
 | :ref:`wol<cl_wol>`
 
 .. note::
@@ -1342,6 +1343,19 @@ TimeChannel
 - Initial release
 
 .. _cl_wol:
+
+===============
+UptimeResponder
+===============
+
+*********
+``1.0.0``
+*********
+
+2022-02-09
+
+- "New" cog (moved from bounty repo)
+- Cog for responding to uptime monitoring service pings.
 
 ===
 WOL

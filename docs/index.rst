@@ -39,6 +39,7 @@ in #support_vex-cogs.
    cogs/statusref
    cogs/system
    cogs/timechannel
+   cogs/uptimeresponder
    cogs/wol
 
 .. toctree::

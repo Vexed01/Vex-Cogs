@@ -54,6 +54,7 @@ cog_folders = [
     "anotherpingcog",
     "beautify",
     "betteruptime",
+    "birthday",
     "caseinsensitive",
     "cmdlog",
     "covidgraph",
@@ -65,6 +66,7 @@ cog_folders = [
     "status",
     "system",
     "timechannel",
+    "uptimeresponder",
     "wol",
 ]
 

@@ -42,6 +42,7 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | [status](https://go.vexcodes.com/c/status) | Recieve automatic status updates from various services, including Discord. |
 | [system](https://go.vexcodes.com/c/system) | Get system metrics of the host device, such as RAM or CPU. |
 | [timechannel](https://go.vexcodes.com/c/timechannel) | Get the time in different timezones in voice channels. |
+| [uptimeresponder](https://go.vexcodes.com/c/uptimeresponder) | Cog for responding to uptime monitoring service pings. |
 | [wol](https://go.vexcodes.com/c/wol) | Use Wake on LAN from Discord! This cog sends magic packets on the local network.
 
 All these cogs have docs! My docs [are here](https://cogdocs.vexcodes.com/en/latest) or click on the cog name to go directly to that cog's docs page.

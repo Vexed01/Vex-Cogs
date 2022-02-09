@@ -22,6 +22,7 @@ COGS = [
     "status",
     "system",
     "timechannel",
+    "uptimeresponder",
     "wol",
 ]
 

@@ -49,6 +49,7 @@ cogs = [
     "status",
     "system",
     "timechannel",
+    "uptimeresponder",
     "wol",
     #
     # "buttonpoll",
