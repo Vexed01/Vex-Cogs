@@ -349,7 +349,7 @@ class StatusSetCom(MixinMeta):
         """
         Preview what status updates will look like.
 
-        You can also see this at https://s.vexcodes.com/c/statusref
+        You can also see this at https://go.vexcodes.com/c/statusref
 
         **<service>**
 
