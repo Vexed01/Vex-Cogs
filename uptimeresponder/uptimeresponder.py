@@ -101,7 +101,10 @@ class UptimeResponder(commands.Cog):
             try:
                 await self.start_webserver(port)
             except OSError as e:
-                await ctx.send(f"Failed to start web server on port {port}: ```\n{e}```")
+                await ctx.send(
+                    f"Failed to start web server on port {port}: ```\n{e}```\nPlease choose a"
+                    " different port. No web server is running at the moment."
+                )
                 return
             await self.config.port.set(port)
 
