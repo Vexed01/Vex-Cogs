@@ -1,24 +1,24 @@
+from __future__ import annotations
+
 import asyncio
 import json
 from logging import getLogger
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Union
+from typing import Literal, NamedTuple
 
 import aiohttp
-import tabulate
-from asyncache import cached
-from cachetools import TTLCache
 from redbot.core import VersionInfo, commands
 from redbot.core import version_info as cur_red_version
-from redbot.core.utils.chat_formatting import box
+from rich import box as rich_box
+from rich.table import Table  # type:ignore
 
+from .chat import no_colour_rich_markup
 from .consts import DOCS_BASE, GREEN_CIRCLE, RED_CIRCLE
 from .loop import VexLoop
 
 log = getLogger("red.vex-utils")
 
 
-cog_ver_cache: TTLCache = TTLCache(maxsize=16, ttl=300)  # ttl is 5 mins
 cog_ver_lock = asyncio.Lock()
 
 
@@ -56,8 +56,8 @@ async def format_info(
     ctx: commands.Context,
     qualified_name: str,
     cog_version: str,
-    extras: Dict[str, Union[str, bool]] = {},
-    loops: List[VexLoop] = [],
+    extras: dict[str, str | bool] = {},
+    loops: list[VexLoop] = [],
 ) -> str:
     """Generate simple info text about the cog. **Not** currently for use outside my cogs.
 
@@ -83,69 +83,73 @@ async def format_info(
     cog_name = qualified_name.lower()
     current = _get_current_vers(cog_version, qualified_name)
     try:
-        latest = await _get_latest_vers()
+        latest = await _get_latest_vers(cog_name)
 
-        cog_updated = current.cogs[cog_name] >= latest.cogs[cog_name]
+        cog_updated = current.cog >= latest.cog
         utils_updated = current.utils == latest.utils
         red_updated = current.red >= latest.red
     except Exception:  # anything and everything, eg aiohttp error or version parsing error
         log.warning("Unable to parse versions.", exc_info=True)
         cog_updated, utils_updated, red_updated = "Unknown", "Unknown", "Unknown"
-        latest = UnknownVers({cog_name: "Unknown"})
+        latest = UnknownVers()
 
     start = f"{qualified_name} by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n"
-    versions = [
-        [
-            "This Cog",
-            current.cogs.get(cog_name),
-            latest.cogs.get(cog_name),
-            GREEN_CIRCLE if cog_updated else RED_CIRCLE,
-        ],
-        [
-            "Bundled Utils",
-            current.utils,
-            latest.utils,
-            GREEN_CIRCLE if utils_updated else RED_CIRCLE,
-        ],
-        [
-            "Red",
-            current.red,
-            latest.red,
-            GREEN_CIRCLE if red_updated else RED_CIRCLE,
-        ],
-    ]
+
+    main_table = Table(
+        "", "Current", "Latest", "Up to date?", title="Versions", box=rich_box.MINIMAL
+    )
+
+    main_table.add_row(
+        "This Cog",
+        str(current.cog),
+        str(latest.cog),
+        GREEN_CIRCLE if cog_updated else RED_CIRCLE,
+    )
+    main_table.add_row(
+        "Bundled Utils",
+        current.utils,
+        latest.utils,
+        GREEN_CIRCLE if utils_updated else RED_CIRCLE,
+    )
+    main_table.add_row(
+        "Red",
+        str(current.red),
+        str(latest.red),
+        GREEN_CIRCLE if red_updated else RED_CIRCLE,
+    )
+
     update_msg = "\n"
     if not cog_updated:
         update_msg += f"To update this cog, use the `{ctx.clean_prefix}cog update` command.\n"
     if not utils_updated:
         update_msg += (
-            f"To update the bundled utils, use the `{ctx.clean_prefix}utils update` command.\n"
+            f"To update the bundled utils, use the `{ctx.clean_prefix}cog update` command.\n"
         )
     if not red_updated:
         update_msg += "To update Red, see https://docs.discord.red/en/stable/update_red.html\n"
 
+    extra_table = Table("Key", "Value", title="Extras", box=rich_box.MINIMAL)
+
     data = []
     if loops:
         for loop in loops:
-            data.append([loop.friendly_name, GREEN_CIRCLE if loop.integrity else RED_CIRCLE])
+            extra_table.add_row(loop.friendly_name, GREEN_CIRCLE if loop.integrity else RED_CIRCLE)
 
     if extras:
         if data:
-            data.append([])
+            extra_table.add_row("", "")
         for key, value in extras.items():
             if isinstance(value, bool):
                 str_value = GREEN_CIRCLE if value else RED_CIRCLE
             else:
                 assert isinstance(value, str)
                 str_value = value
-            data.append([key, str_value])
+            extra_table.add_row(key, str_value)
 
-    boxed = box(
-        tabulate.tabulate(versions, headers=["", "Your Version", "Latest version", "Up to date?"])
-    )
+    boxed = no_colour_rich_markup(main_table)
     boxed += update_msg
-    if data:
-        boxed += box(tabulate.tabulate(data, tablefmt="plain"))
+    if loops or extras:
+        boxed += no_colour_rich_markup(extra_table)
 
     return f"{start}{boxed}"
 
@@ -154,8 +158,8 @@ async def out_of_date_check(cogname: str, currentver: str) -> None:
     """Send a log at warning level if the cog is out of date."""
     try:
         async with cog_ver_lock:
-            vers = await _get_latest_vers()
-        if VersionInfo.from_str(currentver) < vers.cogs[cogname]:
+            vers = await _get_latest_vers(cogname)
+        if VersionInfo.from_str(currentver) < vers.cog:
             log.warning(
                 f"Your {cogname} cog, from Vex, is out of date. You can update your cogs with the "
                 "'cog update' command in Discord."
@@ -171,35 +175,31 @@ async def out_of_date_check(cogname: str, currentver: str) -> None:
 
 
 class Vers(NamedTuple):
-    cogs: Dict[str, VersionInfo]
+    cogname: str
+    cog: VersionInfo
     utils: str
     red: VersionInfo
 
 
 class UnknownVers(NamedTuple):
-    cogs: Dict[str, str]
+    cogname: str = "Unknown"
+    cog: VersionInfo | Literal["Unknown"] = "Unknown"
     utils: str = "Unknown"
-    red: str = "Unknown"
+    red: VersionInfo | Literal["Unknown"] = "Unknown"
 
 
-@cached(cog_ver_cache)  # ttl is 5 mins
-async def _get_latest_vers() -> Vers:
+async def _get_latest_vers(cogname: str) -> Vers:
     data: dict
     async with aiohttp.ClientSession() as session:
-        async with session.get("https://api.vexcodes.com/v1/vers/", timeout=5) as r:
+        async with session.get(f"https://api.vexcodes.com/v2/vers/{cogname}", timeout=3) as r:
             data = await r.json()
             latest_utils = data["utils"][:7]
-            data.pop("utils")
-            latest_cogs = data
+            latest_cog = VersionInfo.from_str(data.get(cogname, "0.0.0"))
         async with session.get("https://pypi.org/pypi/Red-DiscordBot/json", timeout=3) as r:
             data = await r.json()
             latest_red = VersionInfo.from_str(data.get("info", {}).get("version", "0.0.0"))
 
-    obj_latest_cogs = {
-        str(cogname): VersionInfo.from_str(ver) for cogname, ver in latest_cogs.items()
-    }
-
-    return Vers(obj_latest_cogs, latest_utils, latest_red)
+    return Vers(cogname, latest_cog, latest_utils, latest_red)
 
 
 def _get_current_vers(curr_cog_ver: str, qual_name: str) -> Vers:
@@ -208,7 +208,8 @@ def _get_current_vers(curr_cog_ver: str, qual_name: str) -> Vers:
         latest_utils = data.get("latest_commit", "Unknown")[:7]
 
     return Vers(
-        {qual_name.lower(): VersionInfo.from_str(curr_cog_ver)},
+        qual_name,
+        VersionInfo.from_str(curr_cog_ver),
         latest_utils,
         cur_red_version,
     )

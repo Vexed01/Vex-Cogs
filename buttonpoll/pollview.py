@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import discord
 from discord.enums import ButtonStyle
 from redbot.core.config import Config
 
-from buttonpoll.poll import Poll
+if TYPE_CHECKING:
+    from buttonpoll.poll import Poll
 
 
 class OptionButton(discord.ui.Button):
@@ -44,7 +45,7 @@ class OptionButton(discord.ui.Button):
 class PollView(discord.ui.View):
     """View for an active poll. This is persistent-compatible."""
 
-    def __init__(self, config: Config, poll_settings: Poll):
+    def __init__(self, config: Config, poll_settings: "Poll"):
         super().__init__(timeout=None)
         for option in poll_settings.options:
             self.add_item(

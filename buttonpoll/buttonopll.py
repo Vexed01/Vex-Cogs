@@ -1,5 +1,6 @@
 import datetime
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Literal, Optional
 
 import discord
@@ -42,9 +43,13 @@ class ButtonPoll(commands.Cog):
         self.loop = bot.loop.create_task(self.buttonpoll_loop())
         self.loop_meta = VexLoop("ButtonPoll", 60.0)
 
-        self.views: List[PollView] = []
+        self.polls: List[Poll] = []
 
         bot.add_dev_env_value("bpoll", lambda _: self)
+
+        self.plot_executor = ThreadPoolExecutor(
+            max_workers=16, thread_name_prefix="buttonpoll_plot"
+        )
 
     async def red_delete_data_for_user(
         self,
@@ -70,11 +75,13 @@ class ButtonPoll(commands.Cog):
         self.bot.remove_dev_env_value("bpoll")
 
         # if the cog will be reloaded, best to clean up views as they are re-initialised on load
-        for view in self.views:
-            view.stop()
+        for poll in self.polls:
+            poll.view.stop()
+
+        self.plot_executor.shutdown(wait=False)
 
     @commands.command(hidden=True)
-    async def cmdloginfo(self, ctx: commands.Context):
+    async def buttonpollinfo(self, ctx: commands.Context):
         main = await format_info(ctx, self.qualified_name, self.__version__)
         return await ctx.send(main)
 
@@ -84,9 +91,8 @@ class ButtonPoll(commands.Cog):
         for guild_polls in all_polls.values():
             for poll in guild_polls["poll_settings"].values():
                 obj_poll = Poll.from_dict(poll, self)
-                view = PollView(self.config, obj_poll)
-                self.views.append(view)
-                self.bot.add_view(view, message_id=obj_poll.message_id)
+                self.polls.append(obj_poll)
+                self.bot.add_view(obj_poll.view, message_id=obj_poll.message_id)
                 log.debug(f"Re-initialised view for poll {obj_poll.unique_poll_id}")
 
     @commands.guild_only()  # type:ignore
@@ -185,8 +191,10 @@ class ButtonPoll(commands.Cog):
             # YES/NO QS
             change_vote = await wait_for_yes_no(
                 ctx,
-                content="Almost there! Just a few yes/no questions left.\nDo you want to allow "
-                "people to change their vote while the poll is live?",
+                content=(
+                    "Almost there! Just a few yes/no questions left.\nDo you want to allow "
+                    "people to change their vote while the poll is live?"
+                ),
                 timeout=60,
             )
             view_while_live = await wait_for_yes_no(
@@ -200,8 +208,10 @@ class ButtonPoll(commands.Cog):
                     PredItem(False, discord.ButtonStyle.primary, "Edit old"),
                     PredItem(True, discord.ButtonStyle.primary, "Send new"),
                 ],
-                content="Do you want to send a new message when the poll is over, or just edit "
-                "the old one?",
+                content=(
+                    "Do you want to send a new message when the poll is over, or just edit "
+                    "the old one? Note pie charts are only sent with `Send new`."
+                ),
                 timeout=60,
             )
         except TimeoutError:
@@ -209,8 +219,8 @@ class ButtonPoll(commands.Cog):
 
         await ctx.send("All done!")
 
-        unique_poll_id = (  # last 8 didgits of msg ID and first 50 of sanitised question
-            str(ctx.message.id)[8:] + "_" + "".join(c for c in question if c.isalnum())[:50]
+        unique_poll_id = (  # msg ID and first 25 chars of sanitised question
+            str(ctx.message.id) + "_" + "".join(c for c in question if c.isalnum())[:25]
         )
         poll_finish = datetime.datetime.now(datetime.timezone.utc) + duration
 
@@ -226,8 +236,9 @@ class ButtonPoll(commands.Cog):
             send_msg_when_over=send_msg_when_over,
             poll_finish=poll_finish,
             cog=self,
+            view=None,  # type:ignore
         )
-        view = PollView(self.config, poll)
+        poll.view = PollView(self.config, poll)
 
         e = discord.Embed(
             colour=await self.bot.get_embed_color(ctx.channel),
@@ -235,8 +246,10 @@ class ButtonPoll(commands.Cog):
             description=poll.description or EmptyEmbed,
         )
         e.add_field(
-            name=f"Ends at {datetime_to_timestamp(poll.poll_finish)}, "
-            f"{datetime_to_timestamp(poll.poll_finish, 'R')}",
+            name=(
+                f"Ends at {datetime_to_timestamp(poll.poll_finish)}, "
+                f"{datetime_to_timestamp(poll.poll_finish, 'R')}"
+            ),
             value=(
                 "You have one vote, "
                 + (
@@ -252,12 +265,12 @@ class ButtonPoll(commands.Cog):
             ),
         )
 
-        m = await ctx.send(embed=e, view=view)
+        m = await ctx.send(embed=e, view=poll.view)
 
         poll.set_msg_id(m.id)
         async with self.config.guild(ctx.guild).poll_settings() as poll_settings:  # type:ignore
             poll_settings[poll.unique_poll_id] = poll.to_dict()
-        self.views.append(view)
+        self.polls.append(poll)
 
     async def buttonpoll_loop(self):
         """Background loop for checking for finished polls."""
@@ -278,12 +291,11 @@ class ButtonPoll(commands.Cog):
             finally:
                 await self.loop_meta.sleep_until_next()
 
-    # code a loop that checks for polls that have finished, and then runs self.finish_poll
     async def check_for_finished_polls(self):
-        all_polls = await self.config.all_guilds()
-        for guild_polls in all_polls.values():
-            for poll in guild_polls["poll_settings"].values():
-                if poll["poll_finish"] < datetime.datetime.now(datetime.timezone.utc).timestamp():
-                    obj_poll = Poll.from_dict(poll, self)
-                    log.info(f"Poll {obj_poll.unique_poll_id} has finished.")
-                    await obj_poll.finish()
+        polls = self.polls.copy()
+        for poll in polls:
+            if poll.poll_finish < datetime.datetime.now(datetime.timezone.utc):
+                log.info(f"Poll {poll.unique_poll_id} has finished.")
+                await poll.finish()
+                poll.view.stop()
+                self.polls.remove(poll)

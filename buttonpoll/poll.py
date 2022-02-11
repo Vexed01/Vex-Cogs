@@ -1,15 +1,27 @@
+from __future__ import annotations
+
+import io
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import discord
+import pandas as pd
+import plotly.express as px
 from discord.channel import TextChannel
 from discord.embeds import EmptyEmbed
 from discord.enums import ButtonStyle
 
+from .pollview import PollView
+
 if TYPE_CHECKING:
+    from plotly.graph_objs._figure import Figure
+
     from .buttonopll import ButtonPoll
+else:
+    from plotly.graph_objs import Figure
+
 
 log = logging.getLogger("red.vex.buttonpoll.poll")
 
@@ -42,6 +54,7 @@ class Poll:
         send_msg_when_over: bool,
         poll_finish: datetime,
         cog: "ButtonPoll",
+        view: "PollView",
         message_id: int = 0,
     ):
         self.unique_poll_id = unique_poll_id
@@ -55,8 +68,14 @@ class Poll:
         self.view_while_live = view_while_live
         self.send_msg_when_over = send_msg_when_over
         self.poll_finish = poll_finish
+        self.view = view
 
         self.cog = cog
+
+    def __eq__(self, __o: object) -> bool:
+        if isinstance(__o, Poll):
+            return self.unique_poll_id == __o.unique_poll_id
+        return False
 
     def set_msg_id(self, msg_id: int):
         """Set the message id of the poll, to be used once sent."""
@@ -67,12 +86,12 @@ class Poll:
         """
         Create a Poll object from a dict.
         """
-        if isinstance(data["poll_finish"], int):
+        if isinstance(data["poll_finish"], (int, float)):
             finish = datetime.fromtimestamp(data["poll_finish"], tz=timezone.utc)
         else:
             finish = data["poll_finish"]
 
-        return cls(
+        cls = cls(
             unique_poll_id=data["unique_poll_id"],
             guild_id=int(data["guild_id"]),
             channel_id=int(data["channel_id"]),
@@ -85,7 +104,10 @@ class Poll:
             send_msg_when_over=bool(data["send_msg_when_over"]),
             poll_finish=finish,
             cog=cog,
+            view=None,  # type:ignore
         )
+        cls.view = PollView(cog.config, cls)
+        return cls
 
     def to_dict(self) -> dict:
         data = self
@@ -149,6 +171,7 @@ class Poll:
             value="\n".join(f"{k}: {v}" for k, v in sorted_results.items()),
             inline=False,
         )
+
         try:
             await poll_msg.edit(embed=embed, content="", view=None)
         except discord.NotFound:
@@ -175,6 +198,10 @@ class Poll:
                     label="Original message", style=ButtonStyle.link, url=poll_msg.jump_url
                 )
             )
+            plot = await self.plot()
+            embed_2.set_image(url="attachment://plot.png")
+            await channel.send(embed=embed_2, file=plot, view=view)
+            view.stop()
 
         async with self.cog.config.guild_from_id(self.guild_id).poll_settings() as poll_settings:
             del poll_settings[self.unique_poll_id]
@@ -183,4 +210,34 @@ class Poll:
         ).poll_user_choices() as poll_user_choices:
             del poll_user_choices[self.unique_poll_id]
 
-        log.info(f"Poll {self.unique_poll_id} finished.")
+    async def plot(self) -> discord.File:
+        results = await self.get_results()
+        df = pd.DataFrame.from_dict(results, orient="index", columns=["count"])  # type:ignore
+
+        df = df.loc[df["count"] != 0]
+
+        def _plot() -> discord.File:
+            """blocking"""
+            fig: Figure = px.pie(
+                df, template="plotly_dark", values="count", names=df.index, title=self.question
+            )
+            fig.update_traces(textfont_size=18)
+
+            # set legend font size to 18
+            fig.update_layout(
+                legend=dict(
+                    font=dict(size=18),
+                ),
+                title=dict(
+                    font=dict(size=20),
+                ),
+            )
+
+            bytes = fig.to_image(format="png", width=800, height=500, scale=1)
+            buffer = io.BytesIO(bytes)
+            buffer.seek(0)
+            file = discord.File(buffer, filename="plot.png")
+            buffer.close()
+            return file
+
+        return await self.cog.bot.loop.run_in_executor(self.cog.plot_executor, _plot)

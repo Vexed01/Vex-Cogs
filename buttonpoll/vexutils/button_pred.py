@@ -1,3 +1,6 @@
+# type:ignore
+# until dpy2
+
 import asyncio
 from dataclasses import dataclass
 from typing import Any, List, Optional
@@ -33,6 +36,8 @@ class _PredView(ui.View):
         self.ref: Any = None
         self.author_id = author_id
 
+        self.pressed = asyncio.Event()
+
     async def interaction_check(self, interaction: Interaction) -> bool:
         if interaction.user.id == self.author_id:
             return True
@@ -52,12 +57,7 @@ class _PredButton(ui.Button):
         assert isinstance(self.view, _PredView)
         self.view.stop()
         self.view.ref = self.ref
-
-
-async def _press_wait(view: _PredView) -> None:
-    while view.ref is None:
-        await asyncio.sleep(0.05)
-    return
+        self.view.pressed.set()
 
 
 async def wait_for_press(
@@ -106,11 +106,16 @@ async def wait_for_press(
         view.add_item(button)
     message = await ctx.send(content=content, embed=embed, view=view)
 
-    await asyncio.wait_for(_press_wait(view), timeout=timeout)
+    await asyncio.wait_for(view.pressed.wait(), timeout=timeout)
 
     emptyview = ui.View()
     for i in items:
-        button = ui.Button(style=i.style, label=i.label, row=i.row, disabled=i.ref != view.ref)
+        button = ui.Button(
+            style=i.style if i.ref == view.ref else ButtonStyle.gray,
+            label=i.label,
+            row=i.row,
+            disabled=True,
+        )
         emptyview.add_item(button)
     await message.edit(view=emptyview)
     emptyview.stop()
@@ -158,13 +163,24 @@ async def wait_for_yes_no(
     view.add_item(_PredButton(False, ButtonStyle.blurple, "No"))
 
     message = await ctx.send(content=content, embed=embed, view=view)
-    await asyncio.wait_for(_press_wait(view), timeout=timeout)
+
+    await asyncio.wait_for(view.pressed.wait(), timeout=timeout)
 
     emptyview = ui.View()
     emptyview.add_item(
-        ui.Button(style=ButtonStyle.blurple, label="Yes", disabled=view.ref is False)
+        ui.Button(
+            style=ButtonStyle.grey if view.ref is False else ButtonStyle.blurple,
+            label="Yes",
+            disabled=True,
+        )
     )
-    emptyview.add_item(ui.Button(style=ButtonStyle.blurple, label="No", disabled=view.ref is True))
+    emptyview.add_item(
+        ui.Button(
+            style=ButtonStyle.grey if view.ref is True else ButtonStyle.blurple,
+            label="No",
+            disabled=True,
+        )
+    )
     await message.edit(view=emptyview)
     emptyview.stop()
 

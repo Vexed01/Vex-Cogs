@@ -1,12 +1,13 @@
 import asyncio
 import datetime
 import traceback
-from typing import List, Optional
+from typing import Optional
 
 import discord
-import tabulate
 from redbot.core.utils.chat_formatting import box, pagify
+from rich.table import Table  # type:ignore
 
+from .chat import no_colour_rich_markup
 from .consts import CHECK, CROSS
 
 
@@ -84,7 +85,7 @@ class VexLoop:
         # now this is accurate. imo its better to have something than nothing
 
     def iter_error(self, error: BaseException) -> None:
-        """Register an iteration's exception. If enabled, will report to Sentry."""
+        """Register an iteration's exception."""
         self.currently_running = False
         self.last_exc_raw = error
         self.last_exc = "".join(
@@ -93,30 +94,33 @@ class VexLoop:
 
     def get_debug_embed(self) -> discord.Embed:
         """Get an embed with infomation on this loop."""
-        raw_data: List[list] = [
-            ["expected_interval", self.expected_interval],
-            ["iter_count", self.iter_count],
-            ["currently_running", self.currently_running],
-            ["last_iter", self.last_iter or "Loop not started"],
-            ["next_iter", self.next_iter or "Loop not started"],
-        ]
+        table = Table("Key", "Value")
+
+        table.add_row("expected_interval", str(self.expected_interval))
+        table.add_row("iter_count", str(self.iter_count))
+        table.add_row("currently_running", str(self.currently_running))
+        table.add_row("last_iterstr", str(self.last_iter) or "Loop not started")
+        table.add_row("next_iterstr", str(self.next_iter) or "Loop not started")
+
+        raw_table_str = no_colour_rich_markup(table)
 
         now = datetime.datetime.utcnow()
-        processed_data: List[list]
+
         if self.next_iter and self.last_iter:
-            processed_data = [
-                ["Seconds until next", (self.next_iter - now).total_seconds()],
-                ["Seconds since last", (now - self.last_iter).total_seconds()],
-            ]
+            table = Table("Key", "Value")
+            table.add_row("Seconds until next", str((self.next_iter - now).total_seconds()))
+            table.add_row("Seconds since last", str((now - self.last_iter).total_seconds()))
+            processed_table_str = no_colour_rich_markup(table)
+
         else:
-            processed_data = [[]]
+            processed_table_str = "Loop hasn't started yet."
 
         emoji = CHECK if self.integrity else CROSS
         embed = discord.Embed(title=f"{self.friendly_name}: `{emoji}`")
-        embed.add_field(name="Raw data", value=box(tabulate.tabulate(raw_data)), inline=False)
+        embed.add_field(name="Raw data", value=raw_table_str, inline=False)
         embed.add_field(
             name="Processed data",
-            value=box(tabulate.tabulate(processed_data) or "Loop hasn't started yet."),
+            value=processed_table_str,
             inline=False,
         )
         exc = self.last_exc
