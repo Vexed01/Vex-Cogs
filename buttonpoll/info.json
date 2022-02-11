@@ -1,12 +1,18 @@
 {
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
-    "author": ["Vexed (Vexed#3211)"],
-    "name": "ButtonPoll",
-    "install_msg": "⚠ This cog requires discord.py 2 which is currently incompatible with Red and most other cogs ⚠",
-    "short": "[DPY 2 ONLY] A poll in Discord, but with powered by buttons and with a pie chart at the end!\n\n⚠ This cog requires discord.py 2 which is currently incompatible with Red and most other cogs ⚠",
-    "requirements": ["tabulate", "cachetools", "asyncache"],
-    "tags": ["utility", "log", "logging"],
+    "author": [
+        "Vexed (Vexed#3211)"
+    ],
     "end_user_data_statement": "This cog stores user IDs paired with guild IDs and how they voted if a user participated in a poll. This is to ensure no double voting can happen. This data is removed once a poll finishes. No other data or metadata about users is persistently stored. This cog respects data deletion requests.",
+    "hidden": true,
+    "install_msg": "\u26a0 This cog requires discord.py 2 which is currently incompatible with Red and most other cogs \u26a0",
     "min_bot_version": "3.4.0",
-    "hidden": true
+    "name": "ButtonPoll",
+    "requirements": [],
+    "short": "[DPY 2 ONLY] A poll in Discord, but with powered by buttons and with a pie chart at the end!\n\n\u26a0 This cog requires discord.py 2 which is currently incompatible with Red and most other cogs \u26a0",
+    "tags": [
+        "utility",
+        "poll",
+        "button"
+    ]
 }
