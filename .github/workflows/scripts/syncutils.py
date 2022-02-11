@@ -55,6 +55,8 @@ cog_folders = [
     "beautify",
     "betteruptime",
     "birthday",
+    "buttonpoll",
+    "calc",
     "caseinsensitive",
     "cmdlog",
     "covidgraph",

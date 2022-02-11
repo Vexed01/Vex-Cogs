@@ -51,8 +51,10 @@ cogs = [
     "timechannel",
     "uptimeresponder",
     "wol",
-    #
+    # dpy 2 cogs:
     # "buttonpoll",
+    # "ghissues",
+    # "calc",
 ]
 
 
