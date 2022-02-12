@@ -428,7 +428,7 @@ class CmdLog(commands.Cog):
         logs = [f"[{i.time}] {i}" for i in self.log_cache if i.guild and i.guild.id == server_id]
 
         log_str = f"Generated at {now} for server {server_id}.\n" + (
-            "\n".join(logs) or "It looks like I didn't find anything for that user."
+            "\n".join(logs) or "It looks like I didn't find anything for that server."
         )  # happy doing this because of file previews
         fp = StringIO()
         fp.write(log_str)
