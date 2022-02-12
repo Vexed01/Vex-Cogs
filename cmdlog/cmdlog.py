@@ -440,7 +440,7 @@ class CmdLog(commands.Cog):
         if size > max_size:
             await ctx.send(
                 "Hmm, it looks like you've got some seriously long logs! They're over "
-                "the file size limit. Reset with `[p]reload cmdlog` or choose a different user."
+                "the file size limit. Reset with `[p]reload cmdlog` or choose a different server."
             )
             return
         fp.seek(0)
@@ -486,7 +486,7 @@ class CmdLog(commands.Cog):
         if size > max_size:
             await ctx.send(
                 "Hmm, it looks like you've got some seriously long logs! They're over "
-                "the file size limit. Reset with `[p]reload cmdlog` or choose a different user."
+                "the file size limit. Reset with `[p]reload cmdlog` or choose a different command."
             )
             return
         fp.seek(0)
