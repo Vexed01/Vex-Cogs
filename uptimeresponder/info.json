@@ -2,7 +2,7 @@
     "author": [
         "Vexed"
     ],
-    "description": "A cog which starts up a simple webserver whenever the cog is loaded, which can then be used by uptime monitoring services. If you are using an external monitor, you will need to configure port forwarding. Make sure you are aware of the security risks of exposing your machine to the internet. The cog responds with status code 200.",
+    "description": "A cog which starts up a simple webserver whenever the cog is loaded, which can then be used by uptime monitoring services such as UptimeRobot, Pingdom, Uptime.com, or self-hosted ones like UptimeKuma or Upptime.. If you are using an external monitor, you will need to configure port forwarding. Make sure you are aware of the security risks of exposing your machine to the internet. The cog responds with status code 200.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "install_msg": "As soon as you start the cog, it will start a simple web server for listening to responses on port 8710. The server is shut down when the cog is unloaded. You can change the port with `[p]uptimeresponderport <new_port>`.\n\nIf you are using an external uptime monitor, you will need to open up port forwarding. Make sure you are aware of the security risk of exposing your machine to the internet. This cog responds with status code 200 at the root only.\n\nThis cog has docs! ",
     "name": "UptimeResponder",
@@ -12,7 +12,7 @@
     "short": "A cog which starts up a simple webserver whenever the cog is loaded, which can then be used by uptime monitoring services such as UptimeRobot, Pingdom, Uptime.com, or self-hosted ones like UptimeKuma or Upptime.",
     "tags": [
         "webserver",
-        "websocket",
+        "server",
         "ping",
         "uptimerobot",
         "uptimekuma",
