@@ -9,7 +9,7 @@
     "requirements": [
         "asyncache"
     ],
-    "short": "A cog which starts up a simple webserver whenever the cog is loaded, which can then be used by uptime monitoring services such as UptimeRobot, Pingdom, Uptime.com, or self-hosted ones like UptimeKuma or Upptime.",
+    "short": "A cog which starts up a simple webserver whenever the cog is loaded, which can then be used by uptime monitoring services such as UptimeRobot, Pingdom, Uptime.com, or self-hosted ones like Uptime Kuma or Upptime.",
     "tags": [
         "webserver",
         "server",
