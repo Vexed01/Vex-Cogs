@@ -101,10 +101,12 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
             + f"\nDisk usage (database): {humanize_bytes(disk_usage)}"
         )
 
+    @commands.is_owner()
     @commands.command(name="updev", hidden=True)
     async def _dev_com(self, ctx: commands.Context):
         await ctx.send_interactive(pagify(str(await self.get_data(9000))), box_lang="")
 
+    @commands.is_owner()
     @commands.command(name="uploop", hidden=True)
     async def _dev_loop(self, ctx: commands.Context):
         await ctx.send(embed=self.main_loop_meta.get_debug_embed())

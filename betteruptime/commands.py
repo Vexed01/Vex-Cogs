@@ -129,6 +129,17 @@ class BUCommands(MixinMeta):
 
     @commands.command()
     async def uptimegraph(self, ctx: commands.Context, num_days: int = 30):
+        """
+        Check [botname] uptime with a graph over the last 30 days.
+
+        The default value for `num_days` is `30`. You can put `0` days for all-time data.
+        Otherwise, it needs to be `5` or more.
+
+        **Examples:**
+            - `[p]uptime` - for the default of 30 days
+            - `[p]uptime 0` - for all-time data
+            - `[p]uptime 7` - 7 days
+        """
         if num_days == 0:
             num_days = 9999  # this works, trust me
         elif num_days < 5:
