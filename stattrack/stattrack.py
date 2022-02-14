@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import json
-import logging
 import time
 from sys import getsizeof
 from typing import Dict, Optional, Set
@@ -18,12 +17,12 @@ from stattrack.abc import CompositeMetaClass
 from stattrack.commands import StatTrackCommands
 from stattrack.plot import StatPlot
 
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
 from .vexutils.loop import VexLoop
 from .vexutils.sqldriver import PandasSQLiteDriver
 
-_log = logging.getLogger("red.vexed.stattrack")
+_log = get_vex_logger(__name__)
 
 
 def snapped_utcnow():
@@ -162,8 +161,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             except Exception as e:
                 self.loop_meta.iter_error(e)
                 _log.exception(
-                    "Something went wrong in the StatTrack loop. The loop will try again "
-                    "shortly.",
+                    "Something went wrong in the StatTrack loop. The loop will try again shortly.",
                     exc_info=e,
                 )
 

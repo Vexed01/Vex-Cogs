@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from math import floor
 from time import monotonic
 
@@ -18,9 +17,10 @@ from ..objects import (
     SendCache,
     Update,
 )
+from ..vexutils import get_vex_logger
 from .utils import get_channel_data, get_webhook
 
-_log = logging.getLogger("red.vex.status.sendupdate")
+_log = get_vex_logger(__name__)
 
 
 class SendUpdate:

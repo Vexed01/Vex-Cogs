@@ -1,5 +1,4 @@
 import datetime
-import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Literal, Optional
 
@@ -15,12 +14,12 @@ from redbot.core.utils.predicates import MessagePredicate
 from buttonpoll.poll import Poll, PollOption
 from buttonpoll.pollview import PollView
 
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.button_pred import PredItem, wait_for_press, wait_for_yes_no
 from .vexutils.chat import datetime_to_timestamp
 from .vexutils.loop import VexLoop
 
-log = logging.getLogger("red.vex.buttonpoll")
+log = get_vex_logger(__name__)
 
 
 class ButtonPoll(commands.Cog):

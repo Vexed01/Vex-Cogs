@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import logging
-
 import tabulate
 from redbot.core import commands
 from redbot.core.bot import Red
@@ -9,9 +7,9 @@ from redbot.core.config import Config, Group
 from redbot.core.utils.chat_formatting import box
 from wakeonlan import send_magic_packet
 
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 
-log = logging.getLogger("red.vex.wol")
+log = get_vex_logger(__name__)
 
 
 def humanize_mac(mac: str):

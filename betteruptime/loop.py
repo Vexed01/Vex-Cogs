@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import json
-import logging
 from time import time
 from typing import Dict
 
@@ -9,9 +8,10 @@ import pandas
 
 from .abc import MixinMeta
 from .consts import INF, SECONDS_IN_DAY
+from .vexutils import get_vex_logger
 from .vexutils.loop import VexLoop
 
-_log = logging.getLogger("red.vex.betteruptime.loop")
+_log = get_vex_logger(__name__)
 
 
 class BULoop(MixinMeta):

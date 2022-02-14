@@ -1,4 +1,3 @@
-import logging
 from typing import List
 
 from redbot.core import commands
@@ -9,9 +8,9 @@ from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.chat_formatting import inline as cf_inline
 from redbot.core.utils.chat_formatting import pagify
 
-from .vexutils import format_help, format_info, inline_hum_list
+from .vexutils import format_help, format_info, get_vex_logger, inline_hum_list
 
-log = logging.getLogger("red.vex.aliases")
+log = get_vex_logger(__name__)
 
 
 def inline(text: str) -> str:

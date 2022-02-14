@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-import logging
 import re
 
 from discord import Colour, Embed
 from redbot.core.utils.chat_formatting import pagify
 
 from ..core import FEEDS, LINK_RE, SERVICE_LITERAL
+from ..vexutils import get_vex_logger
 from .incidentdata import Update
 
-_log = logging.getLogger("red.vex.status.sendupdate")
-
+_log = get_vex_logger(__name__)
 
 # TODO: implement separation for normal embeds and webhook embeds here
 

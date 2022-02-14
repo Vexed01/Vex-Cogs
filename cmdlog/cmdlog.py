@@ -1,5 +1,4 @@
 import datetime
-import logging
 import sys
 from collections import deque
 from io import StringIO
@@ -16,7 +15,7 @@ from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelt
 from cmdlog.objects import TIME_FORMAT, LoggedAppCom, LoggedComError, LoggedCommand
 
 from .channellogger import ChannelLogger
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
 
 if discord.__version__.startswith("2"):
@@ -26,7 +25,8 @@ if TYPE_CHECKING:
     from dislash import SlashInteraction
     from dislash.interactions.app_command_interaction import ContextMenuInteraction
 
-_log = logging.getLogger("red.vex.cmdlog")
+
+_log = get_vex_logger(__name__)
 
 
 class CmdLog(commands.Cog):

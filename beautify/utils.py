@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import NamedTuple, Optional
 
 import discord
@@ -7,6 +6,7 @@ from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, text_to_file
 
 from .errors import AttachmentInvalid, AttachmentPermsError, JSONDecodeError, NoData
+from .vexutils import get_vex_logger
 
 # dont want to force this as can be a pain on windows
 try:
@@ -16,7 +16,7 @@ try:
 except ImportError:
     use_pyjson = False
 
-_log = logging.getLogger("red.vex.beautify")
+_log = get_vex_logger(__name__)
 
 
 def cleanup_json(json: str) -> str:

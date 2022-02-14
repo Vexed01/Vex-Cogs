@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Optional
 
 from redbot.core import commands
@@ -16,8 +15,6 @@ try:
     use_pyjson = True
 except ImportError:
     use_pyjson = False
-
-log = logging.getLogger("red.vex.beautify")
 
 # NOTE FOR DOCSTRINGS:
 # They don't use a normal space character, if you're editing them make sure to copy and paste

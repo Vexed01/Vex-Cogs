@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from typing import TYPE_CHECKING
 
 import discord
@@ -12,13 +11,14 @@ from ..commands.converters import ModeConverter, ServiceConverter
 from ..core.abc import MixinMeta
 from ..objects import SendCache, Update
 from ..updateloop import SendUpdate, process_json
+from ..vexutils import get_vex_logger
 
 if discord.__version__.startswith("1"):
     from redbot.core.utils.predicates import ReactionPredicate
 else:
     from ..vexutils.button_pred import wait_for_yes_no
 
-_log = logging.getLogger("red.vex.status.dev")
+_log = get_vex_logger(__name__)
 
 
 class StatusDevCom(MixinMeta):

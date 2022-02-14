@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-from logging import getLogger
 from typing import Any, NoReturn
 
 import discord
@@ -10,8 +9,9 @@ from redbot.core.utils import AsyncIter
 
 from .abc import MixinMeta
 from .utils import format_bday_message
+from .vexutils import get_vex_logger
 
-log = getLogger("red.vex.birthday.loop")
+log = get_vex_logger(__name__)
 
 
 class BirthdayLoop(MixinMeta):
@@ -34,7 +34,8 @@ class BirthdayLoop(MixinMeta):
                 log.debug("A queued coro failed to run.", exc_info=e)
 
         # just using one task for all guilds is okay. maybe it's not the fastest as no async-ness
-        # but it's fine for now and the loop is at max hourly
+        # to get them doe faster as (some) rate limits are per-guild
+        # but it's fine for now and the loop is hourly
 
     async def add_role(self, member: discord.Member, role: discord.Role):
         if member.guild.me.guild_permissions.manage_roles is False:

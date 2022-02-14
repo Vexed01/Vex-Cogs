@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import random
 from typing import Optional
 from urllib.parse import urlencode
@@ -12,9 +11,9 @@ from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 
 from .langs import LANGS
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 
-log = logging.getLogger("red.vex.madtranslate")
+log = get_vex_logger(__name__)
 
 ARROW = " → "
 

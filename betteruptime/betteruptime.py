@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import os
 import sys
 
@@ -13,13 +12,12 @@ from .abc import CompositeMetaClass
 from .commands import BUCommands
 from .loop import BULoop
 from .utils import Utils
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
 from .vexutils.meta import out_of_date_check
 
 old_uptime = None
-
-_log = logging.getLogger("red.vex.betteruptime")
+log = get_vex_logger(__name__)
 
 
 # THIS COG WILL BE REWRITTEN/REFACTORED AT SOME POINT (#23)
@@ -71,7 +69,7 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
         return
 
     def cog_unload(self) -> None:
-        _log.info("BetterUptime is now unloading. Cleaning up...")
+        log.info("BetterUptime is now unloading. Cleaning up...")
 
         if self.main_loop:
             self.main_loop.cancel()

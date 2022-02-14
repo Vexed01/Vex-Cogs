@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import logging
 from asyncio import Queue
 from typing import Optional
 
@@ -10,9 +9,10 @@ from redbot.core.utils.chat_formatting import box, pagify
 
 from cmdlog.objects import LogMixin
 
+from .vexutils import get_vex_logger
 from .vexutils.loop import VexLoop
 
-log = logging.getLogger("red.vex.cmdlog.channellogger")
+log = get_vex_logger(__name__)
 
 
 class ChannelLogger:

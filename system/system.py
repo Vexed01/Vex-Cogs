@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import logging
 from typing import TYPE_CHECKING
 
 import discord
@@ -24,12 +23,12 @@ from .backend import (
     up_for,
 )
 from .command import DynamicHelp
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 
 if TYPE_CHECKING:
     from discord.types.embed import EmbedField
 
-log = logging.getLogger("red.vex.system")
+log = get_vex_logger(__name__)
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"

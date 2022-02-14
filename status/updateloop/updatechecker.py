@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from time import monotonic
 
 import aiohttp
@@ -10,11 +9,12 @@ from aiohttp.client_exceptions import ClientOSError
 from ..core import FEEDS, SERVICE_LITERAL, TYPES_LITERAL
 from ..core.abc import MixinMeta
 from ..objects import IncidentData, SendCache, Update
+from ..vexutils import get_vex_logger
 from ..vexutils.loop import VexLoop
 from .processfeed import process_json
 from .sendupdate import SendUpdate
 
-_log = logging.getLogger("red.vex.status.updatechecker")
+_log = get_vex_logger(__name__)
 
 
 class StatusLoop(MixinMeta):

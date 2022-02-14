@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import logging
 import math
 
 from discord.channel import VoiceChannel
@@ -9,9 +8,10 @@ from discord.errors import HTTPException
 from timechannel.utils import gen_replacements
 
 from .abc import MixinMeta
+from .vexutils import get_vex_logger
 from .vexutils.loop import VexLoop
 
-_log = logging.getLogger("red.vex.timechannel.loop")
+_log = get_vex_logger(__name__)
 
 
 class TCLoop(MixinMeta):

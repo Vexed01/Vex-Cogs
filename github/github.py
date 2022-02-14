@@ -1,4 +1,3 @@
-import logging
 from asyncio import TimeoutError
 from typing import Mapping
 
@@ -11,11 +10,11 @@ from redbot.core.utils.predicates import MessagePredicate
 from .api import GitHubAPI
 from .consts import CROSS, EXCEPTIONS
 from .errors import CustomError
-from .vexutils import format_help, format_info, inline_hum_list
+from .vexutils import format_help, format_info, get_vex_logger, inline_hum_list
 
 # cspell:ignore labelify kowlin's resp
 
-log = logging.getLogger("red.vex.github")
+log = get_vex_logger(__name__)
 
 
 class GitHub(commands.Cog):

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from time import monotonic
 
 import discord
@@ -12,10 +11,10 @@ from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 
 from .objects import Cache, Settings
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.meta import out_of_date_check
 
-log = logging.getLogger("red.vex.anotherpingcog")
+log = get_vex_logger(__name__)
 
 
 DEFAULT = "default"

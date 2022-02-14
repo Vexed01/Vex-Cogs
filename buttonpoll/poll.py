@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Dict, List, Optional
@@ -14,6 +13,7 @@ from discord.embeds import EmptyEmbed
 from discord.enums import ButtonStyle
 
 from .pollview import PollView
+from .vexutils import get_vex_logger
 
 if TYPE_CHECKING:
     from plotly.graph_objs._figure import Figure
@@ -23,7 +23,7 @@ else:
     from plotly.graph_objs import Figure
 
 
-log = logging.getLogger("red.vex.buttonpoll.poll")
+log = get_vex_logger(__name__)
 
 
 @dataclass

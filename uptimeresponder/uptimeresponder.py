@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from typing import Optional
 
 from aiohttp import web
@@ -9,9 +8,9 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 
-log = logging.getLogger("red.vex.uptimeresponder")
+log = get_vex_logger(__name__)
 
 
 class UptimeResponder(commands.Cog):

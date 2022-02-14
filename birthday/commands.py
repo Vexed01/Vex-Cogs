@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import logging
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
@@ -21,9 +20,9 @@ from .abc import MixinMeta
 from .consts import MAX_BDAY_MSG_LEN, MIN_BDAY_YEAR
 from .converters import BirthdayConverter, TimeConverter
 from .utils import format_bday_message
-from .vexutils import no_colour_rich_markup
+from .vexutils import get_vex_logger, no_colour_rich_markup
 
-log = logging.getLogger("red.vex.birthday.commands")
+log = get_vex_logger(__name__)
 
 
 class BirthdayCommands(MixinMeta):

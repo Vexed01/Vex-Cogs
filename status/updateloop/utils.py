@@ -1,12 +1,12 @@
-import logging
 from typing import TYPE_CHECKING
 
 from discord import TextChannel, Webhook
 from redbot.core.bot import Red
 
 from ..objects import ChannelData, CogDisabled, ConfChannelSettings, NoPermission, NotFound
+from ..vexutils import get_vex_logger
 
-_log = logging.getLogger("red.vex.status.sendupdate")
+_log = get_vex_logger(__name__)
 
 
 async def get_webhook(channel: TextChannel) -> Webhook:

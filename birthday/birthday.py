@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 
 import discord
 from redbot.core import commands
@@ -11,10 +10,10 @@ from redbot.core.config import Config
 from .abc import CompositeMetaClass
 from .commands import BirthdayAdminCommands, BirthdayCommands
 from .loop import BirthdayLoop
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.loop import VexLoop
 
-log = logging.getLogger("red.vex.birthday")
+log = get_vex_logger(__name__)
 
 
 class Birthday(

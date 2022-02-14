@@ -1,4 +1,3 @@
-import logging
 from typing import TYPE_CHECKING, Optional
 
 from discord import Interaction
@@ -6,10 +5,12 @@ from discord.enums import ButtonStyle
 from discord.ui import View
 from discord.ui.button import Button, button
 
-log = logging.getLogger("red.vex.ghissues.merge_confirm")
+from ..vexutils import get_vex_logger
 
 if TYPE_CHECKING:
     from .master import GHView
+
+log = get_vex_logger(__name__)
 
 
 class MergeConfirm(View):

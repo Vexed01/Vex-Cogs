@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 import json
-import logging
 from io import StringIO
 from time import monotonic
 from typing import Iterable, Optional
@@ -21,7 +20,9 @@ from stattrack.converters import (
     UserGraphConverter,
 )
 
-log = logging.getLogger("red.vex.stattrack")
+from .vexutils import get_vex_logger
+
+log = get_vex_logger(__name__)
 
 DEFAULT_DELTA = datetime.timedelta(days=1)
 

@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from copy import deepcopy
 from typing import Optional
 
@@ -22,9 +21,9 @@ from ..objects import (
     UsedFeeds,
 )
 from ..updateloop import SendUpdate, StatusLoop
-from ..vexutils import format_help, format_info
+from ..vexutils import format_help, format_info, get_vex_logger
 
-log = logging.getLogger("red.vex.status.core")
+log = get_vex_logger(__name__)
 
 
 class Status(

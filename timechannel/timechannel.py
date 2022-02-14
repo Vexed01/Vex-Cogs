@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import logging
 from typing import TYPE_CHECKING
 
 import discord
@@ -17,10 +16,10 @@ from timechannel.utils import gen_replacements
 from .abc import CompositeMetaClass
 from .data import ZONE_KEYS
 from .loop import TCLoop
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import datetime_to_timestamp
 
-log = logging.getLogger("red.vex.timechannel")
+log = get_vex_logger(__name__)
 
 MAX_LEN_VISUAL = ". . . . . . . . . . . . . . . . . . . . . . . . ."
 
