@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from logging import getLogger
+from logging import Logger, getLogger
 from pathlib import Path
 from typing import Literal, NamedTuple
 
@@ -20,6 +20,29 @@ log = getLogger("red.vex-utils")
 
 
 cog_ver_lock = asyncio.Lock()
+
+
+def get_vex_logger(name: str) -> Logger:
+    """Get a logger for the given name.
+
+    Parameters
+    ----------
+    name : str
+        The ``__name__`` of the file
+
+    Returns
+    -------
+    Logger
+        The logger
+    """
+    final_name = "red.vex."
+    split = name.split(".")
+    if len(split) == 2 and split[0] == split[1]:  # for example make `cmdlog.cmdlog` just `cmdlog`
+        final_name += split[0]
+    else:  # otherwise use full path
+        final_name += name
+
+    return getLogger(final_name)
 
 
 def format_help(self: commands.Cog, ctx: commands.Context) -> str:
