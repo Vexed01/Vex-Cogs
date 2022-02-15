@@ -361,6 +361,15 @@ Birthday
 ========
 
 *********
+``1.0.8``
+*********
+
+2022-02-15
+
+- Add warnings to ``bdset settings`` if channels or roles are incorrectly configured
+- Modify internal logic for checking for channel and role perms
+
+*********
 ``1.0.7``
 *********
 

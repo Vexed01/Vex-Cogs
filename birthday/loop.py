@@ -8,7 +8,7 @@ from redbot.core import commands
 from redbot.core.utils import AsyncIter
 
 from .abc import MixinMeta
-from .utils import format_bday_message
+from .utils import channel_perm_check, format_bday_message, role_perm_check
 from .vexutils import get_vex_logger
 
 log = get_vex_logger(__name__)
@@ -38,44 +38,26 @@ class BirthdayLoop(MixinMeta):
         # but it's fine for now and the loop is hourly
 
     async def add_role(self, member: discord.Member, role: discord.Role):
-        if member.guild.me.guild_permissions.manage_roles is False:
+        if error := role_perm_check(member, role):
             log.debug(
-                "Not adding role to %s in guild %s because I don't have the Manage Roles"
-                " permission.",
+                "Not adding role %s to %s in guild %s because %s",
+                role.id,
                 member.id,
                 member.guild.id,
+                error,
             )
             return
-
-        if member.guild.me.top_role.position >= role.position:
-            log.debug(
-                "Not adding role to %s in guild %s because I don't have the required role"
-                " position.",
-                member.id,
-                member.guild.id,
-            )
-            return
-
         self.coro_queue.put_nowait(
             member.add_roles(role, reason="Birthday cog - birthday starts today")
         )
 
     async def remove_role(self, member: discord.Member, role: discord.Role):
-        if member.guild.me.guild_permissions.manage_roles is False:
+        if error := role_perm_check(member, role):
             log.debug(
-                "Not removing role to %s in guild %s because I don't have the Manage Roles"
-                " permission.",
+                "Not removing role to %s in guild %s because %s",
                 member.id,
                 member.guild.id,
-            )
-            return
-
-        if member.guild.me.top_role.position >= role.position:
-            log.debug(
-                "Not removing role to %s in guild %s because I don't have the required role"
-                " position.",
-                member.id,
-                member.guild.id,
+                error,
             )
             return
 
@@ -84,12 +66,12 @@ class BirthdayLoop(MixinMeta):
         )
 
     async def send_announcement(self, channel: discord.TextChannel, message: str):
-        if channel.permissions_for(channel.guild.me).send_messages is False:
+        if error := channel_perm_check(channel.guild.me, channel):
             log.debug(
-                "Not sending announcement to %s in guild %s because I don't have the Send Messages"
-                " permission.",
+                "Not sending announcement to %s in guild %s because %s",
                 channel.id,
                 channel.guild.id,
+                error,
             )
             return
 

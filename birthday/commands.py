@@ -11,7 +11,7 @@ from dateutil.parser import parse as time_parser
 from redbot.core import Config, commands
 from redbot.core.commands import CheckFailure
 from redbot.core.utils import AsyncIter
-from redbot.core.utils.chat_formatting import warning
+from redbot.core.utils.chat_formatting import box, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
 from rich.table import Table  # type:ignore
@@ -19,7 +19,7 @@ from rich.table import Table  # type:ignore
 from .abc import MixinMeta
 from .consts import MAX_BDAY_MSG_LEN, MIN_BDAY_YEAR
 from .converters import BirthdayConverter, TimeConverter
-from .utils import format_bday_message
+from .utils import channel_perm_check, format_bday_message, role_perm_check
 from .vexutils import get_vex_logger, no_colour_rich_markup
 
 log = get_vex_logger(__name__)
@@ -302,10 +302,10 @@ class BirthdayAdminCommands(MixinMeta):
             )
 
         channel: discord.TextChannel = pred.result
-        if channel.permissions_for(ctx.me).send_messages is False:
+        if error := channel_perm_check(ctx.me, channel):
             await ctx.send(
                 warning(
-                    "I don't have permission to send messages in that channel. Please make sure"
+                    f"{error} Please make sure"
                     " you rectify this as soon as possible, but I'll let you continue the setup."
                 )
             )
@@ -330,20 +330,12 @@ class BirthdayAdminCommands(MixinMeta):
             )
 
         # no need to check hierarchy for author, since command is locked to admins
-        if ctx.me.top_role < pred.result:
+        if error := role_perm_check(ctx.me, pred.result):
             await ctx.send(
                 warning(
-                    "I can't use that role because it is higher than my highest role. Please make"
+                    f"{error} Please make"
                     " sure you rectify this as soon as possible, but I'll let you continue the"
                     " setup."
-                )
-            )
-
-        if not ctx.me.guild_permissions.manage_roles:
-            await ctx.send(
-                warning(
-                    "I don't have permission to manage roles. Please make sure you rectify this as"
-                    " soon as possible, but I'll let you continue the setup."
                 )
             )
 
@@ -409,6 +401,7 @@ class BirthdayAdminCommands(MixinMeta):
         # group has guild check
         if TYPE_CHECKING:
             assert ctx.guild is not None
+            assert isinstance(ctx.me, discord.Member)
 
         table = Table("Name", "Value", title="Settings for this server")
 
@@ -425,14 +418,24 @@ class BirthdayAdminCommands(MixinMeta):
             message_w_year = conf["message_w_year"] or "No message set"
             message_wo_year = conf["message_wo_year"] or "No message set"
 
+        warnings = "\n"
+        if (error := role is None) or (error := role_perm_check(ctx.me, role)):
+            if isinstance(error, bool):
+                error = "Role deleted."
+            warnings += warning(error + " This may result in repeated notifications.\n")
+        if (error := channel is None) or (error := channel_perm_check(ctx.me, channel)):
+            if isinstance(error, bool):
+                error = "Channel deleted."
+            warnings += warning(error + " You won't get birthday notifications.\n")
+
         final_table = no_colour_rich_markup(table)
         message = (
             final_table
-            + "\nMessage with year:\n```"
-            + message_w_year
-            + "```\nMessage without year:\n```"
-            + message_wo_year
-            + "```"
+            + "\nMessage with year:\n"
+            + box(message_w_year)
+            + "\nMessage without year:\n"
+            + box(message_wo_year)
+            + warnings
         )
         await ctx.send(message)
 
