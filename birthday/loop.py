@@ -39,7 +39,7 @@ class BirthdayLoop(MixinMeta):
 
     async def add_role(self, member: discord.Member, role: discord.Role):
         if error := role_perm_check(member, role):
-            log.debug(
+            log.warning(
                 "Not adding role %s to %s in guild %s because %s",
                 role.id,
                 member.id,
@@ -53,7 +53,7 @@ class BirthdayLoop(MixinMeta):
 
     async def remove_role(self, member: discord.Member, role: discord.Role):
         if error := role_perm_check(member, role):
-            log.debug(
+            log.warning(
                 "Not removing role to %s in guild %s because %s",
                 member.id,
                 member.guild.id,
@@ -67,7 +67,7 @@ class BirthdayLoop(MixinMeta):
 
     async def send_announcement(self, channel: discord.TextChannel, message: str):
         if error := channel_perm_check(channel.guild.me, channel):
-            log.debug(
+            log.warning(
                 "Not sending announcement to %s in guild %s because %s",
                 channel.id,
                 channel.guild.id,
