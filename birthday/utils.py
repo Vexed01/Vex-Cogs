@@ -42,7 +42,7 @@ def role_perm_check(me: Member, role: Role) -> str:
     str
         Error message or empty string
     """
-    if me.top_role.position >= role.position:
+    if me.top_role.position <= role.position:
         return (
             "I don't have the required role position. Make sure my role is above the birthday"
             " role."
