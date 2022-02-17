@@ -13,10 +13,10 @@ from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
 
-from stattrack.abc import CompositeMetaClass
-from stattrack.commands import StatTrackCommands
-from stattrack.plot import StatPlot
-
+from .abc import CompositeMetaClass
+from .bigquery import PandasBigQuery
+from .commands import StatTrackCommands
+from .plot import StatPlot
 from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
 from .vexutils.loop import VexLoop
@@ -50,13 +50,17 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.msg_count = 0
 
         self.config = Config.get_conf(self, identifier=418078199982063626, force_registration=True)
-        self.config.register_global(version=1, maxpoints=25_000)
+        self.config.register_global(
+            version=1, maxpoints=25_000, bq_credentials={}, bq_project=None
+        )
         self.config.register_global(main_df={})  # deprecated
 
         self.last_loop_time = "Loop not ran yet"
         self.last_loop_raw: Optional[float] = None
 
         self.driver = PandasSQLiteDriver(bot, type(self).__name__, "timeseries.db")
+
+        self.bq = PandasBigQuery(self.bot, self.config)
 
         bot.add_dev_env_value("stattrack", lambda _: self)
 
@@ -74,6 +78,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         self.plot_executor.shutdown(wait=False)
         self.driver.sql_executor.shutdown(wait=False)
+        self.bq.executor.shutdown(wait=False)
 
         try:
             self.bot.remove_dev_env_value("stattrack")
@@ -99,6 +104,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             if len(pre_df.index) != len(self.df_cache.index):
                 await self.driver.write(self.df_cache)
 
+        self.bq_credentials = await self.config.bq_credentials()
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
 

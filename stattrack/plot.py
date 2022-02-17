@@ -45,7 +45,7 @@ TRACE_FRIENDLY_NAMES = {
 
 class StatPlot(MixinMeta):
     def __init__(self) -> None:
-        self.plot_executor = ThreadPoolExecutor(5, "stattrack_plot")
+        self.plot_executor = ThreadPoolExecutor(8, "stattrack_plot")
 
     async def plot(self, df: pd.DataFrame, ylabel: str, status_colours: bool) -> discord.File:
         """Plot the standard dataframe to the specified parameters. Returns a discord file"""

@@ -11,6 +11,7 @@ from discord.ext.commands.cog import CogMeta
 from redbot.core.bot import Red
 from redbot.core.config import Config
 
+from .bigquery import PandasBigQuery
 from .vexutils.loop import VexLoop
 from .vexutils.sqldriver import PandasSQLiteDriver
 
@@ -38,6 +39,8 @@ class MixinMeta(ABC):
     last_plot_debug: dict[str, Any] | None
 
     df_cache: pandas.DataFrame
+
+    bq: PandasBigQuery
 
     cmd_count: int
     msg_count: int

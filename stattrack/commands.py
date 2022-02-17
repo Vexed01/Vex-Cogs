@@ -1,18 +1,21 @@
 from __future__ import annotations
 
 import datetime
+import io
 import json
-from io import StringIO
+from io import BytesIO, StringIO
 from time import monotonic
 from typing import Iterable, Optional
 
 import discord
 import pandas as pd
 from discord.ext.commands.cooldowns import BucketType
+from google.oauth2 import service_account
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, humanize_number, humanize_timedelta
 
 from stattrack.abc import MixinMeta
+from stattrack.bigquery import BQError
 from stattrack.converters import (
     ChannelGraphConverter,
     StatusGraphConverter,
@@ -153,7 +156,9 @@ class StatTrackCommands(MixinMeta):
         """
         async with ctx.typing():
             self.loop.cancel()
-            self.df_cache = pd.read_json(await ctx.message.attachments[0].read(), orient="split")
+            self.df_cache = pd.read_json(
+                io.BytesIO(await ctx.message.attachments[0].read()), orient="split"
+            )
             await self.driver.write(self.df_cache)
         await ctx.send("Done. Please reload the cog.")
 
@@ -217,6 +222,62 @@ class StatTrackCommands(MixinMeta):
                 return
             fp.seek(0)
         await ctx.send("Here is your file.", file=discord.File(fp, "stattrack.csv"))  # type:ignore
+
+    @stattrack.command(name="bq")
+    @commands.is_owner()
+    async def bq_group(self, ctx: commands.Context):
+        """
+        Manage the Google BigQuery connection.
+
+        You can setup the cog to automatically send stats to BigQuery,
+        where you can then use them in Google Data Studio for graphs and statistics online.
+
+        Google offers 10GB of storage and 1TB of queries for free each month.
+
+        This cog uses 6MB per month of operation, so you are very unlikely to hit those limits.
+
+        Please note that for persistant tables lasting longer than 60 days,
+        you will need to enable billing on your Google Cloud account.
+
+        **To get started, run `[p]stattrack bq start`.**
+        """
+
+    @bq_group.command(name="start")
+    async def bq_start(self, ctx: commands.Context):
+        """Set up BigQuery"""
+        # add & send instructions on setting up BQ
+        await ctx.send("This command is in development.")
+
+    @bq_group.command(name="key")
+    async def bq_key(self, ctx: commands.Context):
+        """
+        Upload your BigQuery Service Account key. Run in DMs.
+
+        Please attach the JSON key file from the Service accounts page in
+        the IAM and admin section of Google Cloud.
+
+        See `[p]stattrack bq start` for instructions.
+        """
+        if len(ctx.message.attachments) != 1:
+            await ctx.send_help()
+            return
+
+        key = json.load(BytesIO(await ctx.message.attachments[0].read()))
+        if ctx.guild:
+            try:
+                await ctx.message.delete()
+            except discord.HTTPException:
+                pass
+
+        credentials = service_account.Credentials.from_service_account_info(key)
+        self.bq.credentials = credentials
+
+        try:
+            await self.bq.verify_credentials()
+        except BQError:
+            await ctx.send("Those credentials are invalid.")
+        else:
+            await ctx.send("Credentials set.")
 
     @commands.is_owner()
     @stattrack.command()
