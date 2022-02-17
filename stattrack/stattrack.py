@@ -8,13 +8,15 @@ from typing import Dict, Optional, Set
 import discord
 import pandas
 import psutil
+from google.oauth2 import service_account
+from pandas_gbq.gbq import InvalidSchema
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
 
 from .abc import CompositeMetaClass
-from .bigquery import PandasBigQuery
+from .bigquery import BQError, PandasBigQuery
 from .commands import StatTrackCommands
 from .plot import StatPlot
 from .vexutils import format_help, format_info, get_vex_logger
@@ -26,7 +28,9 @@ _log = get_vex_logger(__name__)
 
 
 def snapped_utcnow():
-    return datetime.datetime.utcnow().replace(microsecond=0, second=0)
+    return pandas.Timestamp.fromtimestamp(
+        datetime.datetime.utcnow().replace(microsecond=0, second=0).timestamp()
+    )
 
 
 class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMetaClass):
@@ -104,7 +108,12 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             if len(pre_df.index) != len(self.df_cache.index):
                 await self.driver.write(self.df_cache)
 
-        self.bq_credentials = await self.config.bq_credentials()
+        try:
+            self.bq.credentials = service_account.Credentials.from_service_account_info(
+                await self.config.bq_credentials()
+            )
+        except ValueError:
+            pass
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
 
@@ -243,21 +252,47 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         main_time = round((end - start), 3)
         _log.debug(f"Loop finished in {main_time} seconds")
 
-        if self.do_write != 0:
-            start = time.monotonic()
-            await self.driver.write(self.df_cache)
-            end = time.monotonic()
-            save_time = round(end - start, 3)
-            _log.debug(f"SQLite wrote in {save_time} seconds")
-            self.do_write -= 1
-        else:
-            start = time.monotonic()
+        start = time.monotonic()
+        try:
             await self.driver.append(df)
             end = time.monotonic()
-            save_time = round(end - start, 3)
-            _log.debug(f"SQLite appended in {save_time} seconds")
+            sql_save_time = round(end - start, 3)
+            _log.debug(f"SQLite appended in {sql_save_time} seconds")
+        except Exception:
+            await self.driver.write(self.df_cache)
+            end = time.monotonic()
+            sql_save_time = round(end - start, 3)
+            _log.debug(f"SQLite wrote in {sql_save_time} seconds")
+            self.do_write -= 1
 
-        total_time = main_time + save_time
+        # slightly different behaviour for BigQuery, might think about doing this for ^ as well
+        if self.bq.credentials:
+            try:
+                start = time.monotonic()
+                tables = await self.bq.get_tables()
+                table_names = [t.table_id for t in tables]
+                if "main_df" in table_names:
+                    await self.bq.append(df)
+                    end = time.monotonic()
+                    bq_save_time = round(end - start, 3)
+                    _log.debug(f"BigQuery appended in {bq_save_time} seconds")
+                else:
+                    await self.bq.write(self.df_cache)
+                    end = time.monotonic()
+                    bq_save_time = round(end - start, 3)
+                    _log.debug(f"BigQuery wrote in {bq_save_time} seconds")
+            except InvalidSchema:  # schema's probably changed, so we'll just write the whole thing
+                await self.bq.write(self.df_cache)
+                end = time.monotonic()
+                bq_save_time = round(end - start, 3)
+                _log.debug(f"BigQuery wrote in {bq_save_time} seconds")
+            except BQError as e:
+                _log.debug("Error connecting to BigQuery", exc_info=e)
+                bq_save_time = 0.0
+        else:
+            bq_save_time = 0.0
+
+        total_time = main_time + sql_save_time + bq_save_time
         self.last_loop_raw = total_time
 
         if total_time > 30.0:
@@ -266,8 +301,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 "StatTrack loop took a while. This means that it's using lots of resources on "
                 "this machine. You might want to consider unloading or removing the cog. There "
                 "is also a high chance of some datapoints on the graphs being skipped."
-                + f"\nMain loop: {main_time}s, Data saving: {save_time}s so total time is "
+                + f"\nMain loop: {main_time}s, Data saving: {sql_save_time}s so total time is "
                 + str(total_time)
             )
 
-        self.last_loop_time = f"{total_time} seconds ({main_time}, {save_time})"
+        self.last_loop_time = f"{total_time} seconds ({main_time}, {sql_save_time})"

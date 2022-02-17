@@ -223,7 +223,7 @@ class StatTrackCommands(MixinMeta):
             fp.seek(0)
         await ctx.send("Here is your file.", file=discord.File(fp, "stattrack.csv"))  # type:ignore
 
-    @stattrack.command(name="bq")
+    @stattrack.group(name="bq")
     @commands.is_owner()
     async def bq_group(self, ctx: commands.Context):
         """
@@ -276,8 +276,12 @@ class StatTrackCommands(MixinMeta):
             await self.bq.verify_credentials()
         except BQError:
             await ctx.send("Those credentials are invalid.")
-        else:
-            await ctx.send("Credentials set.")
+            self.bq.credentials = None
+            return
+
+        await self.config.bq_credentials.set(key)
+
+        await ctx.send("Credentials set.")
 
     @commands.is_owner()
     @stattrack.command()
