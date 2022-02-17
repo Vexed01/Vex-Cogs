@@ -3,7 +3,7 @@
     "author": [
         "Vexed (Vexed#9000)"
     ],
-    "description": "Use Wake on LAN from Discord! This cog sends magic packets on the local network. You'll need to have set up teh computer beforehand to listen to these - just search how to set it up for your operating system.",
+    "description": "Use Wake on LAN from Discord! This cog sends magic packets on the local network. You'll need to have set up the computer beforehand to listen to these - just search how to set it up for your operating system.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "install_msg": "Thanks for installing! Once you've loaded the cog, get started by adding the computer you want to wake's MAC address with `wolset add <friendly_name> <mac>` then you can wake it with just `wol <friendly_name>`. `<friendly_name>` can be whatever you want.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/wol>",
     "min_bot_version": "3.4.0",
