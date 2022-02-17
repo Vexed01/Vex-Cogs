@@ -6,12 +6,13 @@ tabulate
 cachetools
 asyncache
 
-# Required for optional PandasSQLDriver in utils
+# Required for optional PandasSQLDriver in utils & betteruptime, stattrack, covidgraph, buttonpoll
 pandas
 
 # Cogs
-plotly  # betteruptime, stattrack, googletrends
-kaleido  # betteruptime, stattrack, googletrends
+plotly  # betteruptime, stattrack, googletrends, covidgraph, buttonpoll
+kaleido  # betteruptime, stattrack, googletrends, covidgraph, buttonpoll
+pandas-gbq  # stattrack
 gidgethub  # ghissues, gitub
 pytrends  # googletrends
 psutil  # stattrack, system
