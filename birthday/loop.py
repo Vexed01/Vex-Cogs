@@ -31,14 +31,14 @@ class BirthdayLoop(MixinMeta):
                 coro = await self.coro_queue.get()
                 await coro
             except discord.HTTPException as e:
-                log.debug("A queued coro failed to run.", exc_info=e)
+                log.warning("A queued coro failed to run.", exc_info=e)
 
         # just using one task for all guilds is okay. maybe it's not the fastest as no async-ness
         # to get them doe faster as (some) rate limits are per-guild
         # but it's fine for now and the loop is hourly
 
-    async def add_role(self, member: discord.Member, role: discord.Role):
-        if error := role_perm_check(member, role):
+    async def add_role(self, me: discord.Member, member: discord.Member, role: discord.Role):
+        if error := role_perm_check(me, role):
             log.warning(
                 "Not adding role %s to %s in guild %s because %s",
                 role.id,
@@ -47,12 +47,13 @@ class BirthdayLoop(MixinMeta):
                 error,
             )
             return
+        log.debug("Queued birthday role add for %s in guild %s", member.id, member.guild.id)
         self.coro_queue.put_nowait(
             member.add_roles(role, reason="Birthday cog - birthday starts today")
         )
 
-    async def remove_role(self, member: discord.Member, role: discord.Role):
-        if error := role_perm_check(member, role):
+    async def remove_role(self, me: discord.Member, member: discord.Member, role: discord.Role):
+        if error := role_perm_check(me, role):
             log.warning(
                 "Not removing role to %s in guild %s because %s",
                 member.id,
@@ -60,7 +61,7 @@ class BirthdayLoop(MixinMeta):
                 error,
             )
             return
-
+        log.debug("Queued birthday role remove for %s in guild %s", member.id, member.guild.id)
         self.coro_queue.put_nowait(
             member.remove_roles(role, reason="Birthday cog - birthday ends today")
         )
@@ -198,8 +199,8 @@ class BirthdayLoop(MixinMeta):
 
             for member, dt in birthday_members.items():
                 if member not in role.members:
-                    await self.add_role(member, role)
-                    log.debug("Queued birthday role add for %s in guild %s", member.id, guild_id)
+                    await self.add_role(guild.me, member, role)
+
                     if dt.year == 1:
                         await self.send_announcement(
                             channel,
@@ -228,10 +229,8 @@ class BirthdayLoop(MixinMeta):
                         )
 
             for member in role.members:
+                print(role.members)
                 if member not in birthday_members:
-                    await self.remove_role(member, role)
-                    log.debug(
-                        "Queued birthday role remove for %s in guild %s", member.id, guild_id
-                    )
+                    await self.remove_role(guild.me, member, role)
 
             log.debug("Potential updates for %s have been queued", guild_id)

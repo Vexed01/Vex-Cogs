@@ -29,7 +29,7 @@ class Birthday(
     Set yours and get a message and role on your birthday!
     """
 
-    __version__ = "1.0.9"
+    __version__ = "1.0.10"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:

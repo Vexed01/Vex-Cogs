@@ -360,6 +360,14 @@ BetterUptime
 Birthday
 ========
 
+**********
+``1.0.10``
+**********
+
+2022-02-18
+
+- Fix birthday role logic again
+
 *********
 ``1.0.9``
 *********
