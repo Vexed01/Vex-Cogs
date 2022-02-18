@@ -76,7 +76,7 @@ class BUCommands(MixinMeta):
             embed.set_footer(
                 text=(
                     f"Data is for the last {len(data.expected_index)} days, and today.\n"
-                    f"You can view a graph of this data with {ctx.prefix}uptimegraph"
+                    f"You can view a graph of this data with {ctx.clean_prefix}uptimegraph"
                 )
             )
 
