@@ -160,7 +160,7 @@ class CaseInsensitive(commands.Cog):
     and enabling per-server, listed under `[p]help command`.
     """
 
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:

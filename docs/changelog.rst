@@ -454,6 +454,14 @@ CaseInsensitive
 ===============
 
 *********
+``1.0.4``
+*********
+
+2022-02-18
+
+- Add incompatibility check, at the moment I'm only aware of TickChanger
+
+*********
 ``1.0.3``
 *********
 
