@@ -87,7 +87,7 @@ async def get_channel_data(bot: Red, c_id: int, settings: ConfChannelSettings) -
         raise NoPermission
 
     if not settings["webhook"]:
-        use_embed = await bot.embed_requested(channel, channel.guild.me)  # type:ignore
+        use_embed = await bot.embed_requested(channel)  # type:ignore
     else:
         use_embed = True
 

@@ -864,6 +864,14 @@ Status
 ======
 
 *********
+``2.5.1``
+*********
+
+2022-02-19
+
+- No longer pass ``user`` to bot.embed_requested to remain compatible with Red 3.5 (Red PR #5576)
+
+*********
 ``2.5.0``
 *********
 
