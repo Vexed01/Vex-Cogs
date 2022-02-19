@@ -229,7 +229,6 @@ class BirthdayLoop(MixinMeta):
                         )
 
             for member in role.members:
-                print(role.members)
                 if member not in birthday_members:
                     await self.remove_role(guild.me, member, role)
 
