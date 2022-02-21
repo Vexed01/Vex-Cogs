@@ -51,12 +51,12 @@ class BULoop(MixinMeta):
         partially_converted = {
             datetime.datetime.strptime(k, "%Y-%m-%d"): v for k, v in old_cog_loaded.items()
         }
-        self.cog_loaded_cache = pandas.Series(data=partially_converted)
+        self.cog_loaded_cache = pandas.Series(data=partially_converted, dtype=float)
 
         partially_converted = {
             datetime.datetime.strptime(k, "%Y-%m-%d"): v for k, v in old_connected.items()
         }
-        self.connected_cache = pandas.Series(data=partially_converted)
+        self.connected_cache = pandas.Series(data=partially_converted, dtype=float)
 
         await self.write_to_config()
 
