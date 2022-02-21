@@ -18,3 +18,4 @@ psutil  # stattrack, system
 markdownify  # status
 rapidfuzz  # timechannel
 wakeonlan  # wol
+expr.py  # calc
