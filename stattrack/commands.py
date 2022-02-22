@@ -99,7 +99,7 @@ class StatTrackCommands(MixinMeta):
         if len(df.columns) == 1:
             embed.add_field(name="Min", value=df.min().values[0])
             embed.add_field(name="Max", value=df.max().values[0])
-            embed.add_field(name="Average", value=round(df.mean().values[0], 2))
+            embed.add_field(name="Average", value=round(df.mean().values[0], 2))  # type:ignore
             if show_total is True:
                 embed.add_field(name="Total", value=total_before_avg)  # type:ignore
                 # using df_cache ensures getting total of before the averaging
