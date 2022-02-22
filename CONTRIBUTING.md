@@ -1,20 +1,20 @@
 # Contributing to Vex-Cogs
 
-Thanks for taking the time to look into contributing! Whether you'll open an issue or PR, or do something else, _everything_ is appreciated.
+Thanks for taking the time to look into contributing! Whether you'll open an issue or PR, or do something else, _everything_ is appreciated. 
+
+To avoid wasting time, it's sometimes best to speak to me in Discord (`Vexed#9000`) or create an Issue before making non-trivial Pull Requests.
 
 Not much else to say really, just this:
 
 ## Checks
 
-When you open a PR, they'll be some basic checks to make sure the style is consistent and basic checking that nothing's broken.
+When you open a PR, they'll be some basic checks to make sure the style is consistent so other checks that nothing's broken.
 
-Please also SPEAK TO ME either through an issue or in Discord (Vexed#9000) before making any medium/big changes.
+You do not need to set up pre-commit or similar locally for smaller PRs, as GitHub Actions will let you know if there's an issue with details in the logs. However, you may need to use black or isort.
 
-This consists of: black, isort, flake8 and mypy.
+Pyright (or Pylance if you're using VS Code) is used for type checking.
 
-It will also build the docs.
-
-The config files will let you run all of these without arguments.
+The config files in the repo will let you run any style checks and type checking without arguments.
 
 ## pre-commit
 
@@ -26,21 +26,11 @@ To use it, simply run this:
 
         pre-commit install
 
-It will now run on every commit.
+It will now automatically run on every commit.
 
-> ### **Warning for MyPy**
->
-> To fully utilise type checking, install these stubs: ``pip install -U discord.py-stubs pandas-stubs``
->
-> ``mypy .`` **sometimes** errors. It's pretty random. It also complains about conf.py in docs.
->
-> This is what tox and the PR cheks run. You could also only run mypy on the cog you're contributing to or use it in your editor - that _seems_ to work.
->
-> This does appear to be on the GitHub for mypy in a few separate issues.
->
-> If the error still persists, you might want to try deleting the mypy cache folder (in the working dir).
+## tox
 
-You can run these locally to check everything's working using tox:
+If you would like, you can run (almost) the full test suite using `tox`
 
 1. If you haven't already, install tox:
 
