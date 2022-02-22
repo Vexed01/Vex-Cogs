@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 from dataclasses import dataclass
 from sys import getsizeof
+from typing import TYPE_CHECKING
 
 import discord
 from discord.channel import DMChannel
@@ -52,7 +53,8 @@ class LogMixin:
         self.channel = None
         self.guild = None
         if guild and channel:
-            assert not isinstance(channel, (DMChannel, discord.PartialMessageable))
+            if TYPE_CHECKING:
+                assert not isinstance(channel, (DMChannel, discord.PartialMessageable))
             self.channel = IDFKWhatToNameThis(id=channel.id, name=f"#{channel.name}")
             self.guild = IDFKWhatToNameThis(id=guild.id, name=guild.name)
         self.content = None
