@@ -65,7 +65,7 @@ class ServiceRestrictionsCache:
         except ValueError:  # not in list
             pass
 
-    def get_guild(self, guild_id: int, service: str = None) -> dict | list:
+    def get_guild(self, guild_id: int, service: str | None = None) -> dict | list:
         """Get the channels, optionally for a specific service, in a guild."""
         if service:
             return self.__data.get(guild_id, {}).get(service, [])

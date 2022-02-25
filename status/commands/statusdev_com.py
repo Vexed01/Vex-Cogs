@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from typing import TYPE_CHECKING
 
@@ -153,7 +155,7 @@ class StatusDevCom(MixinMeta):
 
     @commands.before_invoke(unsupported)  # type:ignore
     @statusdev.command(aliases=["cd"], hidden=True)
-    async def cooldown(self, ctx: commands.Context, user_id: int = None):
+    async def cooldown(self, ctx: commands.Context, user_id: int | None = None):
         """Get custom cooldown info for a user"""
         await ctx.send(box(str(self.service_cooldown.get_from_id(user_id or ctx.author.id))))
 

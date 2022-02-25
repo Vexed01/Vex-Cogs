@@ -42,7 +42,7 @@ class CaseInsensitiveStringView(StringView):
 
 # this could affect other cogs as described in install_msg in info.json
 # copied from dpy 1.7.3 which is when it was last edited (hence req of red 3.4.11)
-async def ci_get_context(self: Red, message: Message, *, cls=Context) -> None:
+async def ci_get_context(self: Red, message: Message, *, cls=Context) -> Context:
     do_case_insensitive = not await self.cog_disabled_in_guild(
         CaseInsensitive(None), message.guild  # type:ignore
     )  # its okay to create the class again without any issues (not great but okay) as no coms
@@ -99,8 +99,10 @@ async def ci_get_context(self: Red, message: Message, *, cls=Context) -> None:
     invoker = view.get_word()
 
     ctx.invoked_with = invoker
-    ctx.prefix = invoked_prefix
-    ctx.command = self.all_commands.get(invoker.lower() if do_case_insensitive else invoker)
+    ctx.prefix = invoked_prefix  # type:ignore
+    ctx.command = self.all_commands.get(  # type:ignore
+        invoker.lower() if do_case_insensitive else invoker
+    )
     return ctx
 
 

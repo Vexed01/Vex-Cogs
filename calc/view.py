@@ -73,7 +73,7 @@ class CalcView(discord.ui.View):
 
         # reminder this task is cancelled on timeout and view close via exit button :)
 
-    async def build_embed(self, colour: Colour = None) -> discord.Embed:
+    async def build_embed(self, colour: Colour | None = None) -> discord.Embed:
         """Build the embed for the calculator."""
         if colour is None:
             await self.ready.wait()

@@ -19,3 +19,10 @@ markdownify  # status
 rapidfuzz  # timechannel
 wakeonlan  # wol
 expr.py  # calc
+
+# checking tools
+pyright
+black
+isort
+flake8
+pytest

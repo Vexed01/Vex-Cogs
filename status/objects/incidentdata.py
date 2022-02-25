@@ -10,7 +10,7 @@ from redbot.core.utils import deduplicate_iterables
 class UpdateField:
     """An object representing an update in a IncidentData"""
 
-    def __init__(self, name: str, value: str, update_id: str = None):
+    def __init__(self, name: str, value: str, update_id: str | None = None):
         self.name = name
         self.value = value
         self.update_id = update_id
