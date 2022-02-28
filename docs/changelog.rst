@@ -494,6 +494,14 @@ CmdLog
 ======
 
 *********
+``1.4.4``
+*********
+
+2022-02-28
+
+- Fix logging to channel when the cog is loaded on bot start
+
+*********
 ``1.4.3``
 *********
 

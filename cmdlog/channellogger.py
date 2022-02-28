@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from asyncio import Queue
-from typing import Optional
+from typing import NoReturn, Optional
 
 import discord
 from redbot.core.bot import Red
@@ -45,7 +45,7 @@ class ChannelLogger:
     def _utc_now() -> datetime.datetime:
         return datetime.datetime.now(datetime.timezone.utc)
 
-    async def _cmdlog_channel_task(self) -> None:
+    async def _cmdlog_channel_task(self) -> NoReturn:
         log.debug("CmdLog channel logger task started.")
         while True:
             try:

@@ -42,7 +42,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#9000"
-    __version__ = "1.4.3"
+    __version__ = "1.4.4"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -65,7 +65,11 @@ class CmdLog(commands.Cog):
 
         self.channel_logger: Optional[ChannelLogger] = None
 
-    async def async_init(self):
+        bot.loop.create_task(self.start_channel_logger())
+
+    async def start_channel_logger(self) -> None:
+        await self.bot.wait_until_red_ready()
+
         chan_id: Optional[str] = await self.config.log_channel()
         if chan_id is not None:
             chan = self.bot.get_channel(int(chan_id))
