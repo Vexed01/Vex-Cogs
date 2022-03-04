@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import types
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
 import discord
 from discord import Message
