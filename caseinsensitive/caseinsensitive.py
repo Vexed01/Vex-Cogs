@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 import types
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, TypeVar
 
 import discord
 from discord import Message
 from discord.ext.commands.view import StringView
-from redbot.cogs.alias.alias import Alias
 from redbot.cogs.alias.alias_entry import AliasCache, AliasEntry
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.commands.context import Context
 
+from .fakealias import FakeAlias
 from .vexutils import format_help, format_info
 
 
@@ -132,7 +134,7 @@ async def ci_get_alias(
     else:
         if guild:
             server_aliases = [
-                AliasEntry.from_json(d) for d in await self.config.guild(guild.id).entries()
+                AliasEntry.from_json(d) for d in await self.config.guild(guild).entries()
             ]
         global_aliases = [AliasEntry.from_json(d) for d in await self.config.entries()]
 
@@ -201,7 +203,7 @@ class CaseInsensitive(commands.Cog):
             return
 
         if TYPE_CHECKING:
-            assert isinstance(alias_cog, Alias)
+            assert isinstance(alias_cog, FakeAlias)
 
         new_method = types.MethodType(ci_get_alias, alias_cog._aliases)
         self.old_alias_get = alias_cog._aliases.get_alias
@@ -213,7 +215,7 @@ class CaseInsensitive(commands.Cog):
             return
 
         if TYPE_CHECKING:
-            assert isinstance(alias_cog, Alias)
+            assert isinstance(alias_cog, FakeAlias)
         alias_cog._aliases.get_alias = self.old_alias_get
 
     def cog_unload(self):

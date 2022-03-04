@@ -301,7 +301,7 @@ class BirthdayAdminCommands(MixinMeta):
                 " interactive` to start again."
             )
 
-        channel: discord.TextChannel = pred.result
+        channel: discord.TextChannel = pred.result  # type:ignore
         if error := channel_perm_check(ctx.me, channel):
             await ctx.send(
                 warning(
@@ -310,7 +310,7 @@ class BirthdayAdminCommands(MixinMeta):
                 )
             )
 
-        channel_id = pred.result.id
+        channel_id = pred.result.id  # type:ignore
 
         # ============================== ROLE ==============================
 
@@ -330,7 +330,7 @@ class BirthdayAdminCommands(MixinMeta):
             )
 
         # no need to check hierarchy for author, since command is locked to admins
-        if error := role_perm_check(ctx.me, pred.result):
+        if error := role_perm_check(ctx.me, pred.result):  # type:ignore
             await ctx.send(
                 warning(
                     f"{error} Please make"
@@ -339,7 +339,7 @@ class BirthdayAdminCommands(MixinMeta):
                 )
             )
 
-        role_id = pred.result.id
+        role_id = pred.result.id  # type:ignore
 
         # ============================== TIME ==============================
 
@@ -702,7 +702,7 @@ class BirthdayAdminCommands(MixinMeta):
             await self.config.guild(guild).set_raw(value=new_data)
 
         bday_conf.init_custom("GUILD_DATE", 2)
-        all_member_data = await bday_conf.custom("GUILD_DATE").all()
+        all_member_data = await bday_conf.custom("GUILD_DATE").all()  # type:ignore
         if "backup" in all_member_data:
             del all_member_data["backup"]
 

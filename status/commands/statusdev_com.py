@@ -40,7 +40,7 @@ class StatusDevCom(MixinMeta):
             "you want to continue?"
         )
         try:
-            if discord.__version__.startwith("1"):
+            if discord.__version__.startswith("1"):
                 m = await ctx.send(msg)
                 start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
                 pred = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore

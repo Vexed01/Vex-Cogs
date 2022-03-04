@@ -48,7 +48,7 @@ def _plot(
     low_values: Dict[Timestamp, float] = {}
     for i, value in enumerate(sr.values):
         if value < 99.7:  # only annotate non-perfect days
-            date: Timestamp = sr.index[i]
+            date: Timestamp = sr.index[i]  # type: ignore
             low_values[date] = value
 
     values_to_annotate = nsmallest(5, low_values.values())
