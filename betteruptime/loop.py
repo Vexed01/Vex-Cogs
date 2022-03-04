@@ -33,11 +33,11 @@ class BULoop(MixinMeta):
             await self.migate_v2_to_v3()
             await self.config.version.set(3)
         else:
-            self.cog_loaded_cache = pandas.read_json(
-                json.dumps(await self.config.cog_loaded()), typ="series"
+            self.cog_loaded_cache = pandas.Series(
+                pandas.read_json(json.dumps(await self.config.cog_loaded()), typ="series")
             )
-            self.connected_cache = pandas.read_json(
-                json.dumps(await self.config.connected()), typ="series"
+            self.connected_cache = pandas.Series(
+                pandas.read_json(json.dumps(await self.config.connected()), typ="series")
             )
 
         _log.debug("[BU SETUP] Config setup finished, waiting to start loops")

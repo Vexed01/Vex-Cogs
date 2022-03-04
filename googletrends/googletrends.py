@@ -95,7 +95,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
             # should never happen
             return
 
-        query = deduplicate_iterables(query)
+        query = deduplicate_iterables(query)  # type:ignore
 
         if len(query) == 0 and geo != "" and timeframe != "now 7-d":  # not defaults
             await ctx.send("You must specify at least one query. For example, `[p]trends discord`")

@@ -177,5 +177,5 @@ class Utils(MixinMeta):
             daily_connected_data=ts_con,
             seconds_data_collected=seconds_data_collected,
             first_load=conf_first_loaded,
-            expected_index=expected_index,
+            expected_index=expected_index,  # type:ignore
         )
