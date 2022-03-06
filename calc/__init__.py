@@ -13,7 +13,7 @@ from .vexutils.meta import out_of_date_check
 
 if discord.__version__.startswith("1"):
     raise CogLoadError(
-        "This cog requires discord.py 2.x, which is currently incompatible with Red and most "
+        "This cog requires Red 3.5/discord.py 2, which is unstable and incompatible with most  "
         "other cogs. This cog is marked as hidden for a reason."
     )
 

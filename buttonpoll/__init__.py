@@ -13,11 +13,11 @@ from .vexutils.meta import out_of_date_check
 
 if discord.__version__.startswith("1"):
     raise CogLoadError(
-        "This cog requires discord.py 2.x, which is currently incompatible with Red and most "
+        "This cog requires Red 3.5/discord.py 2, which is unstable and incompatible with most  "
         "other cogs. This cog is marked as hidden for a reason."
     )
 
-from .buttonopll import ButtonPoll
+from .buttonpoll import ButtonPoll
 
 with open(Path(__file__).parent / "info.json") as fp:
     __red_end_user_data_statement__ = json.load(fp)["end_user_data_statement"]
