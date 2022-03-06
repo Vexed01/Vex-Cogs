@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional
 
 import discord
@@ -5,7 +7,7 @@ from discord.enums import ButtonStyle
 from redbot.core.config import Config
 
 if TYPE_CHECKING:
-    from buttonpoll.poll import Poll
+    from ..poll import Poll
 
 
 class OptionButton(discord.ui.Button):

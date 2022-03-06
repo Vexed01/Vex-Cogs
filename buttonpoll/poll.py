@@ -12,7 +12,7 @@ from discord.channel import TextChannel
 from discord.embeds import EmptyEmbed
 from discord.enums import ButtonStyle
 
-from .pollview import PollView
+from .components.poll import PollView
 from .vexutils import get_vex_logger
 
 if TYPE_CHECKING:
@@ -147,13 +147,52 @@ class Poll:
 
     async def finish(self):
         """Finish this poll."""
-        channel = self.cog.bot.get_channel(self.channel_id)
-        if not isinstance(channel, TextChannel):
+        guild = self.cog.bot.get_guild(self.guild_id)
+        if guild is None:
+            log.warning(
+                f"Guild {self.guild_id} not found. Unable to finish poll {self.unique_poll_id}."
+            )
+
+            async with self.cog.config.guild_from_id(
+                self.guild_id
+            ).poll_settings() as poll_settings:
+                try:
+                    del poll_settings[self.unique_poll_id]
+                except KeyError:
+                    pass
+            async with self.cog.config.guild_from_id(
+                self.guild_id
+            ).poll_user_choices() as poll_user_choices:
+                try:
+                    del poll_user_choices[self.unique_poll_id]
+                except KeyError:
+                    pass
+
+            return
+
+        channel = guild.get_channel(self.channel_id)
+        if channel is None:
+            channel = guild.get_thread(self.channel_id)
+
+        if not isinstance(channel, (TextChannel, discord.Thread)):
             log.warning(
                 f"Channel {self.channel_id} does not exist. Removing poll {self.unique_poll_id} "
                 "without properly finishing it."
             )
+
+            async with self.cog.config.guild(guild).poll_settings() as poll_settings:
+                try:
+                    del poll_settings[self.unique_poll_id]
+                except KeyError:
+                    pass
+            async with self.cog.config.guild(guild).poll_user_choices() as poll_user_choices:
+                try:
+                    del poll_user_choices[self.unique_poll_id]
+                except KeyError:
+                    pass
+
             return
+
         poll_msg = channel.get_partial_message(self.message_id)
         poll_results = await self.get_results()
 
@@ -198,17 +237,23 @@ class Poll:
                     label="Original message", style=ButtonStyle.link, url=poll_msg.jump_url
                 )
             )
+
             plot = await self.plot()
+
             embed_2.set_image(url="attachment://plot.png")
             await channel.send(embed=embed_2, file=plot, view=view)
             view.stop()
 
-        async with self.cog.config.guild_from_id(self.guild_id).poll_settings() as poll_settings:
-            del poll_settings[self.unique_poll_id]
-        async with self.cog.config.guild_from_id(
-            self.guild_id
-        ).poll_user_choices() as poll_user_choices:
-            del poll_user_choices[self.unique_poll_id]
+        async with self.cog.config.guild(guild).poll_settings() as poll_settings:
+            try:
+                del poll_settings[self.unique_poll_id]
+            except KeyError:
+                pass
+        async with self.cog.config.guild(guild).poll_user_choices() as poll_user_choices:
+            try:
+                del poll_user_choices[self.unique_poll_id]
+            except KeyError:
+                pass
 
     async def plot(self) -> discord.File:
         results = await self.get_results()
