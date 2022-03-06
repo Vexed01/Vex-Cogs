@@ -28,3 +28,8 @@ flake8
 pytest
 tox
 pre-commit
+
+# docs
+sphinx
+sphinx-rtd-theme
+furo
