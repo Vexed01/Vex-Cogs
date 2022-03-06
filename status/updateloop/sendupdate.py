@@ -4,6 +4,7 @@ import asyncio
 from math import floor
 from time import monotonic
 
+import discord
 from discord import Embed, Message, TextChannel
 from redbot.core.bot import Red
 
@@ -139,7 +140,7 @@ class SendUpdate:
             if edit_id := self.channeldata.edit_id.get(self.incidentdata.incident_id):
                 try:
                     await webhook.edit_message(edit_id, embed=embed, content=None)
-                except Exception:  # eg message deleted
+                except discord.HTTPException:  # eg message deleted
                     edit_id = None
             if not edit_id:
                 sent_webhook = await webhook.send(
