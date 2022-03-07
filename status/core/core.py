@@ -122,7 +122,10 @@ class Status(
     async def get_initial_data(self, specific_service: Optional[SERVICE_LITERAL] = None) -> None:
         """Start with initial data from services."""
         old_ids = []
-        for service, settings in FEEDS.items():
+        services_to_get = (
+            {specific_service: FEEDS[specific_service]} if specific_service else FEEDS
+        )
+        for service, settings in services_to_get.items():
             log.debug(f"Starting {service}.")
             try:
                 incidents, etag, status = await self.statusapi.incidents(settings["id"])

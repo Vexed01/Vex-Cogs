@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from discord import TextChannel
+import discord
 
 from ..core import MODES_LITERAL
 
 
 @dataclass
 class ChannelData:
-    channel: TextChannel
+    channel: discord.TextChannel | discord.Thread
     mode: MODES_LITERAL
     webhook: bool
     embed: bool

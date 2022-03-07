@@ -5,7 +5,6 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, NamedTuple
 
 import discord
-from discord.channel import TextChannel
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list, humanize_timedelta, pagify
 
@@ -70,7 +69,11 @@ class StatusCom(MixinMeta):
         if restrictions := self.service_restrictions_cache.get_guild(ctx.guild.id, service.name):
             channels = [self.bot.get_channel(channel) for channel in restrictions]
             channel_list = humanize_list(
-                [channel.mention for channel in channels if isinstance(channel, TextChannel)],
+                [
+                    channel.mention
+                    for channel in channels
+                    if isinstance(channel, (discord.TextChannel, discord.Thread))
+                ],
                 style="or",
             )
             if channel_list:

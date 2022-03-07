@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import asyncio
 from time import time
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
 import discord
 from discord.abc import GuildChannel
@@ -12,6 +11,7 @@ from redbot.core.utils.chat_formatting import box, humanize_list
 from tabulate import tabulate
 
 from ..commands.command import DynamicHelp, DynamicHelpGroup
+from ..commands.components import AddServiceView
 from ..commands.converters import ModeConverter, ServiceConverter
 from ..core import FEEDS, SPECIAL_INFO
 from ..core.abc import MixinMeta
@@ -19,13 +19,6 @@ from ..core.consts import SERVICE_LITERAL
 from ..objects import SendCache, Update
 from ..updateloop import SendUpdate, process_json
 from ..vexutils.chat import inline_hum_list
-
-if discord.__version__.startswith("1"):
-    from redbot.core.utils.predicates import MessagePredicate
-else:
-    from discord.enums import ButtonStyle
-
-    from ..vexutils.button_pred import PredItem, wait_for_press, wait_for_yes_no
 
 
 class StatusSetCom(MixinMeta):
@@ -45,7 +38,7 @@ class StatusSetCom(MixinMeta):
         self,
         ctx: commands.Context,
         service: ServiceConverter,
-        chan: Optional[discord.TextChannel],
+        chan: Optional[Union[discord.TextChannel, discord.Thread]],
     ):
         """
         Start getting status updates for the chosen service!
@@ -63,7 +56,8 @@ class StatusSetCom(MixinMeta):
         if TYPE_CHECKING:
             assert ctx.guild is not None
             assert isinstance(ctx.me, Member)
-            assert isinstance(ctx.channel, GuildChannel)
+            assert isinstance(ctx.author, Member)
+            assert isinstance(ctx.channel, (discord.TextChannel, discord.Thread))
 
         channel = chan or ctx.channel
 
@@ -79,129 +73,77 @@ class StatusSetCom(MixinMeta):
                 f"updates. You can edit it with `{ctx.clean_prefix}statusset edit`."
             )
 
-        modes = (
-            "**All**: Every time the service posts an update on an incident, I will send a new "
-            "message containing the previous updates as well as the new update. Best used in a "
-            "fast-moving channel with other users.\n\n"
-            "**Latest**: Every time the service posts an update on an incident, I will send a new "
-            "message containing only the latest update. Best used in a dedicated status channel.\n"
-            "\n**Edit**: When a new incident is created, I will sent a new message. When this "
-            "incident is updated, I will then add the update to the original message. Best used "
-            "in a dedicated status channel.\n\n"
+        view = AddServiceView(ctx.author)
+        embed = discord.Embed(title="Guild to settings")
+        embed.set_footer(text="If you don't see the options bellow, update your client.")
+        embed.add_field(
+            name="Mode",
+            value=(
+                "**All**: Every time the service posts an update on an incident, I will send a new"
+                " message containing the previous updates as well as the new update. Best used in"
+                " a fast-moving channel with other users.\n**Latest**: Every time the service"
+                " posts an update on an incident, I will send a new message containing only the"
+                " latest update. Best used in a dedicated status channel.\n**Edit**: When a new"
+                " incident is created, I will sent a new message. When this incident is updated, I"
+                " will then add the update to the original message. Best used in a dedicated"
+                " status channel."
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Webhook",
+            value=(
+                "If you choose yes, status updates will be sent by a webhook with"
+                f" {service.friendly}'s logo and with the name if `{service.friendly} Status"
+                " Update`, instead of my avatar and name."
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Restrict",
+            value=(
+                f"Restrict access to {service.friendly} in the"
+                f" `{ctx.clean_prefix}status` command. If there's an incident, members will"
+                f" instead be redirected to {channel.mention} and any other channels that you've"
+                f" set to receive {service.friendly} status updates which have restrict enabled."
+            ),
+            inline=False,
         )
 
-        # === MODE ===
+        await ctx.send(embed=embed, view=view)
+        timeout = await view.wait()
+        print("AAA")
 
-        msg = (
-            "You have 3 minutes to answer each question.\nIf you aren't sure what to choose, take "
-            f"a look at the **`{ctx.clean_prefix}statusset preview`** command.\n\n**What mode do "
-            f"you want to use?**\n\n{modes}"
-        )
+        if timeout:
+            return
 
-        try:
-            if discord.__version__.startswith("1"):
-                await ctx.send(msg)
-
-                # really shouldn't monkey patch this
-                mode = await ModeConverter.convert(  # type:ignore
-                    None,
-                    ctx,
-                    (
-                        await self.bot.wait_for(
-                            "message", check=MessagePredicate.same_context(ctx), timeout=120
-                        )
-                    ).content,
-                )
-            else:
-                mode = await wait_for_press(
-                    ctx,
-                    [
-                        PredItem("all", ButtonStyle.blurple, "All"),
-                        PredItem("latest", ButtonStyle.blurple, "Latest"),
-                        PredItem("edit", ButtonStyle.blurple, "Edit"),
-                    ],
-                    content=msg,
-                )
-        except asyncio.TimeoutError:
-            return await ctx.send("Timed out. Cancelling.")
-        except commands.BadArgument as e:
-            return await ctx.send(e)
-
-        # === WEBHOOK ===
-
-        if channel.permissions_for(ctx.me).manage_webhooks:
-            msg = (
-                "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means "
-                f"that the status updates will be sent with the avatar as {service.friendly}'s "
-                f"logo and the name will be `{service.friendly} Status Update`, instead of my "
-                "avatar and name."
+        if view.webhook:
+            webhook_channel = channel.parent if isinstance(channel, discord.Thread) else channel
+            if webhook_channel is None:  # Thread.parent can be None
+                return await ctx.send("I can't create a webhook in this thread.")
+            existing_webhook = any(
+                hook.name == ctx.me.name for hook in await webhook_channel.webhooks()
             )
-
-            try:
-                if discord.__version__.startswith("1"):
-                    await ctx.send(msg)
-                    pred = MessagePredicate.yes_or_no(ctx)
-                    await self.bot.wait_for("message", check=pred, timeout=120)
-                    webhook = pred.result
-                else:
-                    webhook = await wait_for_yes_no(ctx, msg)
-            except asyncio.TimeoutError:
-                return await ctx.send("Timed out. Cancelling.")
-
-            if webhook:
-                # maybe creating a webhook so users feel it worked
-                existing_webhook = any(
-                    hook.name == ctx.me.name for hook in await channel.webhooks()
+            if not existing_webhook:
+                await webhook_channel.create_webhook(
+                    name=ctx.me.name, reason="Created for status updates."
                 )
-                if not existing_webhook:
-                    await channel.create_webhook(
-                        name=ctx.me.name, reason="Created for status updates."
-                    )
-        else:
-            await ctx.send(
-                "I would ask about whether you want me to send updates as a webhook (so they "
-                "match the service), however I don't have the `manage webhooks` permission."
-            )
-            webhook = False
 
-        # === RESTRICT ===
-
-        msg = (
-            f"**Would you like to restrict access to {service.friendly} in the "  # type:ignore
-            f"`{ctx.clean_prefix}status` command?** (yes or no answer)\nThis will reduce spam. If "
-            f"there's an incident, members will instead be redirected to {channel.mention} and "
-            f"any other channels that you've set to receive {service.friendly} status updates "
-            "which have restrict enabled."
-        )
-
-        try:
-            if discord.__version__.startswith("1"):
-                pred = MessagePredicate.yes_or_no(ctx)
-                await self.bot.wait_for("message", check=pred, timeout=120)
-                restrict = pred.result
-            else:
-                restrict = await wait_for_yes_no(ctx, msg)
-        except asyncio.TimeoutError:
-            return await ctx.send("Timed out. Cancelling.")
-
-        if restrict is True:
+        if view.restrict:
             async with self.config.guild(ctx.guild).service_restrictions() as sr:
                 try:
                     sr[service.name].append(channel.id)
                 except KeyError:
                     sr[service.name] = [channel.id]
 
-                self.service_restrictions_cache.add_restriction(
-                    ctx.guild.id, service.name, channel.id
-                )
-
-        # === FINISH ===
+            self.service_restrictions_cache.add_restriction(ctx.guild.id, service.name, channel.id)
 
         if service.name not in self.used_feeds.get_list():
             # need to get it up to date so no mass sending on add
-            await self.get_initial_data(service.name)
+            async with ctx.typing():
+                await self.get_initial_data(service.name)
 
-        settings = {"mode": mode, "webhook": webhook, "edit_id": {}}
+        settings = {"mode": view.mode, "webhook": view.webhook, "edit_id": {}}
         await self.config.channel(channel).feeds.set_raw(  # type:ignore
             service.name, value=settings
         )
@@ -221,7 +163,7 @@ class StatusSetCom(MixinMeta):
         self,
         ctx: commands.Context,
         service: ServiceConverter,
-        chan: Optional[discord.TextChannel],
+        chan: Optional[Union[discord.TextChannel, discord.Thread]] = None,
     ):
         """
         Stop status updates for a specific service in this server.
@@ -234,7 +176,7 @@ class StatusSetCom(MixinMeta):
         """
         # guild check on group
         if TYPE_CHECKING:
-            assert isinstance(ctx.channel, GuildChannel)
+            assert isinstance(ctx.channel, (GuildChannel, discord.Thread))
             assert ctx.guild is not None
 
         channel = chan or ctx.channel
@@ -384,7 +326,7 @@ class StatusSetCom(MixinMeta):
         """
         # guild check on group
         if TYPE_CHECKING:
-            assert isinstance(ctx.channel, GuildChannel)
+            assert isinstance(ctx.channel, (discord.TextChannel, discord.Thread))
             assert isinstance(ctx.me, Member)
 
         if webhook and not ctx.channel.permissions_for(ctx.me).manage_messages:
@@ -420,7 +362,9 @@ class StatusSetCom(MixinMeta):
         ).send({ctx.channel.id: {"mode": mode, "webhook": webhook, "edit_id": {}}})
 
     @statusset.command(name="clear", aliases=["erase"], usage="[channel]")
-    async def statusset_clear(self, ctx: commands.Context, *, chan: Optional[discord.TextChannel]):
+    async def statusset_clear(
+        self, ctx: commands.Context, *, chan: Optional[Union[discord.TextChannel, discord.Thread]]
+    ):
         """
         Remove all feeds from a channel.
 
@@ -432,7 +376,7 @@ class StatusSetCom(MixinMeta):
         """
         # guild check on group
         if TYPE_CHECKING:
-            assert isinstance(ctx.channel, GuildChannel)
+            assert isinstance(ctx.channel, (discord.TextChannel, discord.Thread))
             assert ctx.guild is not None
 
         channel = chan or ctx.channel
@@ -456,7 +400,7 @@ class StatusSetCom(MixinMeta):
     async def edit_mode(
         self,
         ctx: commands.Context,
-        chan: Optional[discord.TextChannel],
+        chan: Optional[Union[discord.TextChannel, discord.Thread]],
         service: ServiceConverter,
         mode: ModeConverter,
     ):
@@ -481,7 +425,7 @@ class StatusSetCom(MixinMeta):
         """
         # guild check on group
         if TYPE_CHECKING:
-            assert isinstance(ctx.channel, GuildChannel)
+            assert isinstance(ctx.channel, (discord.TextChannel, discord.Thread))
 
         channel = chan or ctx.channel
 
@@ -511,7 +455,7 @@ class StatusSetCom(MixinMeta):
     async def edit_webhook(
         self,
         ctx: commands.Context,
-        chan: Optional[discord.TextChannel],
+        chan: Optional[Union[discord.TextChannel, discord.Thread]],
         service: ServiceConverter,
         webhook: bool,
     ):
@@ -528,7 +472,7 @@ class StatusSetCom(MixinMeta):
         """
         # guild check on group
         if TYPE_CHECKING:
-            assert isinstance(ctx.channel, GuildChannel)
+            assert isinstance(ctx.channel, (discord.TextChannel, discord.Thread))
             assert isinstance(ctx.me, Member)
 
         channel = chan or ctx.channel
@@ -565,7 +509,7 @@ class StatusSetCom(MixinMeta):
     async def edit_restrict(
         self,
         ctx: commands.Context,
-        chan: Optional[discord.TextChannel],
+        chan: Optional[Union[discord.TextChannel, discord.Thread]],
         service: ServiceConverter,
         restrict: bool,
     ):
@@ -582,7 +526,7 @@ class StatusSetCom(MixinMeta):
         """
         # guild check on group
         if TYPE_CHECKING:
-            assert isinstance(ctx.channel, GuildChannel)
+            assert isinstance(ctx.channel, (discord.TextChannel, discord.Thread))
             assert ctx.guild is not None
 
         channel = chan or ctx.channel

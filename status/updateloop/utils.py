@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-from discord import TextChannel, Webhook
+from discord import TextChannel, Thread, Webhook
 from redbot.core.bot import Red
 
 from ..objects import ChannelData, CogDisabled, ConfChannelSettings, NoPermission, NotFound
@@ -9,12 +11,12 @@ from ..vexutils import get_vex_logger
 _log = get_vex_logger(__name__)
 
 
-async def get_webhook(channel: TextChannel) -> Webhook:
+async def get_webhook(channel: TextChannel | Thread) -> Webhook:
     """Get, or create, a webhook for the specified channel and return it.
 
     Parameters
     ----------
-    channel : TextChannel
+    channel : TextChannel | Thread
         Target channel
 
     Returns
@@ -22,6 +24,11 @@ async def get_webhook(channel: TextChannel) -> Webhook:
     Webhook
         Valid webhook
     """
+    if isinstance(channel, Thread):
+        if channel.parent is None:
+            raise ValueError("Thread does not have a parent; cannot have webhooks")
+        channel = channel.parent
+
     for webhook in await channel.webhooks():
         if webhook.name == channel.guild.me.name:
             return webhook
@@ -64,7 +71,7 @@ async def get_channel_data(bot: Red, c_id: int, settings: ConfChannelSettings) -
         raise NotFound
 
     if TYPE_CHECKING:
-        assert isinstance(channel, TextChannel)
+        assert isinstance(channel, (TextChannel, Thread))
 
     if await bot.cog_disabled_in_guild_raw("Status", channel.guild.id):
         _log.info(

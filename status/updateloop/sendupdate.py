@@ -5,7 +5,7 @@ from math import floor
 from time import monotonic
 
 import discord
-from discord import Embed, Message, TextChannel
+from discord import Embed, Message, TextChannel, Thread
 from redbot.core.bot import Red
 
 from ..core import FEEDS, UPDATE_NAME
@@ -123,12 +123,12 @@ class SendUpdate:
 
     # TODO: maybe try to do some DRY on the next 3
 
-    async def _send_webhook(self, channel: TextChannel, embed: Embed) -> None:
+    async def _send_webhook(self, channel: TextChannel | Thread, embed: Embed) -> None:
         """Send a webhook to the specified channel
 
         Parameters
         ----------
-        channel : TextChannel
+        channel : TextChannel | Thread
             Channel to send to
         embed : Embed
             Embed to use
@@ -148,6 +148,7 @@ class SendUpdate:
                     avatar_url=ICON_BASE.format(self.service),
                     embed=embed,
                     wait=True,
+                    thread=channel if isinstance(channel, Thread) else discord.utils.MISSING,
                 )
                 await self.config_wrapper.update_edit_id(
                     channel.id, self.service, self.incidentdata.incident_id, sent_webhook.id
@@ -158,14 +159,15 @@ class SendUpdate:
                 username=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
                 avatar_url=ICON_BASE.format(self.service),
                 embed=embed,
+                thread=channel if isinstance(channel, Thread) else discord.utils.MISSING,
             )
 
-    async def _send_embed(self, channel: TextChannel, embed: Embed) -> None:
+    async def _send_embed(self, channel: TextChannel | Thread, embed: Embed) -> None:
         """Send an embed to the specified channel
 
         Parameters
         ----------
-        channel : TextChannel
+        channel : TextChannel | Thread
             Channel to send to
         embed : Embed
             Embed to use
@@ -190,12 +192,12 @@ class SendUpdate:
         else:
             await channel.send(embed=embed)
 
-    async def _send_plain(self, channel: TextChannel, msg: str) -> None:
+    async def _send_plain(self, channel: TextChannel | Thread, msg: str) -> None:
         """Send a plain message to the specified channel
 
         Parameters
         ----------
-        channel : TextChannel
+        channel : TextChannel | Thread
             Channel to send to
         msg : str
             Message to send
