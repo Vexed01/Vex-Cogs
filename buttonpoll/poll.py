@@ -18,7 +18,7 @@ from .vexutils import get_vex_logger
 if TYPE_CHECKING:
     from plotly.graph_objs._figure import Figure
 
-    from .buttonopll import ButtonPoll
+    from .buttonpoll import ButtonPoll
 else:
     from plotly.graph_objs import Figure
 

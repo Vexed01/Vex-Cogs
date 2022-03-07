@@ -14,7 +14,7 @@ from ..poll import Poll, PollOption
 from .poll import PollView
 
 if TYPE_CHECKING:
-    from ..buttonopll import ButtonPoll
+    from ..buttonpoll import ButtonPoll
 
 from ..vexutils.chat import datetime_to_timestamp
 
