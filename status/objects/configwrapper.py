@@ -20,9 +20,14 @@ class ConfigWrapper:
     async def get_latest(
         self, service: SERVICE_LITERAL
     ) -> tuple[IncidentData, dict[str, float]] | tuple[None, None]:
-        incident: ConfFeeds = (await self.config.feed_store()).get(service, {})
+        raw_incidents = await self.config.feed_store()
+        if raw_incidents is None:
+            return None, None
+
+        incident: ConfFeeds = raw_incidents.get(service, {})
         if not incident:
             return None, None
+
         extra_info = {"checked": self.last_checked.get_time(service)}
 
         deserialised: IncidentDataDict = {"fields": []}
