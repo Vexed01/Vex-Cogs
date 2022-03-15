@@ -74,7 +74,7 @@ class StatusSetCom(MixinMeta):
             )
 
         view = AddServiceView(ctx.author)
-        embed = discord.Embed(title="Guild to settings")
+        embed = discord.Embed(title="Options")
         embed.set_footer(text="If you don't see the options bellow, update your client.")
         embed.add_field(
             name="Mode",
@@ -112,7 +112,6 @@ class StatusSetCom(MixinMeta):
 
         await ctx.send(embed=embed, view=view)
         timeout = await view.wait()
-        print("AAA")
 
         if timeout:
             return
