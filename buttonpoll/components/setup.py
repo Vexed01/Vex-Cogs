@@ -6,7 +6,11 @@ from typing import TYPE_CHECKING, Optional
 
 import discord
 from discord import Interaction, SelectOption, TextChannel, Thread, ui
-from discord.embeds import EmptyEmbed
+
+if discord.__version__.startswith("1"):
+    from discord.embeds import EmptyEmbed
+else:
+    EmptyEmbed = None
 from discord.enums import ButtonStyle
 from redbot.core.commands import parse_timedelta
 

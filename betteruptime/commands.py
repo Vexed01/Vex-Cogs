@@ -3,7 +3,12 @@ from typing import Union
 
 import discord
 import pandas
-from discord.embeds import EmptyEmbed
+
+if discord.__version__.startswith("1"):
+    from discord.embeds import EmptyEmbed
+else:
+    EmptyEmbed = None
+
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_timedelta, inline, pagify, text_to_file
 

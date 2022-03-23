@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 from dataclasses import dataclass
 from math import ceil
@@ -18,8 +20,8 @@ class UptimeData:
     total_secs_connected: float
     total_secs_loaded: float
 
-    daily_cog_loaded_data: pd.Series
-    daily_connected_data: pd.Series
+    daily_cog_loaded_data: pd.Series[float]
+    daily_connected_data: pd.Series[float]
 
     seconds_data_collected: float
 
