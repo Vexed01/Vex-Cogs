@@ -1,0 +1,15 @@
+name: Labels
+
+on:
+  - pull_request
+  - label
+
+jobs:
+  blocked:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Blocked label check
+        with:
+          if: contains(github.event.pull_request.labels.*.name, 'blocked')
+          message: This PR is blocked due to a label
+          status: failure
