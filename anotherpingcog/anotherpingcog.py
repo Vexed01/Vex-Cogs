@@ -533,4 +533,4 @@ async def setup(bot: Red) -> None:
     cog = AnotherPingCog(bot)
     await cog.async_init()
     await out_of_date_check("anotherpingcog", cog.__version__)
-    bot.add_cog(cog)
+    await bot.add_cog(cog)

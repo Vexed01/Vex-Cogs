@@ -52,4 +52,4 @@ async def setup(bot: Red) -> None:
     cog = Status(bot)
     await out_of_date_check("status", cog.__version__)
     await cog.async_init()
-    bot.add_cog(cog)
+    await bot.add_cog(cog)

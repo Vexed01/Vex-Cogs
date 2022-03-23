@@ -18,4 +18,4 @@ async def setup(bot: Red) -> None:
     cog = TimeChannel(bot)
     await out_of_date_check("timechannel", cog.__version__)
     await cog.maybe_migrate()
-    bot.add_cog(cog)
+    await bot.add_cog(cog)

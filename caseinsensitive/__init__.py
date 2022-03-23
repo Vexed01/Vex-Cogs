@@ -28,4 +28,4 @@ async def setup(bot: Red):
     await out_of_date_check("caseinsensitive", cog.__version__)
     cog.plug_core()
     cog.plug_alias()
-    bot.add_cog(cog)
+    await bot.add_cog(cog)

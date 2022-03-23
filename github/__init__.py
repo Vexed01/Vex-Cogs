@@ -17,4 +17,4 @@ with open(Path(__file__).parent / "info.json") as fp:
 async def setup(bot: Red) -> None:
     cog = GitHub(bot)
     await out_of_date_check("github", cog.__version__)
-    bot.add_cog(cog)
+    await bot.add_cog(cog)
