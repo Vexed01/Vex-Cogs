@@ -14,6 +14,4 @@ async def setup(bot: Red) -> None:
     cog = Aliases(bot)
     await out_of_date_check("aliases", cog.__version__)
 
-    r = bot.add_cog(cog)
-    if r is not None:
-        await r
+    await bot.add_cog(cog)

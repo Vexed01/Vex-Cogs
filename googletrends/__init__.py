@@ -17,6 +17,4 @@ with open(Path(__file__).parent / "info.json") as fp:
 async def setup(bot: Red) -> None:
     cog = GoogleTrends(bot)
     await out_of_date_check("googletrends", cog.__version__)
-    r = bot.add_cog(cog)
-    if r is not None:
-        await r
+    await bot.add_cog(cog)

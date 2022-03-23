@@ -14,8 +14,6 @@ async def setup(bot: Red) -> None:
     cog = UptimeResponder(bot)
     await out_of_date_check("uptimeresponder", cog.__version__)
 
-    r = bot.add_cog(cog)
-    if r is not None:
-        await r
+    await bot.add_cog(cog)
 
     await cog.start_webserver()

@@ -27,6 +27,4 @@ async def setup(bot: Red):
     cog = ButtonPoll(bot)
     await cog.async_init()
     await out_of_date_check("buttonpoll", cog.__version__)
-    r = bot.add_cog(cog)
-    if r is not None:
-        await r
+    await bot.add_cog(cog)
