@@ -62,7 +62,7 @@ class ButtonPoll(commands.Cog):
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.loop.cancel()
         self.bot.remove_dev_env_value("bpoll")
 

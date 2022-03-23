@@ -61,7 +61,7 @@ class AnotherPingCog(commands.Cog):
             self.bot,
         )
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         global old_ping
         if old_ping:
             try:

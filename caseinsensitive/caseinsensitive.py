@@ -218,7 +218,7 @@ class CaseInsensitive(commands.Cog):
             assert isinstance(alias_cog, FakeAlias)
         alias_cog._aliases.get_alias = self.old_alias_get
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.unplug_core()
         self.unplug_alias()
 

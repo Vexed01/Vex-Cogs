@@ -60,7 +60,7 @@ class Birthday(
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.loop.cancel()
         self.role_manager.cancel()
 

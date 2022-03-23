@@ -68,7 +68,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         if self.loop:
             self.loop.cancel()
 

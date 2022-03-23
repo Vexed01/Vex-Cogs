@@ -8,8 +8,11 @@ jobs:
   blocked:
     runs-on: ubuntu-latest
     steps:
+      - name: Make it work
+        run: echo "This is working..."
       - name: Blocked label check
         with:
           if: contains(github.event.pull_request.labels.*.name, 'blocked')
           message: This PR is blocked due to a label
           status: failure
+        run: echo "This PR is blocked"

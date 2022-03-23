@@ -88,9 +88,9 @@ class Status(
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.loop.cancel()
-        self.bot.loop.create_task(self.session.close())
+        await self.session.close()
 
         try:
             self.bot.remove_dev_env_value("status")
