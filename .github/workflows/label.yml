@@ -1,7 +1,7 @@
 name: Labels
 
 on:
-  - push
+  - pull_request
   - label
 
 jobs:
