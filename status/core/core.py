@@ -101,7 +101,7 @@ class Status(
 
         log.info("Status unloaded.")
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         if await self.config.version() != 3:
             log.info("Getting initial data from services...")
             await self.migrate_to_v3()

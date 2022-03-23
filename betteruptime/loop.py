@@ -15,7 +15,7 @@ _log = get_vex_logger(__name__)
 
 
 class BULoop(MixinMeta):
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         _log.debug("[BU SETUP] Starting setup...")
 
         self.first_load = await self.config.first_load()

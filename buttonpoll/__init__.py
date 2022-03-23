@@ -25,6 +25,5 @@ with open(Path(__file__).parent / "info.json") as fp:
 
 async def setup(bot: Red):
     cog = ButtonPoll(bot)
-    await cog.async_init()
     await out_of_date_check("buttonpoll", cog.__version__)
     await bot.add_cog(cog)

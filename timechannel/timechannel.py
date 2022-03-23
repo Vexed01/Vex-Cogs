@@ -58,6 +58,9 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         self.loop.cancel()
         log.debug("Loop stopped as cog unloaded.")
 
+    async def cog_load(self) -> None:
+        await self.maybe_migrate()
+
     async def maybe_migrate(self) -> None:
         if await self.config.version() == 2:
             return

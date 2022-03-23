@@ -43,9 +43,10 @@ class UptimeResponder(commands.Cog):
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    @commands.command(
-        hidden=True,
-    )
+    async def cog_load(self) -> None:
+        await self.start_webserver()
+
+    @commands.command(hidden=True)
     async def uptimeresponderinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 

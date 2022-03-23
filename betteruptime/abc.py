@@ -42,7 +42,3 @@ class MixinMeta(ABC):
     @abstractmethod
     async def get_data(self, num_days: int) -> "UptimeData":
         raise NotImplementedError
-
-    @abstractmethod
-    async def async_init(self) -> None:
-        raise NotImplementedError

@@ -13,7 +13,4 @@ with open(Path(__file__).parent / "info.json") as fp:
 async def setup(bot: Red) -> None:
     cog = UptimeResponder(bot)
     await out_of_date_check("uptimeresponder", cog.__version__)
-
     await bot.add_cog(cog)
-
-    await cog.start_webserver()

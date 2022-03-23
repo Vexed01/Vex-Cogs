@@ -53,7 +53,7 @@ class AnotherPingCog(commands.Cog):
         self.config.register_global(force_embed=True, footer="default")
         self.config.register_global(custom_settings=DEFAULT_CONF)
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         self.cache = Cache(
             await self.config.custom_settings(),
             await self.config.force_embed(),
@@ -531,6 +531,5 @@ async def setup(bot: Red) -> None:
         bot.remove_command(old_ping.name)
 
     cog = AnotherPingCog(bot)
-    await cog.async_init()
     await out_of_date_check("anotherpingcog", cog.__version__)
     await bot.add_cog(cog)

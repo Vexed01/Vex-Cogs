@@ -80,7 +80,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         except KeyError:
             pass
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         if await self.config.version() < 2:
             _log.info("Migrating StatTrack config from 1 to 2.")
             df_conf = await self.config.main_df()

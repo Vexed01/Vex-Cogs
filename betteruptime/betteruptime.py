@@ -117,6 +117,5 @@ async def setup(bot: Red) -> None:
         bot.remove_command(old_uptime.name)
 
     cog = BetterUptime(bot)
-    await cog.async_init()
     await out_of_date_check("betteruptime", cog.__version__)
     await bot.add_cog(cog)
