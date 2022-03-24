@@ -475,7 +475,7 @@ class AnotherPingCog(commands.Cog):
                 "non-embed version."
             )
         settings = self.cache
-        embed = discord.Embed(
+        main_embed = discord.Embed(
             title="Global settings for the `ping` command.", color=await ctx.embed_color()
         )
         embeds = "**Force embed setting:**\n"
@@ -484,7 +484,7 @@ class AnotherPingCog(commands.Cog):
             if settings.force_embed
             else "False - `embedset` is how embeds will be determined (defaults to True)."
         )
-        embed.add_field(name="Embeds", value=embeds, inline=False)
+        main_embed.add_field(name="Embeds", value=embeds, inline=False)
         footer = "**Embed footer setting:**\n"
         footer += (
             "Default - the default text will be used in the embed footer."
@@ -493,35 +493,31 @@ class AnotherPingCog(commands.Cog):
             if settings.footer == "none"
             else f"Custom - {settings.footer}"
         )
-        embed.add_field(name="Footer", value=footer, inline=False)
+        main_embed.add_field(name="Footer", value=footer, inline=False)
 
         # these 3 are alright with the 5/5 rate limit, plus it's owner only.
         # if anyone wants to PR something with image generation, don't as it's wayyyyy to complex
         # for this
-        await ctx.send(embed=embed)
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Emoji for green: {self.cache.green.emoji}",
-                description=f"{LEFT_ARROW} Colour for green",
-                colour=self.cache.green.colour,
-            )
+
+        green_embed = discord.Embed(
+            title=f"Emoji for green: {self.cache.green.emoji}",
+            description=f"{LEFT_ARROW} Colour for green",
+            colour=self.cache.green.colour,
         )
 
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Emoji for orange: {self.cache.orange.emoji}",
-                description=f"{LEFT_ARROW} Colour for orange",
-                colour=self.cache.orange.colour,
-            )
+        orange_embed = discord.Embed(
+            title=f"Emoji for orange: {self.cache.orange.emoji}",
+            description=f"{LEFT_ARROW} Colour for orange",
+            colour=self.cache.orange.colour,
         )
 
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Emoji for red: {self.cache.red.emoji}",
-                description=f"{LEFT_ARROW} Colour for red",
-                colour=self.cache.red.colour,
-            )
+        red_embed = discord.Embed(
+            title=f"Emoji for red: {self.cache.red.emoji}",
+            description=f"{LEFT_ARROW} Colour for red",
+            colour=self.cache.red.colour,
         )
+
+        await ctx.send(embeds=(main_embed, green_embed, orange_embed, red_embed))
 
 
 async def setup(bot: Red) -> None:
