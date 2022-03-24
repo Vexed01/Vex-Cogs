@@ -300,6 +300,7 @@ class BirthdayAdminCommands(MixinMeta):
                 f"Took too long to react, cancelling setup. Run `{ctx.clean_prefix}bdset"
                 " interactive` to start again."
             )
+            return
 
         channel: discord.TextChannel = pred.result  # type:ignore
         if error := channel_perm_check(ctx.me, channel):
@@ -328,6 +329,7 @@ class BirthdayAdminCommands(MixinMeta):
                 f"Took too long to react, cancelling setup. Run `{ctx.clean_prefix}bdset"
                 " interactive` to start again."
             )
+            return
 
         # no need to check hierarchy for author, since command is locked to admins
         if error := role_perm_check(ctx.me, pred.result):  # type:ignore
@@ -412,8 +414,11 @@ class BirthdayAdminCommands(MixinMeta):
             role = ctx.guild.get_role(conf["role_id"])
             table.add_row("Role", role.name if role else "Role deleted")
 
-            time = datetime.datetime.utcfromtimestamp(conf["time_utc_s"]).strftime("%H:%M UTC")
-            table.add_row("Time", time)
+            if conf["time_utc_s"] is None:
+                time = "invalid"
+            else:
+                time = datetime.datetime.utcfromtimestamp(conf["time_utc_s"]).strftime("%H:%M UTC")
+                table.add_row("Time", time)
 
             message_w_year = conf["message_w_year"] or "No message set"
             message_wo_year = conf["message_wo_year"] or "No message set"

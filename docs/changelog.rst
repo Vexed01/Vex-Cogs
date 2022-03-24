@@ -360,6 +360,15 @@ BetterUptime
 Birthday
 ========
 
+*********
+``1.0.11``
+*********
+
+2022-03-24
+
+- Fix bug in ``bdset interactive`` where setup continues after a timeout, causing some issues
+- Fix bug in ``bdset settings`` where time could be None (likely caused by ^)
+
 **********
 ``1.0.10``
 **********

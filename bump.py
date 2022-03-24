@@ -28,7 +28,7 @@ COGS = [
 
 UPDATE_LEVELS = ["major", "minor", "patch"]
 
-VER_REGEX = r".*__version__ = \"(\d)\.(\d)\.(\d)\".*"
+VER_REGEX = r".*__version__ = \"(\d*)\.(\d*)\.(\d*)\".*"
 
 DOCS_REGEX = r"({}\n=*\n\n)"
 
@@ -44,6 +44,7 @@ def bump(cogname: str, update_level: str):
 
     match = re.match(VER_REGEX, file_data, flags=re.S)
     if match is None or len(match.groups()) != 3:
+        print(match)
         print("Something doesn't look right with that file.")
         return
 
