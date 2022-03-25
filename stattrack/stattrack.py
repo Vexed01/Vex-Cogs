@@ -237,14 +237,14 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         main_time = round((end - start), 3)
         _log.debug(f"Loop finished in {main_time} seconds")
 
-        if self.do_write != 0:
+        try:
             start = time.monotonic()
             await self.driver.write(self.df_cache)
             end = time.monotonic()
             save_time = round(end - start, 3)
             _log.debug(f"SQLite wrote in {save_time} seconds")
             self.do_write -= 1
-        else:
+        except Exception:
             start = time.monotonic()
             await self.driver.append(df)
             end = time.monotonic()
