@@ -201,8 +201,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             data["ping"] = latency
         except OverflowError:  # ping is INF so not connected, no point in updating
             return
-        if self.last_loop_raw:
-            data["loop_time_s"] = round(self.last_loop_raw, 3)
         # data["users_unique"] = len(self.bot.users)
         # discord cache is broken, has been for a while. got to manually count users from guilds
         data["guilds"] = len(self.bot.guilds)
@@ -241,6 +239,11 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             data["channels_voice"] += len(guild.voice_channels)
             data["channels_cat"] += len(guild.categories)
             data["channels_stage"] += len(guild.stage_channels)
+
+        if self.last_loop_raw:
+            data["loop_time_s"] = round(self.last_loop_raw, 3)
+        else:
+            data["loop_time_s"] = round((time.monotonic() - start), 3)
 
         count_lens = {k: len(v) for k, v in count.items()}
         data.update(count_lens)

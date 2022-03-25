@@ -66,7 +66,7 @@ class PandasBigQuery:
         Parameters
         ----------
         df : DataFrame
-            DataFrame to append
+            DataFrame to write
 
         Raises
         ------
@@ -77,6 +77,8 @@ class PandasBigQuery:
         """
         if self.credentials is None:
             raise CredentialsNotFound("No credentials found")
+
+        df = df.copy()
 
         def _run():
             df.reset_index(inplace=True)
@@ -104,6 +106,8 @@ class PandasBigQuery:
         """
         if self.credentials is None:
             raise CredentialsNotFound("No credentials found")
+
+        df = df.copy()
 
         def _run():
             df.reset_index(inplace=True)

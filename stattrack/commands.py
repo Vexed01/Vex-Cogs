@@ -245,8 +245,24 @@ class StatTrackCommands(MixinMeta):
     @bq_group.command(name="start")
     async def bq_start(self, ctx: commands.Context):
         """Set up BigQuery"""
-        # add & send instructions on setting up BQ
-        await ctx.send("This command is in development.")
+        await ctx.maybe_send_embed(
+            "**I do not offer help in setting up BigQuery beyond what's listed here.**\n\n"
+            "1. Create and set up a project with BigQuery enabled Google Cloud Platform\n"
+            "2. Create a dataset with the 'Data set ID' as `stattrack`\n"
+            "3. Create an empty table with the name `main_df`\n"
+            "4. Create a service account. Do not immediately click 'Done', click 'Create and "
+            "continue` so you can do step 2 on the creation page.\n"
+            "5. Add the role 'BigQuery Admin' to the service account under step 2 of service "
+            "account creation.\n"
+            "6. You can now click 'Done' on the service account, you don't need to do anything "
+            "for step 3\n"
+            "7. Click the service account you just created and navigate to 'Keys' at the top of "
+            "the page.\n"
+            "8. Click 'Add key' and choose the default, JSON.\n"
+            "9. Save the key somewhere then upload the file to your bot with "
+            f"`{ctx.clean_prefix}stattrack bq key` in DMs.\n"
+            "10. You can now connect to a BigQuery data set from Google Data Studio."
+        )
 
     @bq_group.command(name="key")
     async def bq_key(self, ctx: commands.Context):
@@ -281,7 +297,9 @@ class StatTrackCommands(MixinMeta):
 
         await self.config.bq_credentials.set(key)
 
-        await ctx.send("Credentials set.")
+        await ctx.send(
+            "Credentials set. Data will be dumped to BigQuery soon. It may take up to a minute."
+        )
 
     @commands.is_owner()
     @stattrack.command()
