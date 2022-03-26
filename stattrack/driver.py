@@ -16,7 +16,7 @@ class StatTrackSQLiteDriver:
     """An asynchronous SQLite driver, working with DataFrames. Tailored to StatTrack"""
 
     def __init__(self) -> None:
-        self.sql_path = str(cog_data_path(raw_name="stattrack") / "timeseries.db")
+        self.sql_path = str(cog_data_path(raw_name="StatTrack") / "timeseries.db")
         self.sql_write_executor = ThreadPoolExecutor(1, "stattrack_sql_write")
 
     def storage_usage(self) -> int:
