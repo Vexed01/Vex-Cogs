@@ -734,6 +734,15 @@ StatTrack
 =========
 
 *********
+``1.9.0``
+*********
+
+2022-03-26
+
+- Use direct database queries instead of keeping data in memory
+- Memory optimisations due to above
+
+*********
 ``1.8.5``
 *********
 

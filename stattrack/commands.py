@@ -41,13 +41,12 @@ class StatTrackCommands(MixinMeta):
         do_average: bool = False,
         show_total: bool = False,
     ) -> None:
-        comstart = monotonic()
-        if self.df_cache is None:
-            await ctx.send("This command isn't ready yet. Try again in a few seconds.")
-            return
         if ylabel is None:
             ylabel = title
-        df = self.df_cache[label]
+        db_start = monotonic()
+        df = await self.driver.read_partial([label] if isinstance(label, str) else label, delta)
+        db_time = monotonic() - db_start
+
         if len(df) < 2:
             await ctx.send("I need a little longer to collect data. Try again in a minute.")
             return
@@ -57,6 +56,8 @@ class StatTrackCommands(MixinMeta):
                 "Others should still work. Try again in a few minutes."
             )
             return
+
+        processing_start = monotonic()
 
         # index data to desired delta
         now = datetime.datetime.utcnow().replace(microsecond=0, second=0)
@@ -83,9 +84,14 @@ class StatTrackCommands(MixinMeta):
         if do_average:
             df = df.rolling(10, min_periods=1).mean()
 
+        processing_time = monotonic() - processing_start
+
+        plot_start = monotonic()
         async with ctx.typing():
             graph = await self.plot(df, ylabel, status_colours)
+        plot_time = monotonic() - plot_start
 
+        send_start = monotonic()
         if delta == datetime.timedelta(days=9000):  # "all" was entered and was replaced with 9k
             str_delta = " all time"
         else:
@@ -102,7 +108,6 @@ class StatTrackCommands(MixinMeta):
             embed.add_field(name="Average", value=round(df.mean().values[0], 2))  # type:ignore
             if show_total is True:
                 embed.add_field(name="Total", value=total_before_avg)  # type:ignore
-                # using df_cache ensures getting total of before the averaging
 
         if more_options:
             embed.description = (
@@ -116,16 +121,19 @@ class StatTrackCommands(MixinMeta):
 
         msg = await ctx.send(file=graph, embed=embed)
 
-        end = monotonic()
+        send_time = monotonic() - send_start
+
         debug_info = {
             "plot_msg": msg.id,  # message id of sent plot
-            "alldatapoints": len(self.df_cache),  # datapoints in the all-time dataframe
             "maxpoints": maxpoints,  # user set max points to plot on a graph
             "mins": delta_max_points,  # the amount of minutes in the delta
             "points_plotted": len(df),  # valid datapoints in the delta dataframe
             "wanted_frequency": frequency,  # wanted frequency of the plot
             "plotted": label,  # metrics plotted
-            "comtime": end - comstart,  # time taken to plot the graph
+            "time_db": db_time,  # time taken for DB query
+            "time_processing": processing_time,  # time taken for data processing
+            "time_plot": plot_time,  # time taken for plotting generation
+            "send_time": send_time,  # time taken for sending the message
         }
 
         log.debug(f"Plot finished, info: {debug_info}")
@@ -135,11 +143,6 @@ class StatTrackCommands(MixinMeta):
     @commands.group()
     async def stattrack(self, ctx: commands.Context):
         """View my stats."""
-
-    @commands.is_owner()
-    @stattrack.command(hidden=True)
-    async def raw(self, ctx, var):
-        await ctx.send(box(str(self.df_cache[var])))
 
     @commands.is_owner()
     @stattrack.command(hidden=True)
@@ -153,9 +156,10 @@ class StatTrackCommands(MixinMeta):
         """
         async with ctx.typing():
             self.loop.cancel()
-            self.df_cache = pd.read_json(await ctx.message.attachments[0].read(), orient="split")
-            await self.driver.write(self.df_cache)
-        await ctx.send("Done. Please reload the cog.")
+            await self.driver.write(
+                pd.read_json(await ctx.message.attachments[0].read(), orient="split", typ="frame")
+            )
+        await ctx.send("Done.")
 
     @commands.is_owner()
     @stattrack.command(hidden=True)
@@ -178,7 +182,7 @@ class StatTrackCommands(MixinMeta):
     async def export_json(self, ctx: commands.Context):
         """Export as JSON with pandas orient "split" """
         async with ctx.typing():
-            data = self.df_cache.to_json(orient="split")
+            data = (await self.driver.read_all()).to_json(orient="split")
             fp = StringIO()
             fp.write(str(data))
             size = fp.tell()
@@ -201,7 +205,7 @@ class StatTrackCommands(MixinMeta):
     async def export_csv(self, ctx: commands.Context):
         """Export as CSV"""
         async with ctx.typing():
-            data = self.df_cache.to_csv()
+            data = (await self.driver.read_all()).to_csv()
             fp = StringIO()
             fp.write(str(data))
             size = fp.tell()
