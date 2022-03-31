@@ -503,6 +503,14 @@ CmdLog
 ======
 
 *********
+``1.4.5``
+*********
+
+2022-03-31
+
+- Add colour formatting to log messages sent to a channel (idea from sraven, `Discord message<https://discord.com/channels/240154543684321280/931931692619423805/958301149008633876>`_
+
+*********
 ``1.4.4``
 *********
 

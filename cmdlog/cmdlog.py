@@ -42,7 +42,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#9000"
-    __version__ = "1.4.4"
+    __version__ = "1.4.5"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
