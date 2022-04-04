@@ -115,7 +115,7 @@ class BirthdayCommands(MixinMeta):
 
     @birthday.command()
     async def upcoming(self, ctx: commands.Context, days: int = 7):
-        """View upcoming birthdays.
+        """View upcoming birthdays, defaults to 7 days.
 
         **Examples:**
             - `[p]birthday upcoming` - default of 7 days
@@ -179,7 +179,7 @@ class BirthdayCommands(MixinMeta):
             number_day_mapping[diff.days] = next_birthday_dt.strftime("%B %d")
 
         if len(parsed_bdays) == 0:
-            await ctx.send("No upcoming birthdays.")
+            await ctx.send(f"No upcoming birthdays in the next {days} days.")
             return
 
         sorted_parsed_bdays = sorted(parsed_bdays.items(), key=lambda x: x[0])
