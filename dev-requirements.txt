@@ -33,3 +33,6 @@ pre-commit
 sphinx
 sphinx-rtd-theme
 furo
+
+# checks
+python-dotenv

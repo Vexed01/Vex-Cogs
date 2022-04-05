@@ -151,6 +151,14 @@ class BirthdayLoop(MixinMeta):
 
             hour_td = datetime.timedelta(seconds=all_settings[guild.id]["time_utc_s"])
 
+            since_midnight = datetime.datetime.utcnow().replace(
+                minute=0, second=0, microsecond=0
+            ) - datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+
+            if since_midnight.total_seconds() != hour_td.total_seconds():
+                log.debug("Not correct time for update for guild %s, skipping", guild_id)
+                continue
+
             today_dt = (datetime.datetime.utcnow() - hour_td).replace(
                 hour=0, minute=0, second=0, microsecond=0
             )

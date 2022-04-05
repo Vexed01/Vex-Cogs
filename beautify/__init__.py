@@ -17,4 +17,6 @@ with open(Path(__file__).parent / "info.json") as fp:
 async def setup(bot: Red):
     cog = Beautify(bot)
     await out_of_date_check("beautify", cog.__version__)
-    bot.add_cog(cog)
+    r = bot.add_cog(cog)
+    if r is not None:
+        await r

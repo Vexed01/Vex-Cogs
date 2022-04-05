@@ -360,6 +360,15 @@ BetterUptime
 Birthday
 ========
 
+*********
+``1.0.11``
+*********
+
+2022-03-24
+
+- Fix bug in ``bdset interactive`` where setup continues after a timeout, causing some issues
+- Fix bug in ``bdset settings`` where time could be None (likely caused by ^)
+
 **********
 ``1.0.10``
 **********
@@ -492,6 +501,14 @@ CaseInsensitive
 ======
 CmdLog
 ======
+
+*********
+``1.4.5``
+*********
+
+2022-03-31
+
+- Add colour formatting to log messages sent to a channel (idea from sraven, `Discord message<https://discord.com/channels/240154543684321280/931931692619423805/958301149008633876>`_
 
 *********
 ``1.4.4``
@@ -723,6 +740,23 @@ MadTranslate
 =========
 StatTrack
 =========
+
+*********
+``1.9.1``
+*********
+
+2022-03-26
+
+- Fix database file location
+
+*********
+``1.9.0``
+*********
+
+2022-03-26
+
+- Use direct database queries instead of keeping data in memory
+- Memory optimisations due to above
 
 *********
 ``1.8.5``

@@ -115,7 +115,7 @@ class CalcView(discord.ui.View):
         return valid
 
     @discord.ui.button(label="(", style=discord.ButtonStyle.grey, row=0)
-    async def open_bracket(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def open_bracket(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -124,7 +124,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label=")", style=discord.ButtonStyle.grey, row=0)
-    async def close_bracket(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def close_bracket(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -133,11 +133,11 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label=ZERO_WIDTH, style=discord.ButtonStyle.grey, row=0)
-    async def empty_button(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def empty_button(self, interaction: discord.Interaction, item: discord.ui.Item):
         await interaction.response.send_message("You found the useless button!", ephemeral=True)
 
     @discord.ui.button(label="÷", style=discord.ButtonStyle.blurple, row=0)
-    async def divide(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def divide(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -146,7 +146,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="⌫", style=discord.ButtonStyle.red, row=0)
-    async def backspace(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def backspace(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -157,7 +157,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="7", style=discord.ButtonStyle.grey, row=1)
-    async def seven(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def seven(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -166,7 +166,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="8", style=discord.ButtonStyle.grey, row=1)
-    async def eight(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def eight(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -175,7 +175,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="9", style=discord.ButtonStyle.grey, row=1)
-    async def nine(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def nine(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -184,7 +184,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="×", style=discord.ButtonStyle.blurple, row=1)
-    async def multiply(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def multiply(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -193,14 +193,14 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="Clear", style=discord.ButtonStyle.danger, row=1)
-    async def clear(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def clear(self, interaction: discord.Interaction, item: discord.ui.Item):
         self.input = "..."
         self.output = "..."
         self.new_edits_avaible.set()
         self.input_reset_ready = True
 
     @discord.ui.button(label="4", style=discord.ButtonStyle.grey, row=2)
-    async def four(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def four(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -209,7 +209,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="5", style=discord.ButtonStyle.grey, row=2)
-    async def five(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def five(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -218,7 +218,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="6", style=discord.ButtonStyle.grey, row=2)
-    async def six(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def six(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -227,7 +227,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="-", style=discord.ButtonStyle.blurple, row=2)
-    async def minus(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def minus(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -236,7 +236,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="Exit", style=discord.ButtonStyle.danger, row=2)
-    async def exit(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def exit(self, interaction: discord.Interaction, item: discord.ui.Item):
         await self.ready.wait()
         assert self.message is not None
 
@@ -247,7 +247,7 @@ class CalcView(discord.ui.View):
         await self.message.edit(view=ClosedView())
 
     @discord.ui.button(label="1", style=discord.ButtonStyle.grey, row=3)
-    async def one(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def one(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -256,7 +256,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="2", style=discord.ButtonStyle.grey, row=3)
-    async def two(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def two(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -265,7 +265,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="3", style=discord.ButtonStyle.grey, row=3)
-    async def three(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def three(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -274,7 +274,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="+", style=discord.ButtonStyle.blurple, row=3)
-    async def plus(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def plus(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -283,7 +283,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label="0", style=discord.ButtonStyle.grey, row=4)
-    async def zero(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def zero(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -292,7 +292,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label=".", style=discord.ButtonStyle.grey, row=4)
-    async def decimal(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def decimal(self, interaction: discord.Interaction, item: discord.ui.Item):
         if self.input_reset_ready:
             self.input = ""
             self.input_reset_ready = False
@@ -301,7 +301,7 @@ class CalcView(discord.ui.View):
         self.new_edits_avaible.set()
 
     @discord.ui.button(label=EQUALS_LABEL, style=discord.ButtonStyle.green, row=4)
-    async def equals(self, item: discord.ui.Item, interaction: discord.Interaction):
+    async def equals(self, interaction: discord.Interaction, item: discord.ui.Item):
         if not self.maybe_update_output():
             self.output = "Math Error"
         self.input_reset_ready = True

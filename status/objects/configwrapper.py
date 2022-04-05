@@ -73,7 +73,10 @@ class ConfigWrapper:
         else:
             feeddict["scheduled_for"] = ""
 
-        await self.config.feed_store.set_raw(service, value=feeddict)  # type:ignore
+        try:
+            await self.config.feed_store.set_raw(service, value=feeddict)  # type:ignore
+        except TypeError:
+            await self.config.feed_store.set({service: feeddict})
         self.last_checked.update_time(service)
 
     async def get_channels(self, service: str) -> dict[int, ConfChannelSettings]:

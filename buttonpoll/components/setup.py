@@ -6,7 +6,11 @@ from typing import TYPE_CHECKING, Optional
 
 import discord
 from discord import Interaction, SelectOption, TextChannel, Thread, ui
-from discord.embeds import EmptyEmbed
+
+if discord.__version__.startswith("1"):
+    from discord.embeds import EmptyEmbed
+else:
+    EmptyEmbed = None
 from discord.enums import ButtonStyle
 from redbot.core.commands import parse_timedelta
 
@@ -34,7 +38,7 @@ class StartSetupView(discord.ui.View):
         self.cog = cog
 
     @discord.ui.button(label="Start poll", style=ButtonStyle.primary)
-    async def btn_start(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def btn_start(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
         await interaction.response.send_modal(
             SetupModal(author=self.author, channel=self.channel, cog=self.cog)
@@ -192,7 +196,7 @@ class SetupYesNoView(discord.ui.View):
             ),
         ],
     )
-    async def btn_vote_change(self, select: discord.ui.Select, interaction: discord.Interaction):
+    async def btn_vote_change(self, interaction: discord.Interaction, select: discord.ui.Select):
         self.vote_change = select.values[0] == "yes"
 
     @discord.ui.select(
@@ -211,7 +215,7 @@ class SetupYesNoView(discord.ui.View):
         ],
     )
     async def btn_view_while_live(
-        self, select: discord.ui.Select, interaction: discord.Interaction
+        self, interaction: discord.Interaction, select: discord.ui.Select
     ):
         self.view_while_live = select.values[0] == "yes"
 
@@ -229,12 +233,12 @@ class SetupYesNoView(discord.ui.View):
         ],
     )
     async def btn_send_msg_when_over(
-        self, select: discord.ui.Select, interaction: discord.Interaction
+        self, interaction: discord.Interaction, select: discord.ui.Select
     ):
         self.send_msg_when_over = select.values[0] == "Send new"
 
     @discord.ui.button(label="Submit & start poll!", style=ButtonStyle.primary)
-    async def btn_submit(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def btn_submit(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.vote_change is None:
             await interaction.response.send_message(
                 "You didn't select a vote changing option.", ephemeral=True

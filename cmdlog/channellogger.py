@@ -58,7 +58,7 @@ class ChannelLogger:
 
                 msg = "\n".join(str(i) for i in to_send)
                 for page in pagify(msg):
-                    await self.channel.send(box(page))
+                    await self.channel.send(box(page, "css"))
 
             except Exception as e:
                 log.warning(

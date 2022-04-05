@@ -9,7 +9,11 @@ import discord
 import pandas as pd
 import plotly.express as px
 from discord.channel import TextChannel
-from discord.embeds import EmptyEmbed
+
+if discord.__version__.startswith("1"):
+    from discord.embeds import EmptyEmbed
+else:
+    EmptyEmbed = None
 from discord.enums import ButtonStyle
 
 from .components.poll import PollView
