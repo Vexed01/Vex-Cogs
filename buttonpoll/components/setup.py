@@ -198,6 +198,7 @@ class SetupYesNoView(discord.ui.View):
     )
     async def btn_vote_change(self, interaction: discord.Interaction, select: discord.ui.Select):
         self.vote_change = select.values[0] == "yes"
+        await interaction.response.defer()
 
     @discord.ui.select(
         placeholder="View results while live",
@@ -218,6 +219,7 @@ class SetupYesNoView(discord.ui.View):
         self, interaction: discord.Interaction, select: discord.ui.Select
     ):
         self.view_while_live = select.values[0] == "yes"
+        await interaction.response.defer()
 
     @discord.ui.select(
         placeholder="Send message when poll is over",
@@ -236,6 +238,7 @@ class SetupYesNoView(discord.ui.View):
         self, interaction: discord.Interaction, select: discord.ui.Select
     ):
         self.send_msg_when_over = select.values[0] == "Send new"
+        await interaction.response.defer()
 
     @discord.ui.button(label="Submit & start poll!", style=ButtonStyle.primary)
     async def btn_submit(self, interaction: discord.Interaction, button: discord.ui.Button):
