@@ -73,7 +73,7 @@ class PollView(discord.ui.View):
         )
 
     @discord.ui.button(label="View my vote", custom_id="view_vote", style=ButtonStyle.grey, row=2)
-    async def view_my_vote_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def view_my_vote_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Show the user their current vote, if any."""
         choice = await self.get_user_voter_vote(
             interaction.guild, interaction.user.id  # type:ignore
@@ -94,7 +94,7 @@ class PollView(discord.ui.View):
     @discord.ui.button(
         label="View results so far", custom_id="view_results", style=ButtonStyle.grey, row=2
     )
-    async def view_results_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def view_results_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Show the results of the poll."""
         choice = await self.get_user_voter_vote(
             interaction.guild, interaction.user.id  # type:ignore
