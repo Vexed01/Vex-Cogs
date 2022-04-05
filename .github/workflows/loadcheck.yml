@@ -17,7 +17,7 @@ jobs:
           - "Red-DiscordBot==3.4.16"
         include:
           - red-version: "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
-            friendly-red: "Red (v3/develop)"
+            friendly-red: "Red (dev version)"
           - red-version: "Red-DiscordBot==3.4.16"
             friendly-red: "Red 3.4.16"
       fail-fast: false
@@ -46,7 +46,7 @@ jobs:
           pip install setuptools wheel
           pip install ${{ matrix.red-version }}
           pip install -r dev-requirements.txt
-          pip install python-dotenv jsonrpc-websocket
+          pip install jsonrpc-websocket
 
       - name: Prepare files
         run: |
