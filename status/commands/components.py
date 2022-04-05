@@ -31,7 +31,7 @@ class AddServiceView(ui.View):
             discord.SelectOption(label="Mode: edit", value="edit"),
         ],
     )
-    async def slt_mode(self, select: ui.Select, interaction: discord.Interaction):
+    async def slt_mode(self, interaction: discord.Interaction, select: ui.Select):
         self.mode = select.values[0]
 
     @ui.select(
@@ -41,7 +41,7 @@ class AddServiceView(ui.View):
             discord.SelectOption(label="Webhook: no", value="no"),
         ],
     )
-    async def slt_webhook(self, select: ui.Select, interaction: discord.Interaction):
+    async def slt_webhook(self, interaction: discord.Interaction, select: ui.Select):
         self.webhook = select.values[0] == "yes"
 
     @ui.select(
@@ -51,11 +51,11 @@ class AddServiceView(ui.View):
             discord.SelectOption(label="Restrict: no", value="no"),
         ],
     )
-    async def slt_restrict(self, select: ui.Select, interaction: discord.Interaction):
+    async def slt_restrict(self, interaction: discord.Interaction, select: ui.Select):
         self.restrict = select.values[0] == "yes"
 
     @ui.button(label="Submit", style=discord.ButtonStyle.primary)
-    async def btn_submit(self, button: ui.Button, interaction: discord.Interaction):
+    async def btn_submit(self, interaction: discord.Interaction, button: ui.Button):
         if self.mode is None:
             await interaction.response.send_message("Please select a mode.")
             return

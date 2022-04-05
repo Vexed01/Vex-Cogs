@@ -72,21 +72,21 @@ class MergeView(View):
         )
 
     @button(label="Merge")
-    async def btn_merge(self, button: Button, interaction: Interaction):
+    async def btn_merge(self, interaction: Interaction, button: Button):
         button.style = ButtonStyle.green
         await interaction.response.edit_message(view=self)
         self.stop()
         await self.get_commit_and_confirm("merge")
 
     @button(label="Squash")
-    async def btn_squash(self, button: Button, interaction: Interaction):
+    async def btn_squash(self, interaction: Interaction, button: Button):
         button.style = ButtonStyle.green
         await interaction.response.edit_message(view=self)
         self.stop()
         await self.get_commit_and_confirm("squash")
 
     @button(label="Rebase")
-    async def btn_rebase(self, button: Button, interaction: Interaction):
+    async def btn_rebase(self, interaction: Interaction, button: Button):
         button.style = ButtonStyle.green
         await interaction.response.edit_message(view=self)
         self.stop()

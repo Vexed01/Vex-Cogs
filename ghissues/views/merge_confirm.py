@@ -37,7 +37,7 @@ class MergeConfirm(View):
         return False
 
     @button(label="Confirm merge", style=ButtonStyle.green)
-    async def btn_confirm(self, button: Button, interaction: Interaction):
+    async def btn_confirm(self, interaction: Interaction, button: Button):
         self.stop()
         try:
             await self.master.api.merge(
@@ -56,6 +56,6 @@ class MergeConfirm(View):
             await interaction.response.send_message("Pull request merged.")
 
     @button(label="Cancel merge", style=ButtonStyle.red)
-    async def btn_cancel(self, button: Button, interaction: Interaction):
+    async def btn_cancel(self, interaction: Interaction, button: Button):
         self.stop()
         await interaction.response.send_message("Merge cancelled.")

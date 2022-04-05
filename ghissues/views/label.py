@@ -51,7 +51,7 @@ class BaseLabelView(ui.View):
         )
 
     @button(emoji="◀", style=ButtonStyle.blurple, row=4)
-    async def page_left(self, button: Button, interaction: Interaction):
+    async def page_left(self, interaction: Interaction, button: Button):
         # pages start from 0
         if self.page == 0:
             return
@@ -60,7 +60,7 @@ class BaseLabelView(ui.View):
         await self.regen(self.page, interaction)
 
     @button(emoji="▶", style=ButtonStyle.blurple, row=4)
-    async def page_right(self, button: Button, interaction: Interaction):
+    async def page_right(self, interaction: Interaction, button: Button):
         max_pages = len(list(get_menu_sets(self.raw_labels)))
         # pages start from 0
         if self.page + 1 >= max_pages:
