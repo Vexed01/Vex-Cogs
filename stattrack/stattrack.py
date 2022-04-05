@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import json
 import time
-from sys import getsizeof
 from typing import Dict, Optional, Set
 
 import discord
@@ -15,12 +14,12 @@ from redbot.core.utils import AsyncIter
 
 from stattrack.abc import CompositeMetaClass
 from stattrack.commands import StatTrackCommands
+from stattrack.driver import StatTrackSQLiteDriver
 from stattrack.plot import StatPlot
 
 from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
 from .vexutils.loop import VexLoop
-from .vexutils.sqldriver import PandasSQLiteDriver
 
 _log = get_vex_logger(__name__)
 
@@ -38,13 +37,11 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.8.5"
+    __version__ = "1.9.1"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
-
-        self.do_write: int = 2  # do write on first 2 loops, then append after
 
         self.cmd_count = 0
         self.msg_count = 0
@@ -56,7 +53,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.last_loop_time = "Loop not ran yet"
         self.last_loop_raw: Optional[float] = None
 
-        self.driver = PandasSQLiteDriver(bot, type(self).__name__, "timeseries.db")
+        self.driver = StatTrackSQLiteDriver()
 
         bot.add_dev_env_value("stattrack", lambda _: self)
 
@@ -73,7 +70,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             self.loop.cancel()
 
         self.plot_executor.shutdown(wait=False)
-        self.driver.sql_executor.shutdown(wait=False)
+        self.driver.sql_write_executor.shutdown(wait=False)
 
         try:
             self.bot.remove_dev_env_value("stattrack")
@@ -86,18 +83,13 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             df_conf = await self.config.main_df()
 
             if df_conf:  # needs migration
-                self.df_cache = pandas.read_json(json.dumps(df_conf), orient="split", typ="frame")
+                df = pandas.read_json(json.dumps(df_conf), orient="split", typ="frame")
                 await self.migrate_v1_to_v2(df_conf)
             else:  # new install
-                self.df_cache = pandas.DataFrame()
-            await self.driver.write(self.df_cache)
+                df = pandas.DataFrame()
+            await self.driver.write(df)
             await self.config.version.set(2)
             _log.info("Done.")
-        else:
-            pre_df = await self.driver.read()
-            self.df_cache = pre_df.groupby(pre_df.index).first()  # deduplicate index
-            if len(pre_df.index) != len(self.df_cache.index):
-                await self.driver.write(self.df_cache)
 
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
@@ -127,7 +119,6 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                     "Loop time": f"{self.last_loop_time}",
                 },
             )
-            + f"\nMemory usage (cache size): {humanize_bytes(getsizeof(self.df_cache))}"
             + f"\nDisk usage (SQLite database): {humanize_bytes(self.driver.storage_usage())}"
         )
 
@@ -173,7 +164,9 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         cpu = psutil.cpu_percent(interval=None, percpu=False)
 
         now = snapped_utcnow()
-        if now == self.df_cache.last_valid_index():  # just reloaded and this min's data collected
+        if (
+            now == await self.driver.get_last_index()
+        ):  # just reloaded and this min's data collected
             _log.debug("Skipping this loop - cog was likely recently reloaded")
             return
         start = time.monotonic()
@@ -231,25 +224,25 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         data.update(count_lens)
 
         df = pandas.DataFrame(data, index=[snapped_utcnow()])
-        self.df_cache = pandas.concat([self.df_cache, df], sort=False)
 
         end = time.monotonic()
         main_time = round((end - start), 3)
         _log.debug(f"Loop finished in {main_time} seconds")
 
-        if self.do_write != 0:
-            start = time.monotonic()
-            await self.driver.write(self.df_cache)
-            end = time.monotonic()
-            save_time = round(end - start, 3)
-            _log.debug(f"SQLite wrote in {save_time} seconds")
-            self.do_write -= 1
-        else:
+        try:
             start = time.monotonic()
             await self.driver.append(df)
             end = time.monotonic()
             save_time = round(end - start, 3)
-            _log.debug(f"SQLite appended in {save_time} seconds")
+            _log.debug(f"SQLite append operation took {save_time} seconds")
+        except Exception:  # could be new schema (columns)
+            start = time.monotonic()
+            old_df = await self.driver.read_all()
+            df = pandas.concat([old_df, df], sort=False)
+            await self.driver.write(df)
+            end = time.monotonic()
+            save_time = round(end - start, 3)
+            _log.debug(f"SQLite write operation took {save_time} seconds")
 
         total_time = main_time + save_time
         self.last_loop_raw = total_time
@@ -260,7 +253,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 "StatTrack loop took a while. This means that it's using lots of resources on "
                 "this machine. You might want to consider unloading or removing the cog. There "
                 "is also a high chance of some datapoints on the graphs being skipped."
-                + f"\nMain loop: {main_time}s, Data saving: {save_time}s so total time is "
+                + f"\nMain loop: {main_time}s, Database: {save_time}s so total time is "
                 + str(total_time)
             )
 

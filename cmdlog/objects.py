@@ -98,10 +98,10 @@ class LoggedCommand(LogMixin):
             return f"Text command '{com}' ran by {self.user.id} ({self.user.name}) in our DMs."
 
         return (
-            f"Text command '{com}' ran by {self.user.id} ({self.user.name}) "
+            f"Text command [{com}] ran by {self.user.id} [{self.user.name}] "
             f"with message ID {self.msg_id} "
-            f"in channel {self.channel.id} ({self.channel.name}) "
-            f"in guild {self.guild.id} ({self.guild.name})"
+            f"in channel {self.channel.id} [{self.channel.name}] "
+            f"in guild {self.guild.id} [{self.guild.name}]"
         )
 
 
@@ -117,10 +117,10 @@ class LoggedComError(LogMixin):
             )
 
         return (
-            f"Text command '{com}' raised an error by {self.user.id} ({self.user.name}) "
+            f"Text command [{com}] raised an error by {self.user.id} [{self.user.name}] "
             f"with message ID {self.msg_id} "
-            f"in channel {self.channel.id} ({self.channel.name}) "
-            f"in guild {self.guild.id} ({self.guild.name})"
+            f"in channel {self.channel.id} [{self.channel.name}] "
+            f"in guild {self.guild.id} [{self.guild.name}]"
         )
 
 
@@ -133,13 +133,13 @@ class LoggedAppCom(LogMixin):
         if self.app_type == 1:  # slash com
             if not self.guild or not self.channel:
                 return (
-                    f"Slash command '{self.command}' ran by {self.user.id} ({self.user.name}) in "
+                    f"Slash command [{self.command}] ran by {self.user.id} [{self.user.name}] in "
                     "our DMs."
                 )
             return (
-                f"Slash command '{self.command}' ran by {self.user.id} ({self.user.name}) "
-                f"in channel {self.channel.id} ({self.channel.name}) "
-                f"in guild {self.guild.id} ({self.guild.name})"
+                f"Slash command [{self.command}] ran by {self.user.id} [{self.user.name}) "
+                f"in channel {self.channel.id} [{self.channel.name}] "
+                f"in guild {self.guild.id} [{self.guild.name}]"
             )
 
         assert self.target is not None
@@ -147,31 +147,31 @@ class LoggedAppCom(LogMixin):
         if self.app_type == 2:  # user command
             if not self.guild or not self.channel:
                 return (
-                    f"User command '{self.command}' ran by {self.user.id} ({self.user.name}) "
-                    f"targeting user {self.target.name} ({self.target.id})"
+                    f"User command [{self.command}] ran by {self.user.id} [{self.user.name}] "
+                    f"targeting user {self.target.name} [{self.target.id}]"
                     "in our DMs."
                 )
 
             return (
-                f"User command '{self.command}' ran by {self.user.id} ({self.user.name}) "
-                f"targeting user {self.target.name} ({self.target.id})"
-                f"in channel {self.channel.id} ({self.channel.name}) "
-                f"in guild {self.guild.id} ({self.guild.name})"
+                f"User command [{self.command}] ran by {self.user.id} [{self.user.name}] "
+                f"targeting user {self.target.name} [{self.target.id}]"
+                f"in channel {self.channel.id} [{self.channel.name}] "
+                f"in guild {self.guild.id} [{self.guild.name}]"
             )
 
         if self.app_type == 3:  # message command
             if not self.guild or not self.channel:
                 return (
-                    f"Message command '{self.command}' ran by {self.user.id} ({self.user.name}) "
+                    f"Message command [{self.command}] ran by {self.user.id} [{self.user.name}] "
                     f"targeting message {self.target.id}"
                     "in our DMs."
                 )
 
             return (
-                f"Message command '{self.command}' ran by {self.user.id} ({self.user.name}) "
+                f"Message command [{self.command}] ran by {self.user.id} [{self.user.name}] "
                 f"targeting message {self.target.id}"
-                f"in channel {self.channel.id} ({self.channel.name}) "
-                f"in guild {self.guild.id} ({self.guild.name})"
+                f"in channel {self.channel.id} [{self.channel.name}] "
+                f"in guild {self.guild.id} [{self.guild.name}]"
             )
 
         return ""
