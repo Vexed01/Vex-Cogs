@@ -7,7 +7,7 @@ import discord
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, pagify
 
-from cmdlog.objects import LogMixin
+from cmdlog.objects import Log
 
 from .vexutils import get_vex_logger
 from .vexutils.loop import VexLoop
@@ -26,7 +26,7 @@ class ChannelLogger:
         self.last_send = self._utc_now() - datetime.timedelta(seconds=65)
         # basically make next sendable time now
 
-        self._queue: Queue[LogMixin] = Queue()
+        self._queue: Queue[Log] = Queue()
 
     def stop(self) -> None:
         """Stop the channel logger task."""
@@ -38,7 +38,7 @@ class ChannelLogger:
         self._queue = Queue()
         self.task = self.bot.loop.create_task(self._cmdlog_channel_task())
 
-    def add_command(self, command: LogMixin):
+    def add_command(self, command: Log):
         self._queue.put_nowait(command)
 
     @staticmethod

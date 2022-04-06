@@ -360,6 +360,14 @@ BetterUptime
 Birthday
 ========
 
+**********
+``1.0.12``
+**********
+
+2022-04-06
+
+- Don't allow users to set birthday messages which contain invalid placeholders (GH #92)
+
 *********
 ``1.0.11``
 *********
@@ -501,6 +509,24 @@ CaseInsensitive
 ======
 CmdLog
 ======
+
+*********
+``1.5.1``
+*********
+
+2022-04-06
+
+- Fix normal command logging
+
+*********
+``1.5.0``
+*********
+
+2022-04-06
+
+- Remove support for dislash
+- Remove support for SlashInjector
+- Improve support for dpy slash commands
 
 *********
 ``1.4.5``

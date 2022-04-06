@@ -3,17 +3,15 @@ from __future__ import annotations
 import datetime
 from dataclasses import dataclass
 from sys import getsizeof
-from typing import TYPE_CHECKING
+from typing import Literal
 
 import discord
-from discord.channel import DMChannel
-from discord.guild import Guild
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 @dataclass()
-class IDFKWhatToNameThis:
+class BasicDiscordObject:
     id: int
     name: str
 
@@ -22,75 +20,34 @@ class IDFKWhatToNameThis:
         return getsizeof(self.id) + getsizeof(self.name)
 
 
-# TODO: remove the mixin... now application commands exist it's too convoluted
-
-
-class LogMixin:
+class Log:
     """Base for logged data"""
+
+
+class LoggedCommand(Log):
+    """Inherits from LogMixin, for a logged command"""
 
     def __init__(
         self,
-        author: discord.abc.User | discord.Member | discord.User,
-        com_name: str,
-        msg_id: int | None = None,
+        command: str,
+        log_content: bool | None,
+        content: str,
+        user: discord.Member | discord.User,
+        msg_id: int,
         channel: discord.abc.MessageableChannel | None = None,
-        guild: Guild | None = None,
-        log_content: bool | None = None,
-        content: str | None = None,
-        application_command: int | None = None,
-        target: discord.User | discord.PartialMessage | None = None,
+        guild: discord.Guild | None = None,
     ):
-        if author is None:
-            return
-
-        # ALL COMMANDS
-        self.command = com_name
-        self.user = IDFKWhatToNameThis(id=author.id, name=f"{author.name}#{author.discriminator}")
-
-        # TEXT COMMANDS
-        if msg_id:
-            self.msg_id = msg_id
-        self.channel = None
-        self.guild = None
-        if guild and channel:
-            if TYPE_CHECKING:
-                assert not isinstance(channel, (DMChannel, discord.PartialMessageable))
-            self.channel = IDFKWhatToNameThis(id=channel.id, name=f"#{channel.name}")
-            self.guild = IDFKWhatToNameThis(id=guild.id, name=guild.name)
-        self.content = None
-        if log_content and content is not None:
+        self.command = command
+        if log_content:
             self.content = content
-
-        # USER/MESSAGE COMMANDS
-        self.app_type = application_command
-        self.target = None
-
-        if isinstance(target, discord.User):
-            t_name = target.name if isinstance(target, discord.User) else ""
-            self.target = IDFKWhatToNameThis(id=target.id, name=t_name)
+        else:
+            self.content = None
+        self.user = BasicDiscordObject(user.id, user.name)
+        self.msg_id = msg_id
+        self.channel = BasicDiscordObject(channel.id, channel.name) if channel else None
+        self.guild = BasicDiscordObject(guild.id, guild.name) if guild else None
 
         self.time = datetime.datetime.now().strftime(TIME_FORMAT)
-
-    def __str__(self) -> str:
-        raise NotImplementedError()
-
-    def __sizeof__(self) -> int:
-        # using getsizeof here will include other stuff eg garbage
-        size = 0
-
-        size += getsizeof(self.command)
-        size += getsizeof(self.user)
-        size += getsizeof(self.msg_id)
-        size += getsizeof(self.channel)
-        size += getsizeof(self.guild)
-        size += getsizeof(self.time)
-        size += getsizeof(self.target)
-
-        return size
-
-
-class LoggedCommand(LogMixin):
-    """Inherits from LogMixin, for a logged command"""
 
     def __str__(self) -> str:  # this is what is logged locally
         com = self.content or self.command
@@ -104,9 +61,43 @@ class LoggedCommand(LogMixin):
             f"in guild {self.guild.id} [{self.guild.name}]"
         )
 
+    def __sizeof__(self) -> int:
+        # using getsizeof here will include other stuff eg garbage
+        size = 0
 
-class LoggedComError(LogMixin):
-    """Inherits from LogMixin, for a logged error"""
+        size += getsizeof(self.command)
+        size += getsizeof(self.content)
+        size += getsizeof(self.user)
+        size += getsizeof(self.msg_id)
+        size += getsizeof(self.channel)
+        size += getsizeof(self.guild)
+        size += getsizeof(self.time)
+
+        return size
+
+
+class LoggedComError(Log):
+    def __init__(
+        self,
+        command: str,
+        log_content: bool | None,
+        content: str,
+        user: discord.Member | discord.User,
+        msg_id: int,
+        channel: discord.abc.MessageableChannel | None = None,
+        guild: discord.Guild | None = None,
+    ):
+        self.command = command
+        if log_content:
+            self.content = content
+        else:
+            self.content = None
+        self.user = BasicDiscordObject(user.id, user.name)
+        self.msg_id = msg_id
+        self.channel = BasicDiscordObject(channel.id, channel.name) if channel else None
+        self.guild = BasicDiscordObject(guild.id, guild.name) if guild else None
+
+        self.time = datetime.datetime.now().strftime(TIME_FORMAT)
 
     def __str__(self) -> str:  # this is what is logged locally
         com = self.content or self.command
@@ -123,55 +114,110 @@ class LoggedComError(LogMixin):
             f"in guild {self.guild.id} [{self.guild.name}]"
         )
 
+    def __sizeof__(self) -> int:
+        # using getsizeof here will include other stuff eg garbage
+        size = 0
 
-class LoggedAppCom(LogMixin):
+        size += getsizeof(self.command)
+        size += getsizeof(self.content)
+        size += getsizeof(self.user)
+        size += getsizeof(self.msg_id)
+        size += getsizeof(self.channel)
+        size += getsizeof(self.guild)
+        size += getsizeof(self.time)
+
+        return size
+
+
+class LoggedAppCom(Log):
     """Inherits from LogMixin, for a logged Application Command."""
 
-    def __str__(self) -> str:  # this is what's logged locally
-        assert self.app_type is not None
+    target: BasicDiscordObject | discord.PartialMessage | None
 
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        com_name: str,
+        channel: discord.interactions.InteractionChannel | None,
+        guild: discord.Guild | None,
+        app_type: Literal[1, 2, 3],
+        target: discord.PartialMessage | discord.User | None,
+    ):
+        self.author = BasicDiscordObject(author.id, author.name)
+        self.command = com_name
+        self.channel = BasicDiscordObject(channel.id, channel.name) if channel else None
+        self.guild = BasicDiscordObject(guild.id, guild.name) if guild else None
+        self.app_type = app_type
+
+        if isinstance(target, discord.User):
+            self.target = BasicDiscordObject(target.id, target.name)
+        else:
+            target = target
+
+        self.time = datetime.datetime.now().strftime(TIME_FORMAT)
+
+    def __str__(self) -> str:  # this is what's logged locally
         if self.app_type == 1:  # slash com
             if not self.guild or not self.channel:
                 return (
-                    f"Slash command [{self.command}] ran by {self.user.id} [{self.user.name}] in "
-                    "our DMs."
+                    f"Slash command [{self.command}] ran by {self.author.id} [{self.author.name}]"
+                    " in our DMs."
                 )
             return (
-                f"Slash command [{self.command}] ran by {self.user.id} [{self.user.name}) "
+                f"Slash command [{self.command}] ran by {self.author.id} [{self.author.name}) "
                 f"in channel {self.channel.id} [{self.channel.name}] "
                 f"in guild {self.guild.id} [{self.guild.name}]"
             )
 
-        assert self.target is not None
-
         if self.app_type == 2:  # user command
+            if not isinstance(self.target, BasicDiscordObject):
+                return (
+                    "User not in cache so I cannot show the target of this application user"
+                    " command."
+                )
             if not self.guild or not self.channel:
                 return (
-                    f"User command [{self.command}] ran by {self.user.id} [{self.user.name}] "
+                    f"User command [{self.command}] ran by {self.author.id} [{self.author.name}] "
                     f"targeting user {self.target.name} [{self.target.id}]"
                     "in our DMs."
                 )
 
             return (
-                f"User command [{self.command}] ran by {self.user.id} [{self.user.name}] "
+                f"User command [{self.command}] ran by {self.author.id} [{self.author.name}] "
                 f"targeting user {self.target.name} [{self.target.id}]"
                 f"in channel {self.channel.id} [{self.channel.name}] "
                 f"in guild {self.guild.id} [{self.guild.name}]"
             )
 
         if self.app_type == 3:  # message command
+            if not isinstance(self.target, discord.PartialMessage):  # this should never happen
+                return "Something really bad went wrong so I can't show this."
             if not self.guild or not self.channel:
                 return (
-                    f"Message command [{self.command}] ran by {self.user.id} [{self.user.name}] "
-                    f"targeting message {self.target.id}"
-                    "in our DMs."
+                    f"Message command [{self.command}] ran by"
+                    f" {self.author.id} [{self.author.name}] targeting message {self.target.id}in"
+                    " our DMs."
                 )
 
             return (
-                f"Message command [{self.command}] ran by {self.user.id} [{self.user.name}] "
+                f"Message command [{self.command}] ran by {self.author.id} [{self.author.name}] "
                 f"targeting message {self.target.id}"
                 f"in channel {self.channel.id} [{self.channel.name}] "
                 f"in guild {self.guild.id} [{self.guild.name}]"
             )
 
         return ""
+
+    def __sizeof__(self) -> int:
+        # using getsizeof here will include other stuff eg garbage
+        size = 0
+
+        size += getsizeof(self.command)
+        size += getsizeof(self.author)
+        size += getsizeof(self.app_type)
+        size += getsizeof(self.channel)
+        size += getsizeof(self.guild)
+        size += getsizeof(self.time)
+        size += getsizeof(self.target)
+
+        return size

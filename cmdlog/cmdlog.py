@@ -21,11 +21,6 @@ from .vexutils.chat import humanize_bytes
 if discord.__version__.startswith("2"):
     from discord import Interaction, InteractionType
 
-if TYPE_CHECKING:
-    from dislash import SlashInteraction
-    from dislash.interactions.app_command_interaction import ContextMenuInteraction
-
-
 _log = get_vex_logger(__name__)
 
 
@@ -42,7 +37,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#9000"
-    __version__ = "1.4.5"
+    __version__ = "1.5.1"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -93,8 +88,8 @@ class CmdLog(commands.Cog):
 
     def log_com(self, ctx: commands.Context) -> None:
         logged_com = LoggedCommand(
-            author=ctx.author,
-            com_name=ctx.command.qualified_name,
+            user=ctx.author,
+            command=ctx.command.qualified_name,
             msg_id=ctx.message.id,
             channel=ctx.channel,
             guild=ctx.guild,
@@ -108,8 +103,8 @@ class CmdLog(commands.Cog):
 
     def log_ce(self, ctx: commands.Context) -> None:
         logged_com = LoggedComError(
-            author=ctx.author,
-            com_name=ctx.command.qualified_name,
+            user=ctx.author,
+            command=ctx.command.qualified_name,
             msg_id=ctx.message.id,
             channel=ctx.channel,
             guild=ctx.guild,
@@ -160,121 +155,57 @@ class CmdLog(commands.Cog):
         except Exception as e:
             self.log_list_error(e)
 
-    # APP COM PARSE FOR: KOWLIN'S SLASHINJECTOR
-    @commands.Cog.listener()
-    async def on_interaction_create(self, data: dict):
-        try:
-            if data.get("type") != 2:
-                return
-
-            userid = data.get("member", {}).get("user", {}).get("id", 0)
-            if guild_s := data.get("guild_id"):
-                guild = self.bot.get_guild(int(guild_s))
-                if not isinstance(guild, discord.Guild):
-                    return
-                user = guild.get_member(userid)
-            else:
-                user = self.bot.get_user(userid)
-
-            inter_data = data["data"]
-            chan = self.bot.get_channel(data.get("channel_id", 0))
-            if not isinstance(chan, TextChannel):
-                return
-
-            self.log_app_com(
-                user,
-                chan,
-                inter_data,
-                inter_type=inter_data["type"],
-                target_id=data.get("target_id"),
-            )
-        except Exception as e:
-            self.log_list_error(e)
-
-    # APP COM PARSE FOR: DPY2
     @commands.Cog.listener()
     async def on_interaction(self, inter: "Interaction"):
         try:
-            if discord.__version__.startswith("1"):  # FILTER OUT DISLASH SHIT
+
+            if inter.data is None:
                 return
-            if isinstance(inter, Interaction):  # "PROPER" DPY 2
-                if inter.type != InteractionType.application_command:
+
+            if inter.type in (InteractionType.autocomplete, InteractionType.ping):
+                return
+            elif inter.type == InteractionType.application_command:
+                if inter.command is None:
                     return
+                type = inter.data.get("type")
+                target_id = inter.data.get("target_id")
 
-                user = inter.user
-                inter_type = inter.type
-                if inter.data is None:
-                    return
+                if target_id:
+                    target = self.bot.get_user(target_id)
+                    if target is None:
+                        try:
+                            target = inter.channel.get_partial_message(target_id)
+                        except AttributeError:
+                            target = None
+                else:
+                    target = None
 
-                target = inter.data.get("target_id", 0)
-                com = inter.data.get("name", "")
+                log_obj = LoggedAppCom(
+                    author=inter.user,
+                    com_name=inter.command.name,
+                    channel=inter.channel,
+                    guild=inter.guild,
+                    app_type=type,
+                    target=target,
+                )
 
-                self.log_app_com(user, inter.channel, com, inter_type, target)  # type:ignore
+            elif inter.type == InteractionType.component:
+                # TODO: add support for component interaction
+                return
+
+            elif inter.type == InteractionType.modal_submit:
+                # TODO: MAYBE add support for modals
+                return
+
+            else:  # we should never get here
+                return
+
+            _log.info(log_obj)
+            self.log_cache.append(log_obj)
+            if self.channel_logger:
+                self.channel_logger.add_command(log_obj)
         except Exception as e:
             self.log_list_error(e)
-
-    # APP COM PARSE FOR DISLASH, 1/3
-    @commands.Cog.listener()
-    async def on_slash_command(self, inter: "SlashInteraction"):
-        self.log_app_com(
-            user=inter.author,
-            chan=inter.channel,
-            inter_type=1,
-            com_name=inter.data.name,  # type:ignore
-        )
-
-    # APP COM PARSE FOR DISLASH, 2/3
-    @commands.Cog.listener()
-    async def on_user_command(self, inter: "ContextMenuInteraction"):
-        self.log_app_com(
-            user=inter.user,
-            chan=inter.channel,
-            inter_type=2,
-            com_name=inter.data.name,  # type:ignore
-            target_id=inter.data.target_id,  # type:ignore
-        )
-
-    # APP COM PARSE FOR DISLASH, 3/3
-    @commands.Cog.listener()
-    async def on_message_command(self, inter: "ContextMenuInteraction"):
-        self.log_app_com(
-            user=inter.user,
-            chan=inter.channel,
-            com_name=inter.data.name,  # type:ignore
-            inter_type=3,
-            target_id=inter.data.target_id,  # type:ignore
-        )
-
-    def log_app_com(
-        self,
-        user: Optional[Union[discord.abc.User, discord.User, discord.Member]],
-        chan: Optional[discord.TextChannel],
-        com_name: str,
-        inter_type: int,
-        target_id: Optional[int] = None,
-    ):
-        if user is None or chan is None:
-            return
-
-        if target_id:
-            target = self.bot.get_user(target_id) or chan.get_partial_message(target_id)
-        else:
-            target = None
-
-        logged_com = LoggedAppCom(
-            author=user,
-            com_name=com_name,
-            channel=chan,
-            guild=chan.guild if isinstance(chan, TextChannel) else None,
-            log_content=self.log_content,
-            application_command=inter_type,
-            target=target,
-        )
-
-        _log.info(logged_com)
-        self.log_cache.append(logged_com)
-        if self.channel_logger:
-            self.channel_logger.add_command(logged_com)
 
     @commands.command(hidden=True)
     async def cmdloginfo(self, ctx: commands.Context):
