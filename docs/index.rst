@@ -10,8 +10,12 @@ You can view documentation for each of my cogs below,
 or you can view the :ref:`Getting started<getting_started>` page
 if you want to install my cogs.
 
-You can reach out to me in the :ref:`Red - Cog Support<https://discord.gg/GD43Nb9H86>` server,
+You can reach out to me in the `Red - Cog Support <https://discord.gg/GD43Nb9H86/>`_ server,
 in #support_vex-cogs.
+
+.. image:: https://ko-fi.com/img/githubbutton_sm.svg
+   :target: https://ko-fi.com/vexed
+
 
 .. toctree::
    :maxdepth: 1
@@ -21,7 +25,7 @@ in #support_vex-cogs.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Cogs:
+   :caption: Cog guides:
 
    cogs/anotherpingcog
    cogs/aliases
