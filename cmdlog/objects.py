@@ -30,7 +30,7 @@ class LoggedCommand(Log):
     def __init__(
         self,
         command: str,
-        log_content: bool,
+        log_content: bool | None,
         content: str,
         user: discord.Member | discord.User,
         msg_id: int,
@@ -80,7 +80,7 @@ class LoggedComError(Log):
     def __init__(
         self,
         command: str,
-        log_content: bool,
+        log_content: bool | None,
         content: str,
         user: discord.Member | discord.User,
         msg_id: int,

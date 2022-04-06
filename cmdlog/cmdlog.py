@@ -37,7 +37,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#9000"
-    __version__ = "1.5.0"
+    __version__ = "1.5.1"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -88,8 +88,8 @@ class CmdLog(commands.Cog):
 
     def log_com(self, ctx: commands.Context) -> None:
         logged_com = LoggedCommand(
-            author=ctx.author,
-            com_name=ctx.command.qualified_name,
+            user=ctx.author,
+            command=ctx.command.qualified_name,
             msg_id=ctx.message.id,
             channel=ctx.channel,
             guild=ctx.guild,
@@ -103,8 +103,8 @@ class CmdLog(commands.Cog):
 
     def log_ce(self, ctx: commands.Context) -> None:
         logged_com = LoggedComError(
-            author=ctx.author,
-            com_name=ctx.command.qualified_name,
+            user=ctx.author,
+            command=ctx.command.qualified_name,
             msg_id=ctx.message.id,
             channel=ctx.channel,
             guild=ctx.guild,
