@@ -102,7 +102,7 @@ class Poll:
             message_id=int(data["message_id"]),
             question=data["question"],
             description=data["description"],
-            options=[PollOption(n, s) for n, s in data["options"].items()],
+            options=[PollOption(n, ButtonStyle(s)) for n, s in data["options"].items()],
             allow_vote_change=bool(data["allow_vote_change"]),
             view_while_live=bool(data["view_while_live"]),
             send_msg_when_over=bool(data["send_msg_when_over"]),
@@ -290,3 +290,6 @@ class Poll:
             return file
 
         return await self.cog.bot.loop.run_in_executor(self.cog.plot_executor, _plot)
+
+    def __str__(self) -> str:
+        return str(self.to_dict())

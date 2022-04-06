@@ -6,8 +6,12 @@ import discord
 from discord.enums import ButtonStyle
 from redbot.core.config import Config
 
+from ..vexutils import get_vex_logger
+
 if TYPE_CHECKING:
     from ..poll import Poll
+
+log = get_vex_logger(__name__)
 
 
 class OptionButton(discord.ui.Button):
@@ -49,7 +53,12 @@ class PollView(discord.ui.View):
 
     def __init__(self, config: Config, poll_settings: "Poll"):
         super().__init__(timeout=None)
+
+        log.debug(f"PollView created for {poll_settings}")
+
         for option in poll_settings.options:
+            if not option.name:
+                continue
             self.add_item(
                 OptionButton(
                     style=option.style,
