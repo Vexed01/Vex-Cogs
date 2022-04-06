@@ -185,6 +185,10 @@ class CaseInsensitive(commands.Cog):
     async def caseinsensitiveinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
+    async def cog_load(self) -> None:
+        self.plug_core()
+        self.plug_alias()
+
     def plug_core(self) -> None:
         """Plug the case-insensitive shit."""
         new_method = types.MethodType(ci_get_context, self.bot)
@@ -218,7 +222,7 @@ class CaseInsensitive(commands.Cog):
             assert isinstance(alias_cog, FakeAlias)
         alias_cog._aliases.get_alias = self.old_alias_get
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.unplug_core()
         self.unplug_alias()
 

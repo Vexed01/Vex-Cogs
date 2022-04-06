@@ -88,9 +88,9 @@ class Status(
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.loop.cancel()
-        self.bot.loop.create_task(self.session.close())
+        await self.session.close()
 
         try:
             self.bot.remove_dev_env_value("status")
@@ -101,7 +101,7 @@ class Status(
 
         log.info("Status unloaded.")
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         if await self.config.version() != 3:
             log.info("Getting initial data from services...")
             await self.migrate_to_v3()

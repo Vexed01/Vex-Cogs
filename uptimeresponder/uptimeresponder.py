@@ -36,16 +36,17 @@ class UptimeResponder(commands.Cog):
         )
         self.config.register_global(port=8710)
 
-    def cog_unload(self) -> None:
-        self.bot.loop.create_task(self.shutdown_webserver())
+    async def cog_unload(self) -> None:
+        await self.shutdown_webserver()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    @commands.command(
-        hidden=True,
-    )
+    async def cog_load(self) -> None:
+        await self.start_webserver()
+
+    @commands.command(hidden=True)
     async def uptimeresponderinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 

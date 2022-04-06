@@ -65,7 +65,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         if self.loop:
             self.loop.cancel()
 
@@ -77,7 +77,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         except KeyError:
             pass
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         if await self.config.version() < 2:
             _log.info("Migrating StatTrack config from 1 to 2.")
             df_conf = await self.config.main_df()

@@ -33,7 +33,7 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.executor.shutdown(wait=False)
 
     @commands.command(hidden=True)

@@ -54,9 +54,12 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.loop.cancel()
         log.debug("Loop stopped as cog unloaded.")
+
+    async def cog_load(self) -> None:
+        await self.maybe_migrate()
 
     async def maybe_migrate(self) -> None:
         if await self.config.version() == 2:

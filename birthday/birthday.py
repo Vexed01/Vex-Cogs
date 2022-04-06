@@ -60,7 +60,7 @@ class Birthday(
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.loop.cancel()
         self.role_manager.cancel()
 
@@ -85,7 +85,7 @@ class Birthday(
         if not hit:
             log.debug("No user data found for user with ID %s.", target_u_id)
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         version = await self.config.version()
         if version == 0:  # first load so no need to update
             await self.config.version.set(1)

@@ -62,7 +62,7 @@ class ButtonPoll(commands.Cog):
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.loop.cancel()
         self.bot.remove_dev_env_value("bpoll")
 
@@ -77,7 +77,7 @@ class ButtonPoll(commands.Cog):
         main = await format_info(ctx, self.qualified_name, self.__version__)
         return await ctx.send(main)
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         # re-initialise views
         all_polls = await self.config.all_guilds()
         for guild_polls in all_polls.values():

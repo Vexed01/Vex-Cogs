@@ -8,6 +8,7 @@ jobs:
   blocked:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Make it work
         run: echo "This is working..."
       - name: Blocked label check

@@ -74,7 +74,7 @@ class CmdLog(commands.Cog):
             else:
                 _log.warning("Commands will NOT be sent to a channel because it appears invalid.")
 
-    def cog_unload(self):
+    async def cog_unload(self):
         if self.channel_logger:
             self.channel_logger.stop()
 
