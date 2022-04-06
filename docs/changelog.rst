@@ -503,6 +503,16 @@ CmdLog
 ======
 
 *********
+``1.5.0``
+*********
+
+2022-04-06
+
+- Remove support for dislash
+- Remove support for SlashInjector
+- Improve support for dpy slash commands
+
+*********
 ``1.4.5``
 *********
 
