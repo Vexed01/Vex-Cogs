@@ -36,3 +36,7 @@ furo
 
 # checks
 python-dotenv
+
+# docs
+sphinx_rtd_theme
+furo

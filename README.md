@@ -15,6 +15,8 @@ take a look at the [docs](https://docs.discord.red).
 
 Support: [Red - Cog Support](https://discord.gg/GD43Nb9H86) in #support_vex-cogs
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M6C0CDZ)
+
 ## Getting my cogs
 
 `[p]` is your prefix.
