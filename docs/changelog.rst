@@ -360,6 +360,14 @@ BetterUptime
 Birthday
 ========
 
+**********
+``1.0.12``
+**********
+
+2022-04-06
+
+- Don't allow users to set birthday messages which contain invalid placeholders (GH #92)
+
 *********
 ``1.0.11``
 *********

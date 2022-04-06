@@ -214,6 +214,7 @@ class BirthdayAdminCommands(MixinMeta):
         if TYPE_CHECKING:
             assert ctx.guild is not None
             assert isinstance(ctx.me, discord.Member)
+            assert isinstance(ctx.author, discord.Member)
 
         m: discord.Message = await ctx.send(
             "Just a heads up, you'll be asked for a message for when the user provided their birth"
@@ -257,7 +258,10 @@ class BirthdayAdminCommands(MixinMeta):
         message_w_year = message.content
 
         if len(message_w_year) > MAX_BDAY_MSG_LEN:
-            await ctx.send("That message is too long, please try again.")
+            await ctx.send(
+                "That message is too long, please try again. Stay under"
+                f" {MAX_BDAY_MSG_LEN} characters."
+            )
             return
 
         # ============================== MSG WITHOUT YEAR ==============================
@@ -282,7 +286,10 @@ class BirthdayAdminCommands(MixinMeta):
         message_wo_year = message.content
 
         if len(message_wo_year) > MAX_BDAY_MSG_LEN:
-            await ctx.send("That message is too long, please try again.")
+            await ctx.send(
+                f"That message is too long, please try again. Stay under {MAX_BDAY_MSG_LEN}"
+                " characters."
+            )
             return
 
         # ============================== CHANNEL ==============================
@@ -382,15 +389,48 @@ class BirthdayAdminCommands(MixinMeta):
 
         await ctx.trigger_typing()
 
+        p = ctx.clean_prefix
+
+        setup_state = 5
+        errors = ""
+        try:
+            format_bday_message(message_w_year, ctx.author, 1)
+        except KeyError as e:
+            setup_state -= 1
+            errors += warning(
+                "You birthday message **with year** can only include `{mention}`, `{name}`"
+                " and `{new_age}`. You can't have anything else in `{}`. You did"
+                f" `{{{e.args[0]}}}` which is invalid.\nYou can correct this with `{p}bdset"
+                " msgwithyear`\n\n"
+            )
+
+        try:
+            format_bday_message(message_wo_year, ctx.author)
+        except KeyError as e:
+            e = e
+            setup_state -= 1
+            errors += warning(
+                "You birthday message **without year** can only include `{mention}` and"
+                f" `{{name}}`. You can't have anything else in `{{}}`. You did `{{{e.args[0]}}}`"
+                f" which is invalid.\nYou can correct this with `{p}bdset msgwithoutyear`\n\n"
+            )
+
         async with self.config.guild(ctx.guild).all() as conf:
             conf["time_utc_s"] = time_utc_s
             conf["message_w_year"] = message_w_year
             conf["message_wo_year"] = message_wo_year
             conf["channel_id"] = channel_id
             conf["role_id"] = role_id
-            conf["setup_state"] = 5
+            conf["setup_state"] = setup_state
 
-        p = ctx.clean_prefix
+        if errors:
+            await ctx.send(
+                errors
+                + f"Once you fix this, members will be able to use `{p}birthday add` to add their"
+                " birthday and messages will be sent."
+            )
+            return
+
         await ctx.send(
             f"All set! You can change these settings at any time with `{p}bdset` and view them"
             f" with `{p}bdset settings`. Members can now use `{p}birthday add` to add their"
@@ -491,7 +531,7 @@ class BirthdayAdminCommands(MixinMeta):
     @bdset.command()
     async def msgwithoutyear(self, ctx: commands.Context, *, message: str):
         """
-        Set the message to be send when the user provided a year.
+        Set the message to be send when the user did not provide a year.
 
         **Placeholders:**
             - `{name}` - the user's name
@@ -509,7 +549,18 @@ class BirthdayAdminCommands(MixinMeta):
             assert isinstance(ctx.author, discord.Member)
 
         if len(message) > MAX_BDAY_MSG_LEN:
-            await ctx.send("That message is too long! It needs to be under 750 characters.")
+            await ctx.send(
+                f"That message is too long! It needs to be under {MAX_BDAY_MSG_LEN} characters."
+            )
+
+        try:
+            format_bday_message(message, ctx.author, 1)
+        except KeyError as e:
+            await ctx.send(
+                f"You have a placeholder `{{{e.args[0]}}}` that is invalid. You can only include"
+                " `{name}` and `{mention}` for the message without a year."
+            )
+            return
 
         async with self.config.guild(ctx.guild).all() as conf:
             if conf["message_wo_year"] is None:
@@ -545,7 +596,18 @@ class BirthdayAdminCommands(MixinMeta):
             assert isinstance(ctx.author, discord.Member)
 
         if len(message) > MAX_BDAY_MSG_LEN:
-            await ctx.send("That message is too long! It needs to be under 750 characters.")
+            await ctx.send(
+                f"That message is too long! It needs to be under {MAX_BDAY_MSG_LEN} characters."
+            )
+
+        try:
+            format_bday_message(message, ctx.author, 1)
+        except KeyError as e:
+            await ctx.send(
+                f"You have a placeholder `{{{e.args[0]}}}` that is invalid. You can only include"
+                " `{name}`, `{mention}` and `{new_age}` for the message with a year."
+            )
+            return
 
         async with self.config.guild(ctx.guild).all() as conf:
             if conf["message_w_year"] is None:
