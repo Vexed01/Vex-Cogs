@@ -9,7 +9,7 @@ import discord
 from redbot.core import Config, commands
 from redbot.core.commands import CheckFailure
 from redbot.core.utils import AsyncIter
-from redbot.core.utils.chat_formatting import box, warning
+from redbot.core.utils.chat_formatting import box, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from rich.table import Table  # type:ignore
@@ -195,6 +195,16 @@ class BirthdayCommands(MixinMeta):
 
 
 class BirthdayAdminCommands(MixinMeta):
+    @commands.guild_only()
+    @commands.is_owner()
+    @commands.group(hidden=True)
+    async def birthdaydebug(self, ctx: commands.Context):
+        """Birthday debug commands."""
+
+    @birthdaydebug.command(name="upcoming")
+    async def debug_upcoming(self, ctx: commands.Context):
+        await ctx.send_interactive(pagify(str(await self.config.all_members(ctx.guild))), "json")
+
     @commands.group()
     @commands.guild_only()  # type:ignore
     @commands.admin_or_permissions(manage_guild=True)
