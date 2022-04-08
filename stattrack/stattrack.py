@@ -31,7 +31,7 @@ def snapped_utcnow():
 class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMetaClass):
     """
     Track your bot's metrics and view them in Discord.
-    Requires no external setup, so uses Red's config. This cog will use around 150KB per day.
+    This cog creates its own SQLite database to store data, using around 150KB per day.
 
     Commands will output as a graph.
     Data can also be exported with `[p]stattrack export` into a few different formats.
