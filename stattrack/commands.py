@@ -90,7 +90,10 @@ class StatTrackCommands(MixinMeta):
         processing_time = monotonic() - processing_start
 
         plot_start = monotonic()
-        async with ctx.channel.typing():
+        if isinstance(ctx, commands.Context):
+            async with ctx.channel.typing():
+                graph = await self.plot(df, ylabel, status_colours)
+        else:  # from select menu so already empherially typing
             graph = await self.plot(df, ylabel, status_colours)
         plot_time = monotonic() - plot_start
 
