@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
-from io import StringIO
+from io import BytesIO, StringIO
 from time import monotonic
 from typing import Iterable, Optional
 
@@ -126,7 +126,7 @@ class StatTrackCommands(MixinMeta):
         embed.set_image(url="attachment://plot.png")
 
         view = StatTrackView(
-            delta=delta,
+            current_delta=delta,
             author=author or ctx.author,
             comclass=self,
             chart=chart,
@@ -174,7 +174,9 @@ class StatTrackCommands(MixinMeta):
         async with ctx.typing():
             self.loop.cancel()
             await self.driver.write(
-                pd.read_json(await ctx.message.attachments[0].read(), orient="split", typ="frame")
+                pd.read_json(
+                    BytesIO(await ctx.message.attachments[0].read()), orient="split", typ="frame"
+                )
             )
         await ctx.send("Done.")
 
