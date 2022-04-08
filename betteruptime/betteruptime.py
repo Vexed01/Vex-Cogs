@@ -68,6 +68,9 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
         """Nothing to delete"""
         return
 
+    async def cog_load(self) -> None:
+        await self.setup_loop()
+
     async def cog_unload(self) -> None:
         log.info("BetterUptime is now unloading. Cleaning up...")
 
