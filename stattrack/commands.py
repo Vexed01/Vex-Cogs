@@ -13,6 +13,7 @@ from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, humanize_number, humanize_timedelta
 
 from stattrack.abc import MixinMeta
+from stattrack.components.view import StatTrackView
 from stattrack.converters import (
     ChannelGraphConverter,
     StatusGraphConverter,
@@ -30,11 +31,13 @@ DEFAULT_DELTA = datetime.timedelta(days=1)
 class StatTrackCommands(MixinMeta):
     async def all_in_one(
         self,
-        ctx: commands.Context,
+        ctx: commands.Context | discord.Message,
+        chart: str,
         delta: datetime.timedelta,
         label: str | Iterable[str],
         title: str,
         ylabel: str | None = None,
+        author: discord.User | discord.Member | None = None,
         *,
         more_options: bool = False,
         status_colours: bool = False,
@@ -87,7 +90,7 @@ class StatTrackCommands(MixinMeta):
         processing_time = monotonic() - processing_start
 
         plot_start = monotonic()
-        async with ctx.typing():
+        async with ctx.channel.typing():
             graph = await self.plot(df, ylabel, status_colours)
         plot_time = monotonic() - plot_start
 
@@ -99,7 +102,7 @@ class StatTrackCommands(MixinMeta):
 
         embed = discord.Embed(
             title=title + str_delta + (" (10 min averages)" if do_average else ""),
-            colour=await ctx.embed_colour(),
+            colour=await self.bot.get_embed_color(ctx.channel),
         )
 
         if len(df.columns) == 1:
@@ -109,7 +112,7 @@ class StatTrackCommands(MixinMeta):
             if show_total is True:
                 embed.add_field(name="Total", value=total_before_avg)  # type:ignore
 
-        if more_options:
+        if more_options and isinstance(ctx, commands.Context):
             embed.description = (
                 "You can choose to only display certian metrics with "
                 f"`{ctx.clean_prefix}stattrack {ctx.command.name} <metrics>`, see "
@@ -119,7 +122,18 @@ class StatTrackCommands(MixinMeta):
         embed.set_footer(text="Times are in UTC")
         embed.set_image(url="attachment://plot.png")
 
-        msg = await ctx.send(file=graph, embed=embed)
+        view = StatTrackView(
+            delta=delta,
+            author=author or ctx.author,
+            comclass=self,
+            chart=chart,
+            current_metrics=[label] if isinstance(label, str) else label,
+        )
+
+        if isinstance(ctx, commands.Context):
+            msg = await ctx.send(file=graph, embed=embed, view=view)
+        else:
+            msg = await ctx.edit(attachments=[graph], embed=embed, view=view)
 
         send_time = monotonic() - send_start
 
@@ -266,7 +280,7 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack latency 5d`
             - `[p]stattrack latency all`
         """
-        await self.all_in_one(ctx, timespan, "ping", "Latency", "Latency (ms)")
+        await self.all_in_one(ctx, "latency", timespan, "ping", "Latency", "Latency (ms)")
 
     @stattrack.command(aliases=["time", "loop"])
     async def looptime(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
@@ -283,7 +297,9 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack looptime 5d`
             - `[p]stattrack looptime all`
         """
-        await self.all_in_one(ctx, timespan, "loop_time_s", "Loop time", "Loop time (seconds)")
+        await self.all_in_one(
+            ctx, "looptime", timespan, "loop_time_s", "Loop time", "Loop time (seconds)"
+        )
 
     @stattrack.command(name="commands")
     async def com(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
@@ -301,7 +317,13 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack commands all`
         """
         await self.all_in_one(
-            ctx, timespan, "command_count", "Commands per minute", do_average=True, show_total=True
+            ctx,
+            "commands",
+            timespan,
+            "command_count",
+            "Commands per minute",
+            do_average=True,
+            show_total=True,
         )
 
     @stattrack.command()
@@ -320,7 +342,13 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack messages all`
         """
         await self.all_in_one(
-            ctx, timespan, "message_count", "Messages per minute", do_average=True, show_total=True
+            ctx,
+            "messages",
+            timespan,
+            "message_count",
+            "Messages per minute",
+            do_average=True,
+            show_total=True,
         )
 
     @stattrack.command(aliases=["guilds"])
@@ -340,6 +368,7 @@ class StatTrackCommands(MixinMeta):
         """
         await self.all_in_one(
             ctx,
+            "servers",
             timespan,
             "guilds",
             "Server count",
@@ -380,6 +409,7 @@ class StatTrackCommands(MixinMeta):
 
         await self.all_in_one(
             ctx,
+            "status",
             timespan,
             ["status_" + g for g in metrics],
             "User status",
@@ -424,7 +454,12 @@ class StatTrackCommands(MixinMeta):
             metrics = ("total", "unique", "humans", "bots")
 
         await self.all_in_one(
-            ctx, timespan, ["users_" + g for g in metrics], "Users", more_options=True
+            ctx,
+            "users",
+            timespan,
+            ["users_" + g for g in metrics],
+            "Users",
+            more_options=True,
         )
 
     @stattrack.command(usage="[timespan=1d] [metrics]")
@@ -471,7 +506,12 @@ class StatTrackCommands(MixinMeta):
             metrics = ("total", "text", "voice", "cat", "stage")
 
         await self.all_in_one(
-            ctx, timespan, ["channels_" + g for g in metrics], "Channels", more_options=True
+            ctx,
+            "channels",
+            timespan,
+            ["channels_" + g for g in metrics],
+            "Channels",
+            more_options=True,
         )
 
     @stattrack.group(aliases=["sys"])
@@ -493,7 +533,7 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack system cpu 5d`
             - `[p]stattrack system cpu all`
         """
-        await self.all_in_one(ctx, timespan, "sys_cpu", "CPU Usage", "Percentage CPU Usage")
+        await self.all_in_one(ctx, "cpu", timespan, "sys_cpu", "CPU Usage", "Percentage CPU Usage")
 
     @system.command(aliases=["memory", "ram"])
     async def mem(self, ctx: commands.Context, timespan: TimespanConverter = DEFAULT_DELTA):
@@ -510,4 +550,4 @@ class StatTrackCommands(MixinMeta):
             - `[p]stattrack system mem 5d`
             - `[p]stattrack system mem all`
         """
-        await self.all_in_one(ctx, timespan, "sys_mem", "RAM Usage", "Percentage RAM Usage")
+        await self.all_in_one(ctx, "mem", timespan, "sys_mem", "RAM Usage", "Percentage RAM Usage")
