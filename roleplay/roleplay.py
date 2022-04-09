@@ -26,7 +26,7 @@ class RolePlay(commands.Cog):
     Admins can get started with `[p]roleplay channel`, as well as some other configuration options.
     """
 
-    __version__ = "0.0.0"
+    __version__ = "1.0.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -152,7 +152,7 @@ class RolePlay(commands.Cog):
 
     @commands.group()
     @commands.guild_only()
-    @commands.admin_or_can_manage_channel(allow_thread_owner=False)
+    @commands.admin_or_permissions(manage_guild=True)
     @commands.bot_has_permissions(manage_messages=True)
     async def roleplay(self, ctx: commands.Context):
         """

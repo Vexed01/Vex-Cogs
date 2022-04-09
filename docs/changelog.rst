@@ -768,6 +768,14 @@ MadTranslate
 RolePlay
 ========
 
+*********
+``1.0.0``
+*********
+
+2022-04-09
+
+- New cog
+
 .. _cl_stattrack:
 
 =========
