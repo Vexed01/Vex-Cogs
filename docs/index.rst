@@ -38,6 +38,7 @@ in #support_vex-cogs.
    cogs/github
    cogs/googletrends
    cogs/madtranslate
+   cogs/roleplay
    cogs/stattrack
    cogs/status
    cogs/statusref

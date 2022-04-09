@@ -1474,7 +1474,7 @@ TimeChannel
 
 - Initial release
 
-.. _cl_wol:
+.. _cl_uptimeresponder:
 
 ===============
 UptimeResponder
@@ -1488,6 +1488,8 @@ UptimeResponder
 
 - "New" cog (moved from bounty repo)
 - Cog for responding to uptime monitoring service pings.
+
+.. _cl_wol:
 
 ===
 WOL
