@@ -18,6 +18,7 @@ COGS = [
     "github",
     "ghissues",
     "madtranslate",
+    "roleplay",
     "stattrack",
     "status",
     "system",

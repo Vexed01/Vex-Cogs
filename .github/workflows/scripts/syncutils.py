@@ -64,6 +64,7 @@ cog_folders = [
     "googletrends",
     "ghissues",
     "madtranslate",
+    "roleplay",
     "stattrack",
     "status",
     "system",

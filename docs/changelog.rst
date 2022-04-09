@@ -21,6 +21,7 @@ Jump links:
 | :ref:`github<cl_github>`
 | :ref:`googletrends<cl_googletrends>`
 | :ref:`madtranslate<cl_madtranslate>`
+| :ref:`roleplay<cl_roleplay>`
 | :ref:`stattrack<cl_stattrack>`
 | :ref:`status<cl_status>`
 | :ref:`system<cl_system>`
@@ -760,6 +761,12 @@ MadTranslate
 2021-06-07
 
 - Initial release
+
+.. _cl_roleplay:
+
+========
+RolePlay
+========
 
 .. _cl_stattrack:
 

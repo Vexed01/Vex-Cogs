@@ -45,6 +45,7 @@ cogs = [
     "github",
     "googletrends",
     "madtranslate",
+    "roleplay",
     "stattrack",
     "status",
     "system",
