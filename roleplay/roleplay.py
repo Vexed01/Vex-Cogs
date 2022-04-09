@@ -17,6 +17,7 @@ class Cache(TypedDict):
     log_channel: discord.TextChannel | None
     embed: bool
     radio: bool
+    delete_after: int | None
 
 
 class RolePlay(commands.Cog):
@@ -26,7 +27,7 @@ class RolePlay(commands.Cog):
     Admins can get started with `[p]roleplay channel`, as well as some other configuration options.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -36,10 +37,7 @@ class RolePlay(commands.Cog):
             self, identifier=418078199982063626, force_registration=True
         )
         self.config.register_guild(
-            main_channel=None,
-            log_channel=None,
-            embed=False,
-            radio=False,
+            main_channel=None, log_channel=None, embed=False, radio=False, delete_after=None
         )
 
         self.cache: dict[int, Cache] = {}
@@ -114,10 +112,13 @@ class RolePlay(commands.Cog):
                         timestamp=message.created_at,
                     ),
                     allowed_mentions=allowed_mentions,
+                    delete_after=data["delete_after"],
                 )
             else:
                 new_msg = await data["main_channel"].send(
-                    distorted_text, allowed_mentions=allowed_mentions
+                    distorted_text,
+                    allowed_mentions=allowed_mentions,
+                    delete_after=data["delete_after"],
                 )
 
         else:
@@ -130,11 +131,15 @@ class RolePlay(commands.Cog):
                         colour=await self.bot.get_embed_color(message.channel),
                     ),
                     allowed_mentions=allowed_mentions,
+                    delete_after=data["delete_after"],
                 )
             else:
                 new_msg = await data["main_channel"].send(
-                    message.content, allowed_mentions=allowed_mentions
+                    message.content,
+                    allowed_mentions=allowed_mentions,
+                    delete_after=data["delete_after"],
                 )
+
         if data["log_channel"]:
             embed = discord.Embed(title="New role play message", description=message.content)
             embed.set_author(
@@ -195,6 +200,7 @@ class RolePlay(commands.Cog):
                 "log_channel": ctx.guild.get_channel(conf["log_channel"]),
                 "embed": conf["embed"],
                 "radio": conf["radio"],
+                "delete_after": conf["delete_after"],
             }
 
         await ctx.send(f"Roleplay channel set to {channel.mention}. I'll start right away!")
@@ -279,6 +285,49 @@ class RolePlay(commands.Cog):
         await ctx.send(f"Log channel set to {channel.mention}.")
 
     @roleplay.command()
+    async def delete(self, ctx: commands.Context, delete_after: Optional[int]):
+        """Automatically delete messages in the role play channel after time has passed.
+
+        The time is in minutes.
+
+        The default is disabled.
+
+        **Examples:**
+            - `[p]roleplay delete 5` - delete after 5 mins
+            - `[p]roleplay delete 30` - delete after 30 mins
+            - `[p]roleplay delete` - disable deletion
+        """
+        # guild check on group command
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.id not in self.cache.keys():
+            await ctx.send("You need to set a main channel first with `roleplay channel`.")
+            return
+
+        if delete_after is None:
+            await self.config.guild(ctx.guild).delete_after.set(None)
+            self.cache[ctx.guild.id]["delete_after"] = None
+
+            await ctx.send(
+                f"Deletion disabled. If you meant to set it see `{ctx.clean_prefix}help roleplay"
+                " delete`."
+            )
+            return
+
+        if delete_after < 1:
+            await self.config.guild(ctx.guild).delete_after.set(None)
+            self.cache[ctx.guild.id]["delete_after"] = None
+
+            await ctx.send("Deletion disabled because you entered a number below 1.")
+            return
+
+        await self.config.guild(ctx.guild).delete_after.set(delete_after)
+        self.cache[ctx.guild.id]["delete_after"] = delete_after
+
+        await ctx.send(f"Deletion set to {delete_after} minutes.")
+
+    @roleplay.command()
     async def settings(self, ctx: commands.Context):
         """View the current settings for the roleplay."""
         # guild check on group command
@@ -304,5 +353,8 @@ class RolePlay(commands.Cog):
         )
         embed.add_field(name="Embed Mode", value=data["embed"])
         embed.add_field(name="Radio Mode", value=data["radio"])
+        embed.add_field(
+            name="Delete After", value=(str(data["delete_after"]) + "mins") or "Disabled"
+        )
 
         await ctx.send(embed=embed)
