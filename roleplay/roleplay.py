@@ -88,9 +88,11 @@ class RolePlay(commands.Cog):
             )
             return
 
-        allowed_mentions = discord.AllowedMentions(everyone=False, users=False, roles=False)
-
         data = self.cache[message.guild.id]
+
+        allowed_mentions = discord.AllowedMentions(everyone=False, users=False, roles=False)
+        delete_after = data["delete_after"] * 60 if data["delete_after"] else None
+
         if data["radio"]:
             distorted_text = ""
             for c in message.content:
@@ -112,13 +114,13 @@ class RolePlay(commands.Cog):
                         timestamp=message.created_at,
                     ),
                     allowed_mentions=allowed_mentions,
-                    delete_after=data["delete_after"],
+                    delete_after=delete_after,
                 )
             else:
                 new_msg = await data["main_channel"].send(
                     distorted_text,
                     allowed_mentions=allowed_mentions,
-                    delete_after=data["delete_after"],
+                    delete_after=delete_after,
                 )
 
         else:
@@ -131,13 +133,13 @@ class RolePlay(commands.Cog):
                         colour=await self.bot.get_embed_color(message.channel),
                     ),
                     allowed_mentions=allowed_mentions,
-                    delete_after=data["delete_after"],
+                    delete_after=delete_after,
                 )
             else:
                 new_msg = await data["main_channel"].send(
                     message.content,
                     allowed_mentions=allowed_mentions,
-                    delete_after=data["delete_after"],
+                    delete_after=delete_after,
                 )
 
         if data["log_channel"]:
