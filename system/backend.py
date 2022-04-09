@@ -77,7 +77,7 @@ async def get_cpu() -> dict[str, str]:
     return data
 
 
-async def get_mem() -> dict[str, str]:
+def get_mem() -> dict[str, str]:
     """Get memory metrics"""
     physical = psutil.virtual_memory()
     swap = psutil.swap_memory()
@@ -97,7 +97,7 @@ async def get_mem() -> dict[str, str]:
     return data
 
 
-async def get_sensors(fahrenheit: bool) -> dict[str, str]:
+def get_sensors(fahrenheit: bool) -> dict[str, str]:
     """Get metrics from sensors"""
     temp = psutil.sensors_temperatures(fahrenheit)
     fans = psutil.sensors_fans()
@@ -123,20 +123,18 @@ async def get_sensors(fahrenheit: bool) -> dict[str, str]:
     return data
 
 
-async def get_users(embed: bool) -> dict[str, str]:
+def get_users() -> dict[str, str]:
     """Get users connected"""
     users: list[psutil._common.suser] = psutil.users()
-
-    e = "`" if embed else ""
 
     data = {}
 
     for user in users:
-        data[f"{e}{user.name}{e}"] = "[Terminal]  {}\n".format(user.terminal or "Unknown")
+        data[f"`{user.name}`"] = "[Terminal]  {}\n".format(user.terminal or "Unknown")
         started = datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d at %H:%M:%S")
-        data[f"{e}{user.name}{e}"] += f"[Started]   {started}\n"
+        data[f"`{user.name}`"] += f"[Started]   {started}\n"
         if not psutil.WINDOWS:
-            data[f"{e}{user.name}{e}"] += f"[PID]       {user.pid}"
+            data[f"`{user.name}`"] += f"[PID]       {user.pid}"
 
     return data
 
@@ -146,7 +144,7 @@ class PartitionData(TypedDict):
     usage: psutil._common.sdiskusage
 
 
-async def get_disk(embed: bool) -> dict[str, str]:
+def get_disk() -> dict[str, str]:
     """Get disk info"""
     partitions = psutil.disk_partitions()
     partition_data: dict[str, PartitionData] = {}
@@ -161,8 +159,6 @@ async def get_disk(embed: bool) -> dict[str, str]:
         except Exception:
             continue
 
-    e = "`" if embed else ""
-
     data = {}
 
     for k, v in partition_data.items():
@@ -171,10 +167,10 @@ async def get_disk(embed: bool) -> dict[str, str]:
             if v["usage"].total > 1073741824
             else f"{humanize_bytes(v['usage'].total)}"
         )
-        data[f"{e}{k}{e}"] = f"[Usage]       {v['usage'].percent} %\n"
-        data[f"{e}{k}{e}"] += f"[Total]       {total_avaliable}\n"
-        data[f"{e}{k}{e}"] += f"[Filesystem]  {v['part'].fstype}\n"
-        data[f"{e}{k}{e}"] += f"[Mount point] {v['part'].mountpoint}\n"
+        data[f"`{k}`"] = f"[Usage]       {v['usage'].percent} %\n"
+        data[f"`{k}`"] += f"[Total]       {total_avaliable}\n"
+        data[f"`{k}`"] += f"[Filesystem]  {v['part'].fstype}\n"
+        data[f"`{k}`"] += f"[Mount point] {v['part'].mountpoint}\n"
 
     return data
 
@@ -211,7 +207,7 @@ async def get_proc() -> dict[str, str]:
     return data
 
 
-async def get_net() -> dict[str, str]:
+def get_net() -> dict[str, str]:
     """Get network stats. May have reset from zero at some point."""
     net = psutil.net_io_counters()
 
@@ -224,7 +220,7 @@ async def get_net() -> dict[str, str]:
     return data
 
 
-async def get_uptime() -> dict[str, str]:
+def get_uptime() -> dict[str, str]:
     """Get uptime info"""
     boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
 
