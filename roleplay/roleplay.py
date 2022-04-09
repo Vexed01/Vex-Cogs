@@ -142,7 +142,6 @@ class RolePlay(commands.Cog):
                 icon_url=message.author.avatar_url
                 if discord.__version__.startswith("1")
                 else message.author.display_avatar.url,
-                url=message.author,
             )
             embed.add_field(name="Jump link", value=new_msg.jump_url)
             try:
