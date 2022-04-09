@@ -50,6 +50,7 @@ class RolePlay(commands.Cog):
                 "log_channel": self.bot.get_channel(data["log_channel"]),
                 "embed": data["embed"],
                 "radio": data["radio"],
+                "delete_after": data["delete_after"],
             }
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
