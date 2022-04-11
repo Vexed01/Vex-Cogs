@@ -20,6 +20,7 @@ class Cache(TypedDict):
     delete_after: int | None
     radiotitle: str
     radioimage: str | None
+    radiofooter: str | None
 
 
 class RolePlay(commands.Cog):
@@ -46,6 +47,7 @@ class RolePlay(commands.Cog):
             delete_after=None,
             radiotitle="New radio transmission detected",
             radioimage=None,
+            radiofooter=None,
         )
 
         self.cache: dict[int, Cache] = {}
@@ -61,6 +63,7 @@ class RolePlay(commands.Cog):
                 "delete_after": data["delete_after"],
                 "radiotitle": data["radiotitle"],
                 "radioimage": data["radioimage"],
+                "radiofooter": data["radiofooter"],
             }
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -126,8 +129,12 @@ class RolePlay(commands.Cog):
                     color=await self.bot.get_embed_color(message.channel),
                     timestamp=message.created_at,
                 )
+
                 if data["radioimage"]:
                     embed.set_thumbnail(url=data["radioimage"])
+                if data["radiofooter"]:
+                    embed.set_footer(text=data["radiofooter"])
+
                 allowed_mentions = (allowed_mentions,)
                 delete_after = (delete_after,)
                 new_msg = await data["main_channel"].send(embed=embed)
@@ -400,6 +407,38 @@ class RolePlay(commands.Cog):
         await ctx.send(f"Radio image set to {image_url}.")
 
     @roleplay.command()
+    async def radiofooter(self, ctx: commands.Context, *, footer: str) -> None:
+        """Set a footer for radio mode (embed only)
+
+        This only applies to embeds.
+
+        **Example:**
+            - `[p]roleplay radiofooter Transmission over`
+            - `[p]roleplay radiofooter` - reset to none
+        """
+        # guild check on group command
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.id not in self.cache.keys():
+            await ctx.send("You need to set a main channel first with `roleplay channel`.")
+            return
+
+        if not footer:
+            await ctx.send(
+                f"Radio footer reset. If you meant to set it see `{ctx.clean_prefix}help roleplay"
+                " radiofooter`."
+            )
+            await self.config.guild(ctx.guild).radioimage.set(None)
+            self.cache[ctx.guild.id]["radiofooter"] = None
+            return
+
+        await self.config.guild(ctx.guild).radiofooter.set(None)
+        self.cache[ctx.guild.id]["radiofooter"] = None
+
+        await ctx.send("Radio footer set")
+
+    @roleplay.command()
     async def settings(self, ctx: commands.Context):
         """View the current settings for the roleplay."""
         # guild check on group command
@@ -430,5 +469,6 @@ class RolePlay(commands.Cog):
         )
         embed.add_field(name="Radio Title", value=data["radiotitle"])
         embed.add_field(name="Radio image", value=data["radioimage"] or "Not set")
+        embed.add_field(name="Radio footer", value=data["radiofooter"] or "Not set")
 
         await ctx.send(embed=embed)
