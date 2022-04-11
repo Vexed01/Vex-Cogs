@@ -407,7 +407,7 @@ class RolePlay(commands.Cog):
         await ctx.send(f"Radio image set to {image_url}.")
 
     @roleplay.command()
-    async def radiofooter(self, ctx: commands.Context, *, footer: str) -> None:
+    async def radiofooter(self, ctx: commands.Context, *, footer: Optional[str]) -> None:
         """Set a footer for radio mode (embed only)
 
         This only applies to embeds.
@@ -433,8 +433,8 @@ class RolePlay(commands.Cog):
             self.cache[ctx.guild.id]["radiofooter"] = None
             return
 
-        await self.config.guild(ctx.guild).radiofooter.set(None)
-        self.cache[ctx.guild.id]["radiofooter"] = None
+        await self.config.guild(ctx.guild).radiofooter.set(footer)
+        self.cache[ctx.guild.id]["radiofooter"] = footer
 
         await ctx.send("Radio footer set")
 
