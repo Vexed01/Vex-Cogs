@@ -86,6 +86,8 @@ class BULoop(MixinMeta):
         await self.write_to_config()
 
     async def betteruptime_main_loop(self):
+        await self.bot.wait_until_red_ready()
+
         self.last_known_ping = self.bot.latency
         self.last_ping_change = time()
 
