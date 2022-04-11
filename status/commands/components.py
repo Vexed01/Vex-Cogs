@@ -33,6 +33,7 @@ class AddServiceView(ui.View):
     )
     async def slt_mode(self, interaction: discord.Interaction, select: ui.Select):
         self.mode = select.values[0]
+        await interaction.response.defer()
 
     @ui.select(
         placeholder="Webhook",
@@ -43,6 +44,7 @@ class AddServiceView(ui.View):
     )
     async def slt_webhook(self, interaction: discord.Interaction, select: ui.Select):
         self.webhook = select.values[0] == "yes"
+        await interaction.response.defer()
 
     @ui.select(
         placeholder="Restrict",
@@ -53,6 +55,7 @@ class AddServiceView(ui.View):
     )
     async def slt_restrict(self, interaction: discord.Interaction, select: ui.Select):
         self.restrict = select.values[0] == "yes"
+        await interaction.response.defer()
 
     @ui.button(label="Submit", style=discord.ButtonStyle.primary)
     async def btn_submit(self, interaction: discord.Interaction, button: ui.Button):
@@ -67,3 +70,5 @@ class AddServiceView(ui.View):
             return
 
         self.stop()
+
+        await interaction.response.defer()
