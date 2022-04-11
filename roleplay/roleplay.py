@@ -13,11 +13,13 @@ log = get_vex_logger(__name__)
 
 
 class Cache(TypedDict):
-    main_channel: discord.TextChannel
+    main_channel: discord.TextChannel | None
     log_channel: discord.TextChannel | None
     embed: bool
     radio: bool
     delete_after: int | None
+    radiotitle: str
+    radioimage: str | None
 
 
 class RolePlay(commands.Cog):
@@ -27,7 +29,7 @@ class RolePlay(commands.Cog):
     Admins can get started with `[p]roleplay channel`, as well as some other configuration options.
     """
 
-    __version__ = "1.0.1"
+    __version__ = "1.1.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -37,7 +39,13 @@ class RolePlay(commands.Cog):
             self, identifier=418078199982063626, force_registration=True
         )
         self.config.register_guild(
-            main_channel=None, log_channel=None, embed=False, radio=False, delete_after=None
+            main_channel=None,
+            log_channel=None,
+            embed=False,
+            radio=False,
+            delete_after=None,
+            radiotitle="New radio transmission detected",
+            radioimage=None,
         )
 
         self.cache: dict[int, Cache] = {}
@@ -51,6 +59,8 @@ class RolePlay(commands.Cog):
                 "embed": data["embed"],
                 "radio": data["radio"],
                 "delete_after": data["delete_after"],
+                "radiotitle": data["radiotitle"],
+                "radioimage": data["radioimage"],
             }
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -91,13 +101,16 @@ class RolePlay(commands.Cog):
 
         data = self.cache[message.guild.id]
 
+        if data["main_channel"] is None:  # should have been caught earlier
+            return
+
         allowed_mentions = discord.AllowedMentions(everyone=False, users=False, roles=False)
         delete_after = data["delete_after"] * 60 if data["delete_after"] else None
 
         if data["radio"]:
             distorted_text = ""
             for c in message.content:
-                if c.isspace():
+                if c.isspace() or c.isnumeric():
                     distorted_text += c
                     continue
 
@@ -107,16 +120,17 @@ class RolePlay(commands.Cog):
                     distorted_text += c
 
             if data["embed"]:
-                new_msg = await data["main_channel"].send(
-                    embed=discord.Embed(
-                        title="New radio transmission detected",
-                        description=distorted_text,
-                        color=message.author.color,
-                        timestamp=message.created_at,
-                    ),
-                    allowed_mentions=allowed_mentions,
-                    delete_after=delete_after,
+                embed = discord.Embed(
+                    title=data["radiotitle"],
+                    description=distorted_text,
+                    color=await self.bot.get_embed_color(message.channel),
+                    timestamp=message.created_at,
                 )
+                if data["radioimage"]:
+                    embed.set_thumbnail(url=data["radioimage"])
+                allowed_mentions = (allowed_mentions,)
+                delete_after = (delete_after,)
+                new_msg = await data["main_channel"].send(embed=embed)
             else:
                 new_msg = await data["main_channel"].send(
                     distorted_text,
@@ -331,6 +345,61 @@ class RolePlay(commands.Cog):
         await ctx.send(f"Deletion set to {delete_after} minutes.")
 
     @roleplay.command()
+    async def radiotitle(self, ctx: commands.Context, *, title: str):
+        """Set a title for radio mode (embed only)
+
+        This only applies to embeds.
+
+        **Example:**
+            - `[p]roleplay radiotitle New radio transmission detected` - the default
+        """
+        # guild check on group command
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.id not in self.cache.keys():
+            await ctx.send("You need to set a main channel first with `roleplay channel`.")
+            return
+
+        await self.config.guild(ctx.guild).radiotitle.set(title)
+        self.cache[ctx.guild.id]["radiotitle"] = title
+
+        await ctx.send(f"Radio title set to {title}.")
+
+    @roleplay.command()
+    async def radioimage(self, ctx: commands.Context, image_url: Optional[str]):
+        """Set an image for radio mode (embed only)
+
+        This only applies to embeds.
+
+        **Example:**
+            - `[p]roleplay radioimage https://i.imgur.com/example.png`
+            - `[p]roleplay radioimage` - reset to none
+        """
+        # guild check on group command
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.id not in self.cache.keys():
+            await ctx.send("You need to set a main channel first with `roleplay channel`.")
+            return
+
+        if image_url is None:
+            await self.config.guild(ctx.guild).radioimage.set(None)
+            self.cache[ctx.guild.id]["radioimage"] = None
+
+            await ctx.send(
+                f"Radio image reset. If you meant to set it see `{ctx.clean_prefix}help roleplay"
+                " radioimage`."
+            )
+            return
+
+        await self.config.guild(ctx.guild).radioimage.set(image_url)
+        self.cache[ctx.guild.id]["radioimage"] = image_url
+
+        await ctx.send(f"Radio image set to {image_url}.")
+
+    @roleplay.command()
     async def settings(self, ctx: commands.Context):
         """View the current settings for the roleplay."""
         # guild check on group command
@@ -359,5 +428,7 @@ class RolePlay(commands.Cog):
         embed.add_field(
             name="Delete After", value=(str(data["delete_after"]) + "mins") or "Disabled"
         )
+        embed.add_field(name="Radio Title", value=data["radiotitle"])
+        embed.add_field(name="Radio image", value=data["radioimage"] or "Not set")
 
         await ctx.send(embed=embed)

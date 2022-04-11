@@ -769,6 +769,16 @@ RolePlay
 ========
 
 *********
+``1.1.0``
+*********
+
+2022-04-11
+
+- Add custom title & thumbnail for radio embeds
+- Don't replace numbers in radio transmission distortion
+- Fix radio embed colour
+
+*********
 ``1.0.1``
 *********
 
