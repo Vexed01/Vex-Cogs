@@ -588,3 +588,14 @@ class BirthdayAdminCommands(MixinMeta):
             "All set. You can now configure the messages and time to send with other commands"
             " under `[p]bdset`, if you would like to change it from ZeLarp's. This is per-guild."
         )
+
+    @commands.command()
+    async def stop(self, ctx: commands.Context):
+        """
+        Stop the cog from sending birthday messages and giving roles in the server.
+        """
+        await self.config.guild(ctx.guild).clear()
+        await ctx.send(
+            "Birthday messages and roles have been stopped. Configuration has been reset, but the"
+            " birthdays of users have been kept in case you need them again."
+        )

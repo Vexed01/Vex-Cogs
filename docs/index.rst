@@ -35,9 +35,11 @@ in #support_vex-cogs.
    cogs/caseinsensitive
    cogs/cmdlog
    cogs/covidgraph
+   cogs/fivemstatus
    cogs/github
    cogs/googletrends
    cogs/madtranslate
+   cogs/roleplay
    cogs/stattrack
    cogs/status
    cogs/statusref

@@ -37,9 +37,11 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | [caseinsensitive](https://go.vexcodes.com/c/caseinsensitive) | Make all prefixes and commands case insensitive. |
 | [cmdlog](https://go.vexcodes.com/c/cmdlog) | Track command usage, searchable by user, server or command name. |
 | [covidgraph](https://go.vexcodes.com/c/covidgraph) | Get graphs of COVID-19 data. |
+| [fivemstatus](https://go.vexcodes.com/c/fivemstatus) | View the live status of a FiveM server, in a updating Discord message. |
 | [github](https://go.vexcodes.com/c/github) | Create, comment, labelify and close GitHub issues, with partial PR support. |
 | [googletrends](https://go.vexcodes.com/c/googletrends) | Find out what the world is searching, right from Discord. |
 | [madtranslate](https://go.vexcodes.com/c/madtranslate) | Translate text through lots of languages. Get some funny results! |
+| [roleplay](https://go.vexcodes.com/c/roleplay) | Create an anonymous role play in your server. |
 | [stattrack](https://go.vexcodes.com/c/stattrack) | Track metrics about your bot and view them in Discord. |
 | [status](https://go.vexcodes.com/c/status) | Recieve automatic status updates from various services, including Discord. |
 | [system](https://go.vexcodes.com/c/system) | Get system metrics of the host device, such as RAM or CPU. |

@@ -1,0 +1,24 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
+    "author": [
+        "Vexed (Vexed#9000)"
+    ],
+    "description": "View the live status of a FiveM server, in an auto updating Discord message.",
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
+    "install_msg": "Thanks for installing! You can get started with the `fivemstatus setup` command, to send the message and start automatic updates.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/fivemstatus>",
+    "max_bot_version": "3.6.0.dev0",
+    "min_bot_version": "3.4.0",
+    "min_python_version": [
+        3,
+        8,
+        1
+    ],
+    "name": "FiveMStatus",
+    "requirements": [],
+    "short": "View the live status of a FiveM server, in an auto updating Discord message.",
+    "tags": [
+        "status",
+        "live",
+        "fivem"
+    ]
+}

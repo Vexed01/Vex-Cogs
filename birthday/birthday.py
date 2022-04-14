@@ -29,7 +29,7 @@ class Birthday(
     Set yours and get a message and role on your birthday!
     """
 
-    __version__ = "1.0.12"
+    __version__ = "1.1.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -56,6 +56,8 @@ class Birthday(
 
         self.ready = asyncio.Event()
 
+        bot.add_dev_env_value("birthday", self)
+
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
@@ -63,6 +65,11 @@ class Birthday(
     async def cog_unload(self):
         self.loop.cancel()
         self.role_manager.cancel()
+
+        try:
+            self.bot.remove_dev_env_value("birthday")
+        except KeyError:
+            pass
 
     async def red_delete_data_for_user(self, **kwargs) -> None:
         # will delete for any requester

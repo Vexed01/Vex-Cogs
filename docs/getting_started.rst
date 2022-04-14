@@ -59,9 +59,11 @@ Cog name                                Summary
 :ref:`caseinsensitive<caseinsensitive>` Make all prefixes and commands case insensitive.
 :ref:`cmdlog<cmdlog>`                   Track command usage, searchable by user, server or command name.
 :ref:`covidgraph<covidgraph>`           Get graphs of COVID-19 data.
+:ref:`fivemstatus<fivemstatus>`         View the live status of a FiveM server, in a updating Discord message.
 :ref:`github<github>`                   Create, comment, labelify and close GitHub issues, with partial PR support.
 :ref:`googletrends<googletrends>`       Find out what the world is searching, right from Discord.
 :ref:`madtranslate<madtranslate>`       Translate text through lots of languages. Get some funny results!
+:ref:`roleplay<roleplay>`               Create an anonymous role play in your server.
 :ref:`stattrack<stattrack>`             Track metrics about your bot and view them in Discord.
 :ref:`status<status>`                   Recieve automatic status updates from various services, including Discord.
 :ref:`system<system>`                   Get system metrics of the host device, such as RAM or CPU.

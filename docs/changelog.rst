@@ -18,9 +18,11 @@ Jump links:
 | :ref:`betteruptime<cl_betteruptime>`
 | :ref:`birthday<cl_birthday>`
 | :ref:`cmdlog<cl_cmdlog>`
+| :ref:`fivemstatus<cl_fivemstatus>`
 | :ref:`github<cl_github>`
 | :ref:`googletrends<cl_googletrends>`
 | :ref:`madtranslate<cl_madtranslate>`
+| :ref:`roleplay<cl_roleplay>`
 | :ref:`stattrack<cl_stattrack>`
 | :ref:`status<cl_status>`
 | :ref:`system<cl_system>`
@@ -360,6 +362,15 @@ BetterUptime
 Birthday
 ========
 
+*********
+``1.1.0``
+*********
+
+2022-04-14
+
+- Add command to stop messages & roles in a guild
+- Add dev env value
+
 **********
 ``1.0.12``
 **********
@@ -684,6 +695,28 @@ CovidGraph
 
 - New cog
 
+.. _cl_fivemstatus:
+
+===========
+FiveMStatus
+===========
+
+*********
+``1.0.1``
+*********
+
+2022-04-14
+
+- Hotfix
+
+*********
+``1.0.0``
+*********
+
+2022-04-14
+
+- New cog
+
 .. _cl_github:
 
 ======
@@ -760,6 +793,38 @@ MadTranslate
 2021-06-07
 
 - Initial release
+
+.. _cl_roleplay:
+
+========
+RolePlay
+========
+
+*********
+``1.1.0``
+*********
+
+2022-04-11
+
+- Add custom title & thumbnail for radio embeds
+- Don't replace numbers in radio transmission distortion
+- Fix radio embed colour
+
+*********
+``1.0.1``
+*********
+
+2022-04-09
+
+- Add deletion after x minutes
+
+*********
+``1.0.0``
+*********
+
+2022-04-09
+
+- New cog
 
 .. _cl_stattrack:
 
@@ -1459,7 +1524,7 @@ TimeChannel
 
 - Initial release
 
-.. _cl_wol:
+.. _cl_uptimeresponder:
 
 ===============
 UptimeResponder
@@ -1473,6 +1538,8 @@ UptimeResponder
 
 - "New" cog (moved from bounty repo)
 - Cog for responding to uptime monitoring service pings.
+
+.. _cl_wol:
 
 ===
 WOL
