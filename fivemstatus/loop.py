@@ -66,7 +66,7 @@ class FiveMLoop(MixinMeta):
                         f" {message['server']} because it was deleted. Stopping updates for"
                         " this."
                     )
-                    async with self.config.guild_from_id(guild_id).messages() as conf:
+                    async with self.config.guild_from_id(guild_id).message() as conf:
                         for message_data in conf:
                             if message_data["msg_id"] == message["msg_id"]:
                                 conf.remove(message_data)
@@ -87,7 +87,7 @@ class FiveMLoop(MixinMeta):
                         f" {message['server']} because it was deleted. Stopping updates for"
                         " this."
                     )
-                    async with self.config.guild_from_id(guild_id).messages() as conf:
+                    async with self.config.guild_from_id(guild_id).message() as conf:
                         for message_data in conf:
                             if message_data["msg_id"] == message["msg_id"]:
                                 conf.remove(message_data)
