@@ -14,9 +14,9 @@ _log = get_vex_logger(__name__)
 class FiveMLoop(MixinMeta):
     def __init__(self) -> None:
         self.loop_meta = VexLoop("FiveMStatus Loop", 60)  # 1 min
-        self.loop = self.bot.loop.create_task(self.fivemstatus())
+        self.loop = self.bot.loop.create_task(self.fivemstatus_loop())
 
-    async def fivemstatus(self) -> NoReturn:
+    async def fivemstatus_loop(self) -> NoReturn:
         await self.bot.wait_until_red_ready()
         await asyncio.sleep(1)
         _log.debug("FiveMStatus loop has started.")
