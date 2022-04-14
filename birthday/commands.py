@@ -20,6 +20,7 @@ from .consts import MAX_BDAY_MSG_LEN, MIN_BDAY_YEAR
 from .converters import BirthdayConverter, TimeConverter
 from .utils import channel_perm_check, format_bday_message, role_perm_check
 from .vexutils import get_vex_logger, no_colour_rich_markup
+from .vexutils.button_pred import wait_for_yes_no
 
 log = get_vex_logger(__name__)
 
@@ -594,8 +595,27 @@ class BirthdayAdminCommands(MixinMeta):
         """
         Stop the cog from sending birthday messages and giving roles in the server.
         """
-        await self.config.guild(ctx.guild).clear()
-        await ctx.send(
-            "Birthday messages and roles have been stopped. Configuration has been reset, but the"
-            " birthdays of users have been kept in case you need them again."
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        confirm = await wait_for_yes_no(
+            ctx, "Are you sure you want to stop sending updates and giving roles?"
         )
+        if confirm is False:
+            await ctx.send("Okay, nothing's changed.")
+            return
+
+        await self.config.guild(ctx.guild).clear()
+
+        confirm = await wait_for_yes_no(
+            ctx,
+            "I've deleted your configuration. Would you also like to delete the data about when"
+            " users birthdays are?",
+        )
+        if confirm is False:
+            await ctx.send("I'll keep that.")
+            return
+
+        await self.config.clear_all_members(ctx.guild)
+        await ctx.send("Deleted.")
