@@ -14,9 +14,9 @@ _log = get_vex_logger(__name__)
 class FiveMLoop(MixinMeta):
     def __init__(self) -> None:
         self.loop_meta = VexLoop("FiveMStatus Loop", 60)  # 1 min
-        self.loop = self.bot.loop.create_task(self.fivemstatus_loop())
+        self.loop = self.bot.loop.create_task(self.fivemstatus())
 
-    async def fivemstatus_loop(self) -> NoReturn:
+    async def fivemstatus(self) -> NoReturn:
         await self.bot.wait_until_red_ready()
         await asyncio.sleep(1)
         _log.debug("FiveMStatus loop has started.")
@@ -47,8 +47,8 @@ class FiveMLoop(MixinMeta):
             message = data["message"]
             if not message:
                 continue
-            partial_channel = self.bot.get_partial_messageable(message["channel_id"])
-            partial_message = partial_channel.get_partial_message(message["msg_id"])
+            channel = self.bot.get_channel(message.get("channel_id"))  # TODO: dpy 2 - partial chan
+            partial_message = channel.get_partial_message(message["msg_id"])
 
             try:
                 data = await self.get_data(message["server"])
