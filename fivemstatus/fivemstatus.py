@@ -118,7 +118,7 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
             )
 
         embed = discord.Embed(
-            title=config_data["last_known_name"],
+            title=data.name,
             colour=0x1FC60C,
             description=f"FiveM server is online. Join at `{data.ip}`",
             timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
