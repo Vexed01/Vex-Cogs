@@ -26,7 +26,7 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
     The message is an embed that updates minutely.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -126,19 +126,19 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
-    async def fivemstatus_loop(self, ctx: commands.Context):
+    async def fivemstatus(self, ctx: commands.Context):
         """
         Set up a live FiveM status embed.
 
         To stop updating the message, just delete it.
         """
 
-    @fivemstatus_loop.command()
+    @fivemstatus.command()
     async def setup(self, ctx: commands.Context, channel: discord.TextChannel, server: str):
         """Set up a FiveM status message.
 
         **Examples:**
-            - `[p]fivemstatus setup #status 1.0.0.0:30120`
+            - `[p]fivemstatus setup #status 1.0.1.0:30120`
         """
         try:
             data = await self.get_data(server)
@@ -168,7 +168,7 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
 
         await ctx.send("All set, head over to the channel and check it out.")
 
-    @fivemstatus_loop.command()
+    @fivemstatus.command()
     async def maintenance(self, ctx: commands.Context):
         """Toggle maintenance mode."""
         async with self.config.guild(ctx.guild).message() as conf:
