@@ -74,20 +74,23 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
                     encoding="utf-8"
                 )
                 player_count = players.count('"endpoint":')  # i know this is stupid but from my
-                # testing many servers have invalid players.json files on random occurrences.
+            # testing many servers have invalid players.json files on random occurrences.
             except aiohttp.ClientError:
                 raise ServerUnreachable(f"Server at {url} is unreachable.")
 
         # strip colour data
         name = ""
         skip = False
-        for c in info["vars"]["sv_projectName"]:
+        for c in info.get("vars", {}).get("sv_projectName", ""):
             if c == "^":
                 skip = True
             elif skip:
                 skip = False
             else:
                 name += c
+
+        if name == "":
+            name = "FiveM Server"
 
         return ServerData(
             current_users=player_count,
@@ -101,23 +104,23 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
     ) -> discord.Embed:
         if maintenance:
             return discord.Embed(
-                title=f"{config_data['last_known_name']} Role Play Server",
+                title=config_data["last_known_name"],
                 colour=0xFFA200,
-                description="Server is in maintenance mode.",
+                description="FiveM server is in maintenance mode.",
                 timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
             )
         if data is None:  # offline
             return discord.Embed(
-                title=f"{config_data['last_known_name']} Role Play Server",
+                title=config_data["last_known_name"],
                 colour=0xFF0000,
-                description="Server is offline.",
+                description="FiveM server is offline.",
                 timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
             )
 
         embed = discord.Embed(
-            title=f"{data.name} Role Play Server",
+            title=config_data["last_known_name"],
             colour=0x1FC60C,
-            description=f"Server is online. Join at `{data.ip}`",
+            description=f"FiveM server is online. Join at `{data.ip}`",
             timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
         )
         embed.add_field(name="Status", value=f"{data.current_users}/{data.max_users} players")
