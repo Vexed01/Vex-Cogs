@@ -60,6 +60,7 @@ cog_folders = [
     "caseinsensitive",
     "cmdlog",
     "covidgraph",
+    "fivemstatus",
     "github",
     "googletrends",
     "ghissues",

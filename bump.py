@@ -15,6 +15,7 @@ COGS = [
     "channeltrack",
     "cmdlog",
     "covidgraph",
+    "fivemstatus",
     "github",
     "ghissues",
     "madtranslate",

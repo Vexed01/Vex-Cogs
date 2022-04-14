@@ -42,6 +42,7 @@ cogs = [
     "caseinsensitive",
     "cmdlog",
     "covidgraph",
+    "fivemstatus",
     "github",
     "googletrends",
     "madtranslate",

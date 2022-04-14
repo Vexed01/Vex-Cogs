@@ -18,6 +18,7 @@ Jump links:
 | :ref:`betteruptime<cl_betteruptime>`
 | :ref:`birthday<cl_birthday>`
 | :ref:`cmdlog<cl_cmdlog>`
+| :ref:`fivemstatus<cl_fivemstatus>`
 | :ref:`github<cl_github>`
 | :ref:`googletrends<cl_googletrends>`
 | :ref:`madtranslate<cl_madtranslate>`
@@ -682,6 +683,20 @@ CovidGraph
 *********
 
 2021-11-27
+
+- New cog
+
+.. _cl_fivemstatus:
+
+===========
+FiveMStatus
+===========
+
+*********
+``1.0.0``
+*********
+
+2022-04-14
 
 - New cog
 
