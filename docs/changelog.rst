@@ -362,6 +362,15 @@ BetterUptime
 Birthday
 ========
 
+*********
+``1.1.0``
+*********
+
+2022-04-14
+
+- Add command to stop messages & roles in a guild
+- Add dev env value
+
 **********
 ``1.0.12``
 **********
