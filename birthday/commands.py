@@ -811,7 +811,7 @@ class BirthdayAdminCommands(MixinMeta):
             " under `[p]bdset`, if you would like to change it from ZeLarp's. This is per-guild."
         )
 
-    @commands.command()
+    @bdset.command()
     async def stop(self, ctx: commands.Context):
         """
         Stop the cog from sending birthday messages and giving roles in the server.
