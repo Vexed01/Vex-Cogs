@@ -52,7 +52,11 @@ class BUCommands(MixinMeta):
         elif num_days < 5:
             return await ctx.send("The minimum number of days is `5`.")
 
-        data = await self.get_data(num_days)
+        if self.ready.is_set() is False:
+            async with ctx.typing():
+                data = await self.get_data(num_days)
+        else:
+            data = await self.get_data(num_days)
 
         embed = discord.Embed(description=description, colour=await ctx.embed_colour())
 
@@ -100,7 +104,12 @@ class BUCommands(MixinMeta):
             - `[p]uptime 0` (for all-time data)
             - `[p]uptime 7`
         """
-        data = await self.get_data(num_days)
+        if self.ready.is_set() is False:
+            async with ctx.typing():
+                data = await self.get_data(num_days)
+        else:
+            data = await self.get_data(num_days)
+
         midnight = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         if data.first_load > midnight:  # cog was first loaded today
             return await ctx.send(
@@ -150,7 +159,12 @@ class BUCommands(MixinMeta):
         elif num_days < 5:
             return await ctx.send("The minimum number of days is `5`.")
 
-        data = await self.get_data(num_days)
+        if self.ready.is_set() is False:
+            async with ctx.typing():
+                data = await self.get_data(num_days)
+        else:
+            data = await self.get_data(num_days)
+
         sr = data.daily_connected_percentages()
 
         if len(sr) < 2:
