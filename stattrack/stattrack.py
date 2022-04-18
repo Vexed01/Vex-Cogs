@@ -225,7 +225,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         df = pandas.DataFrame(data, index=[snapped_utcnow()])
 
-        log.trace("new data pf obj: %s", df)
+        log.trace("new data pd obj:\n%s", df)
 
         end = time.monotonic()
         main_time = round((end - start), 3)
