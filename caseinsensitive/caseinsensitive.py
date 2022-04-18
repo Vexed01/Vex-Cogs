@@ -13,7 +13,9 @@ from redbot.core.bot import Red
 from redbot.core.commands.context import Context
 
 from .fakealias import FakeAlias
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
+
+log = get_vex_logger(__name__)
 
 
 class CaseInsensitiveStringView(StringView):
@@ -262,25 +264,34 @@ class CaseInsensitive(commands.Cog):
         self.plug_core()
         self.plug_alias()
 
+        log.info("CaseInsensitive methods have been plugged")
+
     def plug_core(self) -> None:
         """Plug the case-insensitive shit."""
         if hasattr(discord_ext_commands, "HybridCommand"):
             new_method = types.MethodType(ci_get_context_dpy2, self.bot)
+            ver = "dpy 2 >= hybrid commands"
         else:
             new_method = types.MethodType(ci_get_context_dpy1, self.bot)
+            ver = "dpy 1 & dpy 2 < hybrid commands"
 
         self.old_get_context = self.bot.get_context
         self.bot.get_context = new_method
+
+        log.trace("patched get_context for %s", ver)
 
     def unplug_core(self) -> None:
         """Unplug case-insensitive stuff."""
         if self.old_get_context is not None:
             self.bot.get_context = self.old_get_context
 
+            log.trace("unpatched get_context")
+
     def plug_alias(self) -> None:
         """Plug the alias magic."""
         alias_cog: Optional[commands.Cog] = self.bot.get_cog("Alias")
         if alias_cog is None:
+            log.trace("not patching alias - not loaded")
             return
 
         if TYPE_CHECKING:
@@ -290,18 +301,25 @@ class CaseInsensitive(commands.Cog):
         self.old_alias_get = alias_cog._aliases.get_alias
         alias_cog._aliases.get_alias = new_method
 
+        log.trace("patched get_alias")
+
     def unplug_alias(self) -> None:
         alias_cog = self.bot.get_cog("Alias")
         if alias_cog is None or self.old_alias_get is None:
+            log.trace("not unpatched get_alias - not loaded")
             return
 
         if TYPE_CHECKING:
             assert isinstance(alias_cog, FakeAlias)
         alias_cog._aliases.get_alias = self.old_alias_get
 
+        log.trace("unpatched get_alias")
+
     async def cog_unload(self):
         self.unplug_core()
         self.unplug_alias()
+
+        log.info("CaseInsensitive methods have been unplugged")
 
     @commands.Cog.listener()
     async def on_cog_add(self, cog: commands.Cog):

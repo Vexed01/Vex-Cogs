@@ -21,7 +21,7 @@ from ..objects import (
 from ..vexutils import get_vex_logger
 from .utils import get_channel_data, get_webhook
 
-_log = get_vex_logger(__name__)
+log = get_vex_logger(__name__)
 
 
 class SendUpdate:
@@ -68,19 +68,19 @@ class SendUpdate:
             await asyncio.sleep(1)
 
         start = monotonic()
-        _log.info(f"Sending update for {self.service} to {len(channels)} channels...")
+        log.info(f"Sending update for {self.service} to {len(channels)} channels...")
 
         for c_id, settings in channels.items():
             try:
                 await self._send_updated_feed(c_id, settings)
             except Exception:
-                return _log.warning(
+                return log.warning(
                     f"Something went wrong sending to {c_id} - skipping.", exc_info=True
                 )
 
         end = monotonic()
         time = floor(end - start) or "under a"
-        _log.info(f"Sending update for {self.service} took {time} second(s).")
+        log.verbose(f"Sending update for {self.service} took {time} second(s).")
 
     async def _send_updated_feed(self, c_id: int, settings: ConfChannelSettings) -> None:
         """Send feed decalred in init to a channel.

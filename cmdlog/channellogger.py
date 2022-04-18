@@ -33,12 +33,17 @@ class ChannelLogger:
         if self.task:
             self.task.cancel()
 
+        log.verbose("CmdLog channel logger task stopped.")
+
     def start(self) -> None:
         """Start the channel logger task."""
         self._queue = Queue()
         self.task = self.bot.loop.create_task(self._cmdlog_channel_task())
 
+        log.verbose("CmdLog channel logger task started.")
+
     def add_command(self, command: Log):
+        log.trace("command added to channel logger queue: %s", command)
         self._queue.put_nowait(command)
 
     @staticmethod
@@ -46,7 +51,6 @@ class ChannelLogger:
         return datetime.datetime.now(datetime.timezone.utc)
 
     async def _cmdlog_channel_task(self) -> NoReturn:
-        log.debug("CmdLog channel logger task started.")
         while True:
             try:
                 await self._wait_to_next_safe_send_time()
@@ -54,11 +58,15 @@ class ChannelLogger:
                 while self._queue.empty() is False:
                     to_send.append(self._queue.get_nowait())
 
+                log.trace("got %s commands to send", len(to_send))
+
                 self.last_send = self._utc_now()
 
                 msg = "\n".join(str(i) for i in to_send)
                 for page in pagify(msg):
                     await self.channel.send(box(page, "css"))
+
+                log.trace("sent %s commands", len(to_send))
 
             except Exception as e:
                 log.warning(
@@ -74,11 +82,11 @@ class ChannelLogger:
 
         if last_send < 60:
             to_wait = 60 - last_send
-            log.debug(
+            log.trace(
                 f"Waiting {to_wait}s for next safe sendable time, last send was {last_send}s ago."
             )
             await asyncio.sleep(to_wait)
             # else:
             #     log.debug(f"Last send was {last_send}s ago, only waiting 5 seconds.")
             #     await asyncio.sleep(5)
-            log.debug("Wait finished")
+        log.trace("Wait finished")

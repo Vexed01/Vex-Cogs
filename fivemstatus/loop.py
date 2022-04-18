@@ -19,15 +19,16 @@ class FiveMLoop(MixinMeta):
     async def fivemstatus_loop(self) -> NoReturn:
         await self.bot.wait_until_red_ready()
         await asyncio.sleep(1)
-        _log.debug("FiveMStatus loop has started.")
         while True:
             try:
+                _log.verbose("FiveMStatus l oop has started.")
                 self.loop_meta.iter_start()
                 await self.update_messages()
                 self.loop_meta.iter_finish()
 
-                _log.debug("FiveMStatus iteration finished")
+                _log.verbose("FiveMStatus iteration finished")
             except Exception as e:
+                self.loop_meta.iter_error(e)
                 _log.exception(
                     "Something went wrong in the FiveMStatus loop. Some channels may have been "
                     "missed. The loop will run again at the next hour.",

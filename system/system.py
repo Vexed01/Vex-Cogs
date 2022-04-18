@@ -25,12 +25,10 @@ from .backend import (
     up_for,
 )
 from .command import DynamicHelp
-from .vexutils import format_help, format_info, get_vex_logger
+from .vexutils import format_help, format_info
 
 if TYPE_CHECKING:
     from discord.types.embed import EmbedField
-
-log = get_vex_logger(__name__)
 
 UNAVAILABLE = "\N{CROSS MARK} This command isn't available on your system."
 ZERO_WIDTH = "\u200b"

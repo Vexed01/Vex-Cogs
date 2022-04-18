@@ -50,6 +50,8 @@ class StatTrackCommands(MixinMeta):
         df = await self.driver.read_partial([label] if isinstance(label, str) else label, delta)
         db_time = monotonic() - db_start
 
+        log.trace("pd df obj: %s", df)
+
         if len(df) < 2:
             await ctx.send("I need a little longer to collect data. Try again in a minute.")
             return
@@ -153,7 +155,7 @@ class StatTrackCommands(MixinMeta):
             "send_time": send_time,  # time taken for sending the message
         }
 
-        log.debug(f"Plot finished, info: {debug_info}")
+        log.trace(f"Plot finished, info: {debug_info}")
         self.last_plot_debug = debug_info
 
     @commands.cooldown(10, 60.0, BucketType.user)

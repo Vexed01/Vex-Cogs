@@ -7,6 +7,9 @@ from cachetools import TTLCache
 
 from .abc import MixinMeta
 from .errors import CovidError
+from .vexutils import get_vex_logger
+
+log = get_vex_logger(__name__)
 
 API_BASE = "https://disease.sh"
 
@@ -67,6 +70,8 @@ class CovidData(MixinMeta):
         async with aiohttp.ClientSession() as session:
             resp = await session.get(url)
             if resp.status != 200:
+                log.trace("got error code %s for url %s", resp.status, url)
+                log.trace("response body: %s", await resp.text())
                 raise CovidError  # usually invalid country
 
             data: dict = await resp.json()
