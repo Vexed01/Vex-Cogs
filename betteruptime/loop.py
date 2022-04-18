@@ -11,13 +11,11 @@ from .consts import INF, SECONDS_IN_DAY
 from .vexutils import get_vex_logger
 from .vexutils.loop import VexLoop
 
-_log = get_vex_logger(__name__)
+log = get_vex_logger(__name__)
 
 
 class BULoop(MixinMeta):
     async def setup_loop(self) -> None:
-        _log.debug("[BU SETUP] Starting setup...")
-
         self.first_load = await self.config.first_load()
         # want to make sure its actually written
         if self.first_load is None:
@@ -25,22 +23,24 @@ class BULoop(MixinMeta):
             self.first_load = time()
 
         if await self.config.version() == 1:
-            _log.info("Migrating BetterUptime config to new format (1 -> 3)...")
+            log.info("Migrating BetterUptime config to new format (1 -> 3)...")
             await self.migrate_v1_to_v3()
             await self.config.version.set(3)
         elif await self.config.version() == 2:
-            _log.info("Migrating BetterUptime config to new format (2 -> 3)...")
+            log.info("Migrating BetterUptime config to new format (2 -> 3)...")
             await self.migate_v2_to_v3()
             await self.config.version.set(3)
         else:
             self.cog_loaded_cache = pandas.Series(
                 pandas.read_json(json.dumps(await self.config.cog_loaded()), typ="series")
             )
+            log.trace("pd obj for cog loaded cache: %s", self.cog_loaded_cache)
             self.connected_cache = pandas.Series(
                 pandas.read_json(json.dumps(await self.config.connected()), typ="series")
             )
+            log.trace("pd obj for connected cache: %s", self.connected_cache)
 
-        _log.debug("[BU SETUP] Config setup finished, waiting to start loops")
+        log.debug("Config setup finished, waiting to start loops")
 
         self.main_loop = self.bot.loop.create_task(self.betteruptime_main_loop())
 
@@ -100,33 +100,38 @@ class BULoop(MixinMeta):
 
         self.main_loop_meta = VexLoop("BetterUptime Main Loop", 60.0)
 
-        _log.debug("[BU SETUP] Starting loop")
-        _log.debug("[BU SETUP] BetterUptime is now fully initialised. Setup complete.")
+        log.debug("[BU SETUP] Starting loop")
+        log.debug("[BU SETUP] BetterUptime is now fully initialised. Setup complete.")
 
         self.ready.set()
 
         while True:
-            _log.debug("Loop has started next iteration")
+            log.verbose("Loop has started next iteration")
             try:
                 self.main_loop_meta.iter_start()
                 await self.update_uptime()
                 self.main_loop_meta.iter_finish()
-                _log.debug("Loop has finished, saved to config")
-            except Exception:
-                _log.exception(
+                log.verbose("Loop has finished")
+            except Exception as e:
+                self.main_loop_meta.iter_error(e)
+                log.exception(
                     "Something went wrong in the main BetterUptime loop. The loop will try again "
-                    "in 60 seconds. Please report this and the below information to Vexed."
+                    "in 60 seconds. Please report this and the below information to Vexed.",
+                    exc_info=e,
                 )
 
             await self.main_loop_meta.sleep_until_next()
 
     async def write_to_config(self) -> None:
+        log.trace("write to config called")
         if not self.cog_loaded_cache.empty:
             data = json.loads(self.cog_loaded_cache.to_json())  # type: ignore
             await self.config.cog_loaded.set(data)
+            log.trace("written cog loaded cache to config")
         if not self.connected_cache.empty:
             data = json.loads(self.connected_cache.to_json())  # type: ignore
             await self.config.connected.set(data)
+            log.trace("written connected cache to config")
 
     async def update_uptime(self):
         utcdatetoday = datetime.datetime.utcnow().replace(

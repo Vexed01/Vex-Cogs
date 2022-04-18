@@ -134,6 +134,8 @@ class BirthdayCommands(MixinMeta):
 
         all_birthdays: dict[int, dict[str, dict]] = await self.config.all_members(ctx.guild)
 
+        log.trace("raw data for all bdays: %s", all_birthdays)
+
         parsed_bdays: dict[int, list[str]] = defaultdict(list)
         number_day_mapping: dict[int, str] = {}
 
@@ -177,6 +179,8 @@ class BirthdayCommands(MixinMeta):
                 )
             )
             number_day_mapping[diff.days] = next_birthday_dt.strftime("%B %d")
+
+        log.trace("bdays parsed: %s", parsed_bdays)
 
         if len(parsed_bdays) == 0:
             await ctx.send(f"No upcoming birthdays in the next {days} days.")
@@ -237,6 +241,8 @@ class BirthdayAdminCommands(MixinMeta):
         table = Table("Name", "Value", title="Settings for this server")
 
         async with self.config.guild(ctx.guild).all() as conf:
+            log.trace("raw config: %s", conf)
+
             channel = ctx.guild.get_channel(conf["channel_id"])
             table.add_row("Channel", channel.name if channel else "Channel deleted")
 
@@ -320,7 +326,7 @@ class BirthdayAdminCommands(MixinMeta):
     @bdset.command()
     async def msgwithoutyear(self, ctx: commands.Context, *, message: str):
         """
-        Set the message to be send when the user did not provide a year.
+        Set the message to send when the user did not provide a year.
 
         **Placeholders:**
             - `{name}` - the user's name
@@ -366,7 +372,7 @@ class BirthdayAdminCommands(MixinMeta):
     @bdset.command()
     async def msgwithyear(self, ctx: commands.Context, *, message: str):
         """
-        Set the message to be send when the user did provide a year.
+        Set the message to send when the user did provide a year.
 
         **Placeholders:**
             - `{name}` - the user's name

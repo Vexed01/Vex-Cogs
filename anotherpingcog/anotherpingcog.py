@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 from time import monotonic
 
 import discord
@@ -60,15 +61,14 @@ class AnotherPingCog(commands.Cog):
             await self.config.footer(),
             self.bot,
         )
+        log.trace("Cache loaded: %s", self.cache)
 
     async def cog_unload(self) -> None:
         global old_ping
         if old_ping:
-            try:
+            with contextlib.suppress(Exception):
                 self.bot.remove_command("ping")
-            except Exception:
-                pass
-            self.bot.add_command(old_ping)
+                self.bot.add_command(old_ping)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -475,6 +475,7 @@ class AnotherPingCog(commands.Cog):
                 "non-embed version."
             )
         settings = self.cache
+        log.debug("Raw cached settings: %s", settings)
         main_embed = discord.Embed(
             title="Global settings for the `ping` command.", color=await ctx.embed_color()
         )

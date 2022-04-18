@@ -101,9 +101,13 @@ class Birthday(
 
         self.ready.set()
 
+        log.trace("birthday ready")
+
     @commands.command(hidden=True, aliases=["birthdayinfo"])
     async def bdayinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     async def check_if_setup(self, guild: discord.Guild) -> bool:
-        return await self.config.guild(guild).setup_state() == 5
+        state = await self.config.guild(guild).setup_state()
+        log.trace("setup state: %s", state)
+        return state == 5

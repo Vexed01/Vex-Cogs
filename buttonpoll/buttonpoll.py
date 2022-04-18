@@ -72,6 +72,8 @@ class ButtonPoll(commands.Cog):
 
         self.plot_executor.shutdown(wait=False)
 
+        log.verbose("buttonpoll successfully unloaded")
+
     @commands.command(hidden=True)
     async def buttonpollinfo(self, ctx: commands.Context):
         main = await format_info(ctx, self.qualified_name, self.__version__)
@@ -117,17 +119,18 @@ class ButtonPoll(commands.Cog):
         await self.bot.wait_until_red_ready()
         while True:
             try:
-                log.debug("ButtonPoll loop starting.")
+                log.verbose("ButtonPoll loop starting.")
                 self.loop_meta.iter_start()
                 await self.check_for_finished_polls()
                 self.loop_meta.iter_finish()
-                log.debug("ButtonPoll loop finished.")
+                log.verbose("ButtonPoll loop finished.")
             except Exception as e:
-                log.error(
+                log.exception(
                     "Something went wrong with the ButtonPoll loop. Please report this to Vexed.",
                     exc_info=e,
                 )
                 self.loop_meta.iter_error(e)
+
             await self.loop_meta.sleep_until_next()
 
     async def check_for_finished_polls(self):
