@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import types
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Union
 
 import discord
+import discord.ext.commands as discord_ext_commands
 from discord import Message
 from discord.ext.commands.view import StringView
 from redbot.cogs.alias.alias_entry import AliasCache, AliasEntry
@@ -44,7 +45,7 @@ class CaseInsensitiveStringView(StringView):
 
 # this could affect other cogs as described in install_msg in info.json
 # copied from dpy 1.7.3 which is when it was last edited (hence req of red 3.4.11)
-async def ci_get_context(self: Red, message: Message, *, cls=Context) -> Context:
+async def ci_get_context_dpy1(self: Red, message: Message, *, cls=Context) -> Context:
     do_case_insensitive = not await self.cog_disabled_in_guild(
         CaseInsensitive(None), message.guild  # type:ignore
     )  # its okay to create the class again without any issues (not great but okay) as no coms
@@ -72,6 +73,78 @@ async def ci_get_context(self: Red, message: Message, *, cls=Context) -> Context
             # if the context class' __init__ consumes something from the view this
             # will be wrong.  That seems unreasonable though.
             if message.content.lower().startswith(tuple(p.lower() for p in prefix)):
+                invoked_prefix = discord.utils.find(view.skip_string, prefix)
+            else:
+                return ctx
+
+        except TypeError:
+            if not isinstance(prefix, list):
+                raise TypeError(
+                    "get_prefix must return either a string or a list of string, not {}".format(
+                        prefix.__class__.__name__
+                    )
+                )
+
+            # It's possible a bad command_prefix got us here.
+            for value in prefix:
+                if not isinstance(value, str):
+                    raise TypeError(
+                        "Iterable command_prefix or list returned from get_prefix must "
+                        "contain only strings, not {}".format(value.__class__.__name__)
+                    )
+
+            # Getting here shouldn't happen
+            raise
+
+    if self.strip_after_prefix:
+        view.skip_ws()
+
+    invoker = view.get_word()
+
+    ctx.invoked_with = invoker
+    ctx.prefix = invoked_prefix  # type:ignore
+    ctx.command = self.all_commands.get(  # type:ignore
+        invoker.lower() if do_case_insensitive else invoker
+    )
+    return ctx
+
+
+async def ci_get_context_dpy2(
+    self: Red, origin: Union[discord.Message, discord.Interaction], *, cls=Context
+) -> Context:
+    do_case_insensitive = not await self.cog_disabled_in_guild(
+        CaseInsensitive(None), origin.guild  # type:ignore
+    )  # its okay to create the class again without any issues (not great but okay) as no coms
+    # will be registered and nothing will be plugged from the __init__ of the class
+
+    if isinstance(origin, discord.Interaction):
+        return await cls.from_interaction(origin)
+
+    view = StringView(origin.content)
+    ctx = cls(prefix=None, view=view, bot=self, message=origin)
+
+    view = (
+        CaseInsensitiveStringView(origin.content)
+        if do_case_insensitive
+        else StringView(origin.content)
+    )
+
+    ctx = cls(prefix=None, view=view, bot=self, message=origin)
+
+    if origin.author.id == self.user.id:  # type: ignore
+        return ctx
+
+    prefix = await self.get_prefix(origin)
+    invoked_prefix = prefix
+
+    if isinstance(prefix, str):
+        if not view.skip_string(prefix):
+            return ctx
+    else:
+        try:
+            # if the context class' __init__ consumes something from the view this
+            # will be wrong.  That seems unreasonable though.
+            if origin.content.lower().startswith(tuple(p.lower() for p in prefix)):
                 invoked_prefix = discord.utils.find(view.skip_string, prefix)
             else:
                 return ctx
@@ -187,7 +260,11 @@ class CaseInsensitive(commands.Cog):
 
     def plug_core(self) -> None:
         """Plug the case-insensitive shit."""
-        new_method = types.MethodType(ci_get_context, self.bot)
+        if hasattr(discord_ext_commands, "HybridCommand"):
+            new_method = types.MethodType(ci_get_context_dpy2, self.bot)
+        else:
+            new_method = types.MethodType(ci_get_context_dpy1, self.bot)
+
         self.old_get_context = self.bot.get_context
         self.bot.get_context = new_method
 
