@@ -56,7 +56,7 @@ class Birthday(
 
         self.ready = asyncio.Event()
 
-        bot.add_dev_env_value("birthday", self)
+        bot.add_dev_env_value("birthday", lambda _: self)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""

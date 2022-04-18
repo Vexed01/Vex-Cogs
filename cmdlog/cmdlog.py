@@ -149,7 +149,7 @@ class CmdLog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        log.trace("command error received for %s", ctx.command.qualified_name)
+        log.trace("command error received: %s", error)
         try:
             if self.log_content is None:
                 self.log_content = await self.config.log_content()

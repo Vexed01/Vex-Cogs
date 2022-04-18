@@ -34,11 +34,11 @@ class BULoop(MixinMeta):
             self.cog_loaded_cache = pandas.Series(
                 pandas.read_json(json.dumps(await self.config.cog_loaded()), typ="series")
             )
-            log.trace("pd obj for cog loaded cache: %s", self.cog_loaded_cache)
+            log.trace("pd obj for cog loaded cache:\n%s", self.cog_loaded_cache)
             self.connected_cache = pandas.Series(
                 pandas.read_json(json.dumps(await self.config.connected()), typ="series")
             )
-            log.trace("pd obj for connected cache: %s", self.connected_cache)
+            log.trace("pd obj for connected cache:\n%s", self.connected_cache)
 
         log.debug("Config setup finished, waiting to start loops")
 

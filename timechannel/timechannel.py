@@ -56,7 +56,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
 
     async def cog_unload(self) -> None:
         self.loop.cancel()
-        log.debug("Loop stopped as cog unloaded.")
+        log.verbose("Loop stopped as cog unloaded.")
 
     async def cog_load(self) -> None:
         await self.maybe_migrate()
@@ -65,7 +65,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         if await self.config.version() == 2:
             return
 
-        log.debug("Migating to config v2")
+        log.verbose("Migrating to config v2")
         keys = list(ZONE_KEYS.keys())
         values = list(ZONE_KEYS.values())
         all_guilds = await self.config.all_guilds()
