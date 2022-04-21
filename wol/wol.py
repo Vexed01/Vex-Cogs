@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from typing import Optional
+
 import tabulate
 from redbot.core import commands
 from redbot.core.bot import Red
-from redbot.core.config import Config, Group
+from redbot.core.config import Config
 from redbot.core.utils.chat_formatting import box
-from wakeonlan import send_magic_packet
+from wakeonlan import BROADCAST_IP, send_magic_packet
 
 from .vexutils import format_help, format_info, get_vex_logger
 
@@ -28,7 +30,7 @@ class WOL(commands.Cog):
     `[p]wol main_pc`
     """
 
-    __version__ = "1.0.5"
+    __version__ = "1.1.0"
     __author__ = "Vexed#9000"
 
     def __init__(self, bot: Red) -> None:
@@ -36,7 +38,7 @@ class WOL(commands.Cog):
 
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(version=1)
-        self.config.register_global(addresses={})
+        self.config.register_global(addresses={}, ips={})
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -53,36 +55,46 @@ class WOL(commands.Cog):
 
     @commands.is_owner()
     @commands.command()
-    async def wol(self, ctx: commands.Context, machine: str):
+    async def wol(self, ctx: commands.Context, machine: str, ip: Optional[str] = BROADCAST_IP):
         """
         Wake a local computer.
 
         You can set up a short name with `[p]wolset add` so you don't need to
         write out the MAC each time, or just send the MAC.
 
+        The IP is optional and only used if you don't use the short name.
+
         **Examples:**
             - `[p]wol main_pc`
-            - `[p]wol 11:22:33:44:55:66`
+            - `[p]wol 11:22:33:44:55:66 192.168.1.15`
         """
+        if ip is None:
+            ip = BROADCAST_IP
+
         if len(machine) in (12, 17):  # could be a MAC address
             try:
-                send_magic_packet(machine)
+                send_magic_packet(machine, ip_address=ip)
             except ValueError:  # okay it's not a valid format
                 pass
             else:
                 return await ctx.send("I've woken that machine.")
 
-        data = await self.config.addresses()
+        data: dict = await self.config.addresses()
         machine = machine.lower()
-        if machine.lower() in data:
-            send_magic_packet(data[machine.lower()])
+        if mac := data.get(machine.lower()):
+            ips: dict = await self.config.ips()
+            ip = ips.get(machine.lower(), ip)
+            if ip is None:
+                ip = BROADCAST_IP
+
+            send_magic_packet(mac, ip_address=ip)
             return await ctx.send(f"I've woken {machine}.")
 
         await ctx.send(
             "I can't find that machine. You can add it with "
             if data
             else "You haven't added any machines yet. Get started with"
-            + f"`{ctx.clean_prefix}wolset add <friendly_name> <mac>`."
+            + f"`{ctx.clean_prefix}wolset add <friendly_name> <mac> [ip]`."
         )
 
     @commands.group()
@@ -91,7 +103,9 @@ class WOL(commands.Cog):
         """Manage your saved computer/MAC aliases for easy access."""
 
     @wolset.command()
-    async def add(self, ctx: commands.Context, friendly_name: str, mac: str):
+    async def add(
+        self, ctx: commands.Context, friendly_name: str, mac: str, ip: Optional[str] = None
+    ):
         """
         Add a machine for easy use with `[p]wol`.
 
@@ -99,16 +113,22 @@ class WOL(commands.Cog):
 
         **Examples:**
             - `wolset add main_pc 11:22:33:44:55:66`
-            - `wolset add main_pc 11-22-33-44-55-66`
+            - `wolset add main_pc 11-22-33-44-55-66 192.168.1.15`
         """
         if len(mac) == 17:
             mac = mac.replace(mac[2], "")
         elif len(mac) != 12:
+            print(mac)
             return await ctx.send("That doesn't look like a valid MAC.")
 
-        assert isinstance(self.config.addresses, Group)
+        if ip:
+            if len(ip.split(".")) != 4:
+                return await ctx.send("That doesn't look like a valid IP.")
+
+            await self.config.ips.set_raw(friendly_name.lower(), value=ip)
+
         await self.config.addresses.set_raw(friendly_name.lower(), value=mac)
-        await ctx.send(f"{friendly_name} added as an alias for `{mac}`")
+        await ctx.send(f"{friendly_name.lower()} added as an alias for `{mac}`")
 
     @wolset.command(aliases=["del", "delete"])
     async def remove(self, ctx: commands.Context, friendly_name: str):
@@ -129,6 +149,12 @@ class WOL(commands.Cog):
             else:
                 await ctx.send("Removed.")
 
+        async with self.config.ips() as conf:
+            try:
+                conf.pop(friendly_name.lower())
+            except KeyError:
+                pass
+
     @wolset.command()
     async def list(self, ctx: commands.Context):
         """
@@ -140,8 +166,13 @@ class WOL(commands.Cog):
         if not conf:
             return await ctx.send("You haven't added any machines yet.")
 
-        data = [[f"[{name}]", humanize_mac(mac)] for name, mac in conf.items()]
-        table = tabulate.tabulate(data, headers=["Name", "MAC"])
+        ips: dict[str, str] = await self.config.ips()
+
+        data = [
+            [f"[{name}]", humanize_mac(mac), ips.get(name, "Not set")]
+            for name, mac in conf.items()
+        ]
+        table = tabulate.tabulate(data, headers=["Name", "MAC", "IP"])
 
         # god i hope no-one hits 2k chars
         await ctx.send("Here is are your added computers:" + box(table, "ini"))
