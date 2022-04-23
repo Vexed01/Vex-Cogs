@@ -44,7 +44,11 @@ class LoggedCommand(Log):
             self.content = None
         self.user = BasicDiscordObject(user.id, user.name)
         self.msg_id = msg_id
-        self.channel = BasicDiscordObject(channel.id, channel.name) if channel else None
+        self.channel = (
+            BasicDiscordObject(channel.id, channel.name)
+            if channel and not isinstance(channel, discord.DMChannel)
+            else None
+        )
         self.guild = BasicDiscordObject(guild.id, guild.name) if guild else None
 
         self.time = datetime.datetime.now().strftime(TIME_FORMAT)
@@ -94,7 +98,11 @@ class LoggedComError(Log):
             self.content = None
         self.user = BasicDiscordObject(user.id, user.name)
         self.msg_id = msg_id
-        self.channel = BasicDiscordObject(channel.id, channel.name) if channel else None
+        self.channel = (
+            BasicDiscordObject(channel.id, channel.name)
+            if channel and not isinstance(channel, discord.DMChannel)
+            else None
+        )
         self.guild = BasicDiscordObject(guild.id, guild.name) if guild else None
 
         self.time = datetime.datetime.now().strftime(TIME_FORMAT)
@@ -145,7 +153,11 @@ class LoggedAppCom(Log):
     ):
         self.author = BasicDiscordObject(author.id, author.name)
         self.command = com_name
-        self.channel = BasicDiscordObject(channel.id, channel.name) if channel else None
+        self.channel = (
+            BasicDiscordObject(channel.id, channel.name)
+            if channel and not isinstance(channel, discord.DMChannel)
+            else None
+        )
         self.guild = BasicDiscordObject(guild.id, guild.name) if guild else None
         self.app_type = app_type
 
