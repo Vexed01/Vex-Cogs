@@ -21,6 +21,7 @@ SERVICE_LITERAL = Literal[  # we love DRY
     "sentry",
     "geforcenow",
     "fastly",
+    "wikimedia",
 ]
 
 
@@ -120,6 +121,12 @@ FEEDS = {
         # c-spell: disable-next-line
         "id": "889dh1w1xtt0",
         "friendly": "Fastly",
+    },
+    "wikimedia": {
+        "url": "https://wikimediastatus.net/",
+        # c-spell: disable-next-line
+        "id": "nnqjzz7cd4tj",
+        "friendly": "Wikimedia",
     },
 }
 
