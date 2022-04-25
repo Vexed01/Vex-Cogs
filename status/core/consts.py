@@ -123,7 +123,7 @@ FEEDS = {
         "friendly": "Fastly",
     },
     "wikimedia": {
-        "url": "https://wikimediastatus.net/",
+        "url": "https://www.wikimediastatus.net/",
         # c-spell: disable-next-line
         "id": "nnqjzz7cd4tj",
         "friendly": "Wikimedia",
