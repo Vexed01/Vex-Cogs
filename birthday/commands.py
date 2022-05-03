@@ -397,7 +397,10 @@ class BirthdayAdminCommands(MixinMeta):
 
         time_utc_s = int((full_time - midnight).total_seconds())
 
-        await ctx.trigger_typing()
+        try:
+            await ctx.trigger_typing()  # dpy 1
+        except AttributeError:
+            await ctx.typing()  # dpy 2
 
         p = ctx.clean_prefix
 
