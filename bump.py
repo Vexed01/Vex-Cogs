@@ -32,7 +32,7 @@ UPDATE_LEVELS = ["major", "minor", "patch"]
 
 VER_REGEX = r".*__version__ = \"(\d*)\.(\d*)\.(\d*)\".*"
 
-DOCS_REGEX = r"({}\n=*\n\n)"
+DOCS_REGEX = r"(\n{}\n=*\n\n)"
 
 
 def bump(cogname: str, update_level: str):

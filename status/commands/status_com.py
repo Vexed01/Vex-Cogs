@@ -81,7 +81,10 @@ class StatusCom(MixinMeta):
                     f"You can check updates for {service.friendly} in {channel_list}."
                 )
 
-        await ctx.trigger_typing()
+        try:
+            await ctx.trigger_typing()  # dpy 1
+        except AttributeError:
+            await ctx.typing()  # dpy 2
 
         summary, etag, status = await self.statusapi.summary(service.id)
 
