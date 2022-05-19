@@ -176,6 +176,7 @@ class StatusSetCom(MixinMeta):
 
         try:
             if discord.__version__.startswith("1"):
+                await ctx.send(msg)
                 pred = MessagePredicate.yes_or_no(ctx)
                 await self.bot.wait_for("message", check=pred, timeout=120)
                 restrict = pred.result
