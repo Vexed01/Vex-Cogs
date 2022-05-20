@@ -363,6 +363,14 @@ Birthday
 ========
 
 *********
+``1.1.1``
+*********
+
+2022-05-20
+
+- Show correct age a user will turn in `birthday upcoming` when their next birthday is next year
+
+*********
 ``1.1.0``
 *********
 
