@@ -26,7 +26,7 @@ async def plot(sr: pandas.Series) -> Tuple[discord.File, Optional[float]]:
             sr=sr,
         ),
     )
-    return await asyncio.wait_for(task, timeout=10.0)
+    return await asyncio.wait_for(task, timeout=60.0)
 
 
 def _plot(

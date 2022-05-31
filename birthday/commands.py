@@ -170,12 +170,16 @@ class BirthdayCommands(MixinMeta):
             if diff.days > days:
                 continue
 
+            next_bday_year = (
+                today_dt.year if today_dt.year == next_birthday_dt.year else today_dt.year + 1
+            )
+
             parsed_bdays[diff.days].append(
                 member.mention
                 + (
                     ""
                     if birthday_dt.year == 1
-                    else f" will turn {today_dt.year - birthday_dt.year}"
+                    else (f" will turn {next_bday_year - birthday_dt.year}")
                 )
             )
             number_day_mapping[diff.days] = next_birthday_dt.strftime("%B %d")
