@@ -75,13 +75,15 @@ class SetupModal(ui.Modal, title="Poll setup"):
     )
     description = ui.TextInput(
         label="Description",
-        placeholder="Optionally add a description.",
+        placeholder="Optionally add a description",
         style=discord.TextStyle.paragraph,
         required=False,
         max_length=4000,
     )
     time = ui.TextInput(
-        label="Length", placeholder="How long should the poll last?", default="1 day"
+        label="Poll duration",
+        placeholder="Examples - '1 day', '1 minute', '4 hours'",
+        max_length=32,
     )
     options = ui.TextInput(
         label="Options",

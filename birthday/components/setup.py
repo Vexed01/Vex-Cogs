@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import datetime
-
 import discord
-from dateutil import parser
 from redbot.core import Config
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, warning
@@ -54,10 +51,12 @@ class SetupModal(discord.ui.Modal):
         ),
     )
 
-    time = discord.ui.TextInput(
-        label="Time of day to send messages in UTC",
-        style=discord.TextStyle.short,
-        placeholder='For example, "12AM" or "7:00" ',
+    time = discord.ui.Select(
+        placeholder="Time of day to send messages",
+        options=[
+            discord.SelectOption(label=str(i) + ":00 UTC", value=str(i * 60 * 60))
+            for i in range(24)
+        ],
     )
 
     def __init__(self, bot: Red, config: Config):
@@ -76,17 +75,7 @@ class SetupModal(discord.ui.Modal):
                 + box(self.message_wo_year.value or "Not set")
             )
 
-        try:
-            time = parser.parse(self.time.value)
-        except parser.ParserError:
-            await interaction.response.send_message(
-                warning(
-                    "Invalid time format. Please use the format 'HH:MM' or 'HHAM' or 'HHPM'.\n\n"
-                )
-                + get_reminder(),
-                ephemeral=True,
-            )
-            return
+        time_utc_s = int(self.time.values[0])
 
         try:
             format_bday_message(self.message_w_year.value, interaction.user, 1)
@@ -114,18 +103,10 @@ class SetupModal(discord.ui.Modal):
             )
             return
 
-        time = time.replace(tzinfo=datetime.timezone.utc, year=1, month=1, day=1)
-
-        midnight = datetime.datetime.now(tz=datetime.timezone.utc).replace(
-            year=1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0
-        )
-
-        time_utc_s = int((time - midnight).total_seconds())
-
         async with self.config.guild(interaction.guild).all() as conf:
             conf["time_utc_s"] = time_utc_s
-            conf["message_w_year"] = self.message_w_year
-            conf["message_wo_year"] = self.message_wo_year
+            conf["message_w_year"] = self.message_w_year.value
+            conf["message_wo_year"] = self.message_wo_year.value
             conf["setup_state"] = 3
 
         await interaction.response.send_message(
