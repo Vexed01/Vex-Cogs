@@ -262,6 +262,8 @@ class SetupYesNoView(discord.ui.View):
             )
             return
 
+        await interaction.response.defer()
+
         self.stop()
 
         unique_poll_id = (  # msg ID and first 25 chars of sanitised question
