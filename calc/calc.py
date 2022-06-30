@@ -9,7 +9,7 @@ class Calc(commands.Cog):
     """Calculate simple mathematical expressions."""
 
     __version__ = "0.0.2"
-    __author__ = "Vexed#9000"
+    __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

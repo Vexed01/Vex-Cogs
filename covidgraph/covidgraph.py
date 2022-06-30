@@ -18,7 +18,7 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
     """
 
     __version__ = "1.2.0"
-    __author__ = "Vexed#9000"
+    __author__ = "Vexed#0714"
 
     def __init__(self, bot):
         self.bot = bot

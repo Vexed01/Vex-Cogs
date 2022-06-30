@@ -37,7 +37,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
     """
 
     __version__ = "1.3.1"
-    __author__ = "Vexed#9000"
+    __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
