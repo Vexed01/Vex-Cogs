@@ -22,6 +22,7 @@ SERVICE_LITERAL = Literal[  # we love DRY
     "geforcenow",
     "fastly",
     "wikimedia",
+    "twitch",
 ]
 
 
@@ -127,6 +128,12 @@ FEEDS = {
         # c-spell: disable-next-line
         "id": "nnqjzz7cd4tj",
         "friendly": "Wikimedia",
+    },
+    "twitch": {
+        "url": "https://status.twitch.tv/",
+        # c-spell: disable-next-line
+        "id": "yfj40zdsk34s",
+        "friendly": "Twitch",
     },
 }
 

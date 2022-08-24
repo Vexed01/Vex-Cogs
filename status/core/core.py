@@ -42,7 +42,7 @@ class Status(
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "2.5.4"
+    __version__ = "2.5.5"
     __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
