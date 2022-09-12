@@ -1,4 +1,5 @@
 from __future__ import annotations
+from copy import copy
 
 import datetime
 import json
@@ -53,9 +54,9 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
             await format_info(ctx, self.qualified_name, self.__version__, loops=[self.loop_meta])
         )
 
-    async def get_data(self, server: str) -> ServerData:
-        if server.startswith("https://"):
-            server = server[8:]
+    async def get_data(self, original_server: str) -> ServerData:
+        server = copy(original_server)
+        server.lstrip("https://")
         if not server.startswith("http"):
             server = f"http://{server}"
 
@@ -96,7 +97,7 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
             current_users=player_count,
             max_users=info["vars"]["sv_maxClients"],
             name=name,
-            ip=url.lstrip("http://").lstrip("https://").rstrip("/"),
+            ip=original_server.lstrip("http://").lstrip("https://").rstrip("/"),
         )
 
     async def generate_embed(
