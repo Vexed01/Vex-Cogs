@@ -53,6 +53,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.last_loop_time = "Loop not ran yet"
         self.last_loop_raw: Optional[float] = None
 
+        self.last_plot_debug = None
+
         self.driver = StatTrackSQLiteDriver()
 
         bot.add_dev_env_value("stattrack", lambda _: self)
