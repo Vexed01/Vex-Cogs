@@ -1,8 +1,8 @@
 from __future__ import annotations
-from copy import copy
 
 import datetime
 import json
+from copy import copy
 
 import aiohttp
 import discord
