@@ -308,6 +308,11 @@ class BirthdayAdminCommands(MixinMeta):
 
         # ============================== CHANNEL ==============================
 
+        await ctx.send(
+            "If you intend to mention a role with any of these messages, you need to run the "
+            f"`{ctx.clean_prefix}bdset rolemention true` command."
+        )
+
         m = await ctx.send(
             "Where would you like to send notifications? I will ignore any message with an invalid"
             " channel.\n\nYou have 5 minutes."
@@ -477,6 +482,8 @@ class BirthdayAdminCommands(MixinMeta):
                 time = datetime.datetime.utcfromtimestamp(conf["time_utc_s"]).strftime("%H:%M UTC")
                 table.add_row("Time", time)
 
+            table.add_row("Allow role mentions", str(conf["allow_role_mention"]))
+
             message_w_year = conf["message_w_year"] or "No message set"
             message_wo_year = conf["message_wo_year"] or "No message set"
 
@@ -550,6 +557,8 @@ class BirthdayAdminCommands(MixinMeta):
         """
         Set the message to be send when the user did not provide a year.
 
+        If you would like to mention a role, you will need to run `[p]bdset rolemention true`.
+
         **Placeholders:**
             - `{name}` - the user's name
             - `{mention}` - an @ mention of the user
@@ -595,6 +604,8 @@ class BirthdayAdminCommands(MixinMeta):
     async def msgwithyear(self, ctx: commands.Context, *, message: str):
         """
         Set the message to be send when the user did provide a year.
+
+        If you would like to mention a role, you will need to run `[p]bdset rolemention true`
 
         **Placeholders:**
             - `{name}` - the user's name
@@ -817,6 +828,22 @@ class BirthdayAdminCommands(MixinMeta):
             "All set. You can now configure the messages and time to send with other commands"
             " under `[p]bdset`, if you would like to change it from ZeLarp's. This is per-guild."
         )
+
+    @bdset.command()
+    async def rolemention(self, ctx: commands.Context, value: bool):
+        """
+        Choose whether or not to allow role mentions in birthday messages.
+
+        By default role mentions are suppressed.
+
+        To allow role mentions in the birthday message, run `[p]bdset rolemention true`.
+        Disable them with `[p]bdset rolemention true`
+        """
+        await self.config.guild(ctx.guild).allow_role_mention.set(value)
+        if value:
+            await ctx.send("Role mentions have been enabled.")
+        else:
+            await ctx.send("Role mentions have been disabled.")
 
     @bdset.command()
     async def stop(self, ctx: commands.Context):
