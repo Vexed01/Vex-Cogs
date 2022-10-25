@@ -51,13 +51,21 @@ class SetupModal(discord.ui.Modal):
         ),
     )
 
-    time = discord.ui.Select(
-        placeholder="Time of day to send messages",
-        options=[
-            discord.SelectOption(label=str(i) + ":00 UTC", value=str(i * 60 * 60))
-            for i in range(24)
-        ],
+    time = discord.ui.TextInput(
+        label="Time of day to send messages",
+        style=discord.TextStyle.short,
+        placeholder="Times in UTC. Examples: 12AM, 5AM",
     )
+
+    # bellow was valid then discord decided nope
+
+    # time = discord.ui.Select(
+    #     placeholder="Time of day to send messages",
+    #     options=[
+    #         discord.SelectOption(label=str(i) + ":00 UTC", value=str(i * 60 * 60))
+    #         for i in range(24)
+    #     ],
+    # )
 
     def __init__(self, bot: Red, config: Config):
         super().__init__(title="Birthday setup")
