@@ -37,6 +37,7 @@ Usage
 -----
 
 Track your bot's metrics and view them in Discord.
+This cog creates its own SQLite database to store data, using around 150KB per day.
 
 Commands will output as a graph.
 Data can also be exported with ``[p]stattrack export`` into a few different formats.
@@ -95,6 +96,7 @@ Defaults to all of them.
 Note that ``total`` will count users multiple times if they share multiple servers with the
 Red, while ``unique`` will only count them once.
 
+**Examples:**
 **Examples:**
     - ``[p]stattrack servers 3w2d``
     - ``[p]stattrack servers 5d``
@@ -231,6 +233,42 @@ at least 1 hour.
     - ``[p]stattrack looptime 3w2d``
     - ``[p]stattrack looptime 5d``
     - ``[p]stattrack looptime all``
+
+.. _stattrack-command-stattrack-maxpoints:
+
+"""""""""""""""""""
+stattrack maxpoints
+"""""""""""""""""""
+
+.. note:: |owner-lock|
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]stattrack maxpoints <maxpoints>
+
+**Description**
+
+Set the maximum number of points to plot. This affects the speed of graph plotting.
+
+The default value is 25k (25000).
+
+The more points you plot, the slower the plotting time will be.
+
+This setting only affects graphs that are a longer timespan (1 month+).
+
+Set maxpoints to -1 to disable this feature, therefore always plotting all points.
+
+Otherwise, maxpoints must be at least 1k (1440).
+
+**Examples:**
+
+    - ``[p]stattrack maxpoints 10000`` - plot up to 10k points
+    - ``[p]stattrack maxpoints 75000`` - plot up to 75k points
+    - ``[p]stattrack maxpoints 1440`` - the minimum value possible
+    - ``[p]stattrack maxpoints 25000`` - the default value
+    - ``[p]stattrack maxpoints -1`` - disable, always plot all points
 
 .. _stattrack-command-stattrack-messages:
 

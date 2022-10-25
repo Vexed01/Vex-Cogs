@@ -70,6 +70,28 @@ pingset
 
 Manage settings - emojis, embed colour, and force embed.
 
+.. _anotherpingcog-command-pingset-footer:
+
+""""""""""""""
+pingset footer
+""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]pingset footer <text>
+
+**Description**
+
+Set a custom footer for the ping embed.
+
+If ``none`` is provided as the parameter, there will be no embed footer.
+
+If ``default`` is provided as the parameter, the default footer will be used.
+
+Otherwise, the provided text will be used as the custom footer.
+
 .. _anotherpingcog-command-pingset-forceembed:
 
 """"""""""""""""""

@@ -54,6 +54,34 @@ Get information about your system metrics.
 Most commands work on all OSes or omit certian information.
 See the help for individual commands for detailed limitations.
 
+.. _system-command-system-all:
+
+""""""""""
+system all
+""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]system all 
+
+.. tip:: Aliases: ``system overview``, ``system top``
+
+**Description**
+
+Get an overview of the current system metrics, similar to ``top``.
+
+This will show CPU utilisation, RAM usage and uptime as well as
+active processes.
+
+Platforms: Windows, Linux, Mac OS
+
+
+.. note:: This command appears to be very slow in Windows.
+
+
+
 .. _system-command-system-cpu:
 
 """"""""""
@@ -75,9 +103,11 @@ platform.
 It will also show the time spent idle, user and system as well as uptime.
 
 Platforms: Windows, Linux, Mac OS
-.. Note:: CPU frequency is nominal and overall on Windows and Mac OS,
 
-on Linux it's current and per-core.
+
+.. note::
+    CPU frequency is nominal and overall on Windows and Mac OS,
+    on Linux it's current and per-core.
 
 .. _system-command-system-disk:
 
@@ -89,7 +119,7 @@ system disk
 
 .. code-block:: none
 
-    [p]system disk 
+    [p]system disk [ignore_loop=True]
 
 .. tip:: Alias: ``system df``
 
@@ -101,8 +131,9 @@ This will show the space used, total space, filesystem and
 mount point (if you're on Linux make sure it's not potentially
 sensitive if running the command a public space).
 
-Platforms: Windows, Linux, Mac OS
+If ``ignore_loop`` is set to ``True``, this will ignore any loop (fake) devices on Linux.
 
+Platforms: Windows, Linux, Mac OS
 .. note::
     Mount point is basically useless on Windows as it's the
     same as the drive name, though it's still shown.
@@ -170,6 +201,28 @@ Get an overview of the status of currently running processes.
 
 Platforms: Windows, Linux, Mac OS
 
+.. _system-command-system-red:
+
+""""""""""
+system red
+""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]system red 
+
+**Description**
+
+See what resources Red is using.
+
+Platforms: Windows, Linux, Mac OS
+
+
+.. note:: SWAP memory information is only available on Linux.
+
+
 .. _system-command-system-sensors:
 
 """"""""""""""
@@ -193,31 +246,6 @@ If there is no name for an individual sensor, it will use the name of the
 group instead.
 
 Platforms: Linux
-
-.. _system-command-system-top:
-
-""""""""""
-system top
-""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]system top 
-
-.. tip:: Aliases: ``system overview``, ``system all``
-
-**Description**
-
-Get an overview of the current system metrics, similar to ``top``.
-
-This will show CPU utilisation, RAM usage and uptime as well as
-active processes.
-
-Platforms: Windows, Linux, Mac OS
-
-.. note:: This command appears to be very slow in Windows.
 
 .. _system-command-system-uptime:
 

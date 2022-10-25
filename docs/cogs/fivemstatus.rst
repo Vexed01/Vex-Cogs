@@ -32,11 +32,11 @@ The message is an embed that updates minutely.
 Commands
 --------
 
-.. _fivemstatus-command-fivemstatus_loop:
+.. _fivemstatus-command-fivemstatus:
 
-^^^^^^^^^^^^^^^^
-fivemstatus_loop
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
+fivemstatus
+^^^^^^^^^^^
 
 .. note:: |admin-lock|
 
@@ -44,7 +44,7 @@ fivemstatus_loop
 
 .. code-block:: none
 
-    [p]fivemstatus_loop 
+    [p]fivemstatus 
 
 **Description**
 
@@ -52,37 +52,37 @@ Set up a live FiveM status embed.
 
 To stop updating the message, just delete it.
 
-.. _fivemstatus-command-fivemstatus_loop-maintenance:
+.. _fivemstatus-command-fivemstatus-maintenance:
 
-""""""""""""""""""""""""""""
-fivemstatus_loop maintenance
-""""""""""""""""""""""""""""
+"""""""""""""""""""""""
+fivemstatus maintenance
+"""""""""""""""""""""""
 
 **Syntax**
 
 .. code-block:: none
 
-    [p]fivemstatus_loop maintenance 
+    [p]fivemstatus maintenance 
 
 **Description**
 
 Toggle maintenance mode.
 
-.. _fivemstatus-command-fivemstatus_loop-setup:
+.. _fivemstatus-command-fivemstatus-setup:
 
-""""""""""""""""""""""
-fivemstatus_loop setup
-""""""""""""""""""""""
+"""""""""""""""""
+fivemstatus setup
+"""""""""""""""""
 
 **Syntax**
 
 .. code-block:: none
 
-    [p]fivemstatus_loop setup <channel> <server>
+    [p]fivemstatus setup <channel> <server>
 
 **Description**
 
 Set up a FiveM status message.
 
 **Examples:**
-    - ``[p]fivemstatus setup #status 0.0.0.0:30120``
+    - ``[p]fivemstatus setup #status 1.0.1.0:30120``

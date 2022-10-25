@@ -48,7 +48,7 @@ wol
 
 .. code-block:: none
 
-    [p]wol <machine>
+    [p]wol <machine> [ip=255.255.255.255]
 
 **Description**
 
@@ -57,9 +57,11 @@ Wake a local computer.
 You can set up a short name with ``[p]wolset add`` so you don't need to
 write out the MAC each time, or just send the MAC.
 
+The IP is optional and only used if you don't use the short name.
+
 **Examples:**
     - ``[p]wol main_pc``
-    - ``[p]wol 11:22:33:44:55:66``
+    - ``[p]wol 11:22:33:44:55:66 192.168.1.15``
 
 .. _wol-command-wolset:
 
@@ -89,7 +91,7 @@ wolset add
 
 .. code-block:: none
 
-    [p]wolset add <friendly_name> <mac>
+    [p]wolset add <friendly_name> <mac> [ip=None]
 
 **Description**
 
@@ -99,7 +101,7 @@ Add a machine for easy use with ``[p]wol``.
 
 **Examples:**
     - ``wolset add main_pc 11:22:33:44:55:66``
-    - ``wolset add main_pc 11-22-33-44-55-66``
+    - ``wolset add main_pc 11-22-33-44-55-66 192.168.1.15``
 
 .. _wol-command-wolset-list:
 
@@ -117,7 +119,7 @@ wolset list
 
 See your added addresses.
 
-This will send your MAC addresses to current channel.
+This will send your MAC addresses to the current channel.
 
 .. _wol-command-wolset-remove:
 

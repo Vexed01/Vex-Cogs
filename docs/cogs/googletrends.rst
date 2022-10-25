@@ -82,11 +82,30 @@ Find what the world is searching, right from Discord.
 
 **Examples:**
 
-- ``d;trends 1d US discord twitter youtube``
-    1 day, United Stats searching for Discord, Twitter and YouTube.
-- ``d;trends 1y COVID-19``
+``trends discord``
+    The simple one! Trends for Discord, 7 days, worldwide
+- ``trends 1d US discord twitter youtube``
+    1 day, United Stats searching for Discord, Twitter and YouTube
+- ``trends 1y COVID-19``
     Trend for COVID-19 in the last year in the world
-- ``d;trends all GB discord``
+- ``trends all GB discord``
     Trend for Discord in the United Kingdom for all time
-- ``d;trends all US-NY "Donald Trump" "Joe Biden"``
+- ``trends all US-NY "Donald Trump" "Joe Biden"``
     A trend with spaces - Donald Trump and Joe Biden in New York State for all time
+
+.. _googletrends-command-trendsexamples:
+
+^^^^^^^^^^^^^^
+trendsexamples
+^^^^^^^^^^^^^^
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]trendsexamples 
+
+**Description**
+
+These are some examples of how to use the ``[p]trends`` command,
+for details see ``[p]help trends``
