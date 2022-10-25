@@ -71,6 +71,32 @@ Set the channel where the birthday message will be sent.
 **Example:**
     - ``[p]bdset channel #birthdays`` - set the channel to #birthdays
 
+.. _birthday-command-bdset-force:
+
+"""""""""""
+bdset force
+"""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]bdset force <user> <birthday>
+
+**Description**
+
+Force-set a specific user's birthday.
+
+You can @ mention any user or type out their exact name. If you're typing out a name with
+spaces, make sure to put quotes around it (``"``).
+
+**Examples:**
+    - ``[p]bdset set @User 1-1-2000`` - set the birthday of ``@User`` to 1/1/2000
+    - ``[p]bdset set User 1/1`` - set the birthday of ``@User`` to 1/1/2000
+    - ``[p]bdset set "User with spaces" 1-1`` - set the birthday of ``@User with spaces``
+    to 1/1
+    - ``[p]bdset set 354125157387344896 1/1/2000`` - set the birthday of ``@User`` to 1/1/2000
+
 .. _birthday-command-bdset-interactive:
 
 """""""""""""""""
@@ -101,7 +127,9 @@ bdset msgwithoutyear
 
 **Description**
 
-Set the message to be send when the user provided a year.
+Set the message to be send when the user did not provide a year.
+
+If you would like to mention a role, you will need to run ``[p]bdset rolemention true``.
 
 **Placeholders:**
     - ``{name}`` - the user's name
@@ -128,6 +156,8 @@ bdset msgwithyear
 **Description**
 
 Set the message to be send when the user did provide a year.
+
+If you would like to mention a role, you will need to run ``[p]bdset rolemention true``
 
 **Placeholders:**
     - ``{name}`` - the user's name
@@ -163,6 +193,27 @@ You can give the exact name or a mention.
     - ``[p]bdset role Birthday`` - set the role to @Birthday without a mention
     - ``[p]bdset role 418058139913063657`` - set the role with an ID
 
+.. _birthday-command-bdset-rolemention:
+
+"""""""""""""""""
+bdset rolemention
+"""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]bdset rolemention <value>
+
+**Description**
+
+Choose whether or not to allow role mentions in birthday messages.
+
+By default role mentions are suppressed.
+
+To allow role mentions in the birthday message, run ``[p]bdset rolemention true``.
+Disable them with ``[p]bdset rolemention true``
+
 .. _birthday-command-bdset-settings:
 
 """"""""""""""
@@ -178,6 +229,22 @@ bdset settings
 **Description**
 
 View your current settings
+
+.. _birthday-command-bdset-stop:
+
+""""""""""
+bdset stop
+""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]bdset stop 
+
+**Description**
+
+Stop the cog from sending birthday messages and giving roles in the server.
 
 .. _birthday-command-bdset-time:
 
@@ -201,6 +268,24 @@ Minutes are ignored.
     - ``[p]bdset time 7:00`` - set the time to 7:45AM UTC
     - ``[p]bdset time 12AM`` - set the time to midnight UTC
     - ``[p]bdset time 3PM`` - set the time to 3:00PM UTC
+
+.. _birthday-command-bdset-zemigrate:
+
+"""""""""""""""
+bdset zemigrate
+"""""""""""""""
+
+.. note:: |owner-lock|
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]bdset zemigrate 
+
+**Description**
+
+Import data from ZeCogs'/flare's fork of Birthdays cog
 
 .. _birthday-command-birthday:
 
@@ -281,8 +366,20 @@ birthday upcoming
 
 **Description**
 
-View upcoming birthdays.
+View upcoming birthdays, defaults to 7 days.
 
 **Examples:**
     - ``[p]birthday upcoming`` - default of 7 days
     - ``[p]birthday upcoming 14`` - 14 days
+
+.. _birthday-command-birthdaydebug-upcoming:
+
+""""""""""""""""""""""
+birthdaydebug upcoming
+""""""""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]birthdaydebug upcoming 

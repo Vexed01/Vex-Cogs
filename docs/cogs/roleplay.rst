@@ -38,6 +38,8 @@ Commands
 roleplay
 ^^^^^^^^
 
+.. note:: |admin-lock|
+
 **Syntax**
 
 .. code-block:: none
@@ -73,6 +75,32 @@ Leave blank to disable.
 **Examples:**
     - ``[p]roleplay channel`` - disable roleplay
     - ``[p]roleplay channel #roleplay`` - set the channel to #roleplay
+
+.. _roleplay-command-roleplay-delete:
+
+"""""""""""""""
+roleplay delete
+"""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]roleplay delete [delete_after]
+
+**Description**
+
+Automatically delete messages in the role play channel after time has passed.
+
+The time is in minutes.
+
+The default is disabled.
+
+**Examples:**
+
+    - ``[p]roleplay delete 5`` - delete after 5 mins
+    - ``[p]roleplay delete 30`` - delete after 30 mins
+    - ``[p]roleplay delete`` - disable deletion
 
 .. _roleplay-command-roleplay-embed:
 
@@ -139,6 +167,74 @@ The default is disabled.
 **Examples:**
     - ``[p]roleplay radio true`` - enable radio mode
     - ``[p]roleplay radio false`` - disable radio mode
+
+.. _roleplay-command-roleplay-radiofooter:
+
+""""""""""""""""""""
+roleplay radiofooter
+""""""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]roleplay radiofooter [footer]
+
+**Description**
+
+Set a footer for radio mode (embed only)
+
+This only applies to embeds.
+
+**Example:**
+
+    - ``[p]roleplay radiofooter Transmission over``
+    - ``[p]roleplay radiofooter`` - reset to none
+
+.. _roleplay-command-roleplay-radioimage:
+
+"""""""""""""""""""
+roleplay radioimage
+"""""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]roleplay radioimage [image_url]
+
+**Description**
+
+Set an image for radio mode (embed only)
+
+This only applies to embeds.
+
+**Example:**
+
+    - ``[p]roleplay radioimage https://i.imgur.com/example.png``
+    - ``[p]roleplay radioimage`` - reset to none
+
+.. _roleplay-command-roleplay-radiotitle:
+
+"""""""""""""""""""
+roleplay radiotitle
+"""""""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]roleplay radiotitle <title>
+
+**Description**
+
+Set a title for radio mode (embed only)
+
+This only applies to embeds.
+
+**Example:**
+
+    - ``[p]roleplay radiotitle New radio transmission detected`` - the default
 
 .. _roleplay-command-roleplay-settings:
 

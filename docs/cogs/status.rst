@@ -70,7 +70,7 @@ statusset
 
 .. code-block:: none
 
-    [p]statusset
+    [p]statusset 
 
 **Description**
 
@@ -104,6 +104,30 @@ https://go.vexcodes.com/c/statusref
 
 If you don't specify a specific channel, I will use the current channel.
 
+.. _status-command-statusset-clear:
+
+"""""""""""""""
+statusset clear
+"""""""""""""""
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]statusset clear [channel]
+
+.. tip:: Alias: ``statusset erase``
+
+**Description**
+
+Remove all feeds from a channel.
+
+If you don't specify a channel, I will use the current channel
+
+**Examples:**
+    - ``[p]statusset clear #testing``
+    - ``[p]statusset clear`` (for using current channel)
+
 .. _status-command-statusset-edit:
 
 """"""""""""""
@@ -114,7 +138,7 @@ statusset edit
 
 .. code-block:: none
 
-    [p]statusset edit
+    [p]statusset edit 
 
 **Description**
 
