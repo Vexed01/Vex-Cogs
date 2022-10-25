@@ -67,7 +67,9 @@ class BirthdayLoop(MixinMeta):
             member.remove_roles(role, reason="Birthday cog - birthday ends today")
         )
 
-    async def send_announcement(self, channel: discord.TextChannel, message: str):
+    async def send_announcement(
+        self, channel: discord.TextChannel, message: str, role_mention: bool
+    ):
         if error := channel_perm_check(channel.guild.me, channel):
             log.warning(
                 "Not sending announcement to %s in guild %s because %s",
@@ -82,7 +84,9 @@ class BirthdayLoop(MixinMeta):
         self.coro_queue.put_nowait(
             channel.send(
                 message,
-                allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
+                allowed_mentions=discord.AllowedMentions(
+                    everyone=False, roles=role_mention, users=True
+                ),
             )
         )
 
@@ -218,6 +222,7 @@ class BirthdayLoop(MixinMeta):
                         await self.send_announcement(
                             channel,
                             format_bday_message(all_settings[guild.id]["message_wo_year"], member),
+                            all_settings[guild.id]["allow_role_mention"],
                         )
 
                     else:
@@ -227,6 +232,7 @@ class BirthdayLoop(MixinMeta):
                             format_bday_message(
                                 all_settings[guild.id]["message_w_year"], member, age
                             ),
+                            all_settings[guild.id]["allow_role_mention"],
                         )
 
             for member in role.members:

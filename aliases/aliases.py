@@ -22,7 +22,7 @@ class Aliases(commands.Cog):
     """Get all the alias information you could ever want about a command."""
 
     __version__ = "1.0.6"
-    __author__ = "Vexed#9000"
+    __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

@@ -2,7 +2,7 @@
 
 Thanks for taking the time to look into contributing! Whether you'll open an issue or PR, or do something else, _everything_ is appreciated. 
 
-To avoid wasting time, it's sometimes best to speak to me in Discord (`Vexed#9000`) or create an Issue before making non-trivial Pull Requests.
+To avoid wasting time, it's sometimes best to speak to me in Discord (`Vexed#0714`) or create an Issue before making non-trivial Pull Requests.
 
 Not much else to say really, just this:
 

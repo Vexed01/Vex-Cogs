@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import json
+from copy import copy
 
 import aiohttp
 import discord
@@ -27,7 +28,7 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
     """
 
     __version__ = "1.0.1"
-    __author__ = "Vexed#9000"
+    __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -53,9 +54,9 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
             await format_info(ctx, self.qualified_name, self.__version__, loops=[self.loop_meta])
         )
 
-    async def get_data(self, server: str) -> ServerData:
-        if server.startswith("https://"):
-            server = server[8:]
+    async def get_data(self, original_server: str) -> ServerData:
+        server = copy(original_server)
+        server.lstrip("https://")
         if not server.startswith("http"):
             server = f"http://{server}"
 
@@ -97,7 +98,7 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
             current_users=player_count,
             max_users=info["vars"]["sv_maxClients"],
             name=name,
-            ip=url.lstrip("http://").lstrip("https://").rstrip("/"),
+            ip=original_server.lstrip("http://").lstrip("https://").rstrip("/"),
         )
         log.trace("got data for %s: %s", server, final)
         return final

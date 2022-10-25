@@ -240,7 +240,7 @@ class CaseInsensitive(commands.Cog):
     """
 
     __version__ = "1.0.4"
-    __author__ = "Vexed#9000"
+    __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

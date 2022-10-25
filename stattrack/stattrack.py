@@ -38,7 +38,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     """
 
     __version__ = "1.9.1"
-    __author__ = "Vexed#9000"
+    __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -52,6 +52,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         self.last_loop_time = "Loop not ran yet"
         self.last_loop_raw: Optional[float] = None
+
+        self.last_plot_debug = None
 
         self.driver = StatTrackSQLiteDriver()
 

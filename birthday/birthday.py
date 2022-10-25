@@ -29,8 +29,8 @@ class Birthday(
     Set yours and get a message and role on your birthday!
     """
 
-    __version__ = "1.1.1"
-    __author__ = "Vexed#9000"
+    __version__ = "1.2.0"
+    __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -46,6 +46,7 @@ class Birthday(
             setup_state=0,  # 0 is not setup, 5 is everything setup. this is so it can be steadily
             # incremented with individual setup commands or with the interactive setup, then
             # easily checked
+            allow_role_mention=False,
         )
         self.config.register_member(birthday={"year": 1, "month": 1, "day": 1})
 
