@@ -103,9 +103,11 @@ platform.
 It will also show the time spent idle, user and system as well as uptime.
 
 Platforms: Windows, Linux, Mac OS
-.. Note:: CPU frequency is nominal and overall on Windows and Mac OS,
 
-on Linux it's current and per-core.
+
+.. note::
+    CPU frequency is nominal and overall on Windows and Mac OS,
+    on Linux it's current and per-core.
 
 .. _system-command-system-disk:
 
