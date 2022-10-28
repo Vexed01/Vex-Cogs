@@ -213,3 +213,19 @@ class StatusDevCom(MixinMeta):
         except Exception:
             _log.exception("Unable to add dev env vars.")
             await ctx.send("I was unable to add them. Check the logs.")
+
+    @commands.before_invoke(unsupported)
+    @statusdev.command(aliases=["cl"], hidden=True)
+    async def clearchannels(self, ctx: commands.Context):
+        """Clear channels from Config that no longer exists."""
+        data = await self.config.all_channels()
+        count = 0
+        for channel_id in data.keys():
+            channel = self.bot.get_channel(channel_id)
+            if channel is None:
+                await self.config.channel_from_id(channel_id).clear()
+                count += 1
+        
+        await ctx.send(
+            f"Successfully cleared out {count:,} channels."if count else "There was no channels to clear."
+        )
