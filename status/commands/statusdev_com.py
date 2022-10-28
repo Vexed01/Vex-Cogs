@@ -225,7 +225,9 @@ class StatusDevCom(MixinMeta):
             if channel is None:
                 await self.config.channel_from_id(channel_id).clear()
                 count += 1
-        
+
         await ctx.send(
-            f"Successfully cleared out {count:,} channels."if count else "There was no channels to clear."
+            f"Successfully cleared out {count:,} channels."
+            if count
+            else "There was no channels to clear."
         )
