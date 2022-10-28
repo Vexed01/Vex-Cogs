@@ -62,7 +62,8 @@ async def get_channel_data(bot: Red, c_id: int, settings: ConfChannelSettings) -
         # TODO: maybe remove from config
         _log.info(
             f"I can't find the channel with id {c_id} - skipping. "
-            "You can use the [p]statusdev clearchannels in order to remove all no longer existing channels"
+            "You can use the [p]statusdev clearchannels in order to "
+            "remove all no longer existing channels"
         )
         raise NotFound
 
