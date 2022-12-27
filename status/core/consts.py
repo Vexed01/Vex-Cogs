@@ -20,7 +20,7 @@ SERVICE_LITERAL = Literal[  # we love DRY
     "reddit",
     "sentry",
     "geforcenow",
-    "fastly",
+    "fastly",  # deprecated
     "wikimedia",
     "twitch",
 ]
@@ -116,12 +116,6 @@ FEEDS = {
         # c-spell: disable-next-line
         "id": "2bdwmtrb0hg9",
         "friendly": "GeForce NOW",
-    },
-    "fastly": {
-        "url": "https://status.fastly.com/",
-        # c-spell: disable-next-line
-        "id": "889dh1w1xtt0",
-        "friendly": "Fastly",
     },
     "wikimedia": {
         "url": "https://www.wikimediastatus.net/",

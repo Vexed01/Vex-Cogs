@@ -129,40 +129,43 @@ class StatusSetCom(MixinMeta):
 
         # === WEBHOOK ===
 
-        if channel.permissions_for(ctx.me).manage_webhooks:
-            msg = (
-                "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook means "
-                f"that the status updates will be sent with the avatar as {service.friendly}'s "
-                f"logo and the name will be `{service.friendly} Status Update`, instead of my "
-                "avatar and name."
-            )
-
-            try:
-                if discord.__version__.startswith("1"):
-                    await ctx.send(msg)
-                    pred = MessagePredicate.yes_or_no(ctx)
-                    await self.bot.wait_for("message", check=pred, timeout=120)
-                    webhook = pred.result
-                else:
-                    webhook = await wait_for_yes_no(ctx, msg)
-            except asyncio.TimeoutError:
-                return await ctx.send("Timed out. Cancelling.")
-
-            if webhook:
-                # maybe creating a webhook so users feel it worked
-                existing_webhook = any(
-                    hook.name == ctx.me.name for hook in await channel.webhooks()
-                )
-                if not existing_webhook:
-                    await channel.create_webhook(
-                        name=ctx.me.name, reason="Created for status updates."
-                    )
-        else:
-            await ctx.send(
-                "I would ask about whether you want me to send updates as a webhook (so they "
-                "match the service), however I don't have the `manage webhooks` permission."
-            )
+        if service.name == "discord":  # webhook names cannot contain "discord"
             webhook = False
+        else:
+            if channel.permissions_for(ctx.me).manage_webhooks:
+                msg = (
+                    "**Would you like to use a webhook?** (yes or no answer)\nUsing a webhook "
+                    "means that the status updates will be sent with the avatar as "
+                    f"{service.friendly}'s logo and the name will be `{service.friendly} Status "
+                    "Update`, instead of my avatar and name."
+                )
+
+                try:
+                    if discord.__version__.startswith("1"):
+                        await ctx.send(msg)
+                        pred = MessagePredicate.yes_or_no(ctx)
+                        await self.bot.wait_for("message", check=pred, timeout=120)
+                        webhook = pred.result
+                    else:
+                        webhook = await wait_for_yes_no(ctx, msg)
+                except asyncio.TimeoutError:
+                    return await ctx.send("Timed out. Cancelling.")
+
+                if webhook:
+                    # maybe creating a webhook so users feel it worked
+                    existing_webhook = any(
+                        hook.name == ctx.me.name for hook in await channel.webhooks()
+                    )
+                    if not existing_webhook:
+                        await channel.create_webhook(
+                            name=ctx.me.name, reason="Created for status updates."
+                        )
+            else:
+                await ctx.send(
+                    "I would ask about whether you want me to send updates as a webhook (so they "
+                    "match the service), however I don't have the `manage webhooks` permission."
+                )
+                webhook = False
 
         # === RESTRICT ===
 
@@ -539,6 +542,13 @@ class StatusSetCom(MixinMeta):
             return await ctx.send(
                 f"It looks like I don't send {service.friendly} status updates to "
                 f"{channel.mention}"
+            )
+
+        if service.name == "discord":
+            return await ctx.send(
+                'Discord does not allow webhook names to contain "Discord" to prevent '
+                "impersonation and potential scams. Therefore, webhooks are unavailable for "
+                "Discord status updates."
             )
 
         if old_conf[service.name]["webhook"] == webhook:

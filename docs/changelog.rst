@@ -1021,6 +1021,15 @@ Status
 ======
 
 *********
+``2.5.6``
+*********
+
+2022-12-27
+
+- Disable webhooks for discord status updates
+- Remove Fastly because they no longer use Statuspage
+
+*********
 ``2.5.5``
 *********
 
