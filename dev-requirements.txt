@@ -19,6 +19,7 @@ markdownify  # status
 rapidfuzz  # timechannel
 wakeonlan  # wol
 expr.py  # calc
+aiosqlite  # stattrack
 
 # checking tools
 pyright
