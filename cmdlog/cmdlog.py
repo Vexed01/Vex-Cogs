@@ -158,7 +158,6 @@ class CmdLog(commands.Cog):
     @commands.Cog.listener()
     async def on_interaction(self, inter: "Interaction"):
         try:
-
             if inter.data is None:
                 return
 

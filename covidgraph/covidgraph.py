@@ -38,7 +38,7 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
 
     @commands.command(hidden=True)
     async def covidgraphinfo(self, ctx: commands.Context):
-        await ctx.send(await (format_info(ctx, self.qualified_name, self.__version__)))
+        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.cooldown(2, 10, commands.BucketType.user)  # 2 per 10 seconds
     @commands.group()

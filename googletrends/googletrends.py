@@ -42,7 +42,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
 
     @commands.command(hidden=True)
     async def trendsinfo(self, ctx: commands.Context):
-        await ctx.send(await (format_info(ctx, self.qualified_name, self.__version__)))
+        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.cooldown(10, 60, commands.BucketType.user)
     @commands.command(usage="[timeframe=7d] [geo=world] <query...>")

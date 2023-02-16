@@ -146,7 +146,6 @@ class Utils(MixinMeta):
                 (SECONDS_IN_DAY * (num_days - 1)) + seconds_since_midnight
             )
         else:  # need to use data for all days collected
-
             if conf_first_loaded > midnight:  # cog was first loaded today
                 seconds_data_collected = (now - conf_first_loaded).total_seconds()
                 expected_index = pd.date_range(

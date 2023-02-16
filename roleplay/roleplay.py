@@ -147,7 +147,6 @@ class RolePlay(commands.Cog):
 
         else:
             if data["embed"]:
-
                 new_msg = await data["main_channel"].send(
                     embed=discord.Embed(
                         description=message.content,
