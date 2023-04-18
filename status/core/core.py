@@ -36,13 +36,13 @@ class Status(
     have registered to recieve updates from that service.
 
     There's also the `status` command which anyone can use to check
-    updates whereever they want.
+    updates wherever they want.
 
     If there's a service that you want added, contact Vexed#0714 or
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "2.5.5"
+    __version__ = "2.5.6"
     __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
@@ -53,7 +53,7 @@ class Status(
         # self.config: Config = Config.get_conf(self, identifier="Vexed-status")  # type:ignore
         self.config: Config = Config.get_conf(self, identifier=418078199982063626)
         self.config.register_global(
-            version=2,
+            version=3,
             feed_store=default,
             old_ids=[],
             migrated_identifier=False,
@@ -102,12 +102,18 @@ class Status(
         log.info("Status unloaded.")
 
     async def cog_load(self) -> None:
-        if await self.config.version() != 3:
-            log.info("Getting initial data from services...")
+        if await self.config.version() == 2:
             await self.migrate_to_v3()
-            await self.get_initial_data()
             await self.config.incidents.clear()
             await self.config.version.set(3)
+            log.info("Done!")
+            self.actually_send = False
+        elif await self.config.version() == 3:
+            await self.migrate_to_v4()
+            log.info("Getting initial data from services...")
+            await self.get_initial_data()
+            await self.config.incidents.clear()
+            await self.config.version.set(4)
             log.info("Done!")
             self.actually_send = False
         else:
@@ -170,6 +176,20 @@ class Status(
                     c_old.pop(service, None)
                 else:
                     c_old[service]["edit_id"] = {}
+
+            await self.config.channel_from_id(c_id).feeds.set(c_old)
+
+    async def migrate_to_v4(self) -> None:
+        """Set up conifg for version 4"""
+        # this is literally copied from v3 migration as much as possible
+        really_old = await self.config.all_channels()
+        log.debug("Config migration in progress. Old data is below in case something goes wrong.")
+        log.debug(really_old)
+        for c_id, data in really_old.items():
+            c_old = deepcopy(data)["feeds"]
+            for service in data.get("feeds", {}).keys():
+                if service in ["twitter", "status.io", "aws", "gcp", "smartthings", "fastly"]:
+                    c_old.pop(service, None)
 
             await self.config.channel_from_id(c_id).feeds.set(c_old)
 

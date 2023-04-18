@@ -1,4 +1,3 @@
-import json
 from typing import Optional
 
 import discord
@@ -54,69 +53,12 @@ async def send_message(
                 "filename": file.filename,
                 "content_type": "application/octet-stream",
             },
-            {
-                "name": "payload_json",
-                "value": json.dumps(payload, separators=(",", ":"), ensure_ascii=True),
-            },
+            {"name": "payload_json", "value": discord.utils.to_json(payload)},
         ]
 
         r = Route("POST", "/channels/{channel_id}/messages", channel_id=channel_id)
-        return await bot._connection.http.request(r, form=form, files=[file])
-
-    else:
-        r = Route("POST", "/channels/{channel_id}/messages", channel_id=channel_id)
-        return await bot._connection.http.request(r, json=payload)
-
-
-async def edit_message(
-    bot: Red,
-    channel_id: int,
-    message_id: int,
-    *,
-    content: Optional[str] = None,
-    embed: Optional[discord.Embed] = None,
-    file: Optional[discord.File] = None,
-    url_button: Optional[URLButton] = None,
-):
-    """Send a message with a URL button, with pure dpy 1.7."""
-    payload = {}
-
-    if content:
-        payload["content"] = content
-
-    if embed:
-        payload["embed"] = embed.to_dict()
-
-    if url_button:
-        payload["components"] = [{"type": 1, "components": [url_button.to_dict()]}]  # type:ignore
-
-    if file:
-        form = [
-            {
-                "name": "file",
-                "value": file.fp,
-                "filename": file.filename,
-                "content_type": "application/octet-stream",
-            },
-            {
-                "name": "payload_json",
-                "value": json.dumps(payload, separators=(",", ":"), ensure_ascii=True),
-            },
-        ]
-
-        r = Route(
-            "PATCH",
-            "/channels/{channel_id}/messages/{message_id}",
-            channel_id=channel_id,
-            message_id=message_id,
-        )
         await bot._connection.http.request(r, form=form, files=[file])
 
     else:
-        r = Route(
-            "PATCH",
-            "/channels/{channel_id}/messages/{message_id}",
-            channel_id=channel_id,
-            message_id=message_id,
-        )
+        r = Route("POST", "/channels/{channel_id}/messages", channel_id=channel_id)
         await bot._connection.http.request(r, json=payload)

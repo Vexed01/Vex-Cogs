@@ -117,10 +117,7 @@ async def format_info(
         cog_updated, utils_updated, red_updated = "Unknown", "Unknown", "Unknown"
         latest = UnknownVers()
 
-    start = (
-        f"{qualified_name} by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\nSupport my work:"
-        " <https://ko-fi.com/vexed>\n\n"
-    )
+    start = f"{qualified_name} by Vexed.\n<https://github.com/Vexed01/Vex-Cogs>\n\n"
 
     main_table = Table(
         "", "Current", "Latest", "Up to date?", title="Versions", box=rich_box.MINIMAL

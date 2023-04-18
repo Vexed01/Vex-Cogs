@@ -44,7 +44,6 @@ def process_components(json_data: dict) -> Comps:
 
 
 class StatusCom(MixinMeta):
-
     # TODO: support DMs
     @commands.guild_only()  # type:ignore
     @commands.cooldown(2, 10, commands.BucketType.user)

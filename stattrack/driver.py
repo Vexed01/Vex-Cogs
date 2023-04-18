@@ -98,6 +98,7 @@ class StatTrackSQLiteDriver:
         df : pd.DataFrame
             DataFrame to write
         """
+
         # yes im crazy mixing aiosqlite and sqlite3 :aha:
         # writes do block all other operations on the database
         def _write():
@@ -118,6 +119,7 @@ class StatTrackSQLiteDriver:
         df : pd.DataFrame
             DataFrame to append
         """
+
         # see comments above in write()
         def _append():
             connection = sqlite3.connect(self.sql_path)

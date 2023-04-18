@@ -483,6 +483,13 @@ class StatusSetCom(MixinMeta):
                 f"{channel.mention}"
             )
 
+        if service.name == "discord":
+            return await ctx.send(
+                'Discord does not allow webhook names to contain "Discord" to prevent '
+                "impersonation and potential scams. Therefore, webhooks are unavailable for "
+                "Discord status updates."
+            )
+
         if old_conf[service.name]["webhook"] == webhook:
             word = "use" if webhook else "don't use"
             return await ctx.send(

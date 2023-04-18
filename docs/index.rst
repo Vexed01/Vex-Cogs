@@ -13,9 +13,6 @@ if you want to install my cogs.
 You can reach out to me in the `Red - Cog Support <https://discord.gg/GD43Nb9H86/>`_ server,
 in #support_vex-cogs.
 
-.. image:: https://ko-fi.com/img/githubbutton_sm.svg
-   :target: https://ko-fi.com/vexed
-
 
 .. toctree::
    :maxdepth: 1
