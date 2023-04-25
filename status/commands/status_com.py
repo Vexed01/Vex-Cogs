@@ -54,7 +54,7 @@ class StatusCom(MixinMeta):
         Check for the status of a variety of services, eg Discord.
 
         **Example:**
-            - `[p]status discord`
+        - `[p]status discord`
         """
         # guild check on command
         if TYPE_CHECKING:

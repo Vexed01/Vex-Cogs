@@ -239,11 +239,11 @@ class StatTrackCommands(MixinMeta):
         Otherwise, maxpoints must be at least 1k (1440).
 
         **Examples:**
-            - `[p]stattrack maxpoints 10000` - plot up to 10k points
-            - `[p]stattrack maxpoints 75000` - plot up to 75k points
-            - `[p]stattrack maxpoints 1440` - the minimum value possible
-            - `[p]stattrack maxpoints 25000` - the default value
-            - `[p]stattrack maxpoints -1` - disable, always plot all points
+        - `[p]stattrack maxpoints 10000` - plot up to 10k points
+        - `[p]stattrack maxpoints 75000` - plot up to 75k points
+        - `[p]stattrack maxpoints 1440` - the minimum value possible
+        - `[p]stattrack maxpoints 25000` - the default value
+        - `[p]stattrack maxpoints -1` - disable, always plot all points
         """
         if maxpoints < 1440 and maxpoints != -1:
             await ctx.send("The minimum value is 1440.")
@@ -262,9 +262,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-            - `[p]stattrack latency 3w2d`
-            - `[p]stattrack latency 5d`
-            - `[p]stattrack latency all`
+        - `[p]stattrack latency 3w2d`
+        - `[p]stattrack latency 5d`
+        - `[p]stattrack latency all`
         """
         await self.all_in_one(ctx, timespan, "ping", "Latency", "Latency (ms)")
 
@@ -279,9 +279,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-            - `[p]stattrack looptime 3w2d`
-            - `[p]stattrack looptime 5d`
-            - `[p]stattrack looptime all`
+        - `[p]stattrack looptime 3w2d`
+        - `[p]stattrack looptime 5d`
+        - `[p]stattrack looptime all`
         """
         await self.all_in_one(ctx, timespan, "loop_time_s", "Loop time", "Loop time (seconds)")
 
@@ -296,9 +296,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-            - `[p]stattrack commands 3w2d`
-            - `[p]stattrack commands 5d`
-            - `[p]stattrack commands all`
+        - `[p]stattrack commands 3w2d`
+        - `[p]stattrack commands 5d`
+        - `[p]stattrack commands all`
         """
         await self.all_in_one(
             ctx, timespan, "command_count", "Commands per minute", do_average=True, show_total=True
@@ -315,9 +315,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-            - `[p]stattrack messages 3w2d`
-            - `[p]stattrack messages 5d`
-            - `[p]stattrack messages all`
+        - `[p]stattrack messages 3w2d`
+        - `[p]stattrack messages 5d`
+        - `[p]stattrack messages all`
         """
         await self.all_in_one(
             ctx, timespan, "message_count", "Messages per minute", do_average=True, show_total=True
@@ -334,9 +334,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-            - `[p]stattrack servers 3w2d`
-            - `[p]stattrack servers 5d`
-            - `[p]stattrack servers all`
+        - `[p]stattrack servers 3w2d`
+        - `[p]stattrack servers 5d`
+        - `[p]stattrack servers all`
         """
         await self.all_in_one(
             ctx,
@@ -367,10 +367,10 @@ class StatTrackCommands(MixinMeta):
         Defaults to all of them.
 
         **Examples:**
-            - `[p]stattrack status` - show all metrics, 1 day
-            - `[p]stattrack status 3w2d` - show all metrics, 3 weeks 2 days
-            - `[p]stattrack status 5d dnd online` - show dnd & online, 5 days
-            - `[p]stattrack status all online idle` - show online & idle, all time
+        - `[p]stattrack status` - show all metrics, 1 day
+        - `[p]stattrack status 3w2d` - show all metrics, 3 weeks 2 days
+        - `[p]stattrack status 5d dnd online` - show dnd & online, 5 days
+        - `[p]stattrack status all online idle` - show online & idle, all time
         """
         if timespan is None:
             timespan = DEFAULT_DELTA
@@ -412,10 +412,10 @@ class StatTrackCommands(MixinMeta):
         [botname], while `unique` will only count them once.
 
         **Examples:**
-            - `[p]stattrack users` - show all metrics, 1 day
-            - `[p]stattrack users 3w2d` - show all metrics, 3 weeks 2 days
-            - `[p]stattrack users 5d total unique` - show total & unique, 5 days
-            - `[p]stattrack users all humans bots` - show humans & bots, all time
+        - `[p]stattrack users` - show all metrics, 1 day
+        - `[p]stattrack users 3w2d` - show all metrics, 3 weeks 2 days
+        - `[p]stattrack users 5d total unique` - show total & unique, 5 days
+        - `[p]stattrack users all humans bots` - show humans & bots, all time
         """
         if timespan is None:
             timespan = DEFAULT_DELTA
@@ -454,9 +454,9 @@ class StatTrackCommands(MixinMeta):
 
         **Examples:**
         **Examples:**
-            - `[p]stattrack servers 3w2d`
-            - `[p]stattrack servers 5d`
-            - `[p]stattrack servers all`
+        - `[p]stattrack servers 3w2d`
+        - `[p]stattrack servers 5d`
+        - `[p]stattrack servers all`
         """
         if timespan is None:
             timespan = DEFAULT_DELTA
@@ -489,9 +489,9 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-            - `[p]stattrack system cpu 3w2d`
-            - `[p]stattrack system cpu 5d`
-            - `[p]stattrack system cpu all`
+        - `[p]stattrack system cpu 3w2d`
+        - `[p]stattrack system cpu 5d`
+        - `[p]stattrack system cpu all`
         """
         await self.all_in_one(ctx, timespan, "sys_cpu", "CPU Usage", "Percentage CPU Usage")
 
@@ -506,8 +506,8 @@ class StatTrackCommands(MixinMeta):
         at least 1 hour.
 
         **Examples:**
-            - `[p]stattrack system mem 3w2d`
-            - `[p]stattrack system mem 5d`
-            - `[p]stattrack system mem all`
+        - `[p]stattrack system mem 3w2d`
+        - `[p]stattrack system mem 5d`
+        - `[p]stattrack system mem all`
         """
         await self.all_in_one(ctx, timespan, "sys_mem", "RAM Usage", "Percentage RAM Usage")

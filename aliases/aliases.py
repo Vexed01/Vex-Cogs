@@ -48,8 +48,8 @@ class Aliases(commands.Cog):
         server aliases.
 
         **Examples:**
-            - `[p]aliases foo`
-            - `[p]aliases foo bar`
+        - `[p]aliases foo`
+        - `[p]aliases foo bar`
         """
         command = self.bot.get_command(strcommand)
 

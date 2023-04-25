@@ -279,10 +279,10 @@ class AnotherPingCog(commands.Cog):
             same colour as the emoji. Google "hex colour" if you need help with this.
 
         **Examples:**
-            - `[p]pingset red :emoji: #F04747`
-            - `[p]pingset red :emoji: default`
-            - `[p]pingset red default #F04747`
-            - `[p]pingset red default default`
+        - `[p]pingset red :emoji: #F04747`
+        - `[p]pingset red :emoji: default`
+        - `[p]pingset red default #F04747`
+        - `[p]pingset red default default`
         """
 
         if emoji.casefold() == "default":
@@ -347,10 +347,10 @@ class AnotherPingCog(commands.Cog):
             same colour as the emoji. Google "hex colour" if you need help with this.
 
         **Examples:**
-            - `[p]pingset orange :emoji: #FAA61A`
-            - `[p]pingset orange :emoji: default`
-            - `[p]pingset orange default #FAA61A`
-            - `[p]pingset orange default default`
+        - `[p]pingset orange :emoji: #FAA61A`
+        - `[p]pingset orange :emoji: default`
+        - `[p]pingset orange default #FAA61A`
+        - `[p]pingset orange default default`
         """
         if emoji.casefold() == "default":
             await self.config.custom_settings.set_raw("orange", "emoji", value=None)  # type:ignore
@@ -416,10 +416,10 @@ class AnotherPingCog(commands.Cog):
             same colour as the emoji. Google "hex colour" if you need help with this.
 
         **Examples:**
-            - `[p]pingset green :emoji: #43B581`
-            - `[p]pingset green :emoji: default`
-            - `[p]pingset green default #43B581`
-            - `[p]pingset green default default`
+        - `[p]pingset green :emoji: #43B581`
+        - `[p]pingset green :emoji: default`
+        - `[p]pingset green default #43B581`
+        - `[p]pingset green default default`
         """
         if emoji.casefold() == "default":
             await self.config.custom_settings.set_raw("green", "emoji", value=None)  # type:ignore

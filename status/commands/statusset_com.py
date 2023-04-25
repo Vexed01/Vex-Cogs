@@ -233,8 +233,8 @@ class StatusSetCom(MixinMeta):
         If you don't specify a channel, I will use the current channel.
 
         **Examples:**
-            - `[p]statusset remove discord #testing`
-            - `[p]statusset remove discord` (for using current channel)
+        - `[p]statusset remove discord #testing`
+        - `[p]statusset remove discord` (for using current channel)
         """
         # guild check on group
         if TYPE_CHECKING:
@@ -273,8 +273,8 @@ class StatusSetCom(MixinMeta):
         service.
 
         **Examples:**
-            - `[p]statusset list discord`
-            - `[p]statusset list`
+        - `[p]statusset list discord`
+        - `[p]statusset list`
         """
         # this needs refactoring
         # i basically copied and pasted in rewrite
@@ -383,8 +383,8 @@ class StatusSetCom(MixinMeta):
             of my avatar and name.
 
         **Examples:**
-            - `[p]statusset preview discord all true`
-            - `[p]statusset preview discord latest false`
+        - `[p]statusset preview discord all true`
+        - `[p]statusset preview discord latest false`
         """
         # guild check on group
         if TYPE_CHECKING:
@@ -431,8 +431,8 @@ class StatusSetCom(MixinMeta):
         If you don't specify a channel, I will use the current channel
 
         **Examples:**
-            - `[p]statusset clear #testing`
-            - `[p]statusset clear` (for using current channel)
+        - `[p]statusset clear #testing`
+        - `[p]statusset clear` (for using current channel)
         """
         # guild check on group
         if TYPE_CHECKING:
@@ -480,8 +480,8 @@ class StatusSetCom(MixinMeta):
         If you don't specify a channel, I will use the current channel.
 
         **Examples:**
-            - `[p]statusset edit mode #testing discord latest`
-            - `[p]statusset edit mode discord edit` (for current channel)
+        - `[p]statusset edit mode #testing discord latest`
+        - `[p]statusset edit mode discord edit` (for current channel)
         """
         # guild check on group
         if TYPE_CHECKING:
@@ -527,8 +527,8 @@ class StatusSetCom(MixinMeta):
         If you don't specify a channel, I will use the current channel.
 
         **Examples:**
-            - `[p]statusset edit webhook #testing discord true`
-            - `[p]statusset edit webhook discord false` (for current channel)
+        - `[p]statusset edit webhook #testing discord true`
+        - `[p]statusset edit webhook discord false` (for current channel)
         """
         # guild check on group
         if TYPE_CHECKING:
@@ -588,8 +588,8 @@ class StatusSetCom(MixinMeta):
         that automatically receive the status updates, that they have permission to to view.
 
         **Examples:**
-            - `[p]statusset edit restrict #testing discord true`
-            - `[p]statusset edit restrict discord false` (for current channel)
+        - `[p]statusset edit restrict #testing discord true`
+        - `[p]statusset edit restrict discord false` (for current channel)
         """
         # guild check on group
         if TYPE_CHECKING:

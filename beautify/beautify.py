@@ -72,16 +72,16 @@ class Beautify(commands.Cog):
         This command accepts it in a few forms.
 
         1. Upload the JSON as a file (it can be .txt or .json)
-        ​ ​ ​ ​ - Note that if you upload multiple files I will only scan the first one
+          - Note that if you upload multiple files I will only scan the first one
         2. Paste the JSON in the command
-        ​ ​ ​ ​ - You send it raw, in inline code or a codeblock
-        ​3. Reply to a message with JSON
-        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message
+          - You can send it raw, in inline code or a codeblock
+        3. Reply to a message with JSON
+          - I will search for attachments and any codeblocks in the message
 
         **Examples:**
-            - `[p]beautify {"1": "One", "2": "Two"}`
-            - `[p]beautify` (with file uploaded)
-            - `[p]beautify` (while replying to a messsage)
+        - `[p]beautify {"1": "One", "2": "Two"}`
+        - `[p]beautify` (with file uploaded)
+        - `[p]beautify` (while replying to a messsage)
         """
         try:
             raw_json = await get_data(ctx, data)
@@ -105,16 +105,16 @@ class Beautify(commands.Cog):
         This command accepts it in a few forms.
 
         1. Upload the JSON as a file (it can be .txt or .json)
-        ​ ​ ​ ​ - Note that if you upload multiple files I will only scan the first one
+          - Note that if you upload multiple files I will only scan the first one
         2. Paste the JSON in the command
-        ​ ​ ​ ​ - You send it raw, in inline code or a codeblock
-        ​3. Reply to a message with JSON
-        ​ ​ ​ ​ - I will search for attachments and any codeblocks in the message
+          - You can send it raw, in inline code or a codeblock
+        3. Reply to a message with JSON
+          - I will search for attachments and any codeblocks in the message
 
         **Examples:**
-            - `[p]minify {"1": "One", "2": "Two"}`
-            - `[p]minify` (with file uploaded)
-            - `[p]minify` (while replying to a messsage)
+        - `[p]minify {"1": "One", "2": "Two"}`
+        - `[p]minify` (with file uploaded)
+        - `[p]minify` (while replying to a messsage)
         """
         try:
             raw_json = await get_data(ctx, data)

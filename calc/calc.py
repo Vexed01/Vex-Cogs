@@ -29,7 +29,7 @@ class Calc(commands.Cog):
     @commands.command()
     async def calc(self, ctx: commands.Context):
         """
-        Show an interactive calculator using buttons.
+        Start an interactive calculator using buttons.
         """
         view = CalcView(self.bot, ctx.author.id)
         embed = await view.build_embed(await ctx.embed_colour())

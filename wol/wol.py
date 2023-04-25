@@ -65,8 +65,8 @@ class WOL(commands.Cog):
         The IP is optional and only used if you don't use the short name.
 
         **Examples:**
-            - `[p]wol main_pc`
-            - `[p]wol 11:22:33:44:55:66 192.168.1.15`
+        - `[p]wol main_pc`
+        - `[p]wol 11:22:33:44:55:66 192.168.1.15`
         """
         if ip is None:
             ip = BROADCAST_IP
@@ -112,8 +112,8 @@ class WOL(commands.Cog):
         `<friendly_name>` **cannot** include spaces.
 
         **Examples:**
-            - `wolset add main_pc 11:22:33:44:55:66`
-            - `wolset add main_pc 11-22-33-44-55-66 192.168.1.15`
+        - `wolset add main_pc 11:22:33:44:55:66`
+        - `wolset add main_pc 11-22-33-44-55-66 192.168.1.15`
         """
         if len(mac) == 17:
             mac = mac.replace(mac[2], "")
@@ -136,7 +136,7 @@ class WOL(commands.Cog):
         Remove a machine from my list of machines.
 
         **Examples:**
-            - `wolset remove main_pc`
+        - `wolset remove main_pc`
         """
         conf: dict[str, str]
         async with self.config.addresses() as conf:

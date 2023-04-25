@@ -104,9 +104,9 @@ class GHIssues(commands.Cog):
         To open the interactive issue view, run `[p]ghi <issue_num>`.
 
         **Examples:**
-            - `[p]ghi 11`
-            - `[p]ghi howtoken`
-            - `[p]ghi newissue`
+        - `[p]ghi 11`
+        - `[p]ghi howtoken`
+        - `[p]ghi newissue`
         """
         if self.setup is False:
             return await ctx.send(
