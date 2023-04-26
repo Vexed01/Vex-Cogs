@@ -154,10 +154,10 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         Please look at `[p]help tcset create` for more information.
 
         **Examples:**
-            - `[p]tcset short New York`
-            - `[p]tcset short UTC`
-            - `[p]tcset short London`
-            - `[p]tcset short Europe/London`
+        - `[p]tcset short New York`
+        - `[p]tcset short UTC`
+        - `[p]tcset short London`
+        - `[p]tcset short Europe/London`
         """
         fuzzy_results = rapidfuzz.process.extract(  # type:ignore
             timezone, ZONE_KEYS, limit=2, score_cutoff=90
@@ -208,10 +208,10 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         eg `{ni-24h}`
 
         **More Examples:**
-            - `[p]tcset create \N{CLOCK FACE TWO OCLOCK}\N{VARIATION SELECTOR-16} New York: {fv}`
-            - `[p]tcset create \N{GLOBE WITH MERIDIANS} UTC: {qw}`
-            - `[p]tcset create {ni-24h} in London`
-            - `[p]tcset create US Pacific: {qv-24h}`
+        - `[p]tcset create \N{CLOCK FACE TWO OCLOCK}\N{VARIATION SELECTOR-16} New York: {fv}`
+        - `[p]tcset create \N{GLOBE WITH MERIDIANS} UTC: {qw}`
+        - `[p]tcset create {ni-24h} in London`
+        - `[p]tcset create US Pacific: {qv-24h}`
         """
         assert isinstance(ctx.guild, Guild)  # guild_only check on parent command
 
@@ -257,8 +257,8 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         For the <channel> argument, you can use its ID or mention (type #!channelname)
 
         **Example:**
-            - `[p]tcset remove #!channelname` (the ! is how to mention voice channels)
-            - `[p]tcset remove 834146070094282843`
+        - `[p]tcset remove #!channelname` (the ! is how to mention voice channels)
+        - `[p]tcset remove 834146070094282843`
         """
         assert isinstance(ctx.guild, Guild)  # guild_only check on parent command
 

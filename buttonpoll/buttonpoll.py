@@ -93,6 +93,17 @@ class ButtonPoll(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(name="buttonpoll", aliases=["bpoll"], usage="[chan]")
     async def buttonpoll(self, ctx: commands.Context, chan: Optional[TextChannel] = None):
+        """
+        Start a button-based poll
+
+        This is an interactive setup. By default the current channel will be used,
+        but if you want to start a poll remotely you can send the channel name
+        along with the buttonpoll command.
+
+        **Examples:**
+        - `[p]buttonpoll` - start a poll in the current channel
+        - `[p]buttonpoll #polls` start a poll somewhere else
+        """
         channel = chan or ctx.channel
         if TYPE_CHECKING:
             assert isinstance(channel, (TextChannel, discord.Thread))

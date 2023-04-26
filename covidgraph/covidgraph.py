@@ -56,9 +56,9 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
         `country` can also be `world` to get the worldwide data.
 
         **Examples:**
-            - `[p]covidgraph cases US` - All time data for the US
-            - `[p]covidgraph cases 7 US` - Last 7 days for the US
-            - `[p]covidgraph cases world` - Worldwide data
+        - `[p]covidgraph cases US` - All time data for the US
+        - `[p]covidgraph cases 7 US` - Last 7 days for the US
+        - `[p]covidgraph cases world` - Worldwide data
         """
         if days and days < 7:
             await ctx.send("`days` must be at least 7.")
@@ -92,9 +92,9 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
         `country` can also be `world` to get the worldwide data.
 
         **Examples:**
-            - `[p]covidgraph deaths US` - All time data for the US
-            - `[p]covidgraph deaths 7 US` - Last 7 days for the US
-            - `[p]covidgraph deaths world` - Worldwide data
+        - `[p]covidgraph deaths US` - All time data for the US
+        - `[p]covidgraph deaths 7 US` - Last 7 days for the US
+        - `[p]covidgraph deaths world` - Worldwide data
         """
         if days and days < 7:
             await ctx.send("`days` must be at least 7.")
@@ -128,9 +128,9 @@ class CovidGraph(commands.Cog, GraphPlot, CovidData, metaclass=CompositeMetaClas
         `country` can also be `world` to get the worldwide data.
 
         **Examples:**
-            - `[p]covidgraph vaccines US` - All time data for the US
-            - `[p]covidgraph vaccines 7 US` - Last 7 days for the US
-            - `[p]covidgraph vaccines world` - Worldwide data
+        - `[p]covidgraph vaccines US` - All time data for the US
+        - `[p]covidgraph vaccines 7 US` - Last 7 days for the US
+        - `[p]covidgraph vaccines world` - Worldwide data
         """
         if days and days < 7:
             await ctx.send("`days` must be at least 7.")

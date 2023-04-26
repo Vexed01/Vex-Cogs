@@ -35,9 +35,9 @@ class BUCommands(MixinMeta):
         Note: embeds must be enabled for this rich data to show
 
         **Examples:**
-            - `[p]uptime`
-            - `[p]uptime 0` (for all-time data)
-            - `[p]uptime 7`
+        - `[p]uptime`
+        - `[p]uptime 0` (for all-time data)
+        - `[p]uptime 7`
         """
         # MOSTLY FROM CORE'S UPTIME COMMAND
         since = datetime_to_timestamp(self.bot.uptime.replace(tzinfo=datetime.timezone.utc))
@@ -104,9 +104,9 @@ class BUCommands(MixinMeta):
         Otherwise, it needs to be `5` or more.
 
         **Examples:**
-            - `[p]uptime`
-            - `[p]uptime 0` (for all-time data)
-            - `[p]uptime 7`
+        - `[p]uptime`
+        - `[p]uptime 0` (for all-time data)
+        - `[p]uptime 7`
         """
         if self.ready.is_set() is False:
             async with ctx.typing():
@@ -155,9 +155,9 @@ class BUCommands(MixinMeta):
         Otherwise, it needs to be `5` or more.
 
         **Examples:**
-            - `[p]uptime` - for the default of 30 days
-            - `[p]uptime 0` - for all-time data
-            - `[p]uptime 7` - 7 days
+        - `[p]uptime` - for the default of 30 days
+        - `[p]uptime 0` - for all-time data
+        -]uptime 7` - 7 days
         """
         if num_days == 0:
             num_days = 9999  # this works, trust me

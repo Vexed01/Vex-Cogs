@@ -5,7 +5,7 @@
     ],
     "description": "Get all the information you could ever need about a command's aliases. IF YOU ARE TRYING TO *MAKE* ALIASES, JUST USE THE CORE 'alias` COG.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
-    "install_msg": "\\N{WARNING SIGN}\nThis cog reads the config of the alias cog. This means it might break without much notice.\n\nIf you are just trying to **make aliases**: this cog isn't for that. Use the core `alias` cog to make and manage aliases with the `[p]load alias` command, then `[p]help alias`.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/aliases>",
+    "install_msg": "\\N{WARNING SIGN}\\N{VARIATION SELECTOR-16}\nThis cog reads the config of the alias cog. This means it might break without much notice.\n\nIf you are just trying to **make aliases**: this cog isn't for that. Use the core `alias` cog to make and manage aliases with the `[p]load alias` command, then `[p]help alias`.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/aliases>",
     "max_bot_version": "3.5.99",
     "min_bot_version": "3.5.0.dev0",
     "min_python_version": [

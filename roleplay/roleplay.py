@@ -198,8 +198,8 @@ class RolePlay(commands.Cog):
         Leave blank to disable.
 
         **Examples:**
-            - `[p]roleplay channel` - disable roleplay
-            - `[p]roleplay channel #roleplay` - set the channel to #roleplay
+        - `[p]roleplay channel` - disable roleplay
+        - `[p]roleplay channel #roleplay` - set the channel to #roleplay
         """
         # guild check on group command
         if TYPE_CHECKING:
@@ -235,8 +235,8 @@ class RolePlay(commands.Cog):
         The default is disabled.
 
         **Examples:**
-            - `[p]roleplay embed true` - enable
-            - `[p]roleplay embed false` - disable
+        - `[p]roleplay embed true` - enable
+        - `[p]roleplay embed false` - disable
         """
         # guild check on group command
         if TYPE_CHECKING:
@@ -258,8 +258,8 @@ class RolePlay(commands.Cog):
         The default is disabled.
 
         **Examples:**
-            - `[p]roleplay radio true` - enable radio mode
-            - `[p]roleplay radio false` - disable radio mode
+        - `[p]roleplay radio true` - enable radio mode
+        - `[p]roleplay radio false` - disable radio mode
         """
         # guild check on group command
         if TYPE_CHECKING:
@@ -281,8 +281,8 @@ class RolePlay(commands.Cog):
         If you do not specify a channel logging will be disabled.
 
         **Examples:**
-            - `[p]roleplay log #logs` - set to a channel called logs
-            - `[p]roleplay log` - disable logging
+        - `[p]roleplay log #logs` - set to a channel called logs
+        - `[p]roleplay log` - disable logging
         """
         # guild check on group command
         if TYPE_CHECKING:
@@ -316,9 +316,9 @@ class RolePlay(commands.Cog):
         The default is disabled.
 
         **Examples:**
-            - `[p]roleplay delete 5` - delete after 5 mins
-            - `[p]roleplay delete 30` - delete after 30 mins
-            - `[p]roleplay delete` - disable deletion
+        - `[p]roleplay delete 5` - delete after 5 mins
+        - `[p]roleplay delete 30` - delete after 30 mins
+        - `[p]roleplay delete` - disable deletion
         """
         # guild check on group command
         if TYPE_CHECKING:
@@ -357,7 +357,7 @@ class RolePlay(commands.Cog):
         This only applies to embeds.
 
         **Example:**
-            - `[p]roleplay radiotitle New radio transmission detected` - the default
+        - `[p]roleplay radiotitle New radio transmission detected` - the default
         """
         # guild check on group command
         if TYPE_CHECKING:
@@ -379,8 +379,8 @@ class RolePlay(commands.Cog):
         This only applies to embeds.
 
         **Example:**
-            - `[p]roleplay radioimage https://i.imgur.com/example.png`
-            - `[p]roleplay radioimage` - reset to none
+        - `[p]roleplay radioimage https://i.imgur.com/example.png`
+        - `[p]roleplay radioimage` - reset to none
         """
         # guild check on group command
         if TYPE_CHECKING:
@@ -412,8 +412,8 @@ class RolePlay(commands.Cog):
         This only applies to embeds.
 
         **Example:**
-            - `[p]roleplay radiofooter Transmission over`
-            - `[p]roleplay radiofooter` - reset to none
+        - `[p]roleplay radiofooter Transmission over`
+        - `[p]roleplay radiofooter` - reset to none
         """
         # guild check on group command
         if TYPE_CHECKING:

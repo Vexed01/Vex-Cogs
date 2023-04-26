@@ -145,7 +145,7 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
         """Set up a FiveM status message.
 
         **Examples:**
-            - `[p]fivemstatus setup #status 1.0.1.0:30120`
+        - `[p]fivemstatus setup #status 1.0.1.0:30120`
         """
         try:
             data = await self.get_data(server)
