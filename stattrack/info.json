@@ -6,7 +6,7 @@
     "description": "Track your bot's statistics over time, including ping, members, guild and message/command counts.\n\nThis has a background process which could be intensive.\n\nThis stores data in Red's config which is not especially built for this cog's usage.",
     "end_user_data_statement": "This cog permanently stores anonymised and aggregated data about users' statuses and counts messages sent, not including their content. This data cannot be traced back to individual users.",
     "install_msg": "This cog will immediately start a background process which could use some extra resources. See <https://go.vexcodes.com/c/stattrack#resource-usage> for details.\n\n**Once you load the cog, please wait a few seconds then run the `stattrackinfo` command. If the 'loop time' is None then wait a bit and try again. When it appears, if it's over 30 seconds __you should not use this cog on your bot.__**\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/stattrack>",
-    "max_bot_version": "3.5.99",
+    "max_bot_version": "3.6.0.dev0",
     "min_bot_version": "3.5.0.dev0",
     "min_python_version": [
         3,

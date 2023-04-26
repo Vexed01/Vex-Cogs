@@ -6,7 +6,7 @@
     "description": "Get the time in different timezones in voice channels.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "install_msg": "Thanks for installing! You can get started with the `tcset` command, and anything added as a channel can be seen by users in the server with `[p]timezones`\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/timechannel>",
-    "max_bot_version": "3.5.99",
+    "max_bot_version": "3.6.0.dev0",
     "min_bot_version": "3.5.0.dev0",
     "min_python_version": [
         3,
