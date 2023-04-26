@@ -80,7 +80,8 @@ class DecodeReturn(NamedTuple):
 
 
 def decode_json(str_json: str) -> DecodeReturn:
-    # quick and dirty...
+    # quick and dirty... there is a note to users if any values are changed
+    # doing this to support Python dicts without using eg eval on untrusted code
     if "False" in str_json or "True" in str_json or "None" in str_json:
         changed_input = True
 
