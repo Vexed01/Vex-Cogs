@@ -90,6 +90,7 @@ class LoggedComError(Log):
         msg_id: int,
         channel: discord.abc.MessageableChannel | None = None,
         guild: discord.Guild | None = None,
+        error_info: str = "an unknown",
     ):
         self.command = command
         if log_content:
@@ -98,6 +99,7 @@ class LoggedComError(Log):
             self.content = None
         self.user = BasicDiscordObject(user.id, user.name)
         self.msg_id = msg_id
+        self.error_info = error_info
         self.channel = (
             BasicDiscordObject(channel.id, channel.name)
             if channel and not isinstance(channel, discord.DMChannel)
@@ -111,13 +113,13 @@ class LoggedComError(Log):
         com = self.content or self.command
         if not self.guild or not self.channel:
             return (
-                f"Text command '{com}' raised an error by {self.user.id} ({self.user.name})"
-                " in our DMs."
+                f"Text command '{com}' failed due to {self.error_info} by user {self.user.id} "
+                f"({self.user.name}) in our DMs."
             )
 
         return (
-            f"Text command [{com}] raised an error by {self.user.id} [{self.user.name}] "
-            f"with message ID {self.msg_id} "
+            f"Text command [{com}] failed due to {self.error_info} by user {self.user.id} "
+            f"[{self.user.name}] with message ID {self.msg_id} "
             f"in channel {self.channel.id} [{self.channel.name}] "
             f"in guild {self.guild.id} [{self.guild.name}]"
         )
