@@ -6,10 +6,8 @@ from typing import TYPE_CHECKING, Deque, Optional, Union
 
 import discord
 from discord.channel import TextChannel
-from discord.ext.commands.errors import CheckFailure as DpyCheckFailure
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.commands import CheckFailure as RedCheckFailure
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta
 
 from cmdlog.objects import TIME_FORMAT, LoggedAppCom, LoggedComError, LoggedCommand
@@ -37,7 +35,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#0714"
-    __version__ = "1.5.2"
+    __version__ = "1.5.3"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -103,16 +101,42 @@ class CmdLog(commands.Cog):
         if self.channel_logger:
             self.channel_logger.add_command(logged_com)
 
-    def log_ce(self, ctx: commands.Context) -> None:
+    def log_ce(self, ctx: commands.Context, error: commands.CommandError) -> None:
+        if isinstance(
+            error,
+            (
+                commands.ConversionError,
+                commands.MissingRequiredArgument,
+                commands.MissingRequiredAttachment,
+                commands.TooManyArguments,
+                commands.BadArgument,
+                commands.UserInputError,
+            ),
+        ):
+            error_info = "an error with inputted command arguments"
+        elif isinstance(
+            error,
+            (commands.BotMissingPermissions, commands.BotMissingRole, commands.BotMissingAnyRole),
+        ):
+            error_info = "the bot missing permissions/roles"
+        elif isinstance(error, (commands.CheckFailure)):
+            error_info = "an error with the command checks"
+        elif isinstance(error, (commands.CommandNotFound)):
+            error_info = "invoking an invalid command"
+        else:
+            error_info = "an unexpected error"
+
         logged_com = LoggedComError(
             user=ctx.author,
-            command=ctx.command.qualified_name,
+            command=ctx.command.qualified_name if ctx.command else "UNKNOWN",
             msg_id=ctx.message.id,
             channel=ctx.channel,
             guild=ctx.guild,
             log_content=self.log_content,
             content=ctx.message.content,
+            error_info=error_info,
         )
+
         log.info(logged_com)
         self.log_cache.append(logged_com)
         if self.channel_logger:
@@ -154,8 +178,7 @@ class CmdLog(commands.Cog):
             if self.log_content is None:
                 self.log_content = await self.config.log_content()
 
-            if isinstance(error, (RedCheckFailure, DpyCheckFailure)):
-                self.log_ce(ctx)
+            self.log_ce(ctx, error)
         except Exception as e:
             self.log_list_error(e)
 

@@ -53,7 +53,7 @@ class StatTrackSQLiteDriver:
                 data = await cursor.fetchall()
         df = pd.DataFrame(data, columns=columns)
         df.set_index("index", inplace=True)
-        df.index = pd.to_datetime(df.index, infer_datetime_format=True)
+        df.index = pd.to_datetime(df.index)
         return df
 
     async def read_partial(
@@ -86,7 +86,7 @@ class StatTrackSQLiteDriver:
                 data = await cursor.fetchall()
         df = pd.DataFrame(data, columns=["index"] + list(metrics))
         df.set_index("index", inplace=True)
-        df.index = pd.to_datetime(df.index, infer_datetime_format=True)
+        df.index = pd.to_datetime(df.index)
         return df
 
     async def write(self, df: pd.DataFrame) -> None:
