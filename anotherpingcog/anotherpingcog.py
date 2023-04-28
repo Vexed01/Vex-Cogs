@@ -83,7 +83,7 @@ class AnotherPingCog(commands.Cog):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     # cspell:disable-next-line
-    @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])
+    @commands.hybrid_command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])
     async def ping(self, ctx: commands.Context):
         """
         A rich embed ping command with timings.
@@ -128,7 +128,9 @@ class AnotherPingCog(commands.Cog):
             elif settings.footer != "none":
                 embed.set_footer(text=settings.footer)
             start = monotonic()
-            message: discord.Message = await ctx.send(embed=embed)
+            message: discord.Message = await ctx.send(
+                embed=embed,
+            )
         else:
             msg = f"**{title}**\nDiscord WS: {ws_latency} ms"
             start = monotonic()
@@ -150,7 +152,16 @@ class AnotherPingCog(commands.Cog):
             extra = box(f"{m_latency} ms", "py")
             embed.add_field(name="Message Send", value=f"{m_latency_text}{extra}")
             embed.colour = colour
-            await message.edit(embed=embed)
+            await message.edit(
+                content=(
+                    "Message Send is worse for slash commands. Try using the text command for "
+                    "a better result."
+                )
+                if ctx.interaction
+                else None,
+                embed=embed,
+            )
+
         else:
             data = [
                 ["Discord WS", "Message Send"],
