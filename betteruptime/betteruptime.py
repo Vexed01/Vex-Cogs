@@ -11,6 +11,7 @@ from redbot.core.utils.chat_formatting import pagify
 from .abc import CompositeMetaClass
 from .commands import BUCommands
 from .loop import BULoop
+from .slash import BUSlash
 from .utils import Utils
 from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
@@ -23,7 +24,7 @@ log = get_vex_logger(__name__)
 # THIS COG WILL BE REWRITTEN/REFACTORED AT SOME POINT (#23)
 
 
-class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeMetaClass):
+class BetterUptime(commands.Cog, BUCommands, BUSlash, BULoop, Utils, metaclass=CompositeMetaClass):
     """
     Replaces the core `uptime` command to show the uptime
     percentage over the last 30 days.

@@ -144,7 +144,10 @@ class BUCommands(MixinMeta):
                 f"downtime today._\n\n{msg}"
             )
             paged = pagify(full, page_length=1000)
-            await ctx.send_interactive(paged)
+            if ctx.interaction:
+                await ctx.send([i for i in paged][0])
+            else:
+                await ctx.send_interactive(paged)
 
     @commands.command()
     async def uptimegraph(self, ctx: commands.Context, num_days: int = 30):
