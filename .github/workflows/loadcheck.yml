@@ -24,16 +24,16 @@ jobs:
 
     name: Cog load test - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache venv
         id: cache-venv
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: ${{ matrix.red-version }}-${{ matrix.python-version }}-${{ hashFiles('dev-requirements.txt') }}-${{ secrets.CACHE_V }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: Save Red output as Artifact
         if: always() # still run if prev step failed
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "Red log - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}"
           path: red.log

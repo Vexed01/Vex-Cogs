@@ -40,17 +40,17 @@ jobs:
 
     name: Tox - ${{ matrix.python_version }} - ${{ matrix.friendly_name }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ env.ref }}
       - name: Set up Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
 
       # caching cuts down time for tox (for example black) from ~40 secs to 4
       - name: Cache tox
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .tox
           key: tox-${{ matrix.python_version }}-${{ matrix.tox_env }}-${{ hashFiles('tox.ini') }}
