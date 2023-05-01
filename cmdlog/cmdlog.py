@@ -35,7 +35,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "Vexed#0714"
-    __version__ = "1.5.3"
+    __version__ = "1.5.4"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -107,7 +107,7 @@ class CmdLog(commands.Cog):
             (
                 commands.ConversionError,
                 commands.MissingRequiredArgument,
-                commands.MissingRequiredAttachment,
+                # commands.MissingRequiredAttachment,  # waiting for red 3.5
                 commands.TooManyArguments,
                 commands.BadArgument,
                 commands.UserInputError,

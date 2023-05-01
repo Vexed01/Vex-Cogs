@@ -178,7 +178,7 @@ class LoggedAppCom(Log):
                     " in our DMs."
                 )
             return (
-                f"Slash command [{self.command}] ran by {self.author.id} [{self.author.name}) "
+                f"Slash command [{self.command}] ran by {self.author.id} [{self.author.name}] "
                 f"in channel {self.channel.id} [{self.channel.name}] "
                 f"in guild {self.guild.id} [{self.guild.name}]"
             )
