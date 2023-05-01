@@ -107,7 +107,7 @@ class CmdLog(commands.Cog):
             (
                 commands.ConversionError,
                 commands.MissingRequiredArgument,
-                # commands.MissingRequiredAttachment,  # waiting for red 3.5
+                commands.MissingRequiredAttachment,
                 commands.TooManyArguments,
                 commands.BadArgument,
                 commands.UserInputError,
