@@ -14,7 +14,7 @@ jobs:
       matrix:
         python_version:
           - "3.8"
-          - "3.9"
+          - "3.11"
         tox_env:
           - style-black
           - style-isort

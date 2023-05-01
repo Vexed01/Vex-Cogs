@@ -30,21 +30,19 @@ proc = subprocess.Popen(
 # let Red boot up
 time.sleep(10)
 
-# not compatible with dpy 1.x
-# ["buttonpoll", "ghissues"]
-
 cogs = [
     "aliases",
     "anotherpingcog",
     "beautify",
     "betteruptime",
+    "buttonpoll",
     "birthday",
+    "calc",
     "caseinsensitive",
     "cmdlog",
-    "covidgraph",
     "fivemstatus",
-    "github",
     "googletrends",
+    "ghissues",
     "madtranslate",
     "roleplay",
     "stattrack",
@@ -53,10 +51,6 @@ cogs = [
     "timechannel",
     "uptimeresponder",
     "wol",
-    # dpy 2 cogs:
-    # "buttonpoll",
-    # "ghissues",
-    # "calc",
 ]
 
 
