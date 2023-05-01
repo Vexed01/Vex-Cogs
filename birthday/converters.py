@@ -26,6 +26,8 @@ else:
 
                 return out
             except ParserError:
+                if ctx.interaction:
+                    raise BadArgument("That's not a valid date. Example: `1 Jan` or `1 Jan 2000`.")
                 raise BadArgument(
                     f"That's not a valid date. See {ctx.clean_prefix}help"
                     f" {ctx.command.qualified_name} for more information."
@@ -41,6 +43,8 @@ else:
                 log.trace("parsed time: %s", argument)
                 return out
             except ParserError:
+                if ctx.interaction:
+                    raise BadArgument("That's not a valid time.")
                 raise BadArgument(
                     f"That's not a valid time. See {ctx.clean_prefix}help"
                     f" {ctx.command.qualified_name} for more information."

@@ -41,7 +41,7 @@ class BirthdayCommands(MixinMeta):
 
     @commands.guild_only()  # type:ignore
     @commands.before_invoke(setup_check)  # type:ignore
-    @commands.group(aliases=["bday"])
+    @commands.hybrid_group(aliases=["bday"])
     async def birthday(self, ctx: commands.Context):
         """Set and manage your birthday."""
 
