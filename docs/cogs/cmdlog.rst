@@ -94,8 +94,8 @@ Set the channel to send logs to, this is optional.
 Run the comand without a channel to stop sending.
 
 **Example:**
-    - ``[p]cmdlog channel #com-log`` - set the log channel to #com-log
-    - ``[p]cmdlog channel`` - stop sending logs
+- ``[p]cmdlog channel #com-log`` - set the log channel to #com-log
+- ``[p]cmdlog channel`` - stop sending logs
 
 .. _cmdlog-command-cmdlog-command:
 
@@ -120,9 +120,9 @@ You can search for a group command (eg ``cmdlog``) or a full command (eg ``cmdlo
 As arguments are not stored, you cannot search for them.
 
 **Examples:**
-    - ``[p]cmdlog command ping``
-    - ``[p]cmdlog command playlist``
-    - ``[p]cmdlog command playlist create``
+- ``[p]cmdlog command ping``
+- ``[p]cmdlog command playlist``
+- ``[p]cmdlog command playlist create``
 
 .. _cmdlog-command-cmdlog-content:
 
@@ -175,7 +175,7 @@ cmdlog server
 Upload all the logs that are stored for for a specific server ID in the cache.
 
 **Example:**
-    - ``[p]cmdlog server 527961662716772392``
+- ``[p]cmdlog server 527961662716772392``
 
 .. _cmdlog-command-cmdlog-user:
 
@@ -194,4 +194,4 @@ cmdlog user
 Upload all the logs that are stored for a specific User ID in the cache.
 
 **Example:**
-    - ``[p]cmdlog user 418078199982063626``
+- ``[p]cmdlog user 418078199982063626``

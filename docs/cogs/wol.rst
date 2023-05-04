@@ -60,8 +60,8 @@ write out the MAC each time, or just send the MAC.
 The IP is optional and only used if you don't use the short name.
 
 **Examples:**
-    - ``[p]wol main_pc``
-    - ``[p]wol 11:22:33:44:55:66 192.168.1.15``
+- ``[p]wol main_pc``
+- ``[p]wol 11:22:33:44:55:66 192.168.1.15``
 
 .. _wol-command-wolset:
 
@@ -100,8 +100,8 @@ Add a machine for easy use with ``[p]wol``.
 ``<friendly_name>`` **cannot** include spaces.
 
 **Examples:**
-    - ``wolset add main_pc 11:22:33:44:55:66``
-    - ``wolset add main_pc 11-22-33-44-55-66 192.168.1.15``
+- ``wolset add main_pc 11:22:33:44:55:66``
+- ``wolset add main_pc 11-22-33-44-55-66 192.168.1.15``
 
 .. _wol-command-wolset-list:
 
@@ -140,4 +140,4 @@ wolset remove
 Remove a machine from my list of machines.
 
 **Examples:**
-    - ``wolset remove main_pc``
+- ``wolset remove main_pc``

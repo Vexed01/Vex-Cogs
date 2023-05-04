@@ -134,6 +134,7 @@ sensitive if running the command a public space).
 If ``ignore_loop`` is set to ``True``, this will ignore any loop (fake) devices on Linux.
 
 Platforms: Windows, Linux, Mac OS
+
 .. note::
     Mount point is basically useless on Windows as it's the
     same as the drive name, though it's still shown.

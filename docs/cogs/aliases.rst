@@ -50,5 +50,5 @@ This will show the main command, built-in aliases, global aliases and
 server aliases.
 
 **Examples:**
-    - ``[p]aliases foo``
-    - ``[p]aliases foo bar``
+- ``[p]aliases foo``
+- ``[p]aliases foo bar``

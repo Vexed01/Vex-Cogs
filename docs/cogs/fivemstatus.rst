@@ -85,4 +85,4 @@ fivemstatus setup
 Set up a FiveM status message.
 
 **Examples:**
-    - ``[p]fivemstatus setup #status 1.0.1.0:30120``
+- ``[p]fivemstatus setup #status 1.0.1.0:30120``
