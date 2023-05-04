@@ -33,7 +33,7 @@ class BetterUptime(commands.Cog, BUCommands, BUSlash, BULoop, Utils, metaclass=C
     data to become available.
     """
 
-    __version__ = "2.1.3"
+    __version__ = "2.1.4"
     __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:

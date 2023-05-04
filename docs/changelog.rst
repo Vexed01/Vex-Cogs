@@ -81,6 +81,14 @@ AnotherPingCog
 ==============
 
 *********
+``1.1.8``
+*********
+
+2023-05-04
+
+- Add slash commands
+
+*********
 ``1.1.7``
 *********
 
@@ -192,6 +200,14 @@ Internal Changes
 ============
 BetterUptime
 ============
+
+*********
+``2.1.4``
+*********
+
+2023-05-04
+
+- Add slash commands
 
 *********
 ``2.1.3``
@@ -361,6 +377,14 @@ BetterUptime
 ========
 Birthday
 ========
+
+*********
+``1.2.1``
+*********
+
+2023-05-04
+
+- Add a modal for setup
 
 *********
 ``1.2.0``
@@ -872,6 +896,14 @@ RolePlay
 StatTrack
 =========
 
+**********
+``1.10.0``
+**********
+
+2023-05-04
+
+- Add a select menu for changing the graph, metrics, and timespan
+
 *********
 ``1.9.1``
 *********
@@ -1035,6 +1067,15 @@ StatTrack
 ======
 Status
 ======
+
+*********
+``2.5.7``
+*********
+
+2023-05-04
+
+- Thread support
+- Select menu in statusset add
 
 *********
 ``2.5.6``
@@ -1350,6 +1391,14 @@ Internal changes
 ======
 System
 ======
+
+*********
+``1.4.0``
+*********
+
+2023-05-04
+
+- Add a select menu for changing the shown metric
 
 **********
 ``1.3.10``
