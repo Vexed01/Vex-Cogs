@@ -7,11 +7,6 @@
     "disabled": true,
     "hidden": true,
     "install_msg": "This cog has been removed in favour of my `ghissues` cog. Please uninstall this one and install that.",
-    "min_python_version": [
-        3,
-        8,
-        1
-    ],
     "name": "GitHub",
     "short": "Create, comment, labelify and close GitHub issues."
 }

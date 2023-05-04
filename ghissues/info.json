@@ -5,10 +5,8 @@
     ],
     "description": "Create, comment, labelify and close GitHub issues, with partial PR support.\n\n",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
-    "hidden": true,
     "install_msg": "Thanks for installing! Load the cog and get started with the `calculator` command.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/ghissues>",
-    "max_bot_version": "3.6.0.dev0",
-    "min_bot_version": "3.5.0.dev0",
+    "min_bot_version": "3.5.1",
     "min_python_version": [
         3,
         8,
