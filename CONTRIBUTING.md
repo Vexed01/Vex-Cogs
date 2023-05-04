@@ -1,6 +1,6 @@
 # Contributing to Vex-Cogs
 
-Thanks for taking the time to look into contributing! Whether you'll open an issue or PR, or do something else, _everything_ is appreciated. 
+Thanks for taking the time to look into contributing! Whether you'll open an issue or PR, or do something else, _everything_ is appreciated.
 
 To avoid wasting time, it's sometimes best to speak to me in Discord (`Vexed#0714`) or create an Issue before making non-trivial Pull Requests.
 
@@ -10,7 +10,7 @@ Not much else to say really, just this:
 
 When you open a PR, they'll be some basic checks to make sure the style is consistent so other checks that nothing's broken.
 
-You do not need to set up pre-commit or similar locally for smaller PRs, as GitHub Actions will let you know if there's an issue with details in the logs. However, you may need to use black or isort.
+**You do not need to set up pre-commit or similar locally for smaller PRs**, as GitHub Actions will let you know if there's an issue with details in the logs. However, you may need to use black or isort.
 
 Pyright (or Pylance if you're using VS Code) is used for type checking.
 
