@@ -9,6 +9,9 @@ from redbot.core.utils.chat_formatting import humanize_timedelta
 
 from .abc import MixinMeta
 from .consts import SECONDS_IN_DAY
+from .vexutils import get_vex_logger
+
+log = get_vex_logger(__name__)
 
 
 def round_up_to_min(num: float):
@@ -139,6 +142,20 @@ class Utils(MixinMeta):
 
         midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
         seconds_since_midnight = float((now - midnight).total_seconds())
+
+        log.trace(
+            "data filter things: %s",
+            {
+                "num_days": num_days,
+                "now": now,
+                "midnight": midnight,
+                "seconds_since_midnight": seconds_since_midnight,
+                "seconds_cog_loaded": seconds_cog_loaded,
+                "seconds_connected": seconds_connected,
+                "expected_index": expected_index,
+                "conf_first_loaded": conf_first_loaded,
+            },
+        )
 
         if len(expected_index) >= num_days:  # need to cut down from days collected
             expected_index = expected_index[-(num_days):]

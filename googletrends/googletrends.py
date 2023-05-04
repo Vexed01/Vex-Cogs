@@ -37,7 +37,7 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.executor.shutdown(wait=False)
 
     @commands.command(hidden=True)

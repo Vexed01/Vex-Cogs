@@ -44,9 +44,9 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.loop.cancel()
-        log.debug("Loop stopped as cog unloaded.")
+        log.verbose("Loop stopped as cog unloaded.")
 
     @commands.command(hidden=True)
     async def fivemstatusinfo(self, ctx: commands.Context):
@@ -76,7 +76,8 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
                 )
                 player_count = players.count('"endpoint":')  # i know this is stupid but from my
             # testing many servers have invalid players.json files on random occurrences.
-            except aiohttp.ClientError:
+            except aiohttp.ClientError as e:
+                log.trace("error getting data", exc_info=e)
                 raise ServerUnreachable(f"Server at {url} is unreachable.")
 
         # strip colour data
@@ -93,12 +94,14 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
         if name == "":
             name = "FiveM Server"
 
-        return ServerData(
+        final = ServerData(
             current_users=player_count,
             max_users=info["vars"]["sv_maxClients"],
             name=name,
             ip=original_server.lstrip("http://").lstrip("https://").rstrip("/"),
         )
+        log.trace("got data for %s: %s", server, final)
+        return final
 
     async def generate_embed(
         self, data: ServerData | None, config_data: MessageData, maintenance: bool

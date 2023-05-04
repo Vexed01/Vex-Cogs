@@ -56,7 +56,7 @@ class GHIssues(commands.Cog):
 
         self.setup = False
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         token = (await self.bot.get_shared_api_tokens("github")).get("token", "")
         repo = await self.config.repo()
 

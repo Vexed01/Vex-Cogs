@@ -19,7 +19,7 @@ from .vexutils.chat import humanize_bytes
 if discord.__version__.startswith("2"):
     from discord import Interaction, InteractionType
 
-_log = get_vex_logger(__name__)
+log = get_vex_logger(__name__)
 
 
 class CmdLog(commands.Cog):
@@ -70,11 +70,13 @@ class CmdLog(commands.Cog):
                 self.channel_logger = ChannelLogger(self.bot, chan)  # type:ignore
                 self.channel_logger.start()
             else:
-                _log.warning("Commands will NOT be sent to a channel because it appears invalid.")
+                log.warning("Commands will NOT be sent to a channel because it appears invalid.")
 
-    def cog_unload(self):
+    async def cog_unload(self):
         if self.channel_logger:
             self.channel_logger.stop()
+
+        log.trace("cmdlog unload")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -94,7 +96,7 @@ class CmdLog(commands.Cog):
             log_content=self.log_content,
             content=ctx.message.content,
         )
-        _log.info(logged_com)
+        log.info(logged_com)
         self.log_cache.append(logged_com)
         if self.channel_logger:
             self.channel_logger.add_command(logged_com)
@@ -105,7 +107,7 @@ class CmdLog(commands.Cog):
             (
                 commands.ConversionError,
                 commands.MissingRequiredArgument,
-                # commands.MissingRequiredAttachment,  # waiting for red 3.5
+                commands.MissingRequiredAttachment,
                 commands.TooManyArguments,
                 commands.BadArgument,
                 commands.UserInputError,
@@ -135,7 +137,7 @@ class CmdLog(commands.Cog):
             error_info=error_info,
         )
 
-        _log.info(logged_com)
+        log.info(logged_com)
         self.log_cache.append(logged_com)
         if self.channel_logger:
             self.channel_logger.add_command(logged_com)
@@ -154,12 +156,13 @@ class CmdLog(commands.Cog):
         return f"Log started {ago} ago."
 
     def log_list_error(self, e):
-        _log.exception(
+        log.exception(
             "Something went wrong processing a command. See below for more info.", exc_info=e
         )
 
     @commands.Cog.listener()
     async def on_command_completion(self, ctx: commands.Context):
+        log.trace("command completion received for %s", ctx.command.qualified_name)
         try:
             if self.log_content is None:
                 self.log_content = await self.config.log_content()
@@ -170,6 +173,7 @@ class CmdLog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        log.trace("command error received: %s", error)
         try:
             if self.log_content is None:
                 self.log_content = await self.config.log_content()
@@ -180,11 +184,13 @@ class CmdLog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_interaction(self, inter: "Interaction"):
+        log.trace("received interaction %s", inter)
         try:
             if inter.data is None:
                 return
 
             if inter.type in (InteractionType.autocomplete, InteractionType.ping):
+                log.trace("skipping logging of %s - type is %s", inter, inter.type)
                 return
             elif inter.type == InteractionType.application_command:
                 if inter.command is None:
@@ -212,17 +218,25 @@ class CmdLog(commands.Cog):
                 )
 
             elif inter.type == InteractionType.component:
+                log.trace("skipping logging of %s - type is %s", inter, inter.type)
                 # TODO: add support for component interaction
                 return
 
             elif inter.type == InteractionType.modal_submit:
+                log.trace("skipping logging of %s - type is %s", inter, inter.type)
                 # TODO: MAYBE add support for modals
                 return
 
             else:  # we should never get here
+                log.warning(
+                    "Skipping logging of %s - unknown type - type is %s. Please report this to"
+                    " Vexed, it should never happen.",
+                    inter,
+                    inter.type,
+                )
                 return
 
-            _log.info(log_obj)
+            log.info(log_obj)
             self.log_cache.append(log_obj)
             if self.channel_logger:
                 self.channel_logger.add_command(log_obj)
@@ -303,7 +317,7 @@ class CmdLog(commands.Cog):
     async def cache(self, ctx: commands.Context):
         """Show the size of the internal command cache."""
         cache_bytes = self.cache_size()
-        _log.debug(f"Cache size is exactly {cache_bytes} bytes.")
+        log.debug(f"Cache size is exactly {cache_bytes} bytes.")
         cache_size = humanize_bytes(cache_bytes, 1)
         cache_count = humanize_number(len(self.log_cache))
         await ctx.send(f"\nCache size: {cache_size} with {cache_count} commands.")

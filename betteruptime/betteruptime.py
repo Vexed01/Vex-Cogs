@@ -11,6 +11,7 @@ from redbot.core.utils.chat_formatting import pagify
 from .abc import CompositeMetaClass
 from .commands import BUCommands
 from .loop import BULoop
+from .slash import BUSlash
 from .utils import Utils
 from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
@@ -23,7 +24,7 @@ log = get_vex_logger(__name__)
 # THIS COG WILL BE REWRITTEN/REFACTORED AT SOME POINT (#23)
 
 
-class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeMetaClass):
+class BetterUptime(commands.Cog, BUCommands, BUSlash, BULoop, Utils, metaclass=CompositeMetaClass):
     """
     Replaces the core `uptime` command to show the uptime
     percentage over the last 30 days.
@@ -32,7 +33,7 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
     data to become available.
     """
 
-    __version__ = "2.1.3"
+    __version__ = "2.1.4"
     __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
@@ -68,7 +69,10 @@ class BetterUptime(commands.Cog, BUCommands, BULoop, Utils, metaclass=CompositeM
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_load(self) -> None:
+        await self.setup_loop()
+
+    async def cog_unload(self) -> None:
         log.info("BetterUptime is now unloading. Cleaning up...")
 
         if self.main_loop:
@@ -117,8 +121,5 @@ async def setup(bot: Red) -> None:
         bot.remove_command(old_uptime.name)
 
     cog = BetterUptime(bot)
-    await cog.async_init()
     await out_of_date_check("betteruptime", cog.__version__)
-    r = bot.add_cog(cog)
-    if r is not None:
-        await r
+    await bot.add_cog(cog)

@@ -15,7 +15,10 @@ from redbot.core.utils.chat_formatting import humanize_timedelta, inline, pagify
 from .abc import MixinMeta
 from .consts import SECONDS_IN_DAY, WARN
 from .plot import plot
+from .vexutils import get_vex_logger
 from .vexutils.chat import datetime_to_timestamp
+
+log = get_vex_logger(__name__)
 
 old_uptime = None
 
@@ -57,6 +60,7 @@ class BUCommands(MixinMeta):
                 data = await self.get_data(num_days)
         else:
             data = await self.get_data(num_days)
+        log.trace("pd data obj:\n%s", data)
 
         embed = discord.Embed(description=description, colour=await ctx.embed_colour())
 
@@ -109,6 +113,7 @@ class BUCommands(MixinMeta):
                 data = await self.get_data(num_days)
         else:
             data = await self.get_data(num_days)
+        log.trace("pd data obj:\n%s", data)
 
         midnight = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         if data.first_load > midnight:  # cog was first loaded today
@@ -139,7 +144,10 @@ class BUCommands(MixinMeta):
                 f"downtime today._\n\n{msg}"
             )
             paged = pagify(full, page_length=1000)
-            await ctx.send_interactive(paged)
+            if ctx.interaction:
+                await ctx.send([i for i in paged][0])
+            else:
+                await ctx.send_interactive(paged)
 
     @commands.command()
     async def uptimegraph(self, ctx: commands.Context, num_days: int = 30):
@@ -164,6 +172,7 @@ class BUCommands(MixinMeta):
                 data = await self.get_data(num_days)
         else:
             data = await self.get_data(num_days)
+        log.trace("pd data obj:\n%s", data)
 
         sr = data.daily_connected_percentages()
 

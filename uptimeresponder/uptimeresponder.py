@@ -36,16 +36,17 @@ class UptimeResponder(commands.Cog):
         )
         self.config.register_global(port=8710)
 
-    def cog_unload(self) -> None:
-        self.bot.loop.create_task(self.shutdown_webserver())
+    async def cog_unload(self) -> None:
+        await self.shutdown_webserver()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    @commands.command(
-        hidden=True,
-    )
+    async def cog_load(self) -> None:
+        await self.start_webserver()
+
+    @commands.command(hidden=True)
     async def uptimeresponderinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
@@ -60,6 +61,7 @@ class UptimeResponder(commands.Cog):
 
     async def main_page(self, request: web.Request) -> web.Response:
         name = self.bot.user.name if self.bot.user else "Unknown"
+        log.trace("received HTTP GET request from %s", request.remote)
         return web.Response(
             text=f"{name} is online and the UptimeResponder cog is loaded.", status=200
         )

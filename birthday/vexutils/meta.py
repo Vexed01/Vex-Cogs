@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import json
-from logging import Logger, getLogger
 from pathlib import Path
 from typing import Literal, NamedTuple
 
 import aiohttp
+from red_commons.logging import RedTraceLogger
+from red_commons.logging import getLogger as red_get_logger
 from redbot.core import VersionInfo, commands
 from redbot.core import version_info as cur_red_version
 from rich import box as rich_box
@@ -16,13 +17,13 @@ from .chat import no_colour_rich_markup
 from .consts import DOCS_BASE, GREEN_CIRCLE, RED_CIRCLE
 from .loop import VexLoop
 
-log = getLogger("red.vex-utils")
+log = red_get_logger("red.vex-utils")
 
 
 cog_ver_lock = asyncio.Lock()
 
 
-def get_vex_logger(name: str) -> Logger:
+def get_vex_logger(name: str) -> RedTraceLogger:
     """Get a logger for the given name.
 
     Parameters
@@ -42,7 +43,7 @@ def get_vex_logger(name: str) -> Logger:
     else:  # otherwise use full path
         final_name += name
 
-    return getLogger(final_name)
+    return red_get_logger(final_name)
 
 
 def format_help(self: commands.Cog, ctx: commands.Context) -> str:

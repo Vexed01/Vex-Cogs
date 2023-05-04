@@ -21,7 +21,7 @@ from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
 from .vexutils.loop import VexLoop
 
-_log = get_vex_logger(__name__)
+log = get_vex_logger(__name__)
 
 
 def snapped_utcnow():
@@ -37,7 +37,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.9.1"
+    __version__ = "1.10.0"
     __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
@@ -67,7 +67,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         if self.loop:
             self.loop.cancel()
 
@@ -79,9 +79,9 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         except KeyError:
             pass
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         if await self.config.version() < 2:
-            _log.info("Migrating StatTrack config from 1 to 2.")
+            log.info("Migrating StatTrack config from 1 to 2.")
             df_conf = await self.config.main_df()
 
             if df_conf:  # needs migration
@@ -91,7 +91,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 df = pandas.DataFrame()
             await self.driver.write(df)
             await self.config.version.set(2)
-            _log.info("Done.")
+            log.info("Done.")
 
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
@@ -146,14 +146,14 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         await self.bot.wait_until_red_ready()
 
         while True:
-            _log.debug("StatTrack loop has started next iteration")
+            log.verbose("StatTrack loop has started next iteration")
             try:
                 self.loop_meta.iter_start()
                 await self.update_stats()
                 self.loop_meta.iter_finish()
             except Exception as e:
                 self.loop_meta.iter_error(e)
-                _log.exception(
+                log.exception(
                     "Something went wrong in the StatTrack loop. The loop will try again shortly.",
                     exc_info=e,
                 )
@@ -169,7 +169,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         if (
             now == await self.driver.get_last_index()
         ):  # just reloaded and this min's data collected
-            _log.debug("Skipping this loop - cog was likely recently reloaded")
+            log.debug("Skipping this loop - cog was likely recently reloaded")
             return
         start = time.monotonic()
         data = {}
@@ -227,16 +227,18 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         df = pandas.DataFrame(data, index=[snapped_utcnow()])
 
+        log.trace("new data pd obj:\n%s", df)
+
         end = time.monotonic()
         main_time = round((end - start), 3)
-        _log.debug(f"Loop finished in {main_time} seconds")
+        log.trace(f"Loop finished in {main_time} seconds")
 
         try:
             start = time.monotonic()
             await self.driver.append(df)
             end = time.monotonic()
             save_time = round(end - start, 3)
-            _log.debug(f"SQLite append operation took {save_time} seconds")
+            log.trace(f"SQLite append operation took {save_time} seconds")
         except Exception:  # could be new schema (columns)
             start = time.monotonic()
             old_df = await self.driver.read_all()
@@ -244,14 +246,14 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             await self.driver.write(df)
             end = time.monotonic()
             save_time = round(end - start, 3)
-            _log.debug(f"SQLite write operation took {save_time} seconds")
+            log.trace(f"SQLite write operation took {save_time} seconds")
 
         total_time = main_time + save_time
         self.last_loop_raw = total_time
 
         if total_time > 30.0:
             # TODO: only warn once + send to owners
-            _log.warning(
+            log.warning(
                 "StatTrack loop took a while. This means that it's using lots of resources on "
                 "this machine. You might want to consider unloading or removing the cog. There "
                 "is also a high chance of some datapoints on the graphs being skipped."

@@ -6,21 +6,21 @@ from collections import defaultdict
 from typing import TYPE_CHECKING
 
 import discord
-from dateutil.parser import ParserError
-from dateutil.parser import parse as time_parser
 from redbot.core import Config, commands
 from redbot.core.commands import CheckFailure
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import box, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
-from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
+from redbot.core.utils.predicates import ReactionPredicate
 from rich.table import Table  # type:ignore
 
 from .abc import MixinMeta
+from .components.setup import SetupView
 from .consts import MAX_BDAY_MSG_LEN, MIN_BDAY_YEAR
 from .converters import BirthdayConverter, TimeConverter
 from .utils import channel_perm_check, format_bday_message, role_perm_check
 from .vexutils import get_vex_logger, no_colour_rich_markup
+from .vexutils.button_pred import wait_for_yes_no
 
 log = get_vex_logger(__name__)
 
@@ -41,7 +41,7 @@ class BirthdayCommands(MixinMeta):
 
     @commands.guild_only()  # type:ignore
     @commands.before_invoke(setup_check)  # type:ignore
-    @commands.group(aliases=["bday"])
+    @commands.hybrid_group(aliases=["bday"])
     async def birthday(self, ctx: commands.Context):
         """Set and manage your birthday."""
 
@@ -134,6 +134,8 @@ class BirthdayCommands(MixinMeta):
 
         all_birthdays: dict[int, dict[str, dict]] = await self.config.all_members(ctx.guild)
 
+        log.trace("raw data for all bdays: %s", all_birthdays)
+
         parsed_bdays: dict[int, list[str]] = defaultdict(list)
         number_day_mapping: dict[int, str] = {}
 
@@ -182,6 +184,8 @@ class BirthdayCommands(MixinMeta):
             )
             number_day_mapping[diff.days] = next_birthday_dt.strftime("%B %d")
 
+        log.trace("bdays parsed: %s", parsed_bdays)
+
         if len(parsed_bdays) == 0:
             await ctx.send(f"No upcoming birthdays in the next {days} days.")
             return
@@ -224,240 +228,11 @@ class BirthdayAdminCommands(MixinMeta):
     @bdset.command()
     async def interactive(self, ctx: commands.Context):
         """Start interactive setup"""
-        # group has guild check
+        # guild only check in group
         if TYPE_CHECKING:
-            assert ctx.guild is not None
-            assert isinstance(ctx.me, discord.Member)
             assert isinstance(ctx.author, discord.Member)
 
-        m: discord.Message = await ctx.send(
-            "Just a heads up, you'll be asked for a message for when the user provided their birth"
-            " year, a message for when they didn't, the channel to sent notifications, the role,"
-            " and the time of day to send them.\n\nWhen you're ready, press the tick."
-        )
-        start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
-        pred = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
-        try:
-            await self.bot.wait_for("reaction_add", check=pred, timeout=300)
-        except asyncio.TimeoutError:
-            await m.edit(
-                content=(
-                    f"Took too long to react, cancelling setup. Run `{ctx.clean_prefix}bdset"
-                    " interactive` to start again."
-                )
-            )
-
-        if pred.result is not True:
-            await ctx.send("Okay, I'll cancel setup.")
-            return
-
-        # ============================== MSG WITH YEAR ==============================
-
-        m = await ctx.send(
-            "What message should I send if the user provided their birth year?\n\nYou can use the"
-            " following variables: `mention`, `name`, `new_age`. Put curly brackets `{}` around"
-            " them, for example: {mention} is now {new_age} years old!\n\nYou have 5 minutes."
-        )
-
-        try:
-            pred = MessagePredicate.same_context(ctx)
-            message = await self.bot.wait_for("message", check=pred, timeout=300)
-        except asyncio.TimeoutError:
-            await ctx.send(
-                f"Took too long to react, cancelling setup. Run `{ctx.clean_prefix}bdset"
-                " interactive` to start again."
-            )
-            return
-
-        message_w_year = message.content
-
-        if len(message_w_year) > MAX_BDAY_MSG_LEN:
-            await ctx.send(
-                "That message is too long, please try again. Stay under"
-                f" {MAX_BDAY_MSG_LEN} characters."
-            )
-            return
-
-        # ============================== MSG WITHOUT YEAR ==============================
-
-        m = await ctx.send(
-            "What message should I send if the user didn't provide their birth year?\n\nYou can"
-            " use the following variables: `mention`, `name`. Put curly brackets `{}` around them,"
-            " for example: {mention}'s birthday is today! Happy birthday {name}\n\nYou have 5"
-            " minutes."
-        )
-
-        try:
-            pred = MessagePredicate.same_context(ctx)
-            message = await self.bot.wait_for("message", check=pred, timeout=300)
-        except asyncio.TimeoutError:
-            await ctx.send(
-                f"Took too long to react, cancelling setup. Run `{ctx.clean_prefix}bdset"
-                " interactive` to start again."
-            )
-            return
-
-        message_wo_year = message.content
-
-        if len(message_wo_year) > MAX_BDAY_MSG_LEN:
-            await ctx.send(
-                f"That message is too long, please try again. Stay under {MAX_BDAY_MSG_LEN}"
-                " characters."
-            )
-            return
-
-        # ============================== CHANNEL ==============================
-
-        await ctx.send(
-            "If you intend to mention a role with any of these messages, you need to run the "
-            f"`{ctx.clean_prefix}bdset rolemention true` command."
-        )
-
-        m = await ctx.send(
-            "Where would you like to send notifications? I will ignore any message with an invalid"
-            " channel.\n\nYou have 5 minutes."
-        )
-
-        try:
-            pred = MessagePredicate.valid_text_channel(ctx)
-            await self.bot.wait_for("message", check=pred, timeout=300)
-        except asyncio.TimeoutError:
-            await ctx.send(
-                f"Took too long to react, cancelling setup. Run `{ctx.clean_prefix}bdset"
-                " interactive` to start again."
-            )
-            return
-
-        channel: discord.TextChannel = pred.result  # type:ignore
-        if error := channel_perm_check(ctx.me, channel):
-            await ctx.send(
-                warning(
-                    f"{error} Please make sure"
-                    " you rectify this as soon as possible, but I'll let you continue the setup."
-                )
-            )
-
-        channel_id = pred.result.id  # type:ignore
-
-        # ============================== ROLE ==============================
-
-        m = await ctx.send(
-            "What role should I assign to users who have their birthday today? I will ignore any"
-            " message which isn't a role.\n\nYou can mention the role, give its exact name, or its"
-            " ID.\n\nYou have 5 minutes."
-        )
-
-        try:
-            pred = MessagePredicate.valid_role(ctx)
-            await self.bot.wait_for("message", check=pred, timeout=300)
-        except asyncio.TimeoutError:
-            await ctx.send(
-                f"Took too long to react, cancelling setup. Run `{ctx.clean_prefix}bdset"
-                " interactive` to start again."
-            )
-            return
-
-        # no need to check hierarchy for author, since command is locked to admins
-        if error := role_perm_check(ctx.me, pred.result):  # type:ignore
-            await ctx.send(
-                warning(
-                    f"{error} Please make"
-                    " sure you rectify this as soon as possible, but I'll let you continue the"
-                    " setup."
-                )
-            )
-
-        role_id = pred.result.id  # type:ignore
-
-        # ============================== TIME ==============================
-
-        def time_check(m: discord.Message):
-            if m.author == ctx.author and m.channel == ctx.channel is False:
-                return False
-
-            try:
-                time_parser(m.content)
-            except ParserError:
-                return False
-
-            return True
-
-        m = await ctx.send(
-            "What time of day should I send the birthday message? Please use the UTC time, for"
-            " example `12AM` for midnight or `7:00`. I will ignore any invalid input. I will"
-            " ignore minutes.\n\nYou have 5 minutes."
-        )
-
-        try:
-            ret = await self.bot.wait_for("message", check=time_check, timeout=300)
-        except asyncio.TimeoutError:
-            await ctx.send(
-                f"Took too long to react, cancelling setup. Run `{ctx.clean_prefix}bdset"
-                " interactive` to start again."
-            )
-            return
-
-        full_time = time_parser(ret.content)
-        full_time = full_time.replace(tzinfo=datetime.timezone.utc, year=1, month=1, day=1)
-
-        midnight = datetime.datetime.now(tz=datetime.timezone.utc).replace(
-            year=1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0
-        )
-
-        time_utc_s = int((full_time - midnight).total_seconds())
-
-        try:
-            await ctx.trigger_typing()  # dpy 1
-        except AttributeError:
-            await ctx.typing()  # dpy 2
-
-        p = ctx.clean_prefix
-
-        setup_state = 5
-        errors = ""
-        try:
-            format_bday_message(message_w_year, ctx.author, 1)
-        except KeyError as e:
-            setup_state -= 1
-            errors += warning(
-                "You birthday message **with year** can only include `{mention}`, `{name}`"
-                " and `{new_age}`. You can't have anything else in `{}`. You did"
-                f" `{{{e.args[0]}}}` which is invalid.\nYou can correct this with `{p}bdset"
-                " msgwithyear`\n\n"
-            )
-
-        try:
-            format_bday_message(message_wo_year, ctx.author)
-        except KeyError as e:
-            e = e
-            setup_state -= 1
-            errors += warning(
-                "You birthday message **without year** can only include `{mention}` and"
-                f" `{{name}}`. You can't have anything else in `{{}}`. You did `{{{e.args[0]}}}`"
-                f" which is invalid.\nYou can correct this with `{p}bdset msgwithoutyear`\n\n"
-            )
-
-        async with self.config.guild(ctx.guild).all() as conf:
-            conf["time_utc_s"] = time_utc_s
-            conf["message_w_year"] = message_w_year
-            conf["message_wo_year"] = message_wo_year
-            conf["channel_id"] = channel_id
-            conf["role_id"] = role_id
-            conf["setup_state"] = setup_state
-
-        if errors:
-            await ctx.send(
-                errors
-                + f"Once you fix this, members will be able to use `{p}birthday add` to add their"
-                " birthday and messages will be sent."
-            )
-            return
-
-        await ctx.send(
-            f"All set! You can change these settings at any time with `{p}bdset` and view them"
-            f" with `{p}bdset settings`. Members can now use `{p}birthday add` to add their"
-            " birthday."
-        )
+        await ctx.send("Click bellow to start.", view=SetupView(ctx.author, self.bot, self.config))
 
     @bdset.command()
     async def settings(self, ctx: commands.Context):
@@ -470,6 +245,8 @@ class BirthdayAdminCommands(MixinMeta):
         table = Table("Name", "Value", title="Settings for this server")
 
         async with self.config.guild(ctx.guild).all() as conf:
+            log.trace("raw config: %s", conf)
+
             channel = ctx.guild.get_channel(conf["channel_id"])
             table.add_row("Channel", channel.name if channel else "Channel deleted")
 
@@ -555,7 +332,7 @@ class BirthdayAdminCommands(MixinMeta):
     @bdset.command()
     async def msgwithoutyear(self, ctx: commands.Context, *, message: str):
         """
-        Set the message to be send when the user did not provide a year.
+        Set the message to send when the user did not provide a year.
 
         If you would like to mention a role, you will need to run `[p]bdset rolemention true`.
 
@@ -603,7 +380,7 @@ class BirthdayAdminCommands(MixinMeta):
     @bdset.command()
     async def msgwithyear(self, ctx: commands.Context, *, message: str):
         """
-        Set the message to be send when the user did provide a year.
+        Set the message to send when the user did provide a year.
 
         If you would like to mention a role, you will need to run `[p]bdset rolemention true`
 
@@ -850,8 +627,27 @@ class BirthdayAdminCommands(MixinMeta):
         """
         Stop the cog from sending birthday messages and giving roles in the server.
         """
-        await self.config.guild(ctx.guild).clear()
-        await ctx.send(
-            "Birthday messages and roles have been stopped. Configuration has been reset, but the"
-            " birthdays of users have been kept in case you need them again."
+        # group has guild check
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        confirm = await wait_for_yes_no(
+            ctx, "Are you sure you want to stop sending updates and giving roles?"
         )
+        if confirm is False:
+            await ctx.send("Okay, nothing's changed.")
+            return
+
+        await self.config.guild(ctx.guild).clear()
+
+        confirm = await wait_for_yes_no(
+            ctx,
+            "I've deleted your configuration. Would you also like to delete the data about when"
+            " users birthdays are?",
+        )
+        if confirm is False:
+            await ctx.send("I'll keep that.")
+            return
+
+        await self.config.clear_all_members(ctx.guild)
+        await ctx.send("Deleted.")

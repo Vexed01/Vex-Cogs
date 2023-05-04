@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 from time import monotonic
 
 import discord
@@ -43,7 +44,7 @@ class AnotherPingCog(commands.Cog):
     You can customise the emojis, colours or force embeds with `[p]pingset`.
     """
 
-    __version__ = "1.1.7"
+    __version__ = "1.1.8"
     __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
@@ -53,22 +54,21 @@ class AnotherPingCog(commands.Cog):
         self.config.register_global(force_embed=True, footer="default")
         self.config.register_global(custom_settings=DEFAULT_CONF)
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         self.cache = Cache(
             await self.config.custom_settings(),
             await self.config.force_embed(),
             await self.config.footer(),
             self.bot,
         )
+        log.trace("Cache loaded: %s", self.cache)
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         global old_ping
         if old_ping:
-            try:
+            with contextlib.suppress(Exception):
                 self.bot.remove_command("ping")
-            except Exception:
-                pass
-            self.bot.add_command(old_ping)
+                self.bot.add_command(old_ping)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -83,7 +83,7 @@ class AnotherPingCog(commands.Cog):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     # cspell:disable-next-line
-    @commands.command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])
+    @commands.hybrid_command(aliases=["pinf", "pig", "png", "pign", "pjgn", "ipng", "pgn", "pnig"])
     async def ping(self, ctx: commands.Context):
         """
         A rich embed ping command with timings.
@@ -128,7 +128,9 @@ class AnotherPingCog(commands.Cog):
             elif settings.footer != "none":
                 embed.set_footer(text=settings.footer)
             start = monotonic()
-            message: discord.Message = await ctx.send(embed=embed)
+            message: discord.Message = await ctx.send(
+                embed=embed,
+            )
         else:
             msg = f"**{title}**\nDiscord WS: {ws_latency} ms"
             start = monotonic()
@@ -150,7 +152,16 @@ class AnotherPingCog(commands.Cog):
             extra = box(f"{m_latency} ms", "py")
             embed.add_field(name="Message Send", value=f"{m_latency_text}{extra}")
             embed.colour = colour
-            await message.edit(embed=embed)
+            await message.edit(
+                content=(
+                    "Message Send is worse for slash commands. Try using the text command for "
+                    "a better result."
+                )
+                if ctx.interaction
+                else None,
+                embed=embed,
+            )
+
         else:
             data = [
                 ["Discord WS", "Message Send"],
@@ -475,7 +486,8 @@ class AnotherPingCog(commands.Cog):
                 "non-embed version."
             )
         settings = self.cache
-        embed = discord.Embed(
+        log.debug("Raw cached settings: %s", settings)
+        main_embed = discord.Embed(
             title="Global settings for the `ping` command.", color=await ctx.embed_color()
         )
         embeds = "**Force embed setting:**\n"
@@ -484,7 +496,7 @@ class AnotherPingCog(commands.Cog):
             if settings.force_embed
             else "False - `embedset` is how embeds will be determined (defaults to True)."
         )
-        embed.add_field(name="Embeds", value=embeds, inline=False)
+        main_embed.add_field(name="Embeds", value=embeds, inline=False)
         footer = "**Embed footer setting:**\n"
         footer += (
             "Default - the default text will be used in the embed footer."
@@ -493,35 +505,31 @@ class AnotherPingCog(commands.Cog):
             if settings.footer == "none"
             else f"Custom - {settings.footer}"
         )
-        embed.add_field(name="Footer", value=footer, inline=False)
+        main_embed.add_field(name="Footer", value=footer, inline=False)
 
         # these 3 are alright with the 5/5 rate limit, plus it's owner only.
         # if anyone wants to PR something with image generation, don't as it's wayyyyy to complex
         # for this
-        await ctx.send(embed=embed)
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Emoji for green: {self.cache.green.emoji}",
-                description=f"{LEFT_ARROW} Colour for green",
-                colour=self.cache.green.colour,
-            )
+
+        green_embed = discord.Embed(
+            title=f"Emoji for green: {self.cache.green.emoji}",
+            description=f"{LEFT_ARROW} Colour for green",
+            colour=self.cache.green.colour,
         )
 
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Emoji for orange: {self.cache.orange.emoji}",
-                description=f"{LEFT_ARROW} Colour for orange",
-                colour=self.cache.orange.colour,
-            )
+        orange_embed = discord.Embed(
+            title=f"Emoji for orange: {self.cache.orange.emoji}",
+            description=f"{LEFT_ARROW} Colour for orange",
+            colour=self.cache.orange.colour,
         )
 
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"Emoji for red: {self.cache.red.emoji}",
-                description=f"{LEFT_ARROW} Colour for red",
-                colour=self.cache.red.colour,
-            )
+        red_embed = discord.Embed(
+            title=f"Emoji for red: {self.cache.red.emoji}",
+            description=f"{LEFT_ARROW} Colour for red",
+            colour=self.cache.red.colour,
         )
+
+        await ctx.send(embeds=(main_embed, green_embed, orange_embed, red_embed))
 
 
 async def setup(bot: Red) -> None:
@@ -531,8 +539,5 @@ async def setup(bot: Red) -> None:
         bot.remove_command(old_ping.name)
 
     cog = AnotherPingCog(bot)
-    await cog.async_init()
     await out_of_date_check("anotherpingcog", cog.__version__)
-    r = bot.add_cog(cog)
-    if r is not None:
-        await r
+    await bot.add_cog(cog)

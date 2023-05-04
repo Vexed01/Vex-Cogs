@@ -7,7 +7,8 @@ import discord
 import pandas as pd
 from plotly import express as px
 
-from stattrack.abc import MixinMeta
+from .abc import MixinMeta
+from .consts import TRACE_FRIENDLY_NAMES
 
 if TYPE_CHECKING:
     from plotly.graph_objs._figure import Figure
@@ -18,29 +19,6 @@ else:
 
 
 ONE_DAY_SECONDS = 86400
-
-TRACE_FRIENDLY_NAMES = {
-    "ping": "Latency",
-    "loop_time_s": "Loop time",
-    "users_unique": "Unique",
-    "users_total": "Total",
-    "users_humans": "Humans",
-    "users_bots": "Bots",
-    "guilds": "Servers",
-    "channels_total": "Total",
-    "channels_text": "Text",
-    "channels_voice": "Voice",
-    "channels_stage": "Stage",
-    "channels_cat": "Categories",
-    "sys_mem": "Memory usage",
-    "sys_cpu": "CPU Usage",
-    "command_count": "Commands",
-    "message_count": "Messages",
-    "status_online": "Online",
-    "status_idle": "Idle",
-    "status_offline": "Offline",
-    "status_dnd": "DnD",
-}
 
 
 class StatPlot(MixinMeta):

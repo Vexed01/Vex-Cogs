@@ -17,7 +17,4 @@ with open(Path(__file__).parent / "info.json", encoding="utf8") as fp:
 async def setup(bot: Red) -> None:
     cog = StatTrack(bot)
     await out_of_date_check("stattrack", cog.__version__)
-    await cog.async_init()
-    r = bot.add_cog(cog)
-    if r is not None:
-        await r
+    await bot.add_cog(cog)

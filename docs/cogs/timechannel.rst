@@ -95,10 +95,10 @@ The default is 12 hour time, but you can use ``{shortid-24h}`` for 24 hour time,
 eg ``{ni-24h}``
 
 **More Examples:**
-    - ``[p]tcset create 🕑️ New York: {fv}``
-    - ``[p]tcset create 🌐 UTC: {qw}``
-    - ``[p]tcset create {ni-24h} in London``
-    - ``[p]tcset create US Pacific: {qv-24h}``
+- ``[p]tcset create 🕑️ New York: {fv}``
+- ``[p]tcset create 🌐 UTC: {qw}``
+- ``[p]tcset create {ni-24h} in London``
+- ``[p]tcset create US Pacific: {qv-24h}``
 
 .. _timechannel-command-timechannelset-remove:
 
@@ -119,8 +119,8 @@ Delete and stop updating a channel.
 For the <channel> argument, you can use its ID or mention (type #!channelname)
 
 **Example:**
-    - ``[p]tcset remove #!channelname`` (the ! is how to mention voice channels)
-    - ``[p]tcset remove 834146070094282843``
+- ``[p]tcset remove #!channelname`` (the ! is how to mention voice channels)
+- ``[p]tcset remove 834146070094282843``
 
 .. _timechannel-command-timechannelset-short:
 
@@ -146,10 +146,10 @@ There is a fuzzy search, so you shouldn't need to enter the region.
 Please look at ``[p]help tcset create`` for more information.
 
 **Examples:**
-    - ``[p]tcset short New York``
-    - ``[p]tcset short UTC``
-    - ``[p]tcset short London``
-    - ``[p]tcset short Europe/London``
+- ``[p]tcset short New York``
+- ``[p]tcset short UTC``
+- ``[p]tcset short London``
+- ``[p]tcset short Europe/London``
 
 .. _timechannel-command-timezones:
 

@@ -30,6 +30,7 @@ class BirthdayLoop(MixinMeta):
             try:
                 coro = await self.coro_queue.get()
                 await coro
+                log.trace("ran coro %s", coro)
             except discord.HTTPException as e:
                 log.warning("A queued coro failed to run.", exc_info=e)
 
@@ -47,7 +48,7 @@ class BirthdayLoop(MixinMeta):
                 error,
             )
             return
-        log.debug("Queued birthday role add for %s in guild %s", member.id, member.guild.id)
+        log.trace("Queued birthday role add for %s in guild %s", member.id, member.guild.id)
         self.coro_queue.put_nowait(
             member.add_roles(role, reason="Birthday cog - birthday starts today")
         )
@@ -61,7 +62,7 @@ class BirthdayLoop(MixinMeta):
                 error,
             )
             return
-        log.debug("Queued birthday role remove for %s in guild %s", member.id, member.guild.id)
+        log.trace("Queued birthday role remove for %s in guild %s", member.id, member.guild.id)
         self.coro_queue.put_nowait(
             member.remove_roles(role, reason="Birthday cog - birthday ends today")
         )
@@ -78,6 +79,8 @@ class BirthdayLoop(MixinMeta):
             )
             return
 
+        log.trace("Queued birthday announcement for %s in guild %s", channel.id, channel.guild.id)
+        log.trace("Message: %s", message)
         self.coro_queue.put_nowait(
             channel.send(
                 message,
@@ -92,12 +95,14 @@ class BirthdayLoop(MixinMeta):
         await self.bot.wait_until_red_ready()
         await self.ready.wait()
 
+        log.verbose("Birthday task started")
+
         # 1st loop
         try:
             self.loop_meta.iter_start()
             await self._update_birthdays()
             self.loop_meta.iter_finish()
-            log.debug("Initial loop has finished")
+            log.verbose("Initial loop has finished")
         except Exception as e:
             self.loop_meta.iter_error(e)
             log.exception(
@@ -116,12 +121,12 @@ class BirthdayLoop(MixinMeta):
 
         # all further iterations
         while True:
-            log.debug("Loop has started next iteration")
+            log.verbose("Loop has started next iteration")
             try:
                 self.loop_meta.iter_start()
                 await self._update_birthdays()
                 self.loop_meta.iter_finish()
-                log.debug("Loop has finished")
+                log.verbose("Loop has finished")
             except Exception as e:
                 self.loop_meta.iter_error(e)
                 log.exception(
@@ -140,15 +145,15 @@ class BirthdayLoop(MixinMeta):
         async for guild_id, guild_data in AsyncIter(all_birthdays.items(), steps=5):
             guild = self.bot.get_guild(int(guild_id))
             if guild is None:
-                log.debug("Guild %s is not in cache, skipping", guild_id)
+                log.trace("Guild %s is not in cache, skipping", guild_id)
                 continue
 
             if all_settings.get(guild.id) is None:  # can happen with migration from ZeLarp's cog
-                log.debug("Guild %s is not setup, skipping", guild_id)
+                log.trace("Guild %s is not setup, skipping", guild_id)
                 continue
 
             if await self.check_if_setup(guild) is False:
-                log.debug("Guild %s is not setup, skipping", guild_id)
+                log.trace("Guild %s is not setup, skipping", guild_id)
                 continue
 
             birthday_members: dict[discord.Member, datetime.datetime] = {}
@@ -160,7 +165,7 @@ class BirthdayLoop(MixinMeta):
             ) - datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
 
             if since_midnight.total_seconds() != hour_td.total_seconds():
-                log.debug("Not correct time for update for guild %s, skipping", guild_id)
+                log.trace("Not correct time for update for guild %s, skipping", guild_id)
                 continue
 
             today_dt = (datetime.datetime.utcnow() - hour_td).replace(
@@ -174,7 +179,7 @@ class BirthdayLoop(MixinMeta):
                 birthday = data["birthday"]
                 member = guild.get_member(int(member_id))
                 if member is None:
-                    log.debug(
+                    log.trace(
                         "Member %s for guild %s is not in cache, skipping", member_id, guild_id
                     )
                     continue
@@ -207,7 +212,7 @@ class BirthdayLoop(MixinMeta):
                 )
                 continue
 
-            log.debug("Members with birthdays in guild %s: %s", guild_id, birthday_members)
+            log.trace("Members with birthdays in guild %s: %s", guild_id, birthday_members)
 
             for member, dt in birthday_members.items():
                 if member not in role.members:
@@ -220,12 +225,6 @@ class BirthdayLoop(MixinMeta):
                             all_settings[guild.id]["allow_role_mention"],
                         )
 
-                        log.debug(
-                            "Queued birthday message wo year for %s in guild %s",
-                            member.id,
-                            guild_id,
-                        )
-
                     else:
                         age = today_dt.year - dt.year
                         await self.send_announcement(
@@ -236,14 +235,8 @@ class BirthdayLoop(MixinMeta):
                             all_settings[guild.id]["allow_role_mention"],
                         )
 
-                        log.debug(
-                            "Queued birthday message w year for %s in guild %s",
-                            member.id,
-                            guild_id,
-                        )
-
             for member in role.members:
                 if member not in birthday_members:
                     await self.remove_role(guild.me, member, role)
 
-            log.debug("Potential updates for %s have been queued", guild_id)
+            log.trace("Potential updates for %s have been queued", guild_id)

@@ -6,15 +6,19 @@ from redbot.core.bot import Red
 
 from .errors import JSONDecodeError, NoData
 from .utils import decode_json, get_data, send_output
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
+
+log = get_vex_logger(__name__)
 
 # dont want to force this as can be a pain on windows
 try:
     import pyjson5  # noqa  # import otherwise unused
 
     use_pyjson = True
+    log.debug("pyjson5 available")
 except ImportError:
     use_pyjson = False
+    log.debug("pyjson5 not available")
 
 # NOTE FOR DOCSTRINGS:
 # They don't use a normal space character, if you're editing them make sure to copy and paste
@@ -118,7 +122,8 @@ class Beautify(commands.Cog):
         """
         try:
             raw_json = await get_data(ctx, data)
-        except NoData:
+        except NoData as e:
+            log.debug("No data found for msg %s", ctx.message.id, exc_info=e)
             return
 
         try:

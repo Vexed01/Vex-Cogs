@@ -4,10 +4,8 @@
         "Vexed (Vexed#3211)"
     ],
     "end_user_data_statement": "This cog stores user IDs paired with guild IDs and how they voted if a user participated in a poll. This is to ensure no double voting can happen. This data is removed once a poll finishes. No other data or metadata about users is persistently stored. This cog respects data deletion requests.",
-    "hidden": true,
-    "install_msg": "\u26a0 This cog requires Red 3.5/discord.py 2, which is unstable and incompatibe with some other cogs. \u26a0",
-    "max_bot_version": "3.6.0.dev0",
-    "min_bot_version": "3.4.0",
+    "install_msg": "Thanks for installing! Load the cog and get started with the `calculator` command.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/buttonpoll>",
+    "min_bot_version": "3.5.1",
     "min_python_version": [
         3,
         8,
@@ -19,7 +17,7 @@
         "kaleido",
         "pandas"
     ],
-    "short": "[DPY 2 ONLY] A poll in Discord, but with powered by buttons and with a pie chart at the end!\n\n\u26a0 This cog requires Red 3.5/discord.py 2, which is unstable and incompatibe with some other cogs. \u26a0",
+    "short": "A poll in Discord, but with powered by buttons and with a pie chart at the end!",
     "tags": [
         "utility",
         "poll",

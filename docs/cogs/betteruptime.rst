@@ -54,9 +54,9 @@ The default value for ``num_days`` is ``30``. You can put ``0`` days for all-tim
 Otherwise, it needs to be ``5`` or more.
 
 **Examples:**
-    - ``[p]uptime``
-    - ``[p]uptime 0`` (for all-time data)
-    - ``[p]uptime 7``
+- ``[p]uptime``
+- ``[p]uptime 0`` (for all-time data)
+- ``[p]uptime 7``
 
 .. _betteruptime-command-resetbu:
 
@@ -99,9 +99,9 @@ Otherwise, it needs to be ``5`` or more.
 
 
 **Examples:**
-    - ``[p]uptime``
-    - ``[p]uptime 0`` (for all-time data)
-    - ``[p]uptime 7``
+- ``[p]uptime``
+- ``[p]uptime 0`` (for all-time data)
+- ``[p]uptime 7``
 
 .. _betteruptime-command-uptimeexport:
 
@@ -151,6 +151,6 @@ The default value for ``num_days`` is ``30``. You can put ``0`` days for all-tim
 Otherwise, it needs to be ``5`` or more.
 
 **Examples:**
-    - ``[p]uptime`` - for the default of 30 days
-    - ``[p]uptime 0`` - for all-time data
-    - ``[p]uptime 7`` - 7 days
+- ``[p]uptime`` - for the default of 30 days
+- ``[p]uptime 0`` - for all-time data
+-]uptime 7`` - 7 days

@@ -98,9 +98,9 @@ Red, while ``unique`` will only count them once.
 
 **Examples:**
 **Examples:**
-    - ``[p]stattrack servers 3w2d``
-    - ``[p]stattrack servers 5d``
-    - ``[p]stattrack servers all``
+- ``[p]stattrack servers 3w2d``
+- ``[p]stattrack servers 5d``
+- ``[p]stattrack servers all``
 
 .. _stattrack-command-stattrack-commands:
 
@@ -124,9 +124,9 @@ Get command usage stats.
 at least 1 hour.
 
 **Examples:**
-    - ``[p]stattrack commands 3w2d``
-    - ``[p]stattrack commands 5d``
-    - ``[p]stattrack commands all``
+- ``[p]stattrack commands 3w2d``
+- ``[p]stattrack commands 5d``
+- ``[p]stattrack commands all``
 
 .. _stattrack-command-stattrack-export:
 
@@ -202,9 +202,9 @@ Get my latency stats.
 at least 1 hour.
 
 **Examples:**
-    - ``[p]stattrack latency 3w2d``
-    - ``[p]stattrack latency 5d``
-    - ``[p]stattrack latency all``
+- ``[p]stattrack latency 3w2d``
+- ``[p]stattrack latency 5d``
+- ``[p]stattrack latency all``
 
 .. _stattrack-command-stattrack-looptime:
 
@@ -230,9 +230,9 @@ Get my loop time stats.
 at least 1 hour.
 
 **Examples:**
-    - ``[p]stattrack looptime 3w2d``
-    - ``[p]stattrack looptime 5d``
-    - ``[p]stattrack looptime all``
+- ``[p]stattrack looptime 3w2d``
+- ``[p]stattrack looptime 5d``
+- ``[p]stattrack looptime all``
 
 .. _stattrack-command-stattrack-maxpoints:
 
@@ -263,12 +263,11 @@ Set maxpoints to -1 to disable this feature, therefore always plotting all point
 Otherwise, maxpoints must be at least 1k (1440).
 
 **Examples:**
-
-    - ``[p]stattrack maxpoints 10000`` - plot up to 10k points
-    - ``[p]stattrack maxpoints 75000`` - plot up to 75k points
-    - ``[p]stattrack maxpoints 1440`` - the minimum value possible
-    - ``[p]stattrack maxpoints 25000`` - the default value
-    - ``[p]stattrack maxpoints -1`` - disable, always plot all points
+- ``[p]stattrack maxpoints 10000`` - plot up to 10k points
+- ``[p]stattrack maxpoints 75000`` - plot up to 75k points
+- ``[p]stattrack maxpoints 1440`` - the minimum value possible
+- ``[p]stattrack maxpoints 25000`` - the default value
+- ``[p]stattrack maxpoints -1`` - disable, always plot all points
 
 .. _stattrack-command-stattrack-messages:
 
@@ -292,9 +291,9 @@ Get message stats.
 at least 1 hour.
 
 **Examples:**
-    - ``[p]stattrack messages 3w2d``
-    - ``[p]stattrack messages 5d``
-    - ``[p]stattrack messages all``
+- ``[p]stattrack messages 3w2d``
+- ``[p]stattrack messages 5d``
+- ``[p]stattrack messages all``
 
 .. _stattrack-command-stattrack-servers:
 
@@ -320,9 +319,9 @@ Get server stats.
 at least 1 hour.
 
 **Examples:**
-    - ``[p]stattrack servers 3w2d``
-    - ``[p]stattrack servers 5d``
-    - ``[p]stattrack servers all``
+- ``[p]stattrack servers 3w2d``
+- ``[p]stattrack servers 5d``
+- ``[p]stattrack servers all``
 
 .. _stattrack-command-stattrack-status:
 
@@ -352,10 +351,10 @@ at least 1 hour.
 Defaults to all of them.
 
 **Examples:**
-    - ``[p]stattrack status`` - show all metrics, 1 day
-    - ``[p]stattrack status 3w2d`` - show all metrics, 3 weeks 2 days
-    - ``[p]stattrack status 5d dnd online`` - show dnd & online, 5 days
-    - ``[p]stattrack status all online idle`` - show online & idle, all time
+- ``[p]stattrack status`` - show all metrics, 1 day
+- ``[p]stattrack status 3w2d`` - show all metrics, 3 weeks 2 days
+- ``[p]stattrack status 5d dnd online`` - show dnd & online, 5 days
+- ``[p]stattrack status all online idle`` - show online & idle, all time
 
 .. _stattrack-command-stattrack-system:
 
@@ -397,9 +396,9 @@ Get CPU stats.
 at least 1 hour.
 
 **Examples:**
-    - ``[p]stattrack system cpu 3w2d``
-    - ``[p]stattrack system cpu 5d``
-    - ``[p]stattrack system cpu all``
+- ``[p]stattrack system cpu 3w2d``
+- ``[p]stattrack system cpu 5d``
+- ``[p]stattrack system cpu all``
 
 .. _stattrack-command-stattrack-system-mem:
 
@@ -425,9 +424,9 @@ Get memory usage stats.
 at least 1 hour.
 
 **Examples:**
-    - ``[p]stattrack system mem 3w2d``
-    - ``[p]stattrack system mem 5d``
-    - ``[p]stattrack system mem all``
+- ``[p]stattrack system mem 3w2d``
+- ``[p]stattrack system mem 5d``
+- ``[p]stattrack system mem all``
 
 .. _stattrack-command-stattrack-users:
 
@@ -460,7 +459,7 @@ Note that ``total`` will count users multiple times if they share multiple serve
 Red, while ``unique`` will only count them once.
 
 **Examples:**
-    - ``[p]stattrack users`` - show all metrics, 1 day
-    - ``[p]stattrack users 3w2d`` - show all metrics, 3 weeks 2 days
-    - ``[p]stattrack users 5d total unique`` - show total & unique, 5 days
-    - ``[p]stattrack users all humans bots`` - show humans & bots, all time
+- ``[p]stattrack users`` - show all metrics, 1 day
+- ``[p]stattrack users 3w2d`` - show all metrics, 3 weeks 2 days
+- ``[p]stattrack users 5d total unique`` - show total & unique, 5 days
+- ``[p]stattrack users all humans bots`` - show humans & bots, all time

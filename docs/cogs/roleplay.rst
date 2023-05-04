@@ -73,8 +73,8 @@ Set the channel for the roleplay.
 Leave blank to disable.
 
 **Examples:**
-    - ``[p]roleplay channel`` - disable roleplay
-    - ``[p]roleplay channel #roleplay`` - set the channel to #roleplay
+- ``[p]roleplay channel`` - disable roleplay
+- ``[p]roleplay channel #roleplay`` - set the channel to #roleplay
 
 .. _roleplay-command-roleplay-delete:
 
@@ -97,10 +97,9 @@ The time is in minutes.
 The default is disabled.
 
 **Examples:**
-
-    - ``[p]roleplay delete 5`` - delete after 5 mins
-    - ``[p]roleplay delete 30`` - delete after 30 mins
-    - ``[p]roleplay delete`` - disable deletion
+- ``[p]roleplay delete 5`` - delete after 5 mins
+- ``[p]roleplay delete 30`` - delete after 30 mins
+- ``[p]roleplay delete`` - disable deletion
 
 .. _roleplay-command-roleplay-embed:
 
@@ -121,8 +120,8 @@ Enable or disable embeds.
 The default is disabled.
 
 **Examples:**
-    - ``[p]roleplay embed true`` - enable
-    - ``[p]roleplay embed false`` - disable
+- ``[p]roleplay embed true`` - enable
+- ``[p]roleplay embed false`` - disable
 
 .. _roleplay-command-roleplay-log:
 
@@ -143,8 +142,8 @@ Set a channel to log role play messages to.
 If you do not specify a channel logging will be disabled.
 
 **Examples:**
-    - ``[p]roleplay log #logs`` - set to a channel called logs
-    - ``[p]roleplay log`` - disable logging
+- ``[p]roleplay log #logs`` - set to a channel called logs
+- ``[p]roleplay log`` - disable logging
 
 .. _roleplay-command-roleplay-radio:
 
@@ -165,8 +164,8 @@ Enable or disable radio.
 The default is disabled.
 
 **Examples:**
-    - ``[p]roleplay radio true`` - enable radio mode
-    - ``[p]roleplay radio false`` - disable radio mode
+- ``[p]roleplay radio true`` - enable radio mode
+- ``[p]roleplay radio false`` - disable radio mode
 
 .. _roleplay-command-roleplay-radiofooter:
 
@@ -187,9 +186,8 @@ Set a footer for radio mode (embed only)
 This only applies to embeds.
 
 **Example:**
-
-    - ``[p]roleplay radiofooter Transmission over``
-    - ``[p]roleplay radiofooter`` - reset to none
+- ``[p]roleplay radiofooter Transmission over``
+- ``[p]roleplay radiofooter`` - reset to none
 
 .. _roleplay-command-roleplay-radioimage:
 
@@ -210,9 +208,8 @@ Set an image for radio mode (embed only)
 This only applies to embeds.
 
 **Example:**
-
-    - ``[p]roleplay radioimage https://i.imgur.com/example.png``
-    - ``[p]roleplay radioimage`` - reset to none
+- ``[p]roleplay radioimage https://i.imgur.com/example.png``
+- ``[p]roleplay radioimage`` - reset to none
 
 .. _roleplay-command-roleplay-radiotitle:
 
@@ -233,8 +230,7 @@ Set a title for radio mode (embed only)
 This only applies to embeds.
 
 **Example:**
-
-    - ``[p]roleplay radiotitle New radio transmission detected`` - the default
+- ``[p]roleplay radiotitle New radio transmission detected`` - the default
 
 .. _roleplay-command-roleplay-settings:
 

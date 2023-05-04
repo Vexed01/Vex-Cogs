@@ -72,7 +72,7 @@ class GHView(ui.View):
         await self.master_msg.edit(embed=embed, view=self)
 
     @button(label="Manage labels", style=ButtonStyle.grey)
-    async def btn_add_label(self, button: Button, interaction: Interaction):
+    async def btn_add_label(self, interaction: Interaction, button: Button):
         repo_labels = await self.api.get_repo_labels()
         issue_labels = await self.api.get_issue_labels(self.issue_data["number"])
 
@@ -87,7 +87,7 @@ class GHView(ui.View):
         )
 
     @button(label="Close issue", style=ButtonStyle.red)
-    async def btn_close(self, button: Button, interaction: Interaction):
+    async def btn_close(self, interaction: Interaction, button: Button):
         await self.api.close(self.issue_data["number"])
         button.disabled = True
         self.btn_open.disabled = False
@@ -96,7 +96,7 @@ class GHView(ui.View):
         await self.regen_viw()
 
     @button(label="Reopen issue", style=ButtonStyle.green)
-    async def btn_open(self, button: Button, interaction: Interaction):
+    async def btn_open(self, interaction: Interaction, button: Button):
         await self.api.open(self.issue_data["number"])
         button.disabled = True
         self.btn_close.disabled = False
@@ -105,13 +105,13 @@ class GHView(ui.View):
         await self.regen_viw()
 
     @button(label="Merge", style=ButtonStyle.blurple)
-    async def btn_merge(self, button: Button, interaction: Interaction):
+    async def btn_merge(self, interaction: Interaction, button: Button):
         await interaction.response.send_message(
             "Please choose the merge method. You'll be able to choose a commit message later.",
             view=MergeView(self),
         )
 
     @button(emoji="❌", row=1, style=ButtonStyle.grey)
-    async def btn_del(self, button: Button, interaction: Interaction):
+    async def btn_del(self, interaction: Interaction, button: Button):
         assert self.master_msg is not None
         await self.master_msg.delete()

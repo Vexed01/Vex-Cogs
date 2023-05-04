@@ -26,8 +26,4 @@ async def setup(bot: Red):
 
     cog = CaseInsensitive(bot)
     await out_of_date_check("caseinsensitive", cog.__version__)
-    cog.plug_core()
-    cog.plug_alias()
-    r = bot.add_cog(cog)
-    if r is not None:
-        await r
+    await bot.add_cog(cog)

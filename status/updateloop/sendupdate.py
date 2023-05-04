@@ -5,7 +5,7 @@ from math import floor
 from time import monotonic
 
 import discord
-from discord import Embed, Message, TextChannel
+from discord import Embed, Message, TextChannel, Thread
 from redbot.core.bot import Red
 
 from ..core import FEEDS, UPDATE_NAME
@@ -21,7 +21,7 @@ from ..objects import (
 from ..vexutils import get_vex_logger
 from .utils import get_channel_data, get_webhook
 
-_log = get_vex_logger(__name__)
+log = get_vex_logger(__name__)
 
 
 class SendUpdate:
@@ -68,19 +68,19 @@ class SendUpdate:
             await asyncio.sleep(1)
 
         start = monotonic()
-        _log.info(f"Sending update for {self.service} to {len(channels)} channels...")
+        log.info(f"Sending update for {self.service} to {len(channels)} channels...")
 
         for c_id, settings in channels.items():
             try:
                 await self._send_updated_feed(c_id, settings)
             except Exception:
-                return _log.warning(
+                return log.warning(
                     f"Something went wrong sending to {c_id} - skipping.", exc_info=True
                 )
 
         end = monotonic()
         time = floor(end - start) or "under a"
-        _log.info(f"Sending update for {self.service} took {time} second(s).")
+        log.verbose(f"Sending update for {self.service} took {time} second(s).")
 
     async def _send_updated_feed(self, c_id: int, settings: ConfChannelSettings) -> None:
         """Send feed decalred in init to a channel.
@@ -123,12 +123,12 @@ class SendUpdate:
 
     # TODO: maybe try to do some DRY on the next 3
 
-    async def _send_webhook(self, channel: TextChannel, embed: Embed) -> None:
+    async def _send_webhook(self, channel: TextChannel | Thread, embed: Embed) -> None:
         """Send a webhook to the specified channel
 
         Parameters
         ----------
-        channel : TextChannel
+        channel : TextChannel | Thread
             Channel to send to
         embed : Embed
             Embed to use
@@ -148,6 +148,7 @@ class SendUpdate:
                     avatar_url=ICON_BASE.format(self.service),
                     embed=embed,
                     wait=True,
+                    thread=channel if isinstance(channel, Thread) else discord.utils.MISSING,
                 )
                 await self.config_wrapper.update_edit_id(
                     channel.id, self.service, self.incidentdata.incident_id, sent_webhook.id
@@ -158,14 +159,15 @@ class SendUpdate:
                 username=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
                 avatar_url=ICON_BASE.format(self.service),
                 embed=embed,
+                thread=channel if isinstance(channel, Thread) else discord.utils.MISSING,
             )
 
-    async def _send_embed(self, channel: TextChannel, embed: Embed) -> None:
+    async def _send_embed(self, channel: TextChannel | Thread, embed: Embed) -> None:
         """Send an embed to the specified channel
 
         Parameters
         ----------
-        channel : TextChannel
+        channel : TextChannel | Thread
             Channel to send to
         embed : Embed
             Embed to use
@@ -190,12 +192,12 @@ class SendUpdate:
         else:
             await channel.send(embed=embed)
 
-    async def _send_plain(self, channel: TextChannel, msg: str) -> None:
+    async def _send_plain(self, channel: TextChannel | Thread, msg: str) -> None:
         """Send a plain message to the specified channel
 
         Parameters
         ----------
-        channel : TextChannel
+        channel : TextChannel | Thread
             Channel to send to
         msg : str
             Message to send

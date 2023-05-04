@@ -29,11 +29,12 @@ in #support_vex-cogs.
    cogs/beautify
    cogs/betteruptime
    cogs/birthday
+   cogs/betteruptime
+   cogs/calc
    cogs/caseinsensitive
    cogs/cmdlog
-   cogs/covidgraph
    cogs/fivemstatus
-   cogs/github
+   cogs/ghissues
    cogs/googletrends
    cogs/madtranslate
    cogs/roleplay

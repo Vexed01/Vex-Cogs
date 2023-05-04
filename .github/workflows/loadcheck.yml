@@ -10,30 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9"]
-        red-version:
-          # this workflow required pr #5453 commit d27dbde, which is in dev & pypi 3.4.15+
-          - "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
-          - "Red-DiscordBot==3.4.16"
+        python-version: ["3.8", "3.11"]
         include:
           - red-version: "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
             friendly-red: "Red (dev version)"
-          - red-version: "Red-DiscordBot==3.4.16"
-            friendly-red: "Red 3.4.16"
+          - red-version: "Red-DiscordBot==3.4.19"
+            friendly-red: "Red 3.4.19"
       fail-fast: false
 
     name: Cog load test - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache venv
         id: cache-venv
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: ${{ matrix.red-version }}-${{ matrix.python-version }}-${{ hashFiles('dev-requirements.txt') }}-${{ secrets.CACHE_V }}
@@ -62,7 +58,7 @@ jobs:
 
       - name: Save Red output as Artifact
         if: always() # still run if prev step failed
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "Red log - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}"
           path: red.log

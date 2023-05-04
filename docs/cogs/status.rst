@@ -27,7 +27,7 @@ When there is one, it will send the update to all channels that
 have registered to recieve updates from that service.
 
 There's also the ``status`` command which anyone can use to check
-updates whereever they want.
+updates wherever they want.
 
 If there's a service that you want added, contact Vexed#0714 or
 make an issue on the GitHub repo (or even better a PR!).
@@ -56,7 +56,7 @@ status
 Check for the status of a variety of services, eg Discord.
 
 **Example:**
-    - ``[p]status discord``
+- ``[p]status discord``
 
 .. _status-command-statusset:
 
@@ -125,8 +125,8 @@ Remove all feeds from a channel.
 If you don't specify a channel, I will use the current channel
 
 **Examples:**
-    - ``[p]statusset clear #testing``
-    - ``[p]statusset clear`` (for using current channel)
+- ``[p]statusset clear #testing``
+- ``[p]statusset clear`` (for using current channel)
 
 .. _status-command-statusset-edit:
 
@@ -174,8 +174,8 @@ status channel.
 If you don't specify a channel, I will use the current channel.
 
 **Examples:**
-    - ``[p]statusset edit mode #testing discord latest``
-    - ``[p]statusset edit mode discord edit`` (for current channel)
+- ``[p]statusset edit mode #testing discord latest``
+- ``[p]statusset edit mode discord edit`` (for current channel)
 
 .. _status-command-statusset-edit-restrict:
 
@@ -198,8 +198,8 @@ Enabling this will reduce spam. Instead of sending the whole update
 that automatically receive the status updates, that they have permission to to view.
 
 **Examples:**
-    - ``[p]statusset edit restrict #testing discord true``
-    - ``[p]statusset edit restrict discord false`` (for current channel)
+- ``[p]statusset edit restrict #testing discord true``
+- ``[p]statusset edit restrict discord false`` (for current channel)
 
 .. _status-command-statusset-edit-webhook:
 
@@ -223,8 +223,8 @@ logo and the name will be ``[service] Status Update``, instead of my avatar and 
 If you don't specify a channel, I will use the current channel.
 
 **Examples:**
-    - ``[p]statusset edit webhook #testing discord true``
-    - ``[p]statusset edit webhook discord false`` (for current channel)
+- ``[p]statusset edit webhook #testing discord true``
+- ``[p]statusset edit webhook discord false`` (for current channel)
 
 .. _status-command-statusset-list:
 
@@ -248,8 +248,8 @@ Optionally add a service at the end of the command to view detailed settings for
 service.
 
 **Examples:**
-    - ``[p]statusset list discord``
-    - ``[p]statusset list``
+- ``[p]statusset list discord``
+- ``[p]statusset list``
 
 .. _status-command-statusset-preview:
 
@@ -297,8 +297,8 @@ You can also see this at https://go.vexcodes.com/c/statusref
     of my avatar and name.
 
 **Examples:**
-    - ``[p]statusset preview discord all true``
-    - ``[p]statusset preview discord latest false``
+- ``[p]statusset preview discord all true``
+- ``[p]statusset preview discord latest false``
 
 .. _status-command-statusset-remove:
 
@@ -321,5 +321,5 @@ Stop status updates for a specific service in this server.
 If you don't specify a channel, I will use the current channel.
 
 **Examples:**
-    - ``[p]statusset remove discord #testing``
-    - ``[p]statusset remove discord`` (for using current channel)
+- ``[p]statusset remove discord #testing``
+- ``[p]statusset remove discord`` (for using current channel)

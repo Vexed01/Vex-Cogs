@@ -42,7 +42,7 @@ class Status(
     make an issue on the GitHub repo (or even better a PR!).
     """
 
-    __version__ = "2.5.6"
+    __version__ = "2.5.7"
     __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
@@ -76,9 +76,9 @@ class Status(
                 self.bot.add_dev_env_value("status", lambda _: self)
                 self.bot.add_dev_env_value("statusapi", lambda _: self.statusapi)
                 self.bot.add_dev_env_value("sendupdate", lambda _: SendUpdate)
-                log.debug("Added dev env vars.")
+                log.trace("Added dev env vars.")
             except Exception:
-                log.exception("Unable to add dev env vars.", exc_info=True)
+                log.debug("Unable to add dev env vars.", exc_info=True)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -88,9 +88,9 @@ class Status(
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.loop.cancel()
-        self.bot.loop.create_task(self.session.close())
+        await self.session.close()
 
         try:
             self.bot.remove_dev_env_value("status")
@@ -101,7 +101,7 @@ class Status(
 
         log.info("Status unloaded.")
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         if await self.config.version() == 2:
             await self.migrate_to_v3()
             await self.config.incidents.clear()
@@ -125,11 +125,16 @@ class Status(
         # this will start the loop
         self.ready.set()
 
+        log.trace("status ready")
+
     async def get_initial_data(self, specific_service: Optional[SERVICE_LITERAL] = None) -> None:
         """Start with initial data from services."""
         old_ids = []
-        for service, settings in FEEDS.items():
-            log.debug(f"Starting {service}.")
+        services_to_get = (
+            {specific_service: FEEDS[specific_service]} if specific_service else FEEDS
+        )
+        for service, settings in services_to_get.items():
+            log.trace(f"Starting {service}.")
             try:
                 incidents, etag, status = await self.statusapi.incidents(settings["id"])
                 if status != 200:

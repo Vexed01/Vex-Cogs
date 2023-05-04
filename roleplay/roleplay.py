@@ -467,7 +467,7 @@ class RolePlay(commands.Cog):
             name="Delete After", value=(str(data["delete_after"]) + "mins") or "Disabled"
         )
         embed.add_field(name="Radio Title", value=data["radiotitle"])
-        embed.add_field(name="Radio image", value=data["radioimage"] or "Not set")
-        embed.add_field(name="Radio footer", value=data["radiofooter"] or "Not set")
+        embed.add_field(name="Radio image", value=data.get("radioimage", "Not set"))
+        embed.add_field(name="Radio footer", value=data.get("radiofooter", "Not set"))
 
         await ctx.send(embed=embed)

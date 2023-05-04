@@ -29,7 +29,7 @@ class Birthday(
     Set yours and get a message and role on your birthday!
     """
 
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
     __author__ = "Vexed#0714"
 
     def __init__(self, bot: Red) -> None:
@@ -57,13 +57,13 @@ class Birthday(
 
         self.ready = asyncio.Event()
 
-        bot.add_dev_env_value("birthday", lambda x: self)
+        bot.add_dev_env_value("birthday", lambda _: self)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.loop.cancel()
         self.role_manager.cancel()
 
@@ -93,7 +93,7 @@ class Birthday(
         if not hit:
             log.debug("No user data found for user with ID %s.", target_u_id)
 
-    async def async_init(self) -> None:
+    async def cog_load(self) -> None:
         version = await self.config.version()
         if version == 0:  # first load so no need to update
             await self.config.version.set(1)
@@ -102,9 +102,13 @@ class Birthday(
 
         self.ready.set()
 
+        log.trace("birthday ready")
+
     @commands.command(hidden=True, aliases=["birthdayinfo"])
     async def bdayinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     async def check_if_setup(self, guild: discord.Guild) -> bool:
-        return await self.config.guild(guild).setup_state() == 5
+        state = await self.config.guild(guild).setup_state()
+        log.trace("setup state: %s", state)
+        return state == 5

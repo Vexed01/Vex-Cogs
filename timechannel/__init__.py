@@ -17,7 +17,4 @@ with open(Path(__file__).parent / "info.json") as fp:
 async def setup(bot: Red) -> None:
     cog = TimeChannel(bot)
     await out_of_date_check("timechannel", cog.__version__)
-    await cog.maybe_migrate()
-    r = bot.add_cog(cog)
-    if r is not None:
-        await r
+    await bot.add_cog(cog)

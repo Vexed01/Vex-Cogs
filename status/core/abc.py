@@ -50,7 +50,3 @@ class MixinMeta(ABC):
     @abstractmethod
     async def get_initial_data(self, specific_service: Optional[SERVICE_LITERAL] = None) -> None:
         raise NotImplementedError()
-
-    @abstractmethod
-    async def async_init(self) -> None:
-        raise NotImplementedError()

@@ -30,11 +30,13 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | [beautify](https://go.vexcodes.com/c/beautify) | Beautify and minify JSON. |
 | [betteruptime](https://go.vexcodes.com/c/betteruptime) | See your bot's uptime percentages and check when downtime happened. |
 | [birthday](https://go.vexcodes.com/c/birthday) | Birthday cog with customisable messages and roles. |
+| [buttonpoll](https://go.vexcodes.com/c/buttonpoll) | Create polls with buttons! |
+| [calc](https://go.vexcodes.com/c/calc) | A simple button-based calculator. |
 | [caseinsensitive](https://go.vexcodes.com/c/caseinsensitive) | Make all prefixes and commands case insensitive. |
 | [cmdlog](https://go.vexcodes.com/c/cmdlog) | Track command usage, searchable by user, server or command name. |
 | [covidgraph](https://go.vexcodes.com/c/covidgraph) | Get graphs of COVID-19 data. |
 | [fivemstatus](https://go.vexcodes.com/c/fivemstatus) | View the live status of a FiveM server, in a updating Discord message. |
-| [github](https://go.vexcodes.com/c/github) | Create, comment, labelify and close GitHub issues, with partial PR support. |
+| [ghissues](https://go.vexcodes.com/c/ghissues) | Create, comment, labelify and close GitHub issues, with some PR support. |
 | [googletrends](https://go.vexcodes.com/c/googletrends) | Find out what the world is searching, right from Discord. |
 | [madtranslate](https://go.vexcodes.com/c/madtranslate) | Translate text through lots of languages. Get some funny results! |
 | [roleplay](https://go.vexcodes.com/c/roleplay) | Create an anonymous role play in your server. |

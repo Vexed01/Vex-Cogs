@@ -54,15 +54,18 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         """Nothing to delete"""
         return
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.loop.cancel()
-        log.debug("Loop stopped as cog unloaded.")
+        log.verbose("Loop stopped as cog unloaded.")
+
+    async def cog_load(self) -> None:
+        await self.maybe_migrate()
 
     async def maybe_migrate(self) -> None:
         if await self.config.version() == 2:
             return
 
-        log.debug("Migating to config v2")
+        log.verbose("Migrating to config v2")
         keys = list(ZONE_KEYS.keys())
         values = list(ZONE_KEYS.values())
         all_guilds = await self.config.all_guilds()

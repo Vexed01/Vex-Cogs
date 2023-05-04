@@ -51,8 +51,8 @@ madtranslate
 Translate something into lots of languages, then back to English!
 
 **Examples:**
-    - ``[p]mtrans This is a sentence.``
-    - ``[p]mtrans 25 Here's another one.``
+- ``[p]mtrans This is a sentence.``
+- ``[p]mtrans 25 Here's another one.``
 
 At the bottom of the output embed is a count-seed pair. You can use this with
 the ``mtransseed`` command to use the same language set.
@@ -78,5 +78,5 @@ They may be unreproducible if Google Translate changes its translations.
 The count-seed pair is obtained from the main command, ``mtrans``, in the embed footer.
 
 **Examples:**
-    - ``[p]mtrans 15-111111 This is a sentence.``
-    - ``[p]mtrans 25-000000 Here's another one.``
+- ``[p]mtrans 15-111111 This is a sentence.``
+- ``[p]mtrans 25-000000 Here's another one.``

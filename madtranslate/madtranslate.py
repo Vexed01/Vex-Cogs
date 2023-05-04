@@ -43,6 +43,7 @@ async def get_translation(session: aiohttp.ClientSession, sl: str, tl: str, q: s
         raise ForbiddenExc
 
     as_json = await resp.json()
+    log.trace("raw JSON query result: %s", as_json)
     return as_json[0]
 
 

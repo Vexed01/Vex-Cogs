@@ -76,6 +76,8 @@ class Poll:
 
         self.cog = cog
 
+        log.trace("poll created: %s", self)
+
     def __eq__(self, __o: object) -> bool:
         if isinstance(__o, Poll):
             return self.unique_poll_id == __o.unique_poll_id
@@ -111,6 +113,9 @@ class Poll:
             view=None,  # type:ignore
         )
         cls.view = PollView(cog.config, cls)
+
+        log.trace("poll created from dict: %s", cls)
+
         return cls
 
     def to_dict(self) -> dict:
@@ -147,6 +152,8 @@ class Poll:
         for str_option in raw_vote_data.values():
             results[str_option] += 1
 
+        log.trace("poll results: %s", results)
+
         return results
 
     async def finish(self):
@@ -172,6 +179,8 @@ class Poll:
                 except KeyError:
                     pass
 
+            log.trace("invalid poll %s removed", self.unique_poll_id)
+
             return
 
         channel = guild.get_channel(self.channel_id)
@@ -194,6 +203,8 @@ class Poll:
                     del poll_user_choices[self.unique_poll_id]
                 except KeyError:
                     pass
+
+            log.trace("invalid poll %s removed", self.unique_poll_id)
 
             return
 
@@ -223,6 +234,8 @@ class Poll:
                 " so I cannot end it."
             )
             return
+
+        log.trace("edited old poll message")
 
         if self.send_msg_when_over:
             embed_2 = discord.Embed(
@@ -258,6 +271,8 @@ class Poll:
                 del poll_user_choices[self.unique_poll_id]
             except KeyError:
                 pass
+
+        log.trace("Finished poll %s", self.unique_poll_id)
 
     async def plot(self) -> discord.File:
         results = await self.get_results()

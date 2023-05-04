@@ -44,7 +44,7 @@ bdset
 
 .. code-block:: none
 
-    [p]bdset 
+    [p]bdset
 
 **Description**
 
@@ -69,7 +69,7 @@ bdset channel
 Set the channel where the birthday message will be sent.
 
 **Example:**
-    - ``[p]bdset channel #birthdays`` - set the channel to #birthdays
+- ``[p]bdset channel #birthdays`` - set the channel to #birthdays
 
 .. _birthday-command-bdset-force:
 
@@ -91,11 +91,11 @@ You can @ mention any user or type out their exact name. If you're typing out a 
 spaces, make sure to put quotes around it (``"``).
 
 **Examples:**
-    - ``[p]bdset set @User 1-1-2000`` - set the birthday of ``@User`` to 1/1/2000
-    - ``[p]bdset set User 1/1`` - set the birthday of ``@User`` to 1/1/2000
-    - ``[p]bdset set "User with spaces" 1-1`` - set the birthday of ``@User with spaces``
+- ``[p]bdset set @User 1-1-2000`` - set the birthday of ``@User`` to 1/1/2000
+- ``[p]bdset set User 1/1`` - set the birthday of ``@User`` to 1/1/2000
+- ``[p]bdset set "User with spaces" 1-1`` - set the birthday of ``@User with spaces``
     to 1/1
-    - ``[p]bdset set 354125157387344896 1/1/2000`` - set the birthday of ``@User`` to 1/1/2000
+- ``[p]bdset set 354125157387344896 1/1/2000`` - set the birthday of ``@User`` to 1/1/2000
 
 .. _birthday-command-bdset-interactive:
 
@@ -107,7 +107,7 @@ bdset interactive
 
 .. code-block:: none
 
-    [p]bdset interactive 
+    [p]bdset interactive
 
 **Description**
 
@@ -132,14 +132,14 @@ Set the message to be send when the user did not provide a year.
 If you would like to mention a role, you will need to run ``[p]bdset rolemention true``.
 
 **Placeholders:**
-    - ``{name}`` - the user's name
-    - ``{mention}`` - an @ mention of the user
+- ``{name}`` - the user's name
+- ``{mention}`` - an @ mention of the user
 
     All the placeholders are optional.
 
 **Examples:**
-    - ``[p]bdset msgwithoutyear Happy birthday {mention}!``
-    - ``[p]bdset msgwithoutyear {mention}'s birthday is today! Happy birthday {name}.``
+- ``[p]bdset msgwithoutyear Happy birthday {mention}!``
+- ``[p]bdset msgwithoutyear {mention}'s birthday is today! Happy birthday {name}.``
 
 .. _birthday-command-bdset-msgwithyear:
 
@@ -160,15 +160,15 @@ Set the message to be send when the user did provide a year.
 If you would like to mention a role, you will need to run ``[p]bdset rolemention true``
 
 **Placeholders:**
-    - ``{name}`` - the user's name
-    - ``{mention}`` - an @ mention of the user
-    - ``{new_age}`` - the user's new age
+- ``{name}`` - the user's name
+- ``{mention}`` - an @ mention of the user
+- ``{new_age}`` - the user's new age
 
     All the placeholders are optional.
 
 **Examples:**
-    - ``[p]bdset msgwithyear {mention} has turned {new_age}, happy birthday!``
-    - ``[p]bdset msgwithyear {name} is {new_age} today! Happy birthday {mention}!``
+- ``[p]bdset msgwithyear {mention} has turned {new_age}, happy birthday!``
+- ``[p]bdset msgwithyear {name} is {new_age} today! Happy birthday {mention}!``
 
 .. _birthday-command-bdset-role:
 
@@ -189,9 +189,9 @@ Set the role that will be given to the user on their birthday.
 You can give the exact name or a mention.
 
 **Example:**
-    - ``[p]bdset role @Birthday`` - set the role to @Birthday
-    - ``[p]bdset role Birthday`` - set the role to @Birthday without a mention
-    - ``[p]bdset role 418058139913063657`` - set the role with an ID
+- ``[p]bdset role @Birthday`` - set the role to @Birthday
+- ``[p]bdset role Birthday`` - set the role to @Birthday without a mention
+- ``[p]bdset role 418058139913063657`` - set the role with an ID
 
 .. _birthday-command-bdset-rolemention:
 
@@ -224,7 +224,7 @@ bdset settings
 
 .. code-block:: none
 
-    [p]bdset settings 
+    [p]bdset settings
 
 **Description**
 
@@ -240,7 +240,7 @@ bdset stop
 
 .. code-block:: none
 
-    [p]bdset stop 
+    [p]bdset stop
 
 **Description**
 
@@ -265,9 +265,9 @@ Set the time of day for the birthday message.
 Minutes are ignored.
 
 **Examples:**
-    - ``[p]bdset time 7:00`` - set the time to 7:45AM UTC
-    - ``[p]bdset time 12AM`` - set the time to midnight UTC
-    - ``[p]bdset time 3PM`` - set the time to 3:00PM UTC
+- ``[p]bdset time 7:00`` - set the time to 7:45AM UTC
+- ``[p]bdset time 12AM`` - set the time to midnight UTC
+- ``[p]bdset time 3PM`` - set the time to 3:00PM UTC
 
 .. _birthday-command-bdset-zemigrate:
 
@@ -281,7 +281,7 @@ bdset zemigrate
 
 .. code-block:: none
 
-    [p]bdset zemigrate 
+    [p]bdset zemigrate
 
 **Description**
 
@@ -297,7 +297,7 @@ birthday
 
 .. code-block:: none
 
-    [p]birthday 
+    [p]birthday
 
 .. tip:: Alias: ``bday``
 
@@ -315,7 +315,7 @@ birthday remove
 
 .. code-block:: none
 
-    [p]birthday remove 
+    [p]birthday remove
 
 .. tip:: Aliases: ``birthday delete``, ``birthday del``
 
@@ -346,11 +346,11 @@ You can optionally add in the year, if you are happy to share this.
 If you use a date in the format xx/xx/xx or xx-xx-xx MM-DD-YYYY is assumed.
 
 **Examples:**
-    - ``[p]bday set 24th September``
-    - ``[p]bday set 24th Sept 2002``
-    - ``[p]bday set 9/24/2002``
-    - ``[p]bday set 9-24-2002``
-    - ``[p]bday set 9-24``
+- ``[p]bday set 24th September``
+- ``[p]bday set 24th Sept 2002``
+- ``[p]bday set 9/24/2002``
+- ``[p]bday set 9-24-2002``
+- ``[p]bday set 9-24``
 
 .. _birthday-command-birthday-upcoming:
 
@@ -369,17 +369,7 @@ birthday upcoming
 View upcoming birthdays, defaults to 7 days.
 
 **Examples:**
-    - ``[p]birthday upcoming`` - default of 7 days
-    - ``[p]birthday upcoming 14`` - 14 days
+- ``[p]birthday upcoming`` - default of 7 days
+- ``[p]birthday upcoming 14`` - 14 days
 
 .. _birthday-command-birthdaydebug-upcoming:
-
-""""""""""""""""""""""
-birthdaydebug upcoming
-""""""""""""""""""""""
-
-**Syntax**
-
-.. code-block:: none
-
-    [p]birthdaydebug upcoming 

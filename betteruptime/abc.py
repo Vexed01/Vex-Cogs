@@ -3,8 +3,8 @@ from abc import ABC, ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
 import pandas
+from redbot.core import commands
 from redbot.core.bot import Red
-from redbot.core.commands import CogMeta
 from redbot.core.config import Config
 
 from .vexutils.loop import VexLoop
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from betteruptime.utils import UptimeData
 
 
-class CompositeMetaClass(CogMeta, ABCMeta):
+class CompositeMetaClass(commands.CogMeta, ABCMeta):
     """
     This allows the metaclass used for proper type detection to
     coexist with discord.py's metaclass
@@ -44,5 +44,13 @@ class MixinMeta(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def async_init(self) -> None:
+    async def uptime_command(self, ctx: commands.Context, days: int = 30) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def downtime(self, ctx: commands.Context, days: int = 30) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def uptimegraph(self, ctx: commands.Context, days: int = 30) -> None:
         raise NotImplementedError
