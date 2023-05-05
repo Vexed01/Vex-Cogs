@@ -3,12 +3,6 @@ from typing import Union
 
 import discord
 import pandas
-
-if discord.__version__.startswith("1"):
-    from discord.embeds import EmptyEmbed
-else:
-    EmptyEmbed = None
-
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_timedelta, inline, pagify, text_to_file
 
@@ -186,7 +180,7 @@ class BUCommands(MixinMeta):
             title="Daily uptime data for the last " + str(num_days) + " days",
             description=f"The top lowest uptime days (under `{labelled_pc}%`) will be labelled."
             if labelled_pc
-            else EmptyEmbed,
+            else None,
             colour=await ctx.embed_colour(),
         )
         embed.set_footer(text="Times are in UTC. This excludes today.")
