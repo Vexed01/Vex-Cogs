@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING, List, Literal, Optional
 
 import discord
 from discord.channel import TextChannel
-from redbot.core import Config, commands
+from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 
-from .components.setup import StartSetupView
+from .components.setup import SetupModal, StartSetupView
 from .poll import Poll
 from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.loop import VexLoop
@@ -21,7 +21,7 @@ class ButtonPoll(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -91,7 +91,9 @@ class ButtonPoll(commands.Cog):
 
     @commands.guild_only()  # type:ignore
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command(name="buttonpoll", aliases=["bpoll"], usage="[chan]")
+    @commands.mod_or_permissions(manage_messages=True)
+    @commands.hybrid_command(name="poll")
+    @app_commands.describe(chan="Optional channel. If not specified, the current channel is used.")
     async def buttonpoll(self, ctx: commands.Context, chan: Optional[TextChannel] = None):
         """
         Start a button-based poll
@@ -121,9 +123,12 @@ class ButtonPoll(commands.Cog):
                 "start a poll there."
             )
 
-        view = StartSetupView(author=ctx.author, channel=channel, cog=self)
-
-        await ctx.send("Click bellow to start a poll!", view=view)
+        if ctx.interaction:
+            modal = SetupModal(author=ctx.author, channel=channel, cog=self)
+            await ctx.interaction.response.send_modal(modal)
+        else:
+            view = StartSetupView(author=ctx.author, channel=channel, cog=self)
+            await ctx.send("Click bellow to start a poll!", view=view)
 
     async def buttonpoll_loop(self):
         """Background loop for checking for finished polls."""
