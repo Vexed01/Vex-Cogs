@@ -80,10 +80,7 @@ class StatusCom(MixinMeta):
                     f"You can check updates for {service.friendly} in {channel_list}."
                 )
 
-        try:
-            await ctx.trigger_typing()  # dpy 1
-        except AttributeError:
-            await ctx.typing()  # dpy 2
+        await ctx.typing()
 
         summary, etag, status = await self.statusapi.summary(service.id)
 
@@ -119,11 +116,7 @@ class StatusCom(MixinMeta):
         if components.degraded_comps:
             embed = discord.Embed(
                 title="Components",
-                timestamp=(
-                    datetime.datetime.utcnow()
-                    if discord.__version__.startswith("1")
-                    else discord.utils.utcnow()
-                ),
+                timestamp=(discord.utils.utcnow()),
                 colour=await ctx.embed_colour(),
             )
             for group, comps in components.degraded_comps.items():

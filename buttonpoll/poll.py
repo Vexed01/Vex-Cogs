@@ -9,11 +9,6 @@ import discord
 import pandas as pd
 import plotly.express as px
 from discord.channel import TextChannel
-
-if discord.__version__.startswith("1"):
-    from discord.embeds import EmptyEmbed
-else:
-    EmptyEmbed = None
 from discord.enums import ButtonStyle
 
 from .components.poll import PollView
@@ -214,7 +209,7 @@ class Poll:
         embed = discord.Embed(
             colour=await self.cog.bot.get_embed_color(channel),
             title=self.question,
-            description=self.description or EmptyEmbed,
+            description=self.description or None,
         )
         sorted_results = {
             k: v for k, v in sorted(poll_results.items(), key=lambda x: x[1], reverse=True)

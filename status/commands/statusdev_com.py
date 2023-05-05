@@ -3,22 +3,16 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Optional
 
-import discord
 from discord.ext.commands.errors import CheckFailure
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, pagify, warning
-from redbot.core.utils.menus import start_adding_reactions
 
 from ..commands.converters import ModeConverter, ServiceConverter
 from ..core.abc import MixinMeta
 from ..objects import SendCache, Update
 from ..updateloop import SendUpdate, process_json
 from ..vexutils import get_vex_logger
-
-if discord.__version__.startswith("1"):
-    from redbot.core.utils.predicates import ReactionPredicate
-else:
-    from ..vexutils.button_pred import wait_for_yes_no
+from ..vexutils.button_pred import wait_for_yes_no
 
 _log = get_vex_logger(__name__)
 
@@ -40,14 +34,7 @@ class StatusDevCom(MixinMeta):
             "you want to continue?"
         )
         try:
-            if discord.__version__.startswith("1"):
-                m = await ctx.send(msg)
-                start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
-                pred = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
-                await ctx.bot.wait_for("reaction_add", check=pred, timeout=15)
-                result = pred.result
-            else:
-                result = await wait_for_yes_no(ctx, msg, timeout=15)
+            result = await wait_for_yes_no(ctx, msg, timeout=15)
         except asyncio.TimeoutError:
             await ctx.send("Timeout, aborting.")
             raise CheckFailure("Reactions timed out")

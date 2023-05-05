@@ -109,10 +109,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
 
         description += f"\nYour local time: {datetime_to_timestamp(aware_sys_now)}"
 
-        if discord.__version__.startswith("1"):
-            diff = int(abs((discord_now - sys_now).total_seconds()))
-        else:
-            diff = int(abs((discord_now - aware_sys_now).total_seconds()))
+        diff = int(abs((discord_now - aware_sys_now).total_seconds()))
         if diff > 60:
             description += (
                 f"\n**Warning:** The system clock is out of sync with Discord's clock by {diff} "

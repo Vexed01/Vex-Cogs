@@ -48,7 +48,7 @@ class FiveMLoop(MixinMeta):
             message = data["message"]
             if not message:
                 continue
-            channel = self.bot.get_channel(message.get("channel_id"))  # TODO: dpy 2 - partial chan
+            channel = self.bot.get_partial_messageable(message.get("channel_id"))
             partial_message = channel.get_partial_message(message["msg_id"])
 
             try:

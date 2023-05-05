@@ -98,15 +98,7 @@ async def get_channel_data(bot: Red, c_id: int, settings: ConfChannelSettings) -
         raise NoPermission
 
     if not settings["webhook"]:
-        try:
-            use_embed = await bot.embed_requested(channel)  # type:ignore
-        except TypeError:  # as of time of writing no way to distinguish between red vers with and
-            # without new code - as for some reason i added this while change in PR form :kappa:
-            use_embed = await bot.embed_requested(channel, channel.guild.me)  # type:ignore
-
-        # TODO: clean out at some point:tm:
-        # thing for when i search for dpy2 stuff:
-        # discord.__version__.startswith("1.")
+        use_embed = await bot.embed_requested(channel)
     else:
         use_embed = True
 

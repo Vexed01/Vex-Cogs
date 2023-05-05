@@ -6,11 +6,6 @@ from typing import TYPE_CHECKING, Optional
 
 import discord
 from discord import Interaction, SelectOption, TextChannel, Thread, ui
-
-if discord.__version__.startswith("1"):
-    from discord.embeds import EmptyEmbed
-else:
-    EmptyEmbed = None
 from discord.enums import ButtonStyle
 from redbot.core.commands import parse_timedelta
 
@@ -293,7 +288,7 @@ class SetupYesNoView(discord.ui.View):
         e = discord.Embed(
             colour=await self.cog.bot.get_embed_color(channel),  # type:ignore
             title=poll.question,
-            description=poll.description or EmptyEmbed,
+            description=poll.description or None,
         )
         e.add_field(
             name=(

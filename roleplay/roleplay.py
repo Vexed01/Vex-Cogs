@@ -167,9 +167,7 @@ class RolePlay(commands.Cog):
             embed = discord.Embed(title="New role play message", description=message.content)
             embed.set_author(
                 name=f"{message.author.display_name} ({message.author.id})",
-                icon_url=message.author.avatar_url
-                if discord.__version__.startswith("1")
-                else message.author.display_avatar.url,
+                icon_url=message.author.display_avatar.url,
             )
             embed.add_field(name="Jump link", value=new_msg.jump_url)
             try:

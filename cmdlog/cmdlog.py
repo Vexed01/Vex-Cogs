@@ -5,6 +5,7 @@ from io import StringIO
 from typing import TYPE_CHECKING, Deque, Optional, Union
 
 import discord
+from discord import Interaction, InteractionType
 from discord.channel import TextChannel
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -15,9 +16,6 @@ from cmdlog.objects import TIME_FORMAT, LoggedAppCom, LoggedComError, LoggedComm
 from .channellogger import ChannelLogger
 from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
-
-if discord.__version__.startswith("2"):
-    from discord import Interaction, InteractionType
 
 log = get_vex_logger(__name__)
 
@@ -45,10 +43,7 @@ class CmdLog(commands.Cog):
         )
         # this is about 50MB max from my simulated testing
 
-        if discord.__version__.startswith("1"):
-            self.load_time = datetime.datetime.utcnow()
-        else:
-            self.load_time = discord.utils.utcnow()
+        self.load_time = discord.utils.utcnow()
 
         self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_global(log_content=False)
@@ -149,10 +144,7 @@ class CmdLog(commands.Cog):
         if len(self.log_cache) == 100_000:  # max size
             return "Max log size reached. Only the last 100 000 commands are stored."
 
-        if discord.__version__.startswith("1"):
-            ago = humanize_timedelta(timedelta=datetime.datetime.utcnow() - self.load_time)
-        else:
-            ago = humanize_timedelta(timedelta=discord.utils.utcnow() - self.load_time)
+        ago = humanize_timedelta(timedelta=discord.utils.utcnow() - self.load_time)
         return f"Log started {ago} ago."
 
     def log_list_error(self, e):
