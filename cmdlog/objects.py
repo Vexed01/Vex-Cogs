@@ -153,7 +153,7 @@ class LoggedAppCom(Log):
         app_type: Literal[1, 2, 3],
         target: discord.PartialMessage | discord.User | None,
     ):
-        self.author = BasicDiscordObject(author.id, author.name)
+        self.author = BasicDiscordObject(author.id, str(author))
         self.command = com_name
         self.channel = (
             BasicDiscordObject(channel.id, channel.name)
