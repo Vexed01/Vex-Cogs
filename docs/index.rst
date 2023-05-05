@@ -29,7 +29,7 @@ in #support_vex-cogs.
    cogs/beautify
    cogs/betteruptime
    cogs/birthday
-   cogs/betteruptime
+   cogs/buttonpoll
    cogs/calc
    cogs/caseinsensitive
    cogs/cmdlog
