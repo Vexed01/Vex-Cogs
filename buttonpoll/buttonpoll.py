@@ -94,6 +94,7 @@ class ButtonPoll(commands.Cog):
     @commands.mod_or_permissions(manage_messages=True)
     @commands.hybrid_command(name="poll")
     @app_commands.describe(chan="Optional channel. If not specified, the current channel is used.")
+    @app_commands.default_permissions(manage_messages=True)
     async def buttonpoll(self, ctx: commands.Context, chan: Optional[TextChannel] = None):
         """
         Start a button-based poll
