@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import json
 from typing import Optional
 
-from redbot.core import commands
+import discord
+from redbot.core import app_commands, commands
 from redbot.core.bot import Red
 
 from .errors import JSONDecodeError, NoData
@@ -20,9 +23,6 @@ except ImportError:
     use_pyjson = False
     log.debug("pyjson5 not available")
 
-# NOTE FOR DOCSTRINGS:
-# They don't use a normal space character, if you're editing them make sure to copy and paste
-
 
 class Beautify(commands.Cog):
     """
@@ -36,7 +36,7 @@ class Beautify(commands.Cog):
     """
 
     __author__ = "Vexed#0714"
-    __version__ = "1.1.2"
+    __version__ = "1.1.3"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -53,20 +53,29 @@ class Beautify(commands.Cog):
     async def beautifyinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
-    async def send_invalid(self, ctx: commands.Context):
-        if ctx.author.id in self.bot.owner_ids:  # type:ignore
+    async def send_invalid(
+        self, ctx: commands.Context | None = None, interaction: discord.Interaction | None = None
+    ):
+        author = ctx.author if ctx else interaction.user
+        if author.id in self.bot.owner_ids:  # type:ignore
             if use_pyjson:
                 msg = ""
             else:
                 msg = (
                     "\n\n_It looks like you're a bot owner. If you just passed a Python dict, you "
-                    f"can run this to let me support them `{ctx.clean_prefix}pipinstall pyjson5` "
+                    f"can run this to let me support them `{ctx.clean_prefix if ctx else '/'}"
+                    "pipinstall pyjson5` "
                     "You'll need to reload the cog. This might not work on Windows._"
                 )
         else:
             msg = ""
 
-        await ctx.send(f"That doesn't look like valid JSON.{msg}")
+        if ctx:
+            await ctx.send(f"That doesn't look like valid JSON.{msg}")
+        elif interaction:
+            await interaction.response.send_message(f"That doesn't look like valid JSON.{msg}")
+        else:
+            raise ValueError("No context or interaction passed.")
 
     @commands.command(name="beautify")
     async def com_beautify(self, ctx: commands.Context, *, data: Optional[str]):
@@ -99,7 +108,7 @@ class Beautify(commands.Cog):
 
         beautified = json.dumps(json_dict, indent=4)
 
-        await send_output(ctx, beautified, changed_input)
+        await send_output(beautified, changed_input, ctx=ctx)
 
     @commands.command(name="minify")
     async def com_minify(self, ctx: commands.Context, *, data: Optional[str]):
@@ -129,8 +138,71 @@ class Beautify(commands.Cog):
         try:
             json_dict, changed_input = decode_json(raw_json)
         except JSONDecodeError:
-            return await self.send_invalid(ctx)
+            await self.send_invalid(ctx)
+            return
 
         beautified = json.dumps(json_dict)
 
-        await send_output(ctx, beautified, changed_input)
+        await send_output(beautified, changed_input, ctx=ctx)
+
+    @app_commands.describe(paste="Paste JSON data", attachment="Upload a JSON file")
+    @app_commands.command(name="beautify")
+    async def beautify_slash(
+        self,
+        interaction: discord.Interaction,
+        *,
+        paste: Optional[str],
+        attachment: Optional[discord.Attachment],
+    ):
+        """Beautify some JSON. Choose either to paste data or upload an attachment."""
+        if attachment:
+            raw_json = (await attachment.read()).decode("utf-8")
+        else:
+            raw_json = paste
+
+        if not raw_json:
+            await interaction.response.send_message(
+                "No data found. Make sure to either paste data or upload a file."
+            )
+            return
+
+        try:
+            json_dict, changed_input = decode_json(raw_json)
+        except JSONDecodeError:
+            await self.send_invalid(interaction=interaction)
+            return
+
+        beautified = json.dumps(json_dict, indent=4)
+
+        await send_output(beautified, changed_input, interaction=interaction)
+
+    @app_commands.describe(paste="Paste JSON data", attachment="Upload a JSON file")
+    @app_commands.command(name="minify")
+    async def minify_slash(
+        self,
+        interaction: discord.Interaction,
+        *,
+        paste: Optional[str],
+        attachment: Optional[discord.Attachment],
+    ):
+        """Minify some JSON. Choose either to paste data or upload an attachment."""
+        if attachment:
+            raw_json = (await attachment.read()).decode("utf-8")
+        else:
+            raw_json = paste
+
+        if not raw_json:
+            await interaction.response.send_message(
+                "No data found. Make sure to either paste data or upload a file."
+            )
+            return
+
+        try:
+            json_dict, changed_input = decode_json(raw_json)
+        except JSONDecodeError:
+            await self.send_invalid(interaction=interaction)
+            return
+
+        beautified = json.dumps(json_dict)
+
+        await send_output(beautified, changed_input, interaction=interaction)

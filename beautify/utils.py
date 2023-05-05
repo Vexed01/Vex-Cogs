@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from typing import NamedTuple, Optional
 
@@ -111,8 +113,18 @@ def decode_json(str_json: str) -> DecodeReturn:
         raise JSONDecodeError()
 
 
-async def send_output(ctx: commands.Context, text: str, changed_input: bool):
+async def send_output(
+    text: str,
+    changed_input: bool,
+    *,
+    ctx: commands.Context | None = None,
+    interaction: discord.Interaction | None = None,
+):
     """Send output as a codeblock or file, depending on file limits. Handles no attachment perm."""
+
+    if ctx is None and interaction is None:
+        raise ValueError("ctx and interaction cannot both be None")
+
     if changed_input:
         extra = (
             "You inputted a Python dictionary. **Python dictionaries are not compatible with the "
@@ -123,13 +135,15 @@ async def send_output(ctx: commands.Context, text: str, changed_input: bool):
         extra = ""
 
     if (len(text) + len(extra)) < 1980 and text.count("\n") < 20:  # limit long messages
-        await ctx.send(extra + box(text, lang="json"))
+        if ctx:
+            await ctx.send(extra + box(text, lang="json"))
+        else:
+            await interaction.response.send_message(extra + box(text, lang="json"))
     else:
-        if ctx.guild and not ctx.channel.permissions_for(ctx.me).attach_files:  # type:ignore
-            return await ctx.send(
-                f"{extra}The output is big and I don't have permission to attach files. "
-                "You could try again in my DMs."
-            )
-
         file = text_to_file(text, "output.json")
-        await ctx.send(f"{extra}The output is big, so I've attached it as a file.", file=file)
+        if ctx:
+            await ctx.send(f"{extra}The output is big, so I've attached it as a file.", file=file)
+        else:
+            await interaction.response.send_message(
+                f"{extra}The output is big, so I've attached it as a file.", file=file
+            )
