@@ -60,7 +60,7 @@ class SetupModal(discord.ui.Modal):
         placeholder="Times in UTC. Examples: 12AM, 5AM",
     )
 
-    # bellow was valid then discord decided nope
+    # below was valid then discord decided nope
 
     # time = discord.ui.Select(
     #     placeholder="Time of day to send messages",
@@ -131,10 +131,19 @@ class SetupModal(discord.ui.Modal):
             conf["time_utc_s"] = time_utc_s
             conf["message_w_year"] = self.message_w_year.value
             conf["message_wo_year"] = self.message_wo_year.value
-            conf["setup_state"] = 3
+            conf["setup_state"] += 3
+            if conf["setup_state"] > 5:
+                conf["setup_state"] = 5
 
-        await interaction.response.send_message(
-            "All set, but you're not quite ready yet. Just set up the channel and role with `bdset"
-            " role` and `bdset channel` then birthdays will be sent and assigned. You can check"
-            " with `bdset settings`"
-        )
+            state = conf["setup_state"]
+
+        if state == 5:
+            await interaction.response.send_message(
+                "All set! Users can add their birthday with `birthday set`"
+            )
+        else:
+            await interaction.response.send_message(
+                "All set, but you're not quite ready yet. Just set up the channel and role with "
+                "`bdset role` and `bdset channel` then birthdays will be sent and assigned. You "
+                "can check with `bdset settings`"
+            )

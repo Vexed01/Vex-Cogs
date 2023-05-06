@@ -232,7 +232,7 @@ class BirthdayAdminCommands(MixinMeta):
         if TYPE_CHECKING:
             assert isinstance(ctx.author, discord.Member)
 
-        await ctx.send("Click bellow to start.", view=SetupView(ctx.author, self.bot, self.config))
+        await ctx.send("Click below to start.", view=SetupView(ctx.author, self.bot, self.config))
 
     @bdset.command()
     async def settings(self, ctx: commands.Context):
