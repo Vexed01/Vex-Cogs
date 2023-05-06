@@ -83,7 +83,7 @@ class SetupModal(discord.ui.Modal):
                 + box(self.message_wo_year.value or "Not set")
             )
 
-        time_utc_s = int(self.time.values[0])
+        time_utc_s = int(self.time.value)
 
         try:
             format_bday_message(self.message_w_year.value, interaction.user, 1)
