@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import re
+import warnings
 
+from bs4 import MarkupResemblesLocatorWarning
 from dateutil.parser import parse as parse_time
 from markdownify import markdownify
 from redbot.core.utils.chat_formatting import humanize_list, pagify
@@ -9,6 +11,8 @@ from redbot.core.utils.chat_formatting import humanize_list, pagify
 from ..core import TYPES_LITERAL
 from ..objects import IncidentData, UpdateField
 from ..vexutils.chat import datetime_to_timestamp
+
+warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 
 
 def _handle_long_fields(
