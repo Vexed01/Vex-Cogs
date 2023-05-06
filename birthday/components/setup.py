@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import datetime
+
 import discord
+from dateutil.parser import ParserError, parse
 from redbot.core import Config
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, warning
@@ -83,7 +86,20 @@ class SetupModal(discord.ui.Modal):
                 + box(self.message_wo_year.value or "Not set")
             )
 
-        time_utc_s = int(self.time.value)
+        try:
+            time_utc = parse(
+                self.time.value,
+                ignoretz=True,
+                default=datetime.datetime(year=1, month=1, day=1),
+            ).replace(year=1, month=1, day=1, minute=0, second=0, microsecond=0)
+            midnight = datetime.datetime.utcnow().replace(
+                year=1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0
+            )
+
+            time_utc_s = int((time_utc - midnight).total_seconds())
+        except ParserError:
+            await interaction.response.send_message("That's not a valid time.", ephemeral=True)
+            return
 
         try:
             format_bday_message(self.message_w_year.value, interaction.user, 1)
