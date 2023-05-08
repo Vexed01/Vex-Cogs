@@ -531,6 +531,39 @@ Birthday
 
 - Initial release
 
+
+.. _cl_buttonpoll:
+
+==========
+ButtonPoll
+==========
+
+*********
+``1.1.2``
+*********
+
+- Refactor loop
+- Improve slash support
+
+*********
+``1.1.1``
+*********
+
+- Add slash support
+
+*********
+``1.1.0``
+*********
+
+- Use modals for setup
+
+*********
+``1.0.0``
+*********
+
+- Initial release
+
+
 .. _cl_caseinsensitive:
 
 ===============

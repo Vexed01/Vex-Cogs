@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, List, Literal, Optional
@@ -6,9 +8,10 @@ import discord
 from discord.channel import TextChannel
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
+from redbot.core.commands import parse_timedelta
 
-from .components.setup import SetupModal, StartSetupView
-from .poll import Poll
+from .components.setup import SetupYesNoView, StartSetupView
+from .poll import Poll, PollOption
 from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.loop import VexLoop
 
@@ -21,7 +24,7 @@ class ButtonPoll(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -92,9 +95,7 @@ class ButtonPoll(commands.Cog):
     @commands.guild_only()  # type:ignore
     @commands.bot_has_permissions(embed_links=True)
     @commands.mod_or_permissions(manage_messages=True)
-    @commands.hybrid_command(name="poll")
-    @app_commands.describe(chan="Optional channel. If not specified, the current channel is used.")
-    @app_commands.default_permissions(manage_messages=True)
+    @commands.command(alias=["poll", "bpoll"])
     async def buttonpoll(self, ctx: commands.Context, chan: Optional[TextChannel] = None):
         """
         Start a button-based poll
@@ -124,12 +125,79 @@ class ButtonPoll(commands.Cog):
                 "start a poll there."
             )
 
-        if ctx.interaction:
-            modal = SetupModal(author=ctx.author, channel=channel, cog=self)
-            await ctx.interaction.response.send_modal(modal)
-        else:
-            view = StartSetupView(author=ctx.author, channel=channel, cog=self)
-            await ctx.send("Click bellow to start a poll!", view=view)
+        view = StartSetupView(author=ctx.author, channel=channel, cog=self)
+        await ctx.send("Click below to start a poll!", view=view)
+
+    @app_commands.guild_only()
+    @app_commands.default_permissions(manage_messages=True)
+    @app_commands.describe(
+        channel="Channel to start the poll in.",
+        question="Question to ask.",
+        description="An optional description.",
+        duration="Duration of the poll. Examples: 1 day, 1 minute, 4 hours",
+        choice1="First choice.",
+        choice2="Second choice.",
+        choice3="Optional third choice.",
+        choice4="Optional fourth choice.",
+        choice5="Optional fifth choice.",
+    )
+    @app_commands.command(name="poll", description="Start a button-based poll.")
+    async def poll_slash(
+        self,
+        interaction: discord.Interaction,
+        channel: Optional[discord.TextChannel],
+        question: app_commands.Range[str, 1, 256],
+        description: Optional[app_commands.Range[str, 1, 4000]],
+        duration: app_commands.Range[str, 1, 20],
+        choice1: app_commands.Range[str, 1, 80],
+        choice2: app_commands.Range[str, 1, 80],
+        choice3: Optional[app_commands.Range[str, 1, 80]],
+        choice4: Optional[app_commands.Range[str, 1, 80]],
+        choice5: Optional[app_commands.Range[str, 1, 80]],
+    ):
+        try:
+            parsed_duration = parse_timedelta(duration or "")
+        except Exception:
+            await interaction.response.send_message(
+                "Invalid time format. Please use a valid time format, for example `1 day`, "
+                "`1 minute`, `4 hours`.",
+                ephemeral=True,
+            )
+            return
+        if parsed_duration is None:
+            await interaction.response.send_message(
+                "Invalid time format. Please use a valid time format, for example `1 day`, "
+                "`1 minute`, `4 hours`.",
+                ephemeral=True,
+            )
+            return
+
+        str_options: set[str | None] = {choice1, choice2, choice3, choice4, choice5}
+        str_options.discard(None)
+        if len(str_options) < 2:
+            await interaction.response.send_message(
+                "You must provide at least two unique choices. No duplicates!",
+                ephemeral=True,
+            )
+            return
+
+        options: list[PollOption] = []
+        for option in str_options:
+            options.append(PollOption(option, discord.ButtonStyle.primary))
+
+        await interaction.response.send_message(
+            "Great! Just a few quick questions now.",
+            view=SetupYesNoView(
+                author=interaction.user,
+                channel=channel or interaction.channel,
+                cog=self,
+                question=question,
+                description=description or "",
+                time=parsed_duration,
+                options=options,
+            ),
+            ephemeral=True,
+        )
 
     async def buttonpoll_loop(self):
         """Background loop for checking for finished polls."""

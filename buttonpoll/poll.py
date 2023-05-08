@@ -206,39 +206,17 @@ class Poll:
         poll_msg = channel.get_partial_message(self.message_id)
         poll_results = await self.get_results()
 
-        embed = discord.Embed(
-            colour=await self.cog.bot.get_embed_color(channel),
-            title=self.question,
-            description=self.description or None,
-        )
         sorted_results = {
             k: v for k, v in sorted(poll_results.items(), key=lambda x: x[1], reverse=True)
         }
 
-        embed.add_field(
-            name="Results",
-            value="\n".join(f"{k}: {v}" for k, v in sorted_results.items()),
-            inline=False,
-        )
-
-        try:
-            await poll_msg.edit(embed=embed, content="", view=None)
-        except discord.NotFound:
-            log.warning(
-                f"Poll {self.unique_poll_id}'s message was not found in channel {self.channel_id},"
-                " so I cannot end it."
-            )
-            return
-
-        log.trace("edited old poll message")
-
         if self.send_msg_when_over:
-            embed_2 = discord.Embed(
+            embed = discord.Embed(
                 title="Poll finished",
                 colour=await self.cog.bot.get_embed_color(channel),
                 description=f"**{self.question}** has finished!",
             )
-            embed_2.add_field(
+            embed.add_field(
                 name="Results",
                 value="\n".join(f"{k}: {v}" for k, v in sorted_results.items()),
                 inline=False,
@@ -252,9 +230,48 @@ class Poll:
 
             plot = await self.plot()
 
-            embed_2.set_image(url="attachment://plot.png")
-            await channel.send(embed=embed_2, file=plot, view=view)
+            embed.set_image(url="attachment://plot.png")
+            message = await channel.send(embed=embed, file=plot, view=view)
             view.stop()
+
+            view2 = discord.ui.View()
+            view2.add_item(
+                discord.ui.Button(
+                    label="Poll finished. View results",
+                    style=ButtonStyle.link,
+                    url=message.jump_url,
+                )
+            )
+            try:
+                await poll_msg.edit(view=view2)
+            except discord.NotFound:
+                log.warning(
+                    f"Poll {self.unique_poll_id}'s message was not found in channel "
+                    f"{self.channel_id}, so I cannot edit it."
+                )
+        else:
+            embed = discord.Embed(
+                colour=await self.cog.bot.get_embed_color(channel),
+                title=self.question,
+                description=self.description or None,
+            )
+
+            embed.add_field(
+                name="Results",
+                value="\n".join(f"{k}: {v}" for k, v in sorted_results.items()),
+                inline=False,
+            )
+
+            try:
+                await poll_msg.edit(embed=embed, content="", view=None)
+            except discord.NotFound:
+                log.warning(
+                    f"Poll {self.unique_poll_id}'s message was not found in channel "
+                    f"{self.channel_id}, so I cannot end it."
+                )
+                return
+
+            log.trace("edited old poll message")
 
         async with self.cog.config.guild(guild).poll_settings() as poll_settings:
             try:
