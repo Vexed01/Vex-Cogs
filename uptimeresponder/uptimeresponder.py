@@ -61,7 +61,7 @@ class UptimeResponder(commands.Cog):
 
     async def main_page(self, request: web.Request) -> web.Response:
         name = self.bot.user.name if self.bot.user else "Unknown"
-        log.trace("received HTTP GET request from %s", request.remote)
+        log.verbose("received HTTP GET request from %s", request.remote)
         return web.Response(
             text=f"{name} is online and the UptimeResponder cog is loaded.", status=200
         )

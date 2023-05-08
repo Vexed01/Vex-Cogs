@@ -26,20 +26,20 @@ class TCLoop(MixinMeta):
         next_iter = datetime.datetime.fromtimestamp(time) - now
         seconds_to_sleep = (next_iter).total_seconds()
 
-        _log.trace(f"Sleeping for {seconds_to_sleep} seconds until next iter...")
+        _log.verbose(f"Sleeping for {seconds_to_sleep} seconds until next iter...")
         await asyncio.sleep(seconds_to_sleep)
 
     async def timechannel_loop(self) -> None:
         await self.bot.wait_until_red_ready()
         await asyncio.sleep(1)
-        _log.verbose("Timechannel loop has started.")
+        _log.debug("Timechannel loop has started.")
         while True:
             try:
                 self.loop_meta.iter_start()
                 await self.maybe_update_channels()
                 self.loop_meta.iter_finish()
 
-                _log.verbose("Timechannel iteration finished")
+                _log.debug("Timechannel iteration finished")
             except Exception as e:
                 _log.exception(
                     "Something went wrong in the timechannel loop. Some channels may have been "
@@ -51,7 +51,7 @@ class TCLoop(MixinMeta):
     async def maybe_update_channels(self) -> None:
         all_guilds: dict[int, dict[str, dict[int, str]]] = await self.config.all_guilds()
         if not all_guilds:
-            _log.trace("No time channels registered, nothing to do...")
+            _log.verbose("No time channels registered, nothing to do...")
             return
 
         reps = gen_replacements()
@@ -59,14 +59,14 @@ class TCLoop(MixinMeta):
         for guild_id, guild_data in all_guilds.items():
             guild = self.bot.get_guild(guild_id)
             if guild is None:
-                _log.trace(f"Can't find guild with ID {guild_id} - skipping")
+                _log.debug(f"Can't find guild with ID {guild_id} - skipping")
                 continue
 
             for c_id, string in guild_data.get("timechannels", {}).items():
                 channel = self.bot.get_channel(int(c_id))
                 if channel is None:
                     # yes log *could* be inaccurate but a timezone being removed is unlikely
-                    _log.trace(f"Can't find channel with ID {c_id} - skipping")
+                    _log.debug(f"Can't find channel with ID {c_id} - skipping")
                     continue
 
                 assert isinstance(channel, VoiceChannel)
@@ -78,7 +78,7 @@ class TCLoop(MixinMeta):
                         name=new_name,
                         reason="Edited for timechannel - disable with `tcset remove`",
                     )
-                    _log.trace(f"Edited channel {c_id} to {new_name}")
+                    _log.verbose(f"Edited channel {c_id} to {new_name}")
                 except HTTPException:
                     _log.warning(
                         f"Unable to edit channel ID {c_id} in guild {guild_id} ({guild.name})"

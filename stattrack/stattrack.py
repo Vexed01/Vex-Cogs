@@ -174,6 +174,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         start = time.monotonic()
         data = {}
 
+        log.debug("stattrack loop starting")
+
         try:
             latency = round(self.bot.latency * 1000)
             if latency > 1000:  # somethings up... lets not track stats
@@ -238,7 +240,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             await self.driver.append(df)
             end = time.monotonic()
             save_time = round(end - start, 3)
-            log.trace(f"SQLite append operation took {save_time} seconds")
+            log.verbose(f"SQLite append operation took {save_time} seconds")
         except Exception:  # could be new schema (columns)
             start = time.monotonic()
             old_df = await self.driver.read_all()
@@ -246,7 +248,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             await self.driver.write(df)
             end = time.monotonic()
             save_time = round(end - start, 3)
-            log.trace(f"SQLite write operation took {save_time} seconds")
+            log.verbose(f"SQLite write operation took {save_time} seconds")
 
         total_time = main_time + save_time
         self.last_loop_raw = total_time
@@ -262,3 +264,5 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             )
 
         self.last_loop_time = f"{total_time} seconds ({main_time}, {save_time})"
+
+        log.debug("stattrack loop finished")

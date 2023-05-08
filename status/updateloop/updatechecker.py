@@ -35,7 +35,7 @@ class StatusLoop(MixinMeta):
 
         while True:
             self.loop_meta.iter_start()
-            log.verbose("Update loop started.")
+            log.debug("Update loop started.")
             if not self.used_feeds.get_list():
                 return log.verbose("Nothing to do - no channels have registered for auto updates.")
             start = monotonic()
@@ -60,7 +60,7 @@ class StatusLoop(MixinMeta):
             end = monotonic()
             total = round(end - start, 1)
 
-            log.trace(f"Update loop finished in {total}s.")
+            log.debug(f"Update loop finished in {total}s.")
 
             self.actually_send = True
 
