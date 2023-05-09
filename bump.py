@@ -16,6 +16,7 @@ COGS = [
     "cmdlog",
     "fivemstatus",
     "ghissues",
+    "googletrends",
     "madtranslate",
     "roleplay",
     "stattrack",
