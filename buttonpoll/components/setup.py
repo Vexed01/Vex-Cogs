@@ -27,7 +27,7 @@ class StartSetupView(discord.ui.View):
         channel: discord.TextChannel | discord.Thread,
         cog: "ButtonPoll",
     ):
-        super().__init__(timeout=180)
+        super().__init__(timeout=300)
 
         self.author = author
         self.channel = channel
