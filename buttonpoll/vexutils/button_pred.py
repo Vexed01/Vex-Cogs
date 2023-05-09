@@ -66,7 +66,7 @@ async def wait_for_press(
     content: Optional[str] = None,
     embed: Optional[Embed] = None,
     *,
-    timeout: float = 180.0,
+    timeout: float = 300.0,
 ) -> Any:
     """Wait for a single button press with customisable buttons.
 
@@ -83,7 +83,7 @@ async def wait_for_press(
     embed : Optional[Embed], optional
         Embed of the message, by default None
     timeout : float, optional
-        Button timeout, by default 180.0
+        Button timeout, by default 300.0
 
     Returns
     -------
@@ -128,7 +128,7 @@ async def wait_for_yes_no(
     content: Optional[str] = None,
     embed: Optional[Embed] = None,
     *,
-    timeout: float = 180.0,
+    timeout: float = 300.0,
 ) -> bool:
     """Wait for a single button press of pre-defined yes and no buttons, returning True for yes
     and False for no.
@@ -146,7 +146,7 @@ async def wait_for_yes_no(
     embed : Optional[Embed], optional
         Embed of the message, by default None
     timeout : float, optional
-        Button timeout, by default 180.0
+        Button timeout, by default 300.0
 
     Returns
     -------
