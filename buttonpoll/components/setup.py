@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import os
 from datetime import timedelta
 from typing import TYPE_CHECKING, Optional
 
@@ -261,8 +262,12 @@ class SetupYesNoView(discord.ui.View):
 
         self.stop()
 
-        unique_poll_id = (  # msg ID and first 25 chars of sanitised question
-            str(interaction.id) + "_" + "".join(c for c in self.question if c.isalnum())[:25]
+        unique_poll_id = (  # rand hex, interaction ID, first 25 chars of sanitised question
+            os.urandom(5).hex()
+            + "_"
+            + str(interaction.id)
+            + "_"
+            + "".join(c for c in self.question if c.isalnum())[:25]
         )
         poll_finish = datetime.datetime.now(datetime.timezone.utc) + self.time
 
