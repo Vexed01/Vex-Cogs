@@ -9,7 +9,7 @@ from discord.channel import TextChannel
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.commands import parse_timedelta
-from redbot.core.utils.chat_formatting import pagify, humanize_list
+from redbot.core.utils.chat_formatting import humanize_list, pagify
 
 from .components.setup import SetupYesNoView, StartSetupView
 from .poll import Poll, PollOption
@@ -30,9 +30,7 @@ class ButtonPoll(commands.Cog):
     def __init__(self, bot: Red) -> None:
         self.bot = bot
 
-        self.config: Config = Config.get_conf(
-            self, 418078199982063626, force_registration=True
-        )
+        self.config: Config = Config.get_conf(self, 418078199982063626, force_registration=True)
         self.config.register_guild(
             poll_settings={},
             poll_user_choices={},
@@ -52,9 +50,7 @@ class ButtonPoll(commands.Cog):
     async def red_delete_data_for_user(
         self,
         *,
-        requester: Literal[
-            "discord_deleted_user", "owner", "user", "user_strict"
-        ],
+        requester: Literal["discord_deleted_user", "owner", "user", "user_strict"],
         user_id: int,
     ):
         for g_id, g_polls in (await self.config.all_guilds()).items():
@@ -94,20 +90,14 @@ class ButtonPoll(commands.Cog):
             for poll in guild_polls["poll_settings"].values():
                 obj_poll = Poll.from_dict(poll, self)
                 self.polls.append(obj_poll)
-                self.bot.add_view(
-                    obj_poll.view, message_id=obj_poll.message_id
-                )
-                log.debug(
-                    f"Re-initialised view for poll {obj_poll.unique_poll_id}"
-                )
+                self.bot.add_view(obj_poll.view, message_id=obj_poll.message_id)
+                log.debug(f"Re-initialised view for poll {obj_poll.unique_poll_id}")
 
     @commands.guild_only()  # type:ignore
     @commands.bot_has_permissions(embed_links=True)
     @commands.mod_or_permissions(manage_messages=True)
     @commands.command(aliases=["poll", "bpoll"])
-    async def buttonpoll(
-        self, ctx: commands.Context, chan: Optional[TextChannel] = None
-    ):
+    async def buttonpoll(self, ctx: commands.Context, chan: Optional[TextChannel] = None):
         """
         Start a button-based poll
 
@@ -122,14 +112,10 @@ class ButtonPoll(commands.Cog):
         channel = chan or ctx.channel
         if TYPE_CHECKING:
             assert isinstance(channel, (TextChannel, discord.Thread))
-            assert isinstance(
-                ctx.author, discord.Member
-            )  # we are in a guild...
+            assert isinstance(ctx.author, discord.Member)  # we are in a guild...
 
         # these two checks are untested :)
-        if not channel.permissions_for(
-            ctx.author
-        ).send_messages:  # type:ignore
+        if not channel.permissions_for(ctx.author).send_messages:  # type:ignore
             return await ctx.send(
                 f"You don't have permission to send messages in {channel.mention}, so I can't "
                 "start a poll there."
@@ -156,9 +142,7 @@ class ButtonPoll(commands.Cog):
         choice4="Optional fourth choice.",
         choice5="Optional fifth choice.",
     )
-    @app_commands.command(
-        name="poll", description="Start a button-based poll."
-    )
+    @app_commands.command(name="poll", description="Start a button-based poll.")
     async def poll_slash(
         self,
         interaction: discord.Interaction,
@@ -238,9 +222,7 @@ class ButtonPoll(commands.Cog):
             if obj_poll.message_id == message_id:
                 break
         else:
-            return await ctx.send(
-                "Could not find poll associated with this message!"
-            )
+            return await ctx.send("Could not find poll associated with this message!")
         votes = conf["poll_user_choices"].get(obj_poll.unique_poll_id, {})
         if not votes:
             return await ctx.send("This poll has no votes yet!")
@@ -256,9 +238,7 @@ class ButtonPoll(commands.Cog):
                 mention = f"<@{user_id}>"
             options[vote].append(mention)
 
-        sorted_votes = sorted(
-            options.items(), key=lambda x: len(x[1]), reverse=True
-        )
+        sorted_votes = sorted(options.items(), key=lambda x: len(x[1]), reverse=True)
 
         text = ""
         for vote, voters in sorted_votes:
@@ -289,9 +269,7 @@ class ButtonPoll(commands.Cog):
             if obj_poll.message_id == message_id:
                 break
         else:
-            return await ctx.send(
-                "Could not find poll associated with this message!"
-            )
+            return await ctx.send("Could not find poll associated with this message!")
         await obj_poll.finish()
         await ctx.tick()
 
