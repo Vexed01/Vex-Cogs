@@ -9,7 +9,7 @@ from discord.channel import TextChannel
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.commands import parse_timedelta
-from redbot.core.utils.chat_formatting import pagify
+from redbot.core.utils.chat_formatting import pagify, humanize_list
 
 from .components.setup import SetupYesNoView, StartSetupView
 from .poll import Poll, PollOption
@@ -242,16 +242,26 @@ class ButtonPoll(commands.Cog):
         if not votes:
             return await ctx.send("This poll has no votes yet!")
 
-        voters = ""
+        options = {}
         for user_id, vote in votes.items():
+            if vote not in options:
+                options[vote] = []
             user = ctx.guild.get_member(int(user_id))
             if user:
                 mention = user.mention
             else:
                 mention = f"<@{user_id}>"
-            voters += f"{mention}: {vote}\n"
+            options[vote].append(mention)
 
-        for p in pagify(voters):
+        sorted_votes = sorted(
+            options.items(), key=lambda x: len(x[1]), reverse=True
+        )
+
+        text = ""
+        for vote, voters in sorted_votes:
+            text += f"**{vote}:** {humanize_list(voters)}\n"
+
+        for p in pagify(text):
             embed = discord.Embed(
                 title=obj_poll.question,
                 description=p,
