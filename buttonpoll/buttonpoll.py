@@ -225,14 +225,17 @@ class ButtonPoll(commands.Cog):
     @commands.guild_only()  # type:ignore
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(aliases=["voters"])
-    async def getvoters(self, ctx: commands.Context, message: discord.Message):
+    async def getvoters(self, ctx: commands.Context, message_id: int):
         """
         Fetch the current voters for a running poll
+
+        **Arguments**
+        - `message_id`: (integer) The ID of the poll message
         """
         conf = await self.config.guild(ctx.guild).all()
         for poll in conf["poll_settings"].values():
             obj_poll = Poll.from_dict(poll, self)
-            if obj_poll.message_id == message.id:
+            if obj_poll.message_id == message_id:
                 break
         else:
             return await ctx.send(
@@ -273,14 +276,17 @@ class ButtonPoll(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.mod_or_permissions(manage_messages=True)
     @commands.command(aliases=["endp"])
-    async def endpoll(self, ctx: commands.Context, message: discord.Message):
+    async def endpoll(self, ctx: commands.Context, message_id: int):
         """
         End a currently running poll
+
+        **Arguments**
+        - `message_id`: (integer) The ID of the poll message
         """
         conf = await self.config.guild(ctx.guild).all()
         for poll in conf["poll_settings"].values():
             obj_poll = Poll.from_dict(poll, self)
-            if obj_poll.message_id == message.id:
+            if obj_poll.message_id == message_id:
                 break
         else:
             return await ctx.send(
