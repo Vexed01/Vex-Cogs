@@ -27,7 +27,7 @@ class StartSetupView(discord.ui.View):
         channel: discord.TextChannel | discord.Thread,
         cog: "ButtonPoll",
     ):
-        super().__init__(timeout=300)
+        super().__init__(timeout=300)  # 5 minutes
 
         self.author = author
         self.channel = channel
@@ -58,7 +58,7 @@ class SetupModal(ui.Modal, title="Poll setup"):
         channel: TextChannel | Thread,
         cog: "ButtonPoll",
     ) -> None:
-        super().__init__()
+        super().__init__(timeout=600)  # 10 minutes
 
         self.author = author
         self.channel = channel
