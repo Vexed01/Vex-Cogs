@@ -212,9 +212,9 @@ class ButtonPoll(commands.Cog):
         - `message_id`: (integer) The ID of the poll message
         """
         conf = await self.config.guild(ctx.guild).all()
-        for poll in conf["poll_settings"].values():
-            obj_poll = Poll.from_dict(poll, self)
-            if obj_poll.message_id == message_id:
+        for poll in self.polls:
+            if poll.message_id == message_id:
+                obj_poll = poll
                 break
         else:
             return await ctx.send("Could not find poll associated with this message!")
@@ -258,10 +258,9 @@ class ButtonPoll(commands.Cog):
         **Arguments**
         - `message_id`: (integer) The ID of the poll message
         """
-        conf = await self.config.guild(ctx.guild).all()
-        for poll in conf["poll_settings"].values():
-            obj_poll = Poll.from_dict(poll, self)
-            if obj_poll.message_id == message_id:
+        for poll in self.polls:
+            if poll.message_id == message_id:
+                obj_poll = poll
                 break
         else:
             return await ctx.send("Could not find poll associated with this message!")
