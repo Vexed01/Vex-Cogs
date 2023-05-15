@@ -70,7 +70,7 @@ class ButtonPoll(commands.Cog):
         self.loop.cancel()
         self.bot.remove_dev_env_value("bpoll")
 
-        # if the cog will be reloaded, best to clean up views as they are re-initialized on load
+        # if the cog will be reloaded, best to clean up views as they are re-initialised on load
         for poll in self.polls:
             poll.view.stop()
 
@@ -173,13 +173,7 @@ class ButtonPoll(commands.Cog):
             )
             return
 
-        str_options: set[str | None] = {
-            choice1,
-            choice2,
-            choice3,
-            choice4,
-            choice5,
-        }
+        str_options: set[str | None] = {choice1, choice2, choice3, choice4, choice5}
         str_options.discard(None)
         if len(str_options) < 2:
             await interaction.response.send_message(
