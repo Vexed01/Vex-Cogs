@@ -202,6 +202,7 @@ class ButtonPoll(commands.Cog):
 
     @commands.guild_only()  # type:ignore
     @commands.bot_has_permissions(embed_links=True)
+    @commands.mod_or_permissions(manage_messages=True)
     @commands.command(aliases=["voters"])
     async def getvoters(self, ctx: commands.Context, message_id: int):
         """
