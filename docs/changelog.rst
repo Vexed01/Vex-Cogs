@@ -539,6 +539,15 @@ ButtonPoll
 ==========
 
 *********
+``1.2.0``
+*********
+
+- Add getvoters command
+- Add listpolls command
+- Add endpoll command
+- Thanks @vertyco for #114
+
+*********
 ``1.1.2``
 *********
 
