@@ -264,8 +264,37 @@ class ButtonPoll(commands.Cog):
                 break
         else:
             return await ctx.send("Could not find poll associated with this message!")
-        await obj_poll.finish()
-        await ctx.tick()
+
+        async with ctx.typing():
+            obj_poll.view.stop()
+            await obj_poll.finish()
+            self.polls.remove(obj_poll)
+            await ctx.tick()
+
+    @commands.guild_only()  # type:ignore
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.mod_or_permissions(manage_messages=True)
+    @commands.command()
+    async def listpolls(self, ctx: commands.Context):
+        """List all currently running polls"""
+        if not self.polls:
+            return await ctx.send("There are no polls currently running!")
+
+        text = ""
+        for poll in self.polls:
+            text += (
+                f"**{poll.question}**\nMessage ID `{poll.message_id}`\n"
+                f"https://discord.com/channels/{poll.guild_id}/{poll.channel_id}/{poll.message_id}"
+                "\n\n"
+            )
+
+        for p in pagify(text):
+            embed = discord.Embed(
+                title="Current Polls",
+                description=p,
+                color=ctx.author.color,
+            )
+            await ctx.send(embed=embed)
 
     async def buttonpoll_loop(self):
         """Background loop for checking for finished polls."""
