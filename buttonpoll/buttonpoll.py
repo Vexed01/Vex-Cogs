@@ -9,6 +9,7 @@ from discord.channel import TextChannel
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.commands import parse_timedelta
+from redbot.core.utils.chat_formatting import humanize_list, pagify
 
 from .components.setup import SetupYesNoView, StartSetupView
 from .poll import Poll, PollOption
@@ -24,7 +25,7 @@ class ButtonPoll(commands.Cog):
     """
 
     __author__ = "Vexed#3211"
-    __version__ = "1.1.2"
+    __version__ = "1.2.0"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -95,7 +96,7 @@ class ButtonPoll(commands.Cog):
     @commands.guild_only()  # type:ignore
     @commands.bot_has_permissions(embed_links=True)
     @commands.mod_or_permissions(manage_messages=True)
-    @commands.command(alias=["poll", "bpoll"])
+    @commands.command(aliases=["poll", "bpoll"])
     async def buttonpoll(self, ctx: commands.Context, chan: Optional[TextChannel] = None):
         """
         Start a button-based poll
@@ -198,6 +199,102 @@ class ButtonPoll(commands.Cog):
             ),
             ephemeral=True,
         )
+
+    @commands.guild_only()  # type:ignore
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.mod_or_permissions(manage_messages=True)
+    @commands.command(aliases=["voters"])
+    async def getvoters(self, ctx: commands.Context, message_id: int):
+        """
+        Fetch the current voters for a running poll
+
+        **Arguments**
+        - `message_id`: (integer) The ID of the poll message
+        """
+        conf = await self.config.guild(ctx.guild).all()
+        for poll in self.polls:
+            if poll.message_id == message_id:
+                obj_poll = poll
+                break
+        else:
+            return await ctx.send("Could not find poll associated with this message!")
+        votes = conf["poll_user_choices"].get(obj_poll.unique_poll_id, {})
+        if not votes:
+            return await ctx.send("This poll has no votes yet!")
+
+        options = {}
+        for user_id, vote in votes.items():
+            if vote not in options:
+                options[vote] = []
+            user = ctx.guild.get_member(int(user_id))
+            if user:
+                mention = user.mention
+            else:
+                mention = f"<@{user_id}>"
+            options[vote].append(mention)
+
+        sorted_votes = sorted(options.items(), key=lambda x: len(x[1]), reverse=True)
+
+        text = ""
+        for vote, voters in sorted_votes:
+            text += f"**{vote}:** {humanize_list(voters)}\n"
+
+        for p in pagify(text):
+            embed = discord.Embed(
+                title=obj_poll.question,
+                description=p,
+                color=ctx.author.color,
+            )
+            await ctx.send(embed=embed)
+
+    @commands.guild_only()  # type:ignore
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.mod_or_permissions(manage_messages=True)
+    @commands.command(aliases=["endp"])
+    async def endpoll(self, ctx: commands.Context, message_id: int):
+        """
+        End a currently running poll
+
+        **Arguments**
+        - `message_id`: (integer) The ID of the poll message
+        """
+        for poll in self.polls:
+            if poll.message_id == message_id:
+                obj_poll = poll
+                break
+        else:
+            return await ctx.send("Could not find poll associated with this message!")
+
+        async with ctx.typing():
+            obj_poll.view.stop()
+            await obj_poll.finish()
+            self.polls.remove(obj_poll)
+            await ctx.tick()
+
+    @commands.guild_only()  # type:ignore
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.mod_or_permissions(manage_messages=True)
+    @commands.command()
+    async def listpolls(self, ctx: commands.Context):
+        """List all currently running polls"""
+        if not self.polls:
+            return await ctx.send("There are no polls currently running!")
+
+        text = ""
+        for poll in self.polls:
+            text += (
+                f"**{poll.question}**\nMessage ID `{poll.message_id}`\n"
+                f"https://discord.com/channels/{poll.guild_id}/{poll.channel_id}/{poll.message_id}"
+                "\n\n"
+            )
+
+        for p in pagify(text):
+            embed = discord.Embed(
+                title="Current Polls",
+                description=p,
+                color=ctx.author.color,
+            )
+            await ctx.send(embed=embed)
 
     async def buttonpoll_loop(self):
         """Background loop for checking for finished polls."""

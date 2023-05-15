@@ -36,13 +36,15 @@ Commands
 buttonpoll
 ^^^^^^^^^^
 
+.. note:: |mod-lock|
+
 **Syntax**
 
 .. code-block:: none
 
     [p]buttonpoll [chan]
 
-.. tip:: Alias: ``bpoll``
+.. tip:: Aliases: ``poll``, ``bpoll``
 
 **Description**
 
@@ -55,3 +57,67 @@ along with the buttonpoll command.
 **Examples:**
 - ``[p]buttonpoll`` - start a poll in the current channel
 - ``[p]buttonpoll #polls`` start a poll somewhere else
+
+.. _buttonpoll-command-endpoll:
+
+^^^^^^^
+endpoll
+^^^^^^^
+
+.. note:: |mod-lock|
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]endpoll <message_id>
+
+.. tip:: Alias: ``endp``
+
+**Description**
+
+End a currently running poll
+
+**Arguments**
+- ``message_id``: (integer) The ID of the poll message
+
+.. _buttonpoll-command-getvoters:
+
+^^^^^^^^^
+getvoters
+^^^^^^^^^
+
+.. note:: |mod-lock|
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]getvoters <message_id>
+
+.. tip:: Alias: ``voters``
+
+**Description**
+
+Fetch the current voters for a running poll
+
+**Arguments**
+- ``message_id``: (integer) The ID of the poll message
+
+.. _buttonpoll-command-listpolls:
+
+^^^^^^^^^
+listpolls
+^^^^^^^^^
+
+.. note:: |mod-lock|
+
+**Syntax**
+
+.. code-block:: none
+
+    [p]listpolls 
+
+**Description**
+
+List all currently running polls
