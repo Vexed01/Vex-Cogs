@@ -486,7 +486,7 @@ class BirthdayAdminCommands(MixinMeta):
         await ctx.send(f"Role set to {role.name}.")
 
     @bdset.command()
-    async def force(
+    async def forceset(
         self, ctx: commands.Context, user: discord.Member, *, birthday: BirthdayConverter
     ):
         """
@@ -521,6 +521,32 @@ class BirthdayAdminCommands(MixinMeta):
             str_bday = birthday.strftime("%B %d, %Y")
 
         await ctx.send(f"{user.name}'s birthday has been set as {str_bday}.")
+
+    @bdset.command()
+    async def forceremove(self, ctx: commands.Context, user: discord.Member):
+        """Force-remove a user's birthday."""
+        # guild only check in group
+        if TYPE_CHECKING:
+            assert isinstance(user, discord.Member)
+            assert ctx.guild is not None
+
+        m = await ctx.send("Are you sure?")
+        start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
+        check = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
+
+        try:
+            await self.bot.wait_for("reaction_add", check=check, timeout=60)
+        except asyncio.TimeoutError:
+            for reaction in ReactionPredicate.YES_OR_NO_EMOJIS:
+                await m.remove_reaction(reaction, ctx.guild.me)
+            return
+
+        if check.result is False:
+            await ctx.send("Cancelled.")
+            return
+
+        await self.config.member(user).birthday.clear()
+        await ctx.send(f"{user.name}'s birthday has been removed.")
 
     @commands.is_owner()
     @bdset.command()
