@@ -177,6 +177,8 @@ class BirthdayLoop(MixinMeta):
 
             async for member_id, data in AsyncIter(guild_data.items(), steps=50):
                 birthday = data["birthday"]
+                if not birthday:  # birthday removed but user remains in config
+                    continue
                 member = guild.get_member(int(member_id))
                 if member is None:
                     log.trace(

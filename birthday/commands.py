@@ -110,7 +110,7 @@ class BirthdayCommands(MixinMeta):
             await ctx.send("Cancelled.")
             return
 
-        await self.config.member(ctx.author).birthday.clear()
+        await self.config.member(ctx.author).birthday.set({})
         await ctx.send("Your birthday has been removed.")
 
     @birthday.command()
@@ -140,6 +140,8 @@ class BirthdayCommands(MixinMeta):
         number_day_mapping: dict[int, str] = {}
 
         async for member_id, member_data in AsyncIter(all_birthdays.items(), steps=50):
+            if not member_data["birthday"]:  # birthday removed but user remains in config
+                continue
             member = ctx.guild.get_member(member_id)
             if not isinstance(member, discord.Member):
                 continue
@@ -486,7 +488,7 @@ class BirthdayAdminCommands(MixinMeta):
         await ctx.send(f"Role set to {role.name}.")
 
     @bdset.command()
-    async def force(
+    async def forceset(
         self, ctx: commands.Context, user: discord.Member, *, birthday: BirthdayConverter
     ):
         """
@@ -500,7 +502,8 @@ class BirthdayAdminCommands(MixinMeta):
         - `[p]bdset set User 1/1` - set the birthday of `@User` to 1/1/2000
         - `[p]bdset set "User with spaces" 1-1` - set the birthday of `@User with spaces`
             to 1/1
-        -]bdset set 354125157387344896 1/1/2000` - set the birthday of `@User` to 1/1/2000
+        - `[p]bdset set 354125157387344896 1/1/2000` - set the birthday of `354125157387344896`
+            to 1/1/2000
         """
         if birthday.year != 1 and birthday.year < MIN_BDAY_YEAR:
             await ctx.send(f"I'm sorry, but I can't set a birthday to before {MIN_BDAY_YEAR}.")
@@ -521,6 +524,32 @@ class BirthdayAdminCommands(MixinMeta):
             str_bday = birthday.strftime("%B %d, %Y")
 
         await ctx.send(f"{user.name}'s birthday has been set as {str_bday}.")
+
+    @bdset.command()
+    async def forceremove(self, ctx: commands.Context, user: discord.Member):
+        """Force-remove a user's birthday."""
+        # guild only check in group
+        if TYPE_CHECKING:
+            assert isinstance(user, discord.Member)
+            assert ctx.guild is not None
+
+        m = await ctx.send(f"Are you sure? `{user.name}`'s birthday will be removed.")
+        start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
+        check = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
+
+        try:
+            await self.bot.wait_for("reaction_add", check=check, timeout=60)
+        except asyncio.TimeoutError:
+            for reaction in ReactionPredicate.YES_OR_NO_EMOJIS:
+                await m.remove_reaction(reaction, ctx.guild.me)
+            return
+
+        if check.result is False:
+            await ctx.send("Cancelled.")
+            return
+
+        await self.config.member(user).birthday.set({})
+        await ctx.send(f"{user.name}'s birthday has been removed.")
 
     @commands.is_owner()
     @bdset.command()
