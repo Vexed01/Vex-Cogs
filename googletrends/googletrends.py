@@ -123,6 +123,14 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
                     await ctx.send("Your request failed for an unexpected reason.")
                 return
 
+            # temporary
+            except TypeError:
+                await ctx.send(
+                    "This cog is currently broken due to waiting for an upstream library to be "
+                    "updated."
+                )
+                return
+
             try:
                 file = await self.plot_graph(request, timeframe, geo)
             except NoData:
