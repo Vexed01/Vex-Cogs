@@ -34,6 +34,8 @@ class ButtonPoll(commands.Cog):
         self.config.register_guild(
             poll_settings={},
             poll_user_choices={},
+            historic_poll_settings={},
+            historic_poll_user_choices={},
         )
 
         self.loop = bot.loop.create_task(self.buttonpoll_loop())
@@ -215,10 +217,17 @@ class ButtonPoll(commands.Cog):
         for poll in self.polls:
             if poll.message_id == message_id:
                 obj_poll = poll
+                votes = conf["poll_user_choices"].get(obj_poll.unique_poll_id, {})
                 break
-        else:
-            return await ctx.send("Could not find poll associated with this message!")
-        votes = conf["poll_user_choices"].get(obj_poll.unique_poll_id, {})
+        else:  # not currently active so look through historic polls
+            for poll in conf["historic_poll_settings"].values():
+                if int(poll["message_id"]) == message_id:
+                    obj_poll = Poll.from_dict(poll, self)
+                    votes = conf["historic_poll_user_choices"].get(obj_poll.unique_poll_id, {})
+                    break
+            else:
+                return await ctx.send("Could not find poll associated with this message!")
+
         if not votes:
             return await ctx.send("This poll has no votes yet!")
 

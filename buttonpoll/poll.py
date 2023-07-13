@@ -273,6 +273,16 @@ class Poll:
 
             log.trace("edited old poll message")
 
+        poll_user_choices = (await self.cog.config.guild(guild).poll_user_choices()).get(
+            self.unique_poll_id, {}
+        )
+        await self.cog.config.guild(guild).historic_poll_settings.set_raw(
+            self.unique_poll_id, value=self.to_dict()
+        )
+        await self.cog.config.guild(guild).historic_poll_user_choices.set_raw(
+            self.unique_poll_id, value=poll_user_choices
+        )
+
         async with self.cog.config.guild(guild).poll_settings() as poll_settings:
             try:
                 del poll_settings[self.unique_poll_id]
