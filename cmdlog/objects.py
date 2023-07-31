@@ -153,7 +153,7 @@ class LoggedAppCom(Log):
         app_type: Literal[1, 2, 3],
         target: discord.PartialMessage | discord.User | None,
     ):
-        self.author = BasicDiscordObject(author.id, author.name)
+        self.author = BasicDiscordObject(author.id, str(author))
         self.command = com_name
         self.channel = (
             BasicDiscordObject(channel.id, channel.name)
@@ -174,11 +174,11 @@ class LoggedAppCom(Log):
         if self.app_type == 1:  # slash com
             if not self.guild or not self.channel:
                 return (
-                    f"Slash command [{self.command}] ran by {self.author.id} [{self.author.name}]"
+                    f"Slash command [{self.command}] ran by {self.author.id} [{str(self.author)}]"
                     " in our DMs."
                 )
             return (
-                f"Slash command [{self.command}] ran by {self.author.id} [{self.author.name}] "
+                f"Slash command [{self.command}] ran by {self.author.id} [{str(self.author)}] "
                 f"in channel {self.channel.id} [{self.channel.name}] "
                 f"in guild {self.guild.id} [{self.guild.name}]"
             )
@@ -191,13 +191,13 @@ class LoggedAppCom(Log):
                 )
             if not self.guild or not self.channel:
                 return (
-                    f"User command [{self.command}] ran by {self.author.id} [{self.author.name}] "
+                    f"User command [{self.command}] ran by {self.author.id} [{str(self.author)}] "
                     f"targeting user {self.target.name} [{self.target.id}]"
                     "in our DMs."
                 )
 
             return (
-                f"User command [{self.command}] ran by {self.author.id} [{self.author.name}] "
+                f"User command [{self.command}] ran by {self.author.id} [{str(self.author)}] "
                 f"targeting user {self.target.name} [{self.target.id}]"
                 f"in channel {self.channel.id} [{self.channel.name}] "
                 f"in guild {self.guild.id} [{self.guild.name}]"
@@ -209,12 +209,12 @@ class LoggedAppCom(Log):
             if not self.guild or not self.channel:
                 return (
                     f"Message command [{self.command}] ran by"
-                    f" {self.author.id} [{self.author.name}] targeting message {self.target.id}in"
+                    f" {self.author.id} [{str(self.author)}] targeting message {self.target.id}in"
                     " our DMs."
                 )
 
             return (
-                f"Message command [{self.command}] ran by {self.author.id} [{self.author.name}] "
+                f"Message command [{self.command}] ran by {self.author.id} [{str(self.author)}] "
                 f"targeting message {self.target.id}"
                 f"in channel {self.channel.id} [{self.channel.name}] "
                 f"in guild {self.guild.id} [{self.guild.name}]"

@@ -266,7 +266,7 @@ class TimeChannel(commands.Cog, TCLoop, metaclass=CompositeMetaClass):
         if actual is None:
             await ctx.send("It looks like that's not a channel I update to.")
         else:
-            await channel.delete(reason=f"Deleted with `tcset remove` by {ctx.author.name}")
+            await channel.delete(reason=f"Deleted with `tcset remove` by {str(ctx.author)}")
             await ctx.send("Ok, I've deleted that channel and will no longer try to update it.")
 
     @commands.is_owner()
