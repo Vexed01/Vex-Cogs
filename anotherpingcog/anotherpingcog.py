@@ -45,7 +45,7 @@ class AnotherPingCog(commands.Cog):
     """
 
     __version__ = "1.1.8"
-    __author__ = "Vexed#0714"
+    __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

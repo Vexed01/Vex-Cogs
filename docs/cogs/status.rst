@@ -29,7 +29,7 @@ have registered to recieve updates from that service.
 There's also the ``status`` command which anyone can use to check
 updates wherever they want.
 
-If there's a service that you want added, contact Vexed#0714 or
+If there's a service that you want added, contact @vexingvexed or
 make an issue on the GitHub repo (or even better a PR!).
 
 
@@ -70,7 +70,7 @@ statusset
 
 .. code-block:: none
 
-    [p]statusset 
+    [p]statusset
 
 **Description**
 
@@ -138,7 +138,7 @@ statusset edit
 
 .. code-block:: none
 
-    [p]statusset edit 
+    [p]statusset edit
 
 **Description**
 

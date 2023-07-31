@@ -32,7 +32,7 @@ class CmdLog(commands.Cog):
     rotator deletes old logs.
     """
 
-    __author__ = "Vexed#0714"
+    __author__ = "@vexingvexed"
     __version__ = "1.5.4"
 
     def __init__(self, bot: Red) -> None:

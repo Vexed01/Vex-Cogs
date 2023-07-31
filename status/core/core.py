@@ -38,12 +38,12 @@ class Status(
     There's also the `status` command which anyone can use to check
     updates wherever they want.
 
-    If there's a service that you want added, contact Vexed#0714 or
+    If there's a service that you want added, contact @vexingvexed or
     make an issue on the GitHub repo (or even better a PR!).
     """
 
     __version__ = "2.5.7"
-    __author__ = "Vexed#0714"
+    __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

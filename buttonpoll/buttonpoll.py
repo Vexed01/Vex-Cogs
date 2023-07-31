@@ -24,7 +24,7 @@ class ButtonPoll(commands.Cog):
     Create polls with buttons, and get a pie chart afterwards!
     """
 
-    __author__ = "Vexed#3211"
+    __author__ = "@vexingvexed"
     __version__ = "1.2.0"
 
     def __init__(self, bot: Red) -> None:

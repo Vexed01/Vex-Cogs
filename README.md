@@ -57,7 +57,7 @@ My cogs are licensed under GNU General Public License v3.0. Please see the [LICE
 
 ### Contact & Support
 
-I can be found in the [main Red server](https://discord.gg/red) or if you want support for a cog the [Cog Support server](https://discord.gg/GD43Nb9H86) in #support_vex-cogs is the best place. I'm Vexed#0714.
+I can be found in the [main Red server](https://discord.gg/red) or if you want support for a cog the [Cog Support server](https://discord.gg/GD43Nb9H86) in #support_vex-cogs is the best place. I'm @vexingvexed.
 
 ### Contributing
 

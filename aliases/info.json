@@ -1,7 +1,7 @@
 {
     "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
     "author": [
-        "Vexed (Vexed#0714)"
+        "Vexed (@vexingvexed)"
     ],
     "description": "Get all the information you could ever need about a command's aliases. IF YOU ARE TRYING TO *MAKE* ALIASES, JUST USE THE CORE 'alias` COG.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",

@@ -28,7 +28,7 @@ class FiveMStatus(commands.Cog, FiveMLoop, metaclass=CompositeMetaClass):
     """
 
     __version__ = "1.0.1"
-    __author__ = "Vexed#0714"
+    __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
