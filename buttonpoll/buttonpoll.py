@@ -246,7 +246,10 @@ class ButtonPoll(commands.Cog):
 
         text = ""
         for vote, voters in sorted_votes:
-            text += f"**{vote}:** {humanize_list(voters)}\n"
+            text += (
+                f"**{vote}** has {len(voters)} {'votes' if len(voters) != 1 else 'vote'} from "
+                f"{humanize_list(voters)}\n"
+            )
 
         for p in pagify(text):
             embed = discord.Embed(
