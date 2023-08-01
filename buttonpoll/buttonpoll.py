@@ -175,11 +175,20 @@ class ButtonPoll(commands.Cog):
             )
             return
 
-        str_options: set[str | None] = {choice1, choice2, choice3, choice4, choice5}
-        str_options.discard(None)
+        str_options: list[str | None] = [choice1, choice2, choice3, choice4, choice5]
+        while None in str_options:
+            str_options.remove(None)
+
         if len(str_options) < 2:
             await interaction.response.send_message(
-                "You must provide at least two unique choices. No duplicates!",
+                "You must provide at least two unique choices.",
+                ephemeral=True,
+            )
+            return
+
+        if len(str_options) != len(set(str_options)):
+            await interaction.response.send_message(
+                "You can't have duplicate choices.",
                 ephemeral=True,
             )
             return
