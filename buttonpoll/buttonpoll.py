@@ -199,7 +199,7 @@ Choose wisely!`
         parser.add_argument("--option", type=str, action="append", required=True, nargs="+")
         parser.add_argument("--duration", type=int)
         parser.add_argument("--end", type=str, nargs="+")
-        parser.add_argument("--description", type=str, nargs="+")
+        parser.add_argument("--description", type=str, nargs="+", default="")
         parser.add_argument("--allow-vote-change", action="store_true")
         parser.add_argument("--view-while-live", action="store_true")
         parser.add_argument("--send-new-msg", action="store_true")
