@@ -245,7 +245,8 @@ Choose wisely!`
                 except ValueError:
                     if not args.silent:
                         await ctx.send(
-                            "Invalid end time. Must be in the format `YYYY-MM-DD HH:MM:SS` (24 hour time) or a Unix timestamp."
+                            "Invalid end time. Must be in the format `YYYY-MM-DD HH:MM:SS` "
+                            "(24 hour time) or a Unix timestamp."
                         )
                     return
 
