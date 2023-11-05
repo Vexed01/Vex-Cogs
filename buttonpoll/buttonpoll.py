@@ -149,7 +149,8 @@ class ButtonPoll(commands.Cog):
         """
         Advanced users: create a pull using command arguments
 
-        The help text for this command is too long to fit in the help command. Just run `[p]advstartpoll` to see it.
+        The help text for this command is too long to fit in the help command. Just run
+        `[p]advstartpoll` to see it.
         """
         if not arguments:
             return await ctx.send(
@@ -160,11 +161,14 @@ You should use `[p]buttonpoll` or the slash command `poll` for a more user-frien
 **Required arguments:**
 - `--channel ID`: The channel ID to start the poll in
 - `--question string`: The question to ask
-- `--option string`: The options to provide. You can provide between 2 and 5 options. Repeat this argument.
+- `--option string`: The options to provide. You can provide between 2 and 5 options. \
+Repeat this argument for each option.
 
 **You must also provide one of the following:**
-- `--duration integer`: The duration of the poll in seconds. Must be at least 60. Polls may finish up to 60 seconds late, so don't rely on precision timing.
-- `--end string`: The time to end the poll. Must be in the format `YYYY-MM-DD HH:MM:SS` (24 hour time) or a Unix timestamp. This is in UTC.
+- `--duration integer`: The duration of the poll in seconds. Must be at least 60. \
+Polls may finish up to 60 seconds late, so don't rely on precision timing.
+- `--end string`: The time to end the poll. \
+Must be in the format `YYYY-MM-DD HH:MM:SS` (24 hour time) or a Unix timestamp. This is in UTC.
 
 If both are provided, `--duration` will be used.
 
@@ -178,8 +182,12 @@ If both are provided, `--duration` will be used.
 For the final four optional arguments, they are false if not included, and true if included.
 
 **Examples:**
-- `[p]advstartpoll --channel 123456789 --question What is your favourite colour? --option Red --option Blue --option Green --option None of them --duration 3600 --description Choose wisely!`
-- `[p]advstartpoll --channel 123456789 --question What is your favourite colour? --option Red --option Blue --option Green --option None of them --end 2021-01-01 12:00:00 --allow-vote-change --send-new-msg`"""
+- `[p]advstartpoll --channel 123456789 --question What is your favourite colour? --option Red \
+--option Blue --option Green --option None of them --duration 3600 --description \
+Choose wisely!`
+- `[p]advstartpoll --channel 123456789 --question What is your favourite colour? --option Red \
+--option Blue --option Green --option None of them --end 2021-01-01 12:00:00 \
+--allow-vote-change --send-new-msg`"""
             )
 
         parser = NoExitParser(
