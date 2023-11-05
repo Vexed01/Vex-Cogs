@@ -36,7 +36,7 @@ class StatTrackSQLiteDriver:
                 index = await cursor.fetchone()
         if index is None:
             return pd.Timestamp(0)
-        return pd.to_datetime(index[0])
+        return pd.to_datetime(index[0], format="ISO8601")
 
     async def read_all(self) -> pd.DataFrame:
         """Create a Pandas DataFrame from the whole table.
@@ -53,7 +53,7 @@ class StatTrackSQLiteDriver:
                 data = await cursor.fetchall()
         df = pd.DataFrame(data, columns=columns)
         df.set_index("index", inplace=True)
-        df.index = pd.to_datetime(df.index)
+        df.index = pd.to_datetime(df.index, format="ISO8601")
         return df
 
     async def read_partial(
@@ -86,7 +86,7 @@ class StatTrackSQLiteDriver:
                 data = await cursor.fetchall()
         df = pd.DataFrame(data, columns=["index"] + list(metrics))
         df.set_index("index", inplace=True)
-        df.index = pd.to_datetime(df.index)
+        df.index = pd.to_datetime(df.index, format="ISO8601")
         return df
 
     async def write(self, df: pd.DataFrame) -> None:
