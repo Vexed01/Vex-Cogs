@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import argparse
 import datetime
+import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, List, Literal, Optional
 
@@ -8,15 +10,23 @@ import discord
 from discord.channel import TextChannel
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
-from redbot.core.commands import parse_timedelta
+from redbot.core.commands import BadArgument, parse_timedelta
 from redbot.core.utils.chat_formatting import humanize_list, pagify
 
 from .components.setup import SetupYesNoView, StartSetupView
-from .poll import Poll, PollOption
+from .poll import Poll, PollOption, PollView
 from .vexutils import format_help, format_info, get_vex_logger
+from .vexutils.chat import datetime_to_timestamp
 from .vexutils.loop import VexLoop
 
 log = get_vex_logger(__name__)
+
+
+# Originally from sinbad's scheduler cog
+# https://github.com/mikeshardmind/SinbadCogs/blob/d59fd7bc69833dc24f9e74ec59e635ffe593d43f/scheduler/converters.py#L23
+class NoExitParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise BadArgument(message)
 
 
 class ButtonPoll(commands.Cog):
@@ -130,6 +140,154 @@ class ButtonPoll(commands.Cog):
 
         view = StartSetupView(author=ctx.author, channel=channel, cog=self)
         await ctx.send("Click below to start a poll!", view=view)
+
+    @commands.guild_only()  # type:ignore
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.mod_or_permissions(manage_messages=True)
+    @commands.command()
+    async def advstartpoll(self, ctx: commands.Context, *, arguments: str = ""):
+        """
+        Advanced users: create a pull using command arguments
+
+        The help text for this command is too long to fit in the help command. Just run `[p]advstartpoll` to see it.
+        """
+        if not arguments:
+            return await ctx.send(
+                """
+\N{WARNING SIGN}\N{VARIATION SELECTOR-16} **This command is for advanced users only.
+You should use `[p]buttonpoll` or the slash command `poll` for a more user-friendly experience.**
+
+**Required arguments:**
+- `--channel ID`: The channel ID to start the poll in
+- `--question string`: The question to ask
+- `--option string`: The options to provide. You can provide between 2 and 5 options. Repeat this argument.
+
+**You must also provide one of the following:**
+- `--duration integer`: The duration of the poll in seconds. Must be at least 60. Polls may finish up to 60 seconds late, so don't rely on precision timing.
+- `--end string`: The time to end the poll. Must be in the format `YYYY-MM-DD HH:MM:SS` (24 hour time) or a Unix timestamp. This is in UTC.
+
+If both are provided, `--duration` will be used.
+
+**Optional arguments:**
+- `--description string`: A description for the poll. Use \\n for new lines.
+- `--allow-vote-change`: Allow users to change their vote.
+- `--view-while-live`: Allow users to view the poll results so far while it is live.
+- `--send-new-msg`: Send a new message when the poll is finished.
+- `--silent`: Suppress all error messages that occur during the command.
+
+For the final four optional arguments, they are false if not included, and true if included.
+
+**Examples:**
+- `[p]advstartpoll --channel 123456789 --question What is your favourite colour? --option Red --option Blue --option Green --option None of them --duration 3600 --description Choose wisely!`
+- `[p]advstartpoll --channel 123456789 --question What is your favourite colour? --option Red --option Blue --option Green --option None of them --end 2021-01-01 12:00:00 --allow-vote-change --send-new-msg`"""
+            )
+
+        parser = NoExitParser(
+            description="Create a poll using just command arguments.",
+            add_help=False,
+        )
+        parser.add_argument("--channel", type=int, required=True)
+        parser.add_argument("--question", type=str, required=True, nargs="+")
+        parser.add_argument("--option", type=str, action="append", required=True, nargs="+")
+        parser.add_argument("--duration", type=int)
+        parser.add_argument("--end", type=str, nargs="+")
+        parser.add_argument("--description", type=str, nargs="+")
+        parser.add_argument("--allow-vote-change", action="store_true")
+        parser.add_argument("--view-while-live", action="store_true")
+        parser.add_argument("--send-new-msg", action="store_true")
+        parser.add_argument("--silent", action="store_true")
+        try:
+            args = parser.parse_args(arguments.split())
+        except Exception as e:
+            return await ctx.send(f"Error parsing arguments: {e}")
+
+        if args.duration is None and args.end is None:
+            if not args.silent:
+                await ctx.send("You must provide either a duration or an end time.")
+            return
+
+        channel = self.bot.get_channel(args.channel)
+        if not channel:
+            if not args.silent:
+                await ctx.send("That channel does not exist.")
+            return
+
+        unique_poll_id = (  # rand hex, interaction ID, first 25 chars of sanitised question
+            os.urandom(5).hex()
+            + "_"
+            + str(ctx.message.id)
+            + "_"
+            + "".join(" ".join(c) for c in args.option if " ".join(c).isalnum())[:25]
+        )
+
+        if args.duration:
+            poll_finish = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+                seconds=args.duration
+            )
+        else:
+            try:
+                poll_finish = datetime.datetime.strptime(
+                    " ".join(args.end), "%Y-%m-%d %H:%M:%S"
+                ).replace(tzinfo=datetime.timezone.utc)
+            except ValueError:
+                try:
+                    poll_finish = datetime.datetime.fromtimestamp(
+                        int(args.end), tz=datetime.timezone.utc
+                    )
+                except ValueError:
+                    if not args.silent:
+                        await ctx.send(
+                            "Invalid end time. Must be in the format `YYYY-MM-DD HH:MM:SS` (24 hour time) or a Unix timestamp."
+                        )
+                    return
+
+        poll = Poll(
+            unique_poll_id=unique_poll_id,
+            guild_id=channel.guild.id,
+            channel_id=channel.id,
+            question=" ".join(args.question),
+            description=" ".join(args.description) or "",
+            options=[PollOption(" ".join(o), discord.ButtonStyle.primary) for o in args.option],
+            allow_vote_change=args.allow_vote_change,
+            view_while_live=args.view_while_live,
+            send_msg_when_over=args.send_new_msg,
+            poll_finish=poll_finish,
+            cog=self,
+            view=None,
+        )
+        poll.view = PollView(self.config, poll)
+
+        e = discord.Embed(
+            colour=await self.bot.get_embed_colour(channel),
+            title=poll.question,
+            description=poll.description or None,
+        )
+        e.add_field(
+            name=(
+                f"Ends at {datetime_to_timestamp(poll.poll_finish)}, "
+                f"{datetime_to_timestamp(poll.poll_finish, 'R')}"
+            ),
+            value=(
+                "You have one vote, "
+                + (
+                    "and you can change it by clicking a new button."
+                    if poll.allow_vote_change
+                    else "and you can't change it."
+                )
+                + (
+                    "\nYou can view the results while the poll is live, once you vote."
+                    if poll.view_while_live
+                    else "\nYou can view the results when the poll finishes."
+                )
+            ),
+        )
+
+        m = await channel.send(embed=e, view=poll.view)  # type:ignore
+
+        poll.set_msg_id(m.id)
+        async with self.config.guild(channel.guild).poll_settings() as poll_settings:
+            poll_settings[poll.unique_poll_id] = poll.to_dict()
+        self.polls.append(poll)
 
     @app_commands.guild_only()
     @app_commands.default_permissions(manage_messages=True)
