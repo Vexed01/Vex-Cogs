@@ -40,6 +40,9 @@ class StartSetupView(discord.ui.View):
             SetupModal(author=self.author, channel=self.channel, cog=self.cog)
         )
 
+        button.disabled = True
+        await interaction.message.edit(view=self)
+
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id == self.author.id:
             return True
