@@ -97,6 +97,40 @@ class WOL(commands.Cog):
             + f"`{ctx.clean_prefix}wolset add <friendly_name> <mac> [ip]`."
         )
 
+    @commands.is_owner()
+    @commands.command()
+    async def silentwol(
+        self, ctx: commands.Context, machine: str, ip: Optional[str] = BROADCAST_IP
+    ):
+        """
+        Equivalent to `[p]wol` but without a response. Errors will be logged in the console.
+        """
+        if ip is None:
+            ip = BROADCAST_IP
+
+        if len(machine) in (12, 17):  # could be a MAC address
+            try:
+                send_magic_packet(machine, ip_address=ip)
+            except ValueError:  # okay it's not a valid format
+                pass
+            else:
+                log.info("silentwol - Sent magic packet to %s", machine)
+                return
+
+        data: dict = await self.config.addresses()
+        machine = machine.lower()
+        if mac := data.get(machine.lower()):
+            ips: dict = await self.config.ips()
+            ip = ips.get(machine.lower(), ip)
+            if ip is None:
+                ip = BROADCAST_IP
+
+            send_magic_packet(mac, ip_address=ip)
+            log.info("silentwol - Sent magic packet to %s", machine)
+            return
+
+        log.warning("silentwol - Failed to send magic packet to %s", machine)
+
     @commands.group()
     @commands.is_owner()
     async def wolset(self, ctx: commands.Context):
