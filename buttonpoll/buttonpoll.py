@@ -126,7 +126,6 @@ class ButtonPoll(commands.Cog):
             assert isinstance(channel, (TextChannel, discord.Thread))
             assert isinstance(ctx.author, discord.Member)  # we are in a guild...
 
-        # these two checks are untested :)
         if not channel.permissions_for(ctx.author).send_messages:  # type:ignore
             return await ctx.send(
                 f"You don't have permission to send messages in {channel.mention}, so I can't "
@@ -136,6 +135,11 @@ class ButtonPoll(commands.Cog):
             return await ctx.send(
                 f"I don't have permission to send messages in {channel.mention}, so I can't "
                 "start a poll there."
+            )
+        if not channel.permissions_for(ctx.me).attach_files:  # type:ignore
+            await ctx.send(
+                "\N{WARNING SIGN}\N{VARIATION SELECTOR-16} I don't have permission to attach "
+                "files in that channel. I won't be able to send a pie chart."
             )
 
         view = StartSetupView(author=ctx.author, channel=channel, cog=self)
@@ -157,6 +161,10 @@ class ButtonPoll(commands.Cog):
                 """
 \N{WARNING SIGN}\N{VARIATION SELECTOR-16} **This command is for advanced users only.
 You should use `[p]buttonpoll` or the slash command `poll` for a more user-friendly experience.**
+
+\N{WARNING SIGN}\N{VARIATION SELECTOR-16} This command does not check for permissions. Please
+check I have permission to send messages in the channel you want to start the poll in. I'll also
+need permission to attach files if you want a pie chart.
 
 **Required arguments:**
 - `--channel ID`: The channel ID to start the poll in

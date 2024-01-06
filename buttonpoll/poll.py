@@ -228,10 +228,17 @@ class Poll:
                 )
             )
 
-            plot = await self.plot()
+            if channel.permissions_for(guild.me).attach_files:
+                plot = await self.plot()
+                embed.set_image(url="attachment://plot.png")
+                message = await channel.send(embed=embed, file=plot, view=view)
+            else:
+                message = await channel.send(embed=embed, view=view)
+                log.warning(
+                    f"Channel {self.channel_id} does not allow me to attach files. "
+                    f"I was unable to attach a pie chart to poll {self.unique_poll_id}."
+                )
 
-            embed.set_image(url="attachment://plot.png")
-            message = await channel.send(embed=embed, file=plot, view=view)
             view.stop()
 
             view2 = discord.ui.View()
