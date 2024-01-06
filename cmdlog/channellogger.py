@@ -63,7 +63,7 @@ class ChannelLogger:
                 self.last_send = self._utc_now()
 
                 msg = "\n".join(str(i) for i in to_send)
-                for page in pagify(msg):
+                for page in pagify(msg, shorten_by=20):
                     await self.channel.send(box(page, "css"))
 
                 log.trace("sent %s commands", len(to_send))
