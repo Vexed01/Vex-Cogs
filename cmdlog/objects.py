@@ -232,6 +232,6 @@ class LoggedAppCom(Log):
         size += getsizeof(self.channel)
         size += getsizeof(self.guild)
         size += getsizeof(self.time)
-        size += getsizeof(self.target)
+        size += getattr(self, 'target', 0)
 
         return size
