@@ -165,8 +165,8 @@ class LoggedAppCom(Log):
 
         if isinstance(target, discord.User):
             self.target = BasicDiscordObject(target.id, target.name)
-        else:
-            target = target
+        else:  # partial message, already low mem usage so leave as is
+            self.target = target
 
         self.time = datetime.datetime.now().strftime(TIME_FORMAT)
 
@@ -232,6 +232,6 @@ class LoggedAppCom(Log):
         size += getsizeof(self.channel)
         size += getsizeof(self.guild)
         size += getsizeof(self.time)
-        size += getattr(self, 'target', 0)
+        size += getsizeof(getattr(self, "target", 0))
 
         return size
