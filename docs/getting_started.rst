@@ -75,5 +75,5 @@ Cog name                                Summary
 Support
 -------
 
-If you want some help with my cogs, you can ask in the :ref:`Red - Cog Support<https://discord.gg/GD43Nb9H86>` server,
+If you want some help with my cogs, you can ask in the `Red - Cog Support<https://discord.gg/GD43Nb9H86>`_ server,
 in #support_vex-cogs.
