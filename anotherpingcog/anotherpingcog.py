@@ -154,11 +154,13 @@ class AnotherPingCog(commands.Cog):
             embed.colour = colour
             await message.edit(
                 content=(
-                    "Message Send is worse for slash commands. Try using the text command for "
-                    "a better result."
-                )
-                if ctx.interaction
-                else None,
+                    (
+                        "Message Send is worse for slash commands. Try using the text command for "
+                        "a better result."
+                    )
+                    if ctx.interaction
+                    else None
+                ),
                 embed=embed,
             )
 
@@ -501,9 +503,11 @@ class AnotherPingCog(commands.Cog):
         footer += (
             "Default - the default text will be used in the embed footer."
             if settings.footer == "default"
-            else "None - there will not be any footer text in the embed."
-            if settings.footer == "none"
-            else f"Custom - {settings.footer}"
+            else (
+                "None - there will not be any footer text in the embed."
+                if settings.footer == "none"
+                else f"Custom - {settings.footer}"
+            )
         )
         main_embed.add_field(name="Footer", value=footer, inline=False)
 

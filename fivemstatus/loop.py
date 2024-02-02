@@ -37,9 +37,9 @@ class FiveMLoop(MixinMeta):
             await self.loop_meta.sleep_until_next()
 
     async def update_messages(self) -> None:
-        all_guilds: dict[
-            int, dict[Literal["message"], MessageData]
-        ] = await self.config.all_guilds()
+        all_guilds: dict[int, dict[Literal["message"], MessageData]] = (
+            await self.config.all_guilds()
+        )
         if not all_guilds:
             _log.debug("Nothing registered, nothing to do...")
             return
