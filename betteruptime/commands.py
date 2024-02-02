@@ -178,9 +178,11 @@ class BUCommands(MixinMeta):
 
         embed = discord.Embed(
             title="Daily uptime data for the last " + str(num_days) + " days",
-            description=f"The top lowest uptime days (under `{labelled_pc}%`) will be labelled."
-            if labelled_pc
-            else None,
+            description=(
+                f"The top lowest uptime days (under `{labelled_pc}%`) will be labelled."
+                if labelled_pc
+                else None
+            ),
             colour=await ctx.embed_colour(),
         )
         embed.set_footer(text="Times are in UTC. This excludes today.")
