@@ -196,8 +196,9 @@ class BirthdayCommands(MixinMeta):
 
         embed = discord.Embed(title="Upcoming Birthdays", colour=await ctx.embed_colour())
 
-        if len(parsed_bdays) > 25:
+        if len(sorted_parsed_bdays) > 25:
             embed.description = "Too many days to display. I've had to stop at 25."
+            sorted_parsed_bdays = sorted_parsed_bdays[:25]
 
         for day, members in sorted_parsed_bdays:
             embed.add_field(name=number_day_mapping.get(day), value="\n".join(members))
