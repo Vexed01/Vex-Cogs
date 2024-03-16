@@ -11,7 +11,7 @@ SERVICE_LITERAL = Literal[  # we love DRY
     "github",
     "cloudflare",
     "python",
-    "twitter_api",
+    "twitter_api",  # deprecated
     "statuspage",
     "zoom",
     "oracle_cloud",
@@ -58,11 +58,6 @@ FEEDS = {
         "url": "https://status.python.org/",
         "id": "2p66nmmycsj3",
         "friendly": "Python",
-    },
-    "twitter_api": {
-        "url": "https://api.twitterstat.us/",
-        "id": "zjttvm6ql9lp",
-        "friendly": "Twitter API",
     },
     "statuspage": {
         "url": "https://metastatuspage.com/",

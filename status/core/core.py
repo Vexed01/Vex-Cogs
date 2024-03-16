@@ -116,6 +116,14 @@ class Status(
             await self.config.version.set(4)
             log.info("Done!")
             self.actually_send = False
+        elif await self.config.version() == 4:
+            await self.migrate_to_v5()
+            log.info("Getting initial data from services...")
+            await self.get_initial_data()
+            await self.config.incidents.clear()
+            await self.config.version.set(5)
+            log.info("Done!")
+            self.actually_send = False
         else:
             self.actually_send = True
 
@@ -189,6 +197,28 @@ class Status(
             c_old = deepcopy(data)["feeds"]
             for service in data.get("feeds", {}).keys():
                 if service in ["twitter", "status.io", "aws", "gcp", "smartthings", "fastly"]:
+                    c_old.pop(service, None)
+
+            await self.config.channel_from_id(c_id).feeds.set(c_old)
+
+    async def migrate_to_v5(self) -> None:
+        """Remove old feeds from the config."""
+        # remove twitter_api as well
+        really_old = await self.config.all_channels()
+        log.debug("Config migration in progress. Old data is below in case something goes wrong.")
+        log.debug(really_old)
+        for c_id, data in really_old.items():
+            c_old = deepcopy(data)["feeds"]
+            for service in data.get("feeds", {}).keys():
+                if service in [
+                    "twitter",
+                    "status.io",
+                    "aws",
+                    "gcp",
+                    "smartthings",
+                    "fastly",
+                    "twitter_api",
+                ]:
                     c_old.pop(service, None)
 
             await self.config.channel_from_id(c_id).feeds.set(c_old)
