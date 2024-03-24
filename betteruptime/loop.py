@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import json
+from io import StringIO
 from time import time
 from typing import Dict
 
@@ -31,13 +32,12 @@ class BULoop(MixinMeta):
             await self.migate_v2_to_v3()
             await self.config.version.set(3)
         else:
-            self.cog_loaded_cache = pandas.Series(
-                pandas.read_json(json.dumps(await self.config.cog_loaded()), typ="series")
-            )
+            with StringIO(json.dumps(await self.config.cog_loaded())) as s:
+                self.cog_loaded_cache = pandas.Series(pandas.read_json(s, typ="series"))
             log.trace("pd obj for cog loaded cache:\n%s", self.cog_loaded_cache)
-            self.connected_cache = pandas.Series(
-                pandas.read_json(json.dumps(await self.config.connected()), typ="series")
-            )
+
+            with StringIO(json.dumps(await self.config.connected())) as s:
+                self.connected_cache = pandas.Series(pandas.read_json(s, typ="series"))
             log.trace("pd obj for connected cache:\n%s", self.connected_cache)
 
         log.debug("Config setup finished, waiting to start loops")

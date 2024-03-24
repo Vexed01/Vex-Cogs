@@ -93,9 +93,7 @@ class UptimeData:
         for date in self.expected_index:
             if date == midnight:
                 continue
-            new[date] = format(
-                round((self.daily_connected_data[date] / SECONDS_IN_DAY) * 100, 2), ".2f"
-            )
+            new[date] = round((self.daily_connected_data[date] / SECONDS_IN_DAY) * 100, 2)
         try:
             del new[midnight]
         except KeyError:  # dunno how this could happen but it did once
@@ -108,9 +106,8 @@ class UptimeData:
         for date in self.expected_index:
             if date == midnight:
                 continue
-            new[date] = format(
-                round((self.daily_cog_loaded_data[date] / SECONDS_IN_DAY) * 100, 2), ".2f"
-            )
+            new[date] = round((self.daily_cog_loaded_data[date] / SECONDS_IN_DAY) * 100, 2)
+
         del new[midnight]
         return new.astype(float)
 
