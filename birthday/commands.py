@@ -12,7 +12,8 @@ from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import box, pagify, warning
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
-from rich.table import Table  # type:ignore
+from redbot.core.i18n import Translator, cog_i18n
+from rich.table import Table
 
 from .abc import MixinMeta
 from .components.setup import SetupView
@@ -24,18 +25,21 @@ from .vexutils.button_pred import wait_for_yes_no
 
 log = get_vex_logger(__name__)
 
+_ = Translator("Birthday", __file__)
 
+@cog_i18n(_)
 class BirthdayCommands(MixinMeta):
     async def setup_check(self, ctx: commands.Context) -> None:
         if ctx.guild is None:
-            raise CheckFailure("This command can only be used in a server.")
+            raise CheckFailure(_("This command can only be used in a server."))
             # this should have been caught by guild only check, but this keeps type checker happy
             # and idk what order decos run in so
 
         if not await self.check_if_setup(ctx.guild):
             await ctx.send(
-                "This command is not available until the cog has been setup. "
-                f"Get an admin to use `{ctx.clean_prefix}bdset interactive` to get started."
+                _("This command is not available until the cog has been setup. "
+                "{} Get an admin to use `{}` to get started.")
+                .format(" ", ctx.clean_prefix + "bdset interactive")
             )
             raise CheckFailure("cog needs setup")
 
@@ -68,11 +72,11 @@ class BirthdayCommands(MixinMeta):
         # year as 1 means year not specified
 
         if birthday.year != 1 and birthday.year < MIN_BDAY_YEAR:
-            await ctx.send(f"I'm sorry, but I can't set your birthday to before {MIN_BDAY_YEAR}.")
+            await ctx.send(_("I'm sorry, but I can't set your birthday to before {}.").format(MIN_BDAY_YEAR))
             return
 
         if birthday > datetime.datetime.utcnow():
-            await ctx.send("You can't be born in the future!")
+            await ctx.send(_("You can't be born in the future!"))
             return
 
         async with self.config.member(ctx.author).birthday() as bday:
@@ -85,7 +89,7 @@ class BirthdayCommands(MixinMeta):
         else:
             str_bday = birthday.strftime("%B %d, %Y")
 
-        await ctx.send(f"Your birthday has been set as {str_bday}.")
+        await ctx.send(_("Your birthday has been set as {}.").format(str_bday))
 
     @birthday.command(aliases=["delete", "del"])
     async def remove(self, ctx: commands.Context):
@@ -95,7 +99,7 @@ class BirthdayCommands(MixinMeta):
             assert isinstance(ctx.author, discord.Member)
             assert ctx.guild is not None
 
-        m = await ctx.send("Are you sure?")
+        m = await ctx.send(_("Are you sure?"))
         start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
         check = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
 
@@ -107,11 +111,11 @@ class BirthdayCommands(MixinMeta):
             return
 
         if check.result is False:
-            await ctx.send("Cancelled.")
+            await ctx.send(_("Cancelled."))
             return
 
         await self.config.member(ctx.author).birthday.set({})
-        await ctx.send("Your birthday has been removed.")
+        await ctx.send(_("Your birthday has been removed."))
 
     @birthday.command()
     async def upcoming(self, ctx: commands.Context, days: int = 7):
@@ -127,7 +131,7 @@ class BirthdayCommands(MixinMeta):
             assert ctx.guild is not None
 
         if days < 1 or days > 365:
-            await ctx.send("You must enter a number of days greater than 0 and smaller than 365.")
+            await ctx.send(_("You must enter a number of days greater than 0 and smaller than 365."))
             return
 
         today_dt = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -189,12 +193,12 @@ class BirthdayCommands(MixinMeta):
         log.trace("bdays parsed: %s", parsed_bdays)
 
         if len(parsed_bdays) == 0:
-            await ctx.send(f"No upcoming birthdays in the next {days} days.")
+            await ctx.send(_("No upcoming birthdays in the next {} days.").format(days))
             return
 
         sorted_parsed_bdays = sorted(parsed_bdays.items(), key=lambda x: x[0])
 
-        embed = discord.Embed(title="Upcoming Birthdays", colour=await ctx.embed_colour())
+        embed = discord.Embed(title=_("Upcoming Birthdays"), colour=await ctx.embed_colour())
 
         if len(sorted_parsed_bdays) > 25:
             embed.description = "Too many days to display. I've had to stop at 25."
@@ -235,7 +239,7 @@ class BirthdayAdminCommands(MixinMeta):
         if TYPE_CHECKING:
             assert isinstance(ctx.author, discord.Member)
 
-        await ctx.send("Click below to start.", view=SetupView(ctx.author, self.bot, self.config))
+        await ctx.send(_("Click below to start."), view=SetupView(ctx.author, self.bot, self.config))
 
     @bdset.command()
     async def settings(self, ctx: commands.Context):
@@ -317,17 +321,18 @@ class BirthdayAdminCommands(MixinMeta):
             if old is None:
                 conf["setup_state"] += 1
 
-        m = (
-            "Time set! I'll send the birthday message and update the birthday role at"
-            f" {time.strftime('%H:%M')} UTC."
+        m = (_(
+            "Time set! I'll send the birthday message and update the birthday role at "
+            "{time} UTC."
+            ).format(time=time.strftime('%H:%M'))
         )
 
         if old is not None:
             old_dt = datetime.datetime.utcfromtimestamp(old)
             if time > old_dt and time > datetime.datetime.utcnow():
                 m += (
-                    "\n\nThe time you set is after the time I currently send the birthday message,"
-                    " so the birthday message will be sent for a second time."
+                    _("\n\nThe time you set is after the time I currently send the birthday message,"
+                    " so the birthday message will be sent for a second time.")
                 )
 
         await ctx.send(m)
@@ -356,15 +361,15 @@ class BirthdayAdminCommands(MixinMeta):
 
         if len(message) > MAX_BDAY_MSG_LEN:
             await ctx.send(
-                f"That message is too long! It needs to be under {MAX_BDAY_MSG_LEN} characters."
+                _("That message is too long! It needs to be under {} characters.").format(MAX_BDAY_MSG_LEN)
             )
 
         try:
             format_bday_message(message, ctx.author, 1)
         except KeyError as e:
             await ctx.send(
-                f"You have a placeholder `{{{e.args[0]}}}` that is invalid. You can only include"
-                " `{name}` and `{mention}` for the message without a year."
+               _("You have a placeholder `{{{}}}` that is invalid. You can only include"
+               " `{}` and `{}` for the message without a year.").format(e.args[0], "name", "mention")
             )
             return
 
@@ -374,7 +379,7 @@ class BirthdayAdminCommands(MixinMeta):
 
             conf["message_wo_year"] = message
 
-        await ctx.send("Message set. Here's how it will look:")
+        await ctx.send(_("Message set. Here's how it will look:"))
         await ctx.send(
             format_bday_message(message, ctx.author),
             allowed_mentions=discord.AllowedMentions(users=True),
@@ -405,15 +410,14 @@ class BirthdayAdminCommands(MixinMeta):
 
         if len(message) > MAX_BDAY_MSG_LEN:
             await ctx.send(
-                f"That message is too long! It needs to be under {MAX_BDAY_MSG_LEN} characters."
+                _("That message is too long! It needs to be under {} characters.").format(MAX_BDAY_MSG_LEN)
             )
 
         try:
             format_bday_message(message, ctx.author, 1)
         except KeyError as e:
             await ctx.send(
-                f"You have a placeholder `{{{e.args[0]}}}` that is invalid. You can only include"
-                " `{name}`, `{mention}` and `{new_age}` for the message with a year."
+                _("You have a placeholder `{}` that is invalid. You can only include `{}`, `{}`, and `{}` for the message with a year.").format(e.args[0], "{name}", "{mention}", "{new_age}")
             )
             return
 
@@ -423,7 +427,7 @@ class BirthdayAdminCommands(MixinMeta):
 
             conf["message_w_year"] = message
 
-        await ctx.send("Message set. Here's how it will look, if you're turning 20:")
+        await ctx.send(_("Message set. Here's how it will look, if you're turning 20:"))
         await ctx.send(
             format_bday_message(message, ctx.author, 20),
             allowed_mentions=discord.AllowedMentions(users=True),
@@ -444,8 +448,8 @@ class BirthdayAdminCommands(MixinMeta):
 
         if channel.permissions_for(ctx.me).send_messages is False:
             await ctx.send(
-                "I can't do that because I don't have permissions to send messages in"
-                f" {channel.mention}."
+                _("I can't do that because I don't have permissions to send messages in"
+                " {}.").format(channel.mention)
             )
             return
 
@@ -455,7 +459,7 @@ class BirthdayAdminCommands(MixinMeta):
 
             conf["channel_id"] = channel.id
 
-        await ctx.send(f"Channel set to {channel.mention}.")
+        await ctx.send(_("Channel set to {}.").format(channel.mention))
 
     @commands.bot_has_permissions(manage_roles=True)
     @bdset.command()
@@ -477,7 +481,7 @@ class BirthdayAdminCommands(MixinMeta):
 
         # no need to check hierarchy for author, since command is locked to admins
         if ctx.me.top_role < role:
-            await ctx.send(f"I can't use {role.name} because it is higher than my highest role.")
+            await ctx.send(_("I can't use {} because it is higher than my highest role.").format(role.name))
             return
 
         async with self.config.guild(ctx.guild).all() as conf:
@@ -486,7 +490,7 @@ class BirthdayAdminCommands(MixinMeta):
 
             conf["role_id"] = role.id
 
-        await ctx.send(f"Role set to {role.name}.")
+        await ctx.send(_("Role set to {}.").format(role.name))
 
     @bdset.command()
     async def forceset(
@@ -507,11 +511,11 @@ class BirthdayAdminCommands(MixinMeta):
             to 1/1/2000
         """
         if birthday.year != 1 and birthday.year < MIN_BDAY_YEAR:
-            await ctx.send(f"I'm sorry, but I can't set a birthday to before {MIN_BDAY_YEAR}.")
+            await ctx.send(_("I'm sorry, but I can't set a birthday to before {}.").format(MIN_BDAY_YEAR))
             return
 
         if birthday > datetime.datetime.utcnow():
-            await ctx.send("You can't be born in the future!")
+            await ctx.send(_("You can't be born in the future!"))
             return
 
         async with self.config.member(user).birthday() as bday:
@@ -524,7 +528,7 @@ class BirthdayAdminCommands(MixinMeta):
         else:
             str_bday = birthday.strftime("%B %d, %Y")
 
-        await ctx.send(f"{user.name}'s birthday has been set as {str_bday}.")
+        await ctx.send(_("{}'s birthday has been set as {}.").format(user.name, str_bday))
 
     @bdset.command()
     async def forceremove(self, ctx: commands.Context, user: discord.Member):
@@ -534,7 +538,7 @@ class BirthdayAdminCommands(MixinMeta):
             assert isinstance(user, discord.Member)
             assert ctx.guild is not None
 
-        m = await ctx.send(f"Are you sure? `{user.name}`'s birthday will be removed.")
+        m = await ctx.send(_("Are you sure? `{}`'s birthday will be removed.").format(user.name))
         start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
         check = ReactionPredicate.yes_or_no(m, ctx.author)  # type:ignore
 
@@ -546,11 +550,11 @@ class BirthdayAdminCommands(MixinMeta):
             return
 
         if check.result is False:
-            await ctx.send("Cancelled.")
+            await ctx.send(_("Cancelled."))
             return
 
         await self.config.member(user).birthday.set({})
-        await ctx.send(f"{user.name}'s birthday has been removed.")
+        await ctx.send(_("{}'s birthday has been removed.").format(user.name))
 
     @commands.is_owner()
     @bdset.command()
@@ -564,8 +568,8 @@ class BirthdayAdminCommands(MixinMeta):
 
         if await self.config.guild(ctx.guild).setup_state() != 0:
             m = await ctx.send(
-                "You have already started setting the cog up. Are you sure? This will overwrite"
-                " your old data for all guilds."
+                _("You have already started setting the cog up. Are you sure? This will overwrite"
+                " your old data for all guilds.")
             )
 
             start_adding_reactions(m, ReactionPredicate.YES_OR_NO_EMOJIS)
@@ -573,11 +577,11 @@ class BirthdayAdminCommands(MixinMeta):
             try:
                 await self.bot.wait_for("reaction_add", check=pred, timeout=60)
             except asyncio.TimeoutError:
-                await ctx.send("Timeout. Cancelling.")
+                await ctx.send(_("Timeout. Cancelling."))
                 return
 
             if pred.result is False:
-                await ctx.send("Cancelling.")
+                await ctx.send(_("Cancelling."))
                 return
 
         bday_conf = Config.get_conf(
@@ -632,8 +636,8 @@ class BirthdayAdminCommands(MixinMeta):
                     await self.config.member_from_ids(guild_id, user_id).birthday.set(new_data)
 
         await ctx.send(
-            "All set. You can now configure the messages and time to send with other commands"
-            " under `[p]bdset`, if you would like to change it from ZeLarp's. This is per-guild."
+            _("All set. You can now configure the messages and time to send with other commands"
+            " under `[p]bdset`, if you would like to change it from ZeLarp's. This is per-guild.")
         )
 
     @bdset.command()
@@ -648,9 +652,9 @@ class BirthdayAdminCommands(MixinMeta):
         """
         await self.config.guild(ctx.guild).allow_role_mention.set(value)
         if value:
-            await ctx.send("Role mentions have been enabled.")
+            await ctx.send(_("Role mentions have been enabled."))
         else:
-            await ctx.send("Role mentions have been disabled.")
+            await ctx.send(_("Role mentions have been disabled."))
 
     @bdset.command()
     async def stop(self, ctx: commands.Context):
@@ -665,7 +669,7 @@ class BirthdayAdminCommands(MixinMeta):
             ctx, "Are you sure you want to stop sending updates and giving roles?"
         )
         if confirm is False:
-            await ctx.send("Okay, nothing's changed.")
+            await ctx.send(_("Okay, nothing's changed."))
             return
 
         await self.config.guild(ctx.guild).clear()
@@ -676,8 +680,8 @@ class BirthdayAdminCommands(MixinMeta):
             " users birthdays are?",
         )
         if confirm is False:
-            await ctx.send("I'll keep that.")
+            await ctx.send(_("I'll keep that."))
             return
 
         await self.config.clear_all_members(ctx.guild)
-        await ctx.send("Deleted.")
+        await ctx.send(_("Deleted."))
