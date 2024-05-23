@@ -628,6 +628,14 @@ CmdLog
 ======
 
 *********
+``1.5.5``
+*********
+
+2024-05-23
+
+- Fix error with ``cmdlog user`` when a slash/app command has been used
+
+*********
 ``1.5.4``
 *********
 
