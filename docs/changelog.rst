@@ -459,9 +459,9 @@ Birthday
 
 - Don't allow users to set birthday messages which contain invalid placeholders (GH #92)
 
-*********
+**********
 ``1.0.11``
-*********
+**********
 
 2022-03-24
 

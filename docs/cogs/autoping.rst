@@ -33,9 +33,9 @@ If the latest message in the channel when a ping is about to be sent includes a 
 
 Messages from bots/webhooks are ignored.
 
-Anyone can run ``autoping add`` to add themselves to the autoping list for the channel, and users with manage messages permissions or mod can add other users/roles. You can restrict this with the Permissions cog.
+Anyone can run ```autoping add``` to add themselves to the autoping list for the channel. You can restrict this with the Permissions cog if desired.
 
-Only users with manage message permissions or mod can change the rate limit.
+Only users with mention everyone or admin permissions can set the rate limit or add/remove autoping for roles or other users.
 
 
 .. _autoping-commands:
@@ -76,7 +76,7 @@ autoping add
 
 Add yourself or a user/role to the autoping list for this channel.
 
-Only moderators can add other users or roles.
+Only admins can add other users or roles.
 
 **Examples:**
 - ``[p]autoping add`` to add yourself to the list.
@@ -90,7 +90,7 @@ Only moderators can add other users or roles.
 autoping clear
 """"""""""""""
 
-.. note:: |mod-lock|
+.. note:: |admin-lock|
 
 **Syntax**
 
@@ -102,15 +102,13 @@ autoping clear
 
 Clear the autoping list for this channel.
 
-Only moderators can clear the list.
-
 .. _autoping-command-autoping-ratelimit:
 
 """"""""""""""""""
 autoping ratelimit
 """"""""""""""""""
 
-.. note:: |mod-lock|
+.. note:: |admin-lock|
 
 **Syntax**
 
@@ -121,8 +119,6 @@ autoping ratelimit
 **Description**
 
 Set the rate limit for autoping in this channel.
-
-Only moderators can change the rate limit.
 
 **Examples:**
 - ``[p]autoping ratelimit 10 minutes`` to set the rate limit to 10 minutes.
@@ -144,7 +140,7 @@ autoping remove
 
 Remove yourself or a user/role from the autoping list for this channel.
 
-Only moderators can remove other users or roles.
+Only admins can remove other users or roles.
 
 **Examples:**
 - ``[p]autoping remove`` to remove yourself from the list.
@@ -158,7 +154,7 @@ Only moderators can remove other users or roles.
 autoping settings
 """""""""""""""""
 
-.. note:: |mod-lock|
+.. note:: |admin-lock|
 
 **Syntax**
 
@@ -169,7 +165,5 @@ autoping settings
 **Description**
 
 Show the current autoping settings for this channel.
-
-Only moderators can view the settings.
 
 Also shows currently added users and roles.

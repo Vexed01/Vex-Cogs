@@ -32,11 +32,11 @@ class AutoPing(commands.Cog):
 
     Messages from bots/webhooks are ignored.
 
-    Anyone can run `autoping add` to add themselves to the autoping list for the channel, and
-    users with manage messages permissions or mod can add other users/roles. You can restrict
-    this with the Permissions cog.
+    Anyone can run `autoping add` to add themselves to the autoping list for the channel. You can
+    restrict this with the Permissions cog if desired.
 
-    Only users with manage message permissions or mod can change the rate limit.
+    Only users with mention everyone or admin permissions can set the rate limit or
+    add/remove autoping for roles or other users.
     """
 
     __version__ = "1.0.1"
@@ -126,7 +126,7 @@ class AutoPing(commands.Cog):
     ):
         """Add yourself or a user/role to the autoping list for this channel.
 
-        Only moderators can add other users or roles.
+        Only admins can add other users or roles.
 
         **Examples:**
         - `[p]autoping add` to add yourself to the list.
@@ -147,7 +147,7 @@ class AutoPing(commands.Cog):
 
         if target is None or ctx.author == target:
             real_target = ctx.author
-        elif ctx.author.guild_permissions.manage_messages or await self.bot.is_mod(ctx.author):
+        elif ctx.author.guild_permissions.mention_everyone or await self.bot.is_admin(ctx.author):
             real_target = target
         else:
             await ctx.send("You do not have permission to add other users or roles.")
@@ -182,7 +182,7 @@ class AutoPing(commands.Cog):
     ):
         """Remove yourself or a user/role from the autoping list for this channel.
 
-        Only moderators can remove other users or roles.
+        Only admins can remove other users or roles.
 
         **Examples:**
         - `[p]autoping remove` to remove yourself from the list.
@@ -203,7 +203,7 @@ class AutoPing(commands.Cog):
 
         if target is None or ctx.author == target:
             real_target = ctx.author
-        elif ctx.author.guild_permissions.manage_messages or await self.bot.is_mod(ctx.author):
+        elif ctx.author.guild_permissions.mention_everyone or await self.bot.is_admin(ctx.author):
             real_target = target
         else:
             await ctx.send("You do not have permission to remove other users or roles.")
@@ -223,12 +223,10 @@ class AutoPing(commands.Cog):
             else:
                 await ctx.send(f"{mention} is not on the autoping list for this channel.")
 
-    @commands.mod_or_permissions(manage_messages=True)
+    @commands.admin_or_permissions(mention_everyone=True)
     @autoping.command()
     async def ratelimit(self, ctx: commands.Context, *, time: commands.TimedeltaConverter):
         """Set the rate limit for autoping in this channel.
-
-        Only moderators can change the rate limit.
 
         **Examples:**
         - `[p]autoping ratelimit 10 minutes` to set the rate limit to 10 minutes.
@@ -247,13 +245,10 @@ class AutoPing(commands.Cog):
 
         await ctx.send(f"Rate limit set to {humanize_timedelta(timedelta=time)}.")
 
-    @commands.mod_or_permissions(manage_messages=True)
+    @commands.admin_or_permissions(mention_everyone=True)
     @autoping.command()
     async def clear(self, ctx: commands.Context):
-        """Clear the autoping list for this channel.
-
-        Only moderators can clear the list.
-        """
+        """Clear the autoping list for this channel."""
         # guild only
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -274,12 +269,10 @@ class AutoPing(commands.Cog):
         else:
             await ctx.send("Operation cancelled.")
 
-    @commands.mod_or_permissions(manage_messages=True)
+    @commands.admin_or_permissions(mention_everyone=True)
     @autoping.command()
     async def settings(self, ctx: commands.Context):
         """Show the current autoping settings for this channel.
-
-        Only moderators can view the settings.
 
         Also shows currently added users and roles.
         """
