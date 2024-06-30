@@ -158,7 +158,7 @@ class AutoPing(commands.Cog):
                 autoping.append(real_target.id)
                 if real_target == ctx.author:
                     await ctx.send(
-                        f"You have been added to the autoping list for this channel. You will be "
+                        "You have been added to the autoping list for this channel. You will be "
                         "pinged when a message is sent in this channel."
                     )
                 else:
