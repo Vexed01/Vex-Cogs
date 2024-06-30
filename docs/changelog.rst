@@ -14,6 +14,7 @@ Jump links:
 
 | :ref:`aliases<cl_aliases>`
 | :ref:`anotherpingcog<cl_apc>`
+| :ref:`autoping<cl_autoping>`
 | :ref:`beautify<cl_beautify>`
 | :ref:`betteruptime<cl_betteruptime>`
 | :ref:`birthday<cl_birthday>`
@@ -119,6 +120,21 @@ AnotherPingCog
 2021-05-09
 
 - Potentially fix super edge case behaviour with command not registering
+
+.. _cl_autoping:
+
+========
+AutoPing
+========
+
+*********
+``1.1.0``
+*********
+
+2024-06-30
+
+- Initial release
+- Automatically ping a user/role when a message is sent in a specified channel
 
 .. _cl_beautify:
 

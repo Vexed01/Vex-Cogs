@@ -26,6 +26,7 @@ in #support_vex-cogs.
 
    cogs/anotherpingcog
    cogs/aliases
+   cogs/autoping
    cogs/beautify
    cogs/betteruptime
    cogs/birthday
