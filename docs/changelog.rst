@@ -128,6 +128,14 @@ AutoPing
 ========
 
 *********
+``1.0.2``
+*********
+
+2024-06-30
+
+- Further restrict permissions for adding any role/user to admins & mention everyone
+
+*********
 ``1.0.1``
 *********
 

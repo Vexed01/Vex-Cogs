@@ -39,7 +39,7 @@ class AutoPing(commands.Cog):
     add/remove autoping for roles or other users.
     """
 
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
     __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:
