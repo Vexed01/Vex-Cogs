@@ -136,7 +136,7 @@ AutoPing
 - Fix a permissions issue that allowed anyone to add/remove users and roles from autoping
 
 *********
-``1.1.0``
+``1.0.0``
 *********
 
 2024-06-30
