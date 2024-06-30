@@ -128,6 +128,14 @@ AutoPing
 ========
 
 *********
+``1.0.1``
+*********
+
+2024-06-30
+
+- Fix a permissions issue that allowed anyone to add/remove users and roles from autoping
+
+*********
 ``1.1.0``
 *********
 

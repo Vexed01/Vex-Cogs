@@ -39,7 +39,7 @@ class AutoPing(commands.Cog):
     Only users with manage message permissions or mod can change the rate limit.
     """
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:
@@ -147,7 +147,7 @@ class AutoPing(commands.Cog):
 
         if target is None or ctx.author == target:
             real_target = ctx.author
-        elif ctx.author.guild_permissions.manage_messages or self.bot.is_mod(ctx.author):
+        elif ctx.author.guild_permissions.manage_messages or await self.bot.is_mod(ctx.author):
             real_target = target
         else:
             await ctx.send("You do not have permission to add other users or roles.")
@@ -203,7 +203,7 @@ class AutoPing(commands.Cog):
 
         if target is None or ctx.author == target:
             real_target = ctx.author
-        elif ctx.author.guild_permissions.manage_messages or self.bot.is_mod(ctx.author):
+        elif ctx.author.guild_permissions.manage_messages or await self.bot.is_mod(ctx.author):
             real_target = target
         else:
             await ctx.send("You do not have permission to remove other users or roles.")
