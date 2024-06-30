@@ -109,7 +109,9 @@ class AutoPing(commands.Cog):
     @commands.group()
     @commands.guild_only()
     async def autoping(self, ctx: commands.Context):
-        """Configure autopings for this channel."""
+        """Configure autopings for this channel.
+
+        Docs at https://s.vexcodes.com/c/autoping"""
 
     @autoping.command()
     async def add(
