@@ -26,11 +26,15 @@ class AutoPing(commands.Cog):
 
     Pings are rate limited to a default of 1 per hour.
 
-    If the latest message in the channel when a ping is about to be sent includes a ping of the target user OR is sent by the target user, that user will not be pinged. Roles are always pinged.
+    If the latest message in the channel when a ping is about to be sent includes a ping of the
+    target user OR is sent by the target user, that user will not be pinged. Roles are always
+    pinged.
 
     Messages from bots/webhooks are ignored.
 
-    Anyone can run `autoping add` to add themselves to the autoping list for the channel, and users with manage messages permissions or mod can add other users/roles. You can restrict this with the Permissions cog.
+    Anyone can run `autoping add` to add themselves to the autoping list for the channel, and
+    users with manage messages permissions or mod can add other users/roles. You can restrict
+    this with the Permissions cog.
 
     Only users with manage message permissions or mod can change the rate limit.
     """
@@ -154,11 +158,13 @@ class AutoPing(commands.Cog):
                 autoping.append(real_target.id)
                 if real_target == ctx.author:
                     await ctx.send(
-                        f"You have been added to the autoping list for this channel. You will be pinged when a message is sent in this channel."
+                        f"You have been added to the autoping list for this channel. You will be "
+                        "pinged when a message is sent in this channel."
                     )
                 else:
                     await ctx.send(
-                        f"{real_target.mention} has been added to the autoping list for this channel and will be pinged on new messages."
+                        f"{real_target.mention} has been added to the autoping list for this "
+                        "channel and will be pinged on new messages."
                     )
             else:
                 await ctx.send(
@@ -256,7 +262,8 @@ class AutoPing(commands.Cog):
         try:
             result = await wait_for_yes_no(
                 ctx,
-                "Are you sure you want to remove all users and roles from the autoping list for this channel?",
+                "Are you sure you want to remove all users and roles from the autoping list for "
+                "this channel?",
             )
         except asyncio.TimeoutError:
             return
@@ -287,11 +294,15 @@ class AutoPing(commands.Cog):
         if not autoping:
             await ctx.send(
                 "There are no users or roles on the autoping list for this channel. The rate "
-                f"limit is set to {humanize_timedelta(timedelta=datetime.timedelta(seconds=rate_limit))}."
+                "limit is set to "
+                f"{humanize_timedelta(timedelta=datetime.timedelta(seconds=rate_limit))}."
             )
             return
 
-        text = f"Rate limit: {humanize_timedelta(timedelta=datetime.timedelta(seconds=rate_limit))}\n\n"
+        text = (
+            "Rate limit: "
+            f"{humanize_timedelta(timedelta=datetime.timedelta(seconds=rate_limit))}\n\n"
+        )
         unknown_from_user = set()
         unknown_from_role = set()
         text += "Users on the autoping list:\n"
