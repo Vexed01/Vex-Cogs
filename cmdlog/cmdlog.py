@@ -33,7 +33,7 @@ class CmdLog(commands.Cog):
     """
 
     __author__ = "@vexingvexed"
-    __version__ = "1.5.4"
+    __version__ = "1.5.5"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -201,7 +201,7 @@ class CmdLog(commands.Cog):
                     target = None
 
                 log_obj = LoggedAppCom(
-                    author=inter.user,
+                    user=inter.user,
                     com_name=inter.command.name,
                     channel=inter.channel,
                     guild=inter.guild,
