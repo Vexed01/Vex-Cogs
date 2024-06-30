@@ -33,6 +33,7 @@ time.sleep(10)
 cogs = [
     "aliases",
     "anotherpingcog",
+    "autoping",
     "beautify",
     "betteruptime",
     "buttonpoll",

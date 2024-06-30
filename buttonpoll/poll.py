@@ -55,6 +55,7 @@ class Poll:
         cog: "ButtonPoll",
         view: "PollView",
         message_id: int = 0,
+        multi: bool = False,  # new option, default to avoid breaking old polls
     ):
         self.unique_poll_id = unique_poll_id
         self.guild_id = guild_id
@@ -65,6 +66,7 @@ class Poll:
         self.options = options
         self.allow_vote_change = allow_vote_change
         self.view_while_live = view_while_live
+        self.multi = multi
         self.send_msg_when_over = send_msg_when_over
         self.poll_finish = poll_finish
         self.view = view
@@ -102,6 +104,7 @@ class Poll:
             options=[PollOption(n, ButtonStyle(s)) for n, s in data["options"].items()],
             allow_vote_change=bool(data["allow_vote_change"]),
             view_while_live=bool(data["view_while_live"]),
+            multi=bool(data.get("multi")),
             send_msg_when_over=bool(data["send_msg_when_over"]),
             poll_finish=finish,
             cog=cog,
@@ -126,6 +129,7 @@ class Poll:
             "allow_vote_change": data.allow_vote_change,
             "view_while_live": data.view_while_live,
             "send_msg_when_over": data.send_msg_when_over,
+            "multi": data.multi,
             "poll_finish": data.poll_finish.timestamp(),
         }
 
