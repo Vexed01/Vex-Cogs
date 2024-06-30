@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
 from discord import AllowedMentions, Member, Message, Object, Role
 from redbot.core import commands
@@ -118,7 +118,7 @@ class AutoPing(commands.Cog):
         self,
         ctx: commands.Context,
         *,
-        target: Optional[commands.MemberConverter | commands.RoleConverter | str] = None,
+        target: Optional[Union[commands.MemberConverter, commands.RoleConverter, str]] = None,
     ):
         """Add yourself or a user/role to the autoping list for this channel.
 
@@ -134,7 +134,7 @@ class AutoPing(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
             assert isinstance(ctx.author, Member)
-            real_target: Member | Role
+            real_target: Union[Member, Role]
 
         # did not match a converter
         if isinstance(target, str):
@@ -171,7 +171,7 @@ class AutoPing(commands.Cog):
         ctx: commands.Context,
         *,
         target: Optional[
-            commands.ObjectConverter | commands.MemberConverter | commands.RoleConverter | str
+            Union[commands.ObjectConverter, commands.MemberConverter, commands.RoleConverter, str]
         ] = None,
     ):
         """Remove yourself or a user/role from the autoping list for this channel.
@@ -188,7 +188,7 @@ class AutoPing(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
             assert isinstance(ctx.author, Member)
-            real_target: Member | Role | Object
+            real_target: Union[Member, Role, Object]
 
         # did not match a converter
         if isinstance(target, str):
