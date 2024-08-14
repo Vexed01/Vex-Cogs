@@ -143,7 +143,7 @@ class BirthdayLoop(MixinMeta):
         all_settings: dict[int, dict[str, Any]] = await self.config.all_guilds()
 
         async for guild_id, guild_data in AsyncIter(all_birthdays.items(), steps=5):
-            guild = self.bot.get_guild(int(guild_id))
+            guild: discord.Guild | None = self.bot.get_guild(int(guild_id))
             if guild is None:
                 log.trace("Guild %s is not in cache, skipping", guild_id)
                 continue
@@ -175,6 +175,8 @@ class BirthdayLoop(MixinMeta):
             start = today_dt + hour_td
             end = start + datetime.timedelta(days=1)
 
+            required_role = guild.get_role(all_settings[guild.id].get("required_role"))
+
             async for member_id, data in AsyncIter(guild_data.items(), steps=50):
                 birthday = data["birthday"]
                 if not birthday:  # birthday removed but user remains in config
@@ -190,6 +192,14 @@ class BirthdayLoop(MixinMeta):
                     year=birthday["year"] or 1, month=birthday["month"], day=birthday["day"]
                 )
                 this_year_bday_dt = proper_bday_dt.replace(year=today_dt.year) + hour_td
+
+                if required_role and required_role not in member.roles:
+                    log.trace(
+                        "Member %s for guild %s does not have required role, skipping",
+                        member_id,
+                        guild_id,
+                    )
+                    continue
 
                 if start <= this_year_bday_dt < end:  # birthday is today
                     birthday_members[member] = proper_bday_dt
