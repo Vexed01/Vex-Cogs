@@ -52,6 +52,7 @@ with open(utils_location / "commit.json", "w") as fp:
 cog_folders = [
     "aliases",
     "anotherpingcog",
+    "autoping",
     "beautify",
     "betteruptime",
     "birthday",

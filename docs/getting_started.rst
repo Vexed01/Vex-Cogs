@@ -53,6 +53,7 @@ Cog name                                Summary
 ======================================= ===========================================================================
 :ref:`aliases<aliases>`                 Get all the information you could ever need about a command's aliases.
 :ref:`anotherpingcog<anotherpingcog>`   Just another ping cog... But this one has fancy colours in an embed!
+:ref:`autoping<autoping>`               Automatically ping a user/role when a message is sent in a channel.
 :ref:`beautify<beautify>`               Beautify and minify JSON.
 :ref:`betteruptime<betteruptime>`       New uptime command that tracks the bot's uptime percentage (last 30 days).
 :ref:`birthday<birthday>`               Birthday cog with customisable messages and roles.

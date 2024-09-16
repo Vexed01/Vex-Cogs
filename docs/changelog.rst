@@ -14,6 +14,7 @@ Jump links:
 
 | :ref:`aliases<cl_aliases>`
 | :ref:`anotherpingcog<cl_apc>`
+| :ref:`autoping<cl_autoping>`
 | :ref:`beautify<cl_beautify>`
 | :ref:`betteruptime<cl_betteruptime>`
 | :ref:`birthday<cl_birthday>`
@@ -119,6 +120,37 @@ AnotherPingCog
 2021-05-09
 
 - Potentially fix super edge case behaviour with command not registering
+
+.. _cl_autoping:
+
+========
+AutoPing
+========
+
+*********
+``1.0.2``
+*********
+
+2024-06-30
+
+- Further restrict permissions for adding any role/user to admins & mention everyone
+
+*********
+``1.0.1``
+*********
+
+2024-06-30
+
+- Fix a permissions issue that allowed anyone to add/remove users and roles from autoping
+
+*********
+``1.0.0``
+*********
+
+2024-06-30
+
+- Initial release
+- Automatically ping a user/role when a message is sent in a specified channel
 
 .. _cl_beautify:
 
@@ -435,9 +467,9 @@ Birthday
 
 - Don't allow users to set birthday messages which contain invalid placeholders (GH #92)
 
-*********
+**********
 ``1.0.11``
-*********
+**********
 
 2022-03-24
 

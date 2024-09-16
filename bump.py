@@ -6,6 +6,7 @@ from pathlib import Path
 COGS = [
     "aliases",
     "anotherpingcog",
+    "autoping",
     "beautify",
     "betteruptime",
     "buttonpoll",

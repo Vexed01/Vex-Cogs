@@ -186,6 +186,7 @@ If both are provided, `--duration` will be used.
 - `--view-while-live`: Allow users to view the poll results so far while it is live.
 - `--send-new-msg`: Send a new message when the poll is finished.
 - `--silent`: Suppress all error messages that occur during the command.
+- `--multi`: Allow users to vote for multiple options.
 
 For the final four optional arguments, they are false if not included, and true if included.
 
@@ -212,6 +213,7 @@ Choose wisely!`
         parser.add_argument("--view-while-live", action="store_true")
         parser.add_argument("--send-new-msg", action="store_true")
         parser.add_argument("--silent", action="store_true")
+        parser.add_argument("--multi", action="store_true")
         try:
             args = parser.parse_args(arguments.split())
         except Exception as e:
@@ -267,6 +269,7 @@ Choose wisely!`
             options=[PollOption(" ".join(o), discord.ButtonStyle.primary) for o in args.option],
             allow_vote_change=args.allow_vote_change,
             view_while_live=args.view_while_live,
+            multi=args.multi,
             send_msg_when_over=args.send_new_msg,
             poll_finish=poll_finish,
             cog=self,

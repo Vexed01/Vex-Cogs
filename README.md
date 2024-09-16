@@ -27,6 +27,7 @@ There's a list of cogs below, or you can use `[p]cog list vex-cogs` if you've ad
 | --- | --- |
 | [aliases](https://go.vexcodes.com/c/aliases) | Get all the information you could ever need about a command's aliases. |
 | [anotherpingcog](https://go.vexcodes.com/c/anotherpingcog) | Another ping cog... But this one has fancy colours in a customisable embed! |
+| [autoping](https://go.vexcodes.com/c/autoping) | Automatically ping a user/role when a message is sent in a specified channel. |
 | [beautify](https://go.vexcodes.com/c/beautify) | Beautify and minify JSON. |
 | [betteruptime](https://go.vexcodes.com/c/betteruptime) | See your bot's uptime percentages and check when downtime happened. |
 | [birthday](https://go.vexcodes.com/c/birthday) | Birthday cog with customisable messages and roles. |
