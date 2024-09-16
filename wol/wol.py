@@ -157,7 +157,7 @@ class WOL(commands.Cog):
 
         if ip:
             if len(ip.split(".")) != 4:
-                return await ctx.send("That doesn't look like a valid IP.")
+             await ctx.send("That doesn't look like a valid IP, but I've added it anyway in case it's a domain.")
 
             await self.config.ips.set_raw(friendly_name.lower(), value=ip)
 
