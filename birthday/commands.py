@@ -702,14 +702,13 @@ class BirthdayAdminCommands(MixinMeta):
                     "announced."
                 )
                 await ctx.send_help()
+        else:
+            await self.config.guild(ctx.guild).require_role.set(role.id)
+            await ctx.send(
+                f"The required role has been set to {role.name}. Users without this role no longer"
+                " have their birthday announced."
+            )
 
-        await self.config.guild(ctx.guild).require_role.set(role.id)
-        await ctx.send(
-            f"The required role has been set to {role.name}. Users without this role no longer"
-            " have their birthday announced."
-        )
-
-    @bdset.command()
     @bdset.command(name="requiredrolepurge")
     async def requiredrole_purge(self, ctx: commands.Context):
         """Remove birthdays from the database for users who no longer have the required role.
