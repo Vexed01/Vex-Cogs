@@ -296,7 +296,7 @@ class BirthdayAdminCommands(MixinMeta):
         Minutes are ignored.
 
         **Examples:**
-        - `[p]bdset time 7:00` - set the time to 7:45AM UTC
+        - `[p]bdset time 7:00` - set the time to 7:00AM UTC
         - `[p]bdset time 12AM` - set the time to midnight UTC
         - `[p]bdset time 3PM` - set the time to 3:00PM UTC
         """
