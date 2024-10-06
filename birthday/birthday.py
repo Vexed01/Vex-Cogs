@@ -46,6 +46,7 @@ class Birthday(
             setup_state=0,  # 0 is not setup, 5 is everything setup. this is so it can be steadily
             # incremented with individual setup commands or with the interactive setup, then
             # easily checked
+            require_role=False,
             allow_role_mention=False,
         )
         self.config.register_member(birthday={"year": 1, "month": 1, "day": 1})
