@@ -136,6 +136,10 @@ class SendUpdate:
         embed.set_footer(text=f"Powered by {channel.guild.me.name}")
         webhook = await get_webhook(channel)
 
+        sanitised_name = UPDATE_NAME.format(FEEDS[self.service]["friendly"])
+        if "Discord" in sanitised_name:
+            sanitised_name = "Status Update"
+
         if self.channeldata.mode == "edit":
             if edit_id := self.channeldata.edit_id.get(self.incidentdata.incident_id):
                 try:
@@ -144,7 +148,7 @@ class SendUpdate:
                     edit_id = None
             if not edit_id:
                 sent_webhook = await webhook.send(
-                    username=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
+                    username=sanitised_name,
                     avatar_url=ICON_BASE.format(self.service),
                     embed=embed,
                     wait=True,
@@ -156,7 +160,7 @@ class SendUpdate:
 
         else:
             await webhook.send(
-                username=UPDATE_NAME.format(FEEDS[self.service]["friendly"]),
+                username=sanitised_name,
                 avatar_url=ICON_BASE.format(self.service),
                 embed=embed,
                 thread=channel if isinstance(channel, Thread) else discord.utils.MISSING,
