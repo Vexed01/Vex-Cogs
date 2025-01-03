@@ -170,7 +170,7 @@ class BUCommands(MixinMeta):
 
         sr = data.daily_connected_percentages()
 
-        if len(sr) < 2:
+        if len(sr) < 2 or sr is None:
             return await ctx.send("Give me a few more days to collect data!")
 
         async with ctx.typing():

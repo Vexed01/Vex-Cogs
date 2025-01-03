@@ -1175,6 +1175,14 @@ Status
 ======
 
 *********
+``2.5.8``
+*********
+
+2024-10-21
+
+- Fix webhook sending for Discord status updates
+
+*********
 ``2.5.7``
 *********
 
