@@ -629,7 +629,9 @@ class BirthdayAdminCommands(MixinMeta):
                         "month": dt.month,
                         "day": dt.day,
                     }
-                    await self.config.member_from_ids(guild_id, user_id).birthday.set(new_data)
+                    await self.config.member_from_ids(int(guild_id), user_id).birthday.set(
+                        new_data
+                    )
 
         await ctx.send(
             "All set. You can now configure the messages and time to send with other commands"
