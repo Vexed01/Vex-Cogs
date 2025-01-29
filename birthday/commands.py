@@ -628,9 +628,13 @@ class BirthdayAdminCommands(MixinMeta):
             for day, users in guild_data.items():
                 for user_id, year in users.items():
                     dt = datetime.datetime.fromordinal(int(day))
-                    year = int(year)
+                    year = year
+                    if year is None:
+                        year = 1
+                    else:
+                        year = int(year)
 
-                    if year is None or year < MIN_BDAY_YEAR:
+                    if year < MIN_BDAY_YEAR:
                         year = 1
 
                     try:
