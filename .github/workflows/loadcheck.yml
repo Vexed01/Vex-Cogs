@@ -58,7 +58,7 @@ jobs:
 
       - name: Save Red output as Artifact
         if: always() # still run if prev step failed
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "Red log - Python ${{ matrix.python-version }} & ${{ matrix.friendly-red }}"
           path: red.log
