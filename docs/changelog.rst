@@ -419,6 +419,14 @@ Birthday
 ========
 
 *********
+``1.2.3``
+*********
+
+2025-01-29
+
+- Fix ``bdset zemigrate``
+
+*********
 ``1.2.2``
 *********
 
@@ -448,7 +456,7 @@ Birthday
 
 2022-05-20
 
-- Show correct age a user will turn in `birthday upcoming` when their next birthday is next year
+- Show correct age a user will turn in ``birthday upcoming`` when their next birthday is next year
 
 *********
 ``1.1.0``

@@ -628,8 +628,13 @@ class BirthdayAdminCommands(MixinMeta):
             for day, users in guild_data.items():
                 for user_id, year in users.items():
                     dt = datetime.datetime.fromordinal(int(day))
+                    year = year
+                    if year is None:
+                        year = 1
+                    else:
+                        year = int(year)
 
-                    if year is None or year < MIN_BDAY_YEAR:
+                    if year < MIN_BDAY_YEAR:
                         year = 1
 
                     try:
@@ -642,7 +647,7 @@ class BirthdayAdminCommands(MixinMeta):
                         "month": dt.month,
                         "day": dt.day,
                     }
-                    await self.config.member_from_ids(int(guild_id), user_id).birthday.set(
+                    await self.config.member_from_ids(int(guild_id), int(user_id)).birthday.set(
                         new_data
                     )
 
