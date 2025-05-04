@@ -27,7 +27,9 @@ class SetupView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.author:
-            await interaction.response.send_message("You are not authorized to use this button.")
+            await interaction.response.send_message(
+                "You are not authorized to use this button.", ephemeral=True
+            )
             return False
         else:
             return True
