@@ -18,11 +18,31 @@ EQUALS_LABEL = (ZERO_WIDTH + " ") * 16 + "=" + (" " + ZERO_WIDTH) * 15
 
 def preprocess_expression(expr: str) -> str:
     expr = expr.replace(",", "")
-    expr = re.sub(r"(\d+(?:\.\d*)?)k", r"(\1*1000)", expr, flags=re.IGNORECASE)
-    expr = re.sub(r"(\d+(?:\.\d*)?)m", r"(\1*1000000)", expr, flags=re.IGNORECASE)
-    expr = re.sub(r"(\d+(?:\.\d*)?)b", r"(\1*1000000000)", expr, flags=re.IGNORECASE)
-    expr = re.sub(r"(\d+(?:\.\d*)?)t", r"(\1*1000000000000)", expr, flags=re.IGNORECASE)
-    return expr
+    output = ""
+    i = 0
+    while i < len(expr):
+        ch = expr[i]
+        if ch.isdigit() or ch == ".":
+            num_start = i
+            while i < len(expr) and (expr[i].isdigit() or expr[i] == "."):
+                i += 1
+            number = expr[num_start:i]
+            if i < len(expr) and expr[i].lower() in "kmbt":
+                suffix = expr[i].lower()
+                multiplier = {
+                    "k": "*1000",
+                    "m": "*1000000",
+                    "b": "*1000000000",
+                    "t": "*1000000000000",
+                }[suffix]
+                output += f"({number}{multiplier})"
+                i += 1
+            else:
+                output += number
+        else:
+            output += ch
+            i += 1
+    return output
 
 
 def format_number(value: float | int | str) -> str:
