@@ -8,7 +8,7 @@ from .view import CalcView
 class Calc(commands.Cog):
     """Calculate simple mathematical expressions."""
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
     __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:

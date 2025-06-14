@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from typing import NoReturn
+import re
 
 import discord
 from discord.colour import Colour
@@ -13,6 +14,25 @@ from redbot.core.utils.chat_formatting import box
 ZERO_WIDTH = "\u200b"
 
 EQUALS_LABEL = (ZERO_WIDTH + " ") * 16 + "=" + (" " + ZERO_WIDTH) * 15
+
+
+def preprocess_expression(expr: str) -> str:
+    expr = expr.replace(",", "")
+    expr = re.sub(r"(\d+(?:\.\d*)?)k", r"(\1*1000)", expr, flags=re.IGNORECASE)
+    expr = re.sub(r"(\d+(?:\.\d*)?)m", r"(\1*1000000)", expr, flags=re.IGNORECASE)
+    expr = re.sub(r"(\d+(?:\.\d*)?)b", r"(\1*1000000000)", expr, flags=re.IGNORECASE)
+    expr = re.sub(r"(\d+(?:\.\d*)?)t", r"(\1*1000000000000)", expr, flags=re.IGNORECASE)
+    return expr
+
+
+def format_number(value: float | int | str) -> str:
+    try:
+        num = float(value)
+        if num.is_integer():
+            return f"{int(num):,}"
+        return f"{num:,.10f}".rstrip("0").rstrip(".")
+    except (ValueError, TypeError):
+        return str(value)
 
 
 class ClosedView(discord.ui.View):
@@ -86,8 +106,9 @@ class CalcView(discord.ui.View):
         )
         raw_input = self.input
         friendly_input = raw_input.replace("*", "×").replace("/", "÷")
+        formatted_output = format_number(self.output)
         embed.description = (
-            "**Input:**\n" + box(friendly_input) + "\n**Output:**\n" + box(str(self.output))
+            "**Input:**\n" + box(friendly_input) + "\n**Output:**\n" + box(formatted_output)
         )
         # yes i dont handle over 4k embed limit.... but i dont care!! whos gunna do smth that long?
 
@@ -95,7 +116,8 @@ class CalcView(discord.ui.View):
 
     def maybe_update_output(self) -> bool:
         try:
-            full_output = evaluate(self.input)
+            sanitized_input = preprocess_expression(self.input)
+            full_output = evaluate(sanitized_input)
             self.output = float(round(full_output, 10))
             return True
         except EvaluatorError:
