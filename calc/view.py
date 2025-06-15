@@ -25,7 +25,22 @@ def preprocess_expression(expr: str) -> str:
             num_start = i
             while i < len(expr) and (expr[i].isdigit() or expr[i] == "."):
                 i += 1
-            number = expr[num_start:i]
+
+            if i < len(expr) and expr[i].lower() == "e":
+                e_start = i
+                i += 1
+                if i < len(expr) and expr[i] in "+-":
+                    i += 1
+                while i < len(expr) and expr[i].isdigit():
+                    i += 1
+
+                number_part = expr[num_start:e_start]
+                exponent_part = expr[e_start + 1 : i]
+                number = f"{number_part}E{exponent_part}"
+
+            else:
+                number = expr[num_start:i]
+
             if i < len(expr) and expr[i].lower() in "kmbt":
                 suffix = expr[i].lower()
                 multiplier = {
@@ -178,9 +193,16 @@ class CalcView(discord.ui.View):
 
         await interaction.response.defer()
 
-    @discord.ui.button(label=ZERO_WIDTH, style=discord.ButtonStyle.grey, row=0)
-    async def empty_button(self, interaction: discord.Interaction, item: discord.ui.Item):
-        await interaction.response.send_message("You found the useless button!", ephemeral=True)
+    @discord.ui.button(label="E", style=discord.ButtonStyle.grey, row=0)
+    async def exponent(self, interaction: discord.Interaction, item: discord.ui.Item):
+        if self.input_reset_ready:
+            self.input = ""
+            self.input_reset_ready = False
+        self.input += "E"
+        self.maybe_update_output()
+        self.new_edits_avaible.set()
+
+        await interaction.response.defer()
 
     @discord.ui.button(label="÷", style=discord.ButtonStyle.blurple, row=0)
     async def divide(self, interaction: discord.Interaction, item: discord.ui.Item):
