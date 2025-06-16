@@ -10,7 +10,7 @@ from expr import evaluate, EvaluatorError
 class Calc(commands.Cog):
     """Calculate simple mathematical expressions."""
 
-    __version__ = "0.0.3"
+    __version__ = "0.0.4"
     __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:
@@ -32,6 +32,7 @@ class Calc(commands.Cog):
     async def calc(self, ctx: commands.Context, *, expression: str = None):
         """
         Start an interactive calculator using buttons.
+
         If an expression is given, it will be prefilled and calculated.
         """
         view = CalcView(self.bot, ctx.author.id)

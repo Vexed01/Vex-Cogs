@@ -18,6 +18,7 @@ Jump links:
 | :ref:`beautify<cl_beautify>`
 | :ref:`betteruptime<cl_betteruptime>`
 | :ref:`birthday<cl_birthday>`
+| :ref:`calc<cl_calc>`
 | :ref:`cmdlog<cl_cmdlog>`
 | :ref:`fivemstatus<cl_fivemstatus>`
 | :ref:`github<cl_github>`
@@ -570,6 +571,23 @@ Birthday
 *********
 
 - Initial release
+
+
+.. _cl_calc:
+
+====
+Calc
+====
+
+*********
+``0.0.4``
+*********
+
+2025-06-16
+
+- Correctly support inputs typed for the calc command (GH #145)
+- Support multipliers k, m, b, t, and scientific notation (GH #145)
+- Thanks Evanroby
 
 
 .. _cl_buttonpoll:
