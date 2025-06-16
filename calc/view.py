@@ -15,6 +15,60 @@ ZERO_WIDTH = "\u200b"
 EQUALS_LABEL = (ZERO_WIDTH + " ") * 16 + "=" + (" " + ZERO_WIDTH) * 15
 
 
+def preprocess_expression(expr: str) -> str:
+    expr = expr.replace(",", "")
+    output = ""
+    i = 0
+    while i < len(expr):
+        ch = expr[i]
+        if ch.isdigit() or ch == ".":
+            num_start = i
+            while i < len(expr) and (expr[i].isdigit() or expr[i] == "."):
+                i += 1
+
+            if i < len(expr) and expr[i].lower() == "e":
+                e_start = i
+                i += 1
+                if i < len(expr) and expr[i] in "+-":
+                    i += 1
+                while i < len(expr) and expr[i].isdigit():
+                    i += 1
+
+                number_part = expr[num_start:e_start]
+                exponent_part = expr[e_start + 1 : i]
+                number = f"{number_part}E{exponent_part}"
+
+            else:
+                number = expr[num_start:i]
+
+            if i < len(expr) and expr[i].lower() in "kmbt":
+                suffix = expr[i].lower()
+                multiplier = {
+                    "k": "*1000",
+                    "m": "*1000000",
+                    "b": "*1000000000",
+                    "t": "*1000000000000",
+                }[suffix]
+                output += f"({number}{multiplier})"
+                i += 1
+            else:
+                output += number
+        else:
+            output += ch
+            i += 1
+    return output
+
+
+def format_number(value: float | int | str) -> str:
+    try:
+        num = float(value)
+        if num.is_integer():
+            return f"{int(num):,}"
+        return f"{num:,.10f}".rstrip("0").rstrip(".")
+    except (ValueError, TypeError):
+        return str(value)
+
+
 class ClosedView(discord.ui.View):
     @discord.ui.button(label="Calculator closed", style=ButtonStyle.gray, disabled=True)
     async def btn(self, *args, **kwargs):
@@ -86,8 +140,9 @@ class CalcView(discord.ui.View):
         )
         raw_input = self.input
         friendly_input = raw_input.replace("*", "×").replace("/", "÷")
+        formatted_output = format_number(self.output)
         embed.description = (
-            "**Input:**\n" + box(friendly_input) + "\n**Output:**\n" + box(str(self.output))
+            "**Input:**\n" + box(friendly_input) + "\n**Output:**\n" + box(formatted_output)
         )
         # yes i dont handle over 4k embed limit.... but i dont care!! whos gunna do smth that long?
 
@@ -95,7 +150,8 @@ class CalcView(discord.ui.View):
 
     def maybe_update_output(self) -> bool:
         try:
-            full_output = evaluate(self.input)
+            sanitized_input = preprocess_expression(self.input)
+            full_output = evaluate(sanitized_input)
             self.output = float(round(full_output, 10))
             return True
         except EvaluatorError:
@@ -137,9 +193,16 @@ class CalcView(discord.ui.View):
 
         await interaction.response.defer()
 
-    @discord.ui.button(label=ZERO_WIDTH, style=discord.ButtonStyle.grey, row=0)
-    async def empty_button(self, interaction: discord.Interaction, item: discord.ui.Item):
-        await interaction.response.send_message("You found the useless button!", ephemeral=True)
+    @discord.ui.button(label="E", style=discord.ButtonStyle.grey, row=0)
+    async def exponent(self, interaction: discord.Interaction, item: discord.ui.Item):
+        if self.input_reset_ready:
+            self.input = ""
+            self.input_reset_ready = False
+        self.input += "E"
+        self.maybe_update_output()
+        self.new_edits_avaible.set()
+
+        await interaction.response.defer()
 
     @discord.ui.button(label="÷", style=discord.ButtonStyle.blurple, row=0)
     async def divide(self, interaction: discord.Interaction, item: discord.ui.Item):
