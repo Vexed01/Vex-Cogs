@@ -94,7 +94,7 @@ class StatusSetCom(MixinMeta):
             name="Webhook",
             value=(
                 "If you choose yes, status updates will be sent by a webhook with"
-                f" {service.friendly}'s logo and with the name if `{service.friendly} Status"
+                f" {service.friendly}'s logo and with the name of `{service.friendly} Status"
                 " Update`, instead of my avatar and name."
             ),
             inline=False,
