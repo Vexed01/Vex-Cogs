@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         ### Thanks for taking the time to make an issue!
-        If you want general support please ask in the Red Cog Support server at https://discord.gg/GET4DVk
+        If you want general support please ask in the Red Cog Support server at https://discord.gg/GD43Nb9H86
   - type: input
     id: cog-name
     attributes:
