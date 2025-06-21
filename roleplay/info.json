@@ -3,7 +3,7 @@
     "author": [
         "Vexed (@vexingvexed)"
     ],
-    "description": "Create a role play channel where users can contribute in secret, with some customisation options and logging for admins.",
+    "description": "Create a role play channel where users can contribute in secret, with some customisation options and logging for admins. Messages sent in selected channels will anonymously re-sent by the bot.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users. Messages sent in channels designated as role play channels by Administrators are not stored in memory by this cog, but they are re-sent from the bot with no association to the user. As such this cog does not directly store data, but data is posted to a Discord channel.",
     "install_msg": "Thanks for installing!\n\nTo set the cog up, start with `roleplay channel`. There are some other optional configuration settings available under `roleplay`\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/roleplay>",
     "min_bot_version": "3.5.1",
