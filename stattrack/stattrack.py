@@ -8,6 +8,7 @@ import discord
 import pandas
 import psutil
 from redbot.core import Config, commands
+import kaleido
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
@@ -55,6 +56,8 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
 
         self.last_plot_debug = None
 
+        self.plot_backend_ready = False
+
         self.driver = StatTrackSQLiteDriver()
 
         bot.add_dev_env_value("stattrack", lambda _: self)
@@ -96,6 +99,16 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.loop = self.bot.loop.create_task(self.stattrack_loop())
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
 
+    async def kaleido_check(self) -> None:
+        def kaleido_chrome_check() -> bool:
+            try:
+                kaleido.get_chrome_sync()
+                self.plot_backend_ready = True
+            except Exception as e:
+                self.plot_backend_ready = False
+
+        self.bot.loop.create_task(kaleido_chrome_check())
+
     async def migrate_v1_to_v2(self, data: dict) -> None:
         # a big dataset can take 1 second to write as JSON, so better make it not blocking
 
@@ -119,6 +132,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
                 loops=[self.loop_meta] if self.loop_meta else [],
                 extras={
                     "Loop time": f"{self.last_loop_time}",
+                    "Plot backend ready": str(self.plot_backend_ready),
                 },
             )
             + f"\nDisk usage (SQLite database): {humanize_bytes(self.driver.storage_usage())}"
