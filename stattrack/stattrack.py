@@ -12,6 +12,7 @@ import kaleido
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
+from choreographer.browsers.chromium import ChromeNotFoundError
 
 from stattrack.abc import CompositeMetaClass
 from stattrack.commands import StatTrackCommands
@@ -38,7 +39,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.10.1"
+    __version__ = "1.10.2"
     __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:
@@ -83,7 +84,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             pass
 
     async def cog_load(self) -> None:
-        await self.kaleido_check()
+        self.bot.loop.create_task(self.kaleido_check())
 
         if await self.config.version() < 2:
             log.info("Migrating StatTrack config from 1 to 2.")
@@ -102,14 +103,15 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
 
     async def kaleido_check(self) -> None:
-        def kaleido_chrome_check():
-            try:
-                kaleido.get_chrome_sync()
-                self.plot_backend_ready = True
-            except Exception as e:
-                self.plot_backend_ready = False
-
-        self.bot.loop.run_in_executor(None, kaleido_chrome_check)
+        try:
+            kaleido.Kaleido()
+            self.plot_backend_ready = True
+            log.info("Kaleido rendering engine (Chromium) found")
+        except ChromeNotFoundError:
+            log.info("Kaleido rendering engine (Chromium) not found, downloading now")
+            location = await kaleido.get_chrome()
+            self.plot_backend_ready = True
+            log.info("Kaleido rendering engine backend is ready to use, at %s", location)
 
     async def migrate_v1_to_v2(self, data: dict) -> None:
         # a big dataset can take 1 second to write as JSON, so better make it not blocking

@@ -1029,6 +1029,14 @@ StatTrack
 =========
 
 **********
+``1.10.2``
+**********
+
+2025-08-03
+
+- Improve Kaleido first setup code for installation of backend rendering engine
+
+**********
 ``1.10.1``
 **********
 
