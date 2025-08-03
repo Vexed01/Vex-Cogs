@@ -11,7 +11,7 @@ from .consts import GEOS, TIMEFRAMES
 from .converters import GeoConverter, TimeframeConverter
 from .errors import NoData
 from .plot import TrendsPlot
-from .vexutils import url_buttons
+from .vexutils import url_buttons, kaleido_setup
 from .vexutils.meta import format_help, format_info
 
 
@@ -23,11 +23,18 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
     any time.
     """
 
-    __version__ = "1.1.0"
+    __version__ = "1.1.1"
     __author__ = "@vexingvexed"
 
     def __init__(self, bot):
         self.bot = bot
+
+        self.plot_backend_ready = False
+
+        self.bot.loop.create_task(self.kaleido_check())
+
+    async def kaleido_check(self) -> None:
+        self.plot_backend_ready = await kaleido_setup()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -42,7 +49,14 @@ class GoogleTrends(commands.Cog, TrendsPlot, metaclass=CompositeMetaClass):
 
     @commands.command(hidden=True)
     async def trendsinfo(self, ctx: commands.Context):
-        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
+        await ctx.send(
+            await format_info(
+                ctx,
+                self.qualified_name,
+                self.__version__,
+                extras={"Plot backend ready": str(self.plot_backend_ready)},
+            )
+        )
 
     @commands.cooldown(10, 60, commands.BucketType.user)
     @commands.command(usage="[timeframe=7d] [geo=world] <query...>")

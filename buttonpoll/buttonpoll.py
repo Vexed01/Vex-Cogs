@@ -15,7 +15,7 @@ from redbot.core.utils.chat_formatting import humanize_list, pagify
 
 from .components.setup import SetupYesNoView, StartSetupView
 from .poll import Poll, PollOption, PollView
-from .vexutils import format_help, format_info, get_vex_logger
+from .vexutils import format_help, format_info, get_vex_logger, kaleido_setup
 from .vexutils.chat import datetime_to_timestamp
 from .vexutils.loop import VexLoop
 
@@ -35,7 +35,7 @@ class ButtonPoll(commands.Cog):
     """
 
     __author__ = "@vexingvexed"
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -53,11 +53,18 @@ class ButtonPoll(commands.Cog):
 
         self.polls: List[Poll] = []
 
+        self.plot_backend_ready = False
+
         bot.add_dev_env_value("bpoll", lambda _: self)
 
         self.plot_executor = ThreadPoolExecutor(
             max_workers=16, thread_name_prefix="buttonpoll_plot"
         )
+
+        self.bot.loop.create_task(self.kaleido_check())
+
+    async def kaleido_check(self) -> None:
+        self.plot_backend_ready = await kaleido_setup()
 
     async def red_delete_data_for_user(
         self,
@@ -92,7 +99,12 @@ class ButtonPoll(commands.Cog):
 
     @commands.command(hidden=True)
     async def buttonpollinfo(self, ctx: commands.Context):
-        main = await format_info(ctx, self.qualified_name, self.__version__)
+        main = await format_info(
+            ctx,
+            self.qualified_name,
+            self.__version__,
+            extras={"" "Plot backend ready": self.plot_backend_ready},
+        )
         return await ctx.send(main)
 
     async def cog_load(self) -> None:

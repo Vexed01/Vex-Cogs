@@ -243,6 +243,14 @@ BetterUptime
 ============
 
 *********
+``2.1.5``
+*********
+
+2025-08-03
+
+- Fix to support breaking changed in Kaleido 1.0.0 for plotting graphs
+
+*********
 ``2.1.4``
 *********
 
@@ -597,6 +605,14 @@ ButtonPoll
 ==========
 
 *********
+``1.2.1``
+*********
+
+2025-08-03
+
+- Fix to support breaking changed in Kaleido 1.0.0 for plotting graphs
+
+*********
 ``1.2.0``
 *********
 
@@ -937,6 +953,14 @@ GoogleTrends
 ============
 
 *********
+``1.1.1``
+*********
+
+2025-08-03
+
+- Fix to support breaking changed in Kaleido 1.0.0 for plotting graphs
+
+*********
 ``1.1.0``
 *********
 
@@ -1050,7 +1074,7 @@ StatTrack
 
 2025-08-03
 
-- Fix breaking changes introduced by Kaleido
+- Fix to support breaking changed in Kaleido 1.0.0 for plotting graphs
 
 **********
 ``1.10.0``

@@ -13,7 +13,7 @@ from .commands import BUCommands
 from .loop import BULoop
 from .slash import BUSlash
 from .utils import Utils
-from .vexutils import format_help, format_info, get_vex_logger
+from .vexutils import format_help, format_info, get_vex_logger, kaleido_setup
 from .vexutils.chat import humanize_bytes
 from .vexutils.meta import out_of_date_check
 
@@ -33,7 +33,7 @@ class BetterUptime(commands.Cog, BUCommands, BUSlash, BULoop, Utils, metaclass=C
     data to become available.
     """
 
-    __version__ = "2.1.4"
+    __version__ = "2.1.5"
     __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:
@@ -60,6 +60,11 @@ class BetterUptime(commands.Cog, BUCommands, BUSlash, BULoop, Utils, metaclass=C
             self.bot.add_dev_env_value("bu", lambda _: self)
         except Exception:
             pass
+
+        self.bot.loop.create_task(self.kaleido_check())
+
+    async def kaleido_check(self) -> None:
+        self.plot_backend_ready = await kaleido_setup()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -98,9 +103,19 @@ class BetterUptime(commands.Cog, BUCommands, BUSlash, BULoop, Utils, metaclass=C
         memory_usage = sys.getsizeof(self.connected_cache) + sys.getsizeof(self.cog_loaded_cache)
 
         await ctx.send(
-            await format_info(ctx, self.qualified_name, self.__version__, loops=loops)
-            + f"\nMemory usage (cache size): {humanize_bytes(memory_usage)}"
-            + f"\nDisk usage (database): {humanize_bytes(disk_usage)}"
+            await format_info(
+                ctx,
+                self.qualified_name,
+                self.__version__,
+                loops=loops,
+                extras={
+                    "Plot backend ready": self.plot_backend_ready,
+                    "Ready": self.ready.is_set(),
+                    "Config ready": self.conf_ready.is_set(),
+                    "Memory usage (cache size)": humanize_bytes(memory_usage),
+                    "Disk usage (database)": humanize_bytes(disk_usage),
+                },
+            )
         )
 
     @commands.is_owner()

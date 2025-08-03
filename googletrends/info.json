@@ -15,7 +15,7 @@
     "name": "GoogleTrends",
     "requirements": [
         "plotly",
-        "kaleido",
+        "plotly[kaleido]",
         "pytrends"
     ],
     "short": "Find out what the world is searching, right from Discord. Includes charts.",
