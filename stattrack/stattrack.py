@@ -109,7 +109,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
             except Exception as e:
                 self.plot_backend_ready = False
 
-        self.bot.loop.create_task(kaleido_chrome_check())
+        self.bot.loop.run_in_executor(None, kaleido_chrome_check)
 
     async def migrate_v1_to_v2(self, data: dict) -> None:
         # a big dataset can take 1 second to write as JSON, so better make it not blocking
