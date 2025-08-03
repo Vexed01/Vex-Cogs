@@ -19,7 +19,7 @@ from stattrack.commands import StatTrackCommands
 from stattrack.driver import StatTrackSQLiteDriver
 from stattrack.plot import StatPlot
 
-from .vexutils import format_help, format_info, get_vex_logger
+from .vexutils import format_help, format_info, get_vex_logger, kaleido_setup
 from .vexutils.chat import humanize_bytes
 from .vexutils.loop import VexLoop
 
@@ -39,7 +39,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
     Data can also be exported with `[p]stattrack export` into a few different formats.
     """
 
-    __version__ = "1.10.2"
+    __version__ = "1.10.3"
     __author__ = "@vexingvexed"
 
     def __init__(self, bot: Red) -> None:
@@ -103,15 +103,7 @@ class StatTrack(commands.Cog, StatTrackCommands, StatPlot, metaclass=CompositeMe
         self.loop_meta = VexLoop("StatTrack loop", 60.0)
 
     async def kaleido_check(self) -> None:
-        try:
-            kaleido.Kaleido()
-            self.plot_backend_ready = True
-            log.info("Kaleido rendering engine (Chromium) found")
-        except ChromeNotFoundError:
-            log.info("Kaleido rendering engine (Chromium) not found, downloading now")
-            location = await kaleido.get_chrome()
-            self.plot_backend_ready = True
-            log.info("Kaleido rendering engine backend is ready to use, at %s", location)
+        self.plot_backend_ready = await kaleido_setup()
 
     async def migrate_v1_to_v2(self, data: dict) -> None:
         # a big dataset can take 1 second to write as JSON, so better make it not blocking
