@@ -95,8 +95,14 @@ class StatTrackCommands(MixinMeta):
         if isinstance(ctx, commands.Context):
             async with ctx.channel.typing():
                 graph = await self.plot(df, ylabel, status_colours)
+            if isinstance(graph, str):
+                await ctx.send(graph)
+                return
         else:  # from select menu so already empherially typing
             graph = await self.plot(df, ylabel, status_colours)
+            if isinstance(graph, str):
+                await ctx.edit(content=graph)
+                return
         plot_time = monotonic() - plot_start
 
         send_start = monotonic()

@@ -41,5 +41,7 @@ class MixinMeta(ABC):
     msg_count: int
 
     @abstractmethod
-    async def plot(self, df: pandas.DataFrame, ylabel: str, status_colours: bool) -> discord.File:
+    async def plot(
+        self, df: pandas.DataFrame, ylabel: str, status_colours: bool
+    ) -> discord.File | str:
         raise NotImplementedError

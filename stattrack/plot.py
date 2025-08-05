@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import discord
 import pandas as pd
+from choreographer.errors import BrowserDepsError, BrowserFailedError
 from plotly import express as px
 
 from .abc import MixinMeta
@@ -17,6 +18,10 @@ else:
 # yes i am using a private import from plotly, atm plotly does dynamic imports which are not
 # supported by mypy
 
+from .vexutils import get_vex_logger, kaleido_setup
+
+log = get_vex_logger(__name__)
+
 
 ONE_DAY_SECONDS = 86400
 
@@ -25,7 +30,9 @@ class StatPlot(MixinMeta):
     def __init__(self) -> None:
         self.plot_executor = ThreadPoolExecutor(5, "stattrack_plot")
 
-    async def plot(self, df: pd.DataFrame, ylabel: str, status_colours: bool) -> discord.File:
+    async def plot(
+        self, df: pd.DataFrame, ylabel: str, status_colours: bool
+    ) -> discord.File | str:
         """Plot the standard dataframe to the specified parameters. Returns a discord file"""
         func = functools.partial(
             self._plot,
@@ -34,14 +41,41 @@ class StatPlot(MixinMeta):
             status_colours=status_colours,
         )
 
-        return await self.bot.loop.run_in_executor(self.plot_executor, func)
+        try:
+            file = await self.bot.loop.run_in_executor(self.plot_executor, func)
+            return file
+        except BrowserDepsError as e:
+            log.error(
+                "Failed to generate plot image due to missing browser dependencies. "
+                "We will now try to install a known safe browser. If this doesn't fix it, "
+                "please follow the instructions below to resolve this issue:\n%s",
+                e,
+            )
+            await kaleido_setup()
+            return "Something went wrong while generating the plot image. Please check the logs."
+        except BrowserFailedError as e:
+            log.error(
+                "Failed to generate plot image due to browser failure. "
+                "We will now try to install a known safe browser for you. If this fails, please "
+                "contact Vexed for support in the cog support server "
+                "https://discord.gg/GD43Nb9H86\n%s",
+                e,
+            )
+            # Attempt to install a known safe browser
+            # Can be required when one already exists (so we didn't try to install one on first
+            # load) and does not work
+            await kaleido_setup()
+            return (
+                "Something went wrong while generating the plot image. We've attempted to "
+                "fix this, so please try again. If the issue persists, please check the logs."
+            )
 
     def _plot(
         self,
         df: pd.DataFrame,
         ylabel: str,
         status_colours: bool,
-    ) -> discord.File:
+    ) -> discord.File | str:
         """Do not use on own - blocking."""
         colour_map = (
             {
@@ -76,6 +110,7 @@ class StatPlot(MixinMeta):
             trace.name = TRACE_FRIENDLY_NAMES[trace.name]  # type:ignore
 
         bytes = fig.to_image(format="png", width=800, height=500, scale=1)
+
         buffer = io.BytesIO(bytes)
         buffer.seek(0)
         file = discord.File(buffer, filename="plot.png")

@@ -1053,6 +1053,14 @@ StatTrack
 =========
 
 **********
+``1.10.4``
+**********
+
+2025-08-05
+
+- Improve Kaleido error handling and messages
+
+**********
 ``1.10.3``
 **********
 
