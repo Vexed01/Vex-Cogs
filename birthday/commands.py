@@ -215,7 +215,7 @@ class BirthdayAdminCommands(MixinMeta):
 
     @birthdaydebug.command(name="upcoming")
     async def debug_upcoming(self, ctx: commands.Context):
-        await ctx.send_interactive(pagify(str(await self.config.all_members(ctx.guild))), "py")
+        await ctx.send_interactive(pagify(str(await self.config.all_members(ctx.guild)), shorten_by=12), "py")
 
     @commands.group()
     @commands.guild_only()  # type:ignore
