@@ -35,7 +35,8 @@ class BirthdayCommands(MixinMeta):
         if not await self.check_if_setup(ctx.guild):
             await ctx.send(
                 "This command is not available until the cog has been setup. "
-                f"Get an admin to use `{ctx.clean_prefix}bdset interactive` to get started."
+                f"Get an admin to use `{ctx.clean_prefix}bdset interactive` to get started "
+                f"or check what's missing with `{ctx.clean_prefix}birthdayinfo`."
             )
             raise CheckFailure("cog needs setup")
 
@@ -257,7 +258,7 @@ class BirthdayAdminCommands(MixinMeta):
             table.add_row("Role", role.name if role else "Role deleted")
 
             if conf["time_utc_s"] is None:
-                time = "invalid"
+                time = "Invalid. You must set this before getting notifications."
             else:
                 time = datetime.datetime.utcfromtimestamp(conf["time_utc_s"]).strftime("%H:%M UTC")
                 table.add_row("Time", time)
@@ -277,8 +278,8 @@ class BirthdayAdminCommands(MixinMeta):
                     "Not set. All users can set their birthday and have it announced.",
                 )
 
-            message_w_year = conf["message_w_year"] or "No message set"
-            message_wo_year = conf["message_wo_year"] or "No message set"
+            message_w_year = conf["message_w_year"] or "No message set. You must set this before getting notifications."
+            message_wo_year = conf["message_wo_year"] or "No message set. You must set this before getting notifications."
 
         warnings = "\n"
         if (error := role is None) or (error := role_perm_check(ctx.me, role)):
