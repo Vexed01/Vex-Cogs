@@ -35,7 +35,7 @@ class ButtonPoll(commands.Cog):
     """
 
     __author__ = "@vexingvexed"
-    __version__ = "1.2.1"
+    __version__ = "1.2.2"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

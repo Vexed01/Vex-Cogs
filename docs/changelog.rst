@@ -605,6 +605,15 @@ ButtonPoll
 ==========
 
 *********
+``1.2.2``
+*********
+
+2025-08-15
+
+- Fix an edge case where a completed poll's message was deleted and the poll set to edit, and logs
+were spammed with attempts to edit the message without removing from config
+
+*********
 ``1.2.1``
 *********
 
