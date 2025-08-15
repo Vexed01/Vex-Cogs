@@ -428,6 +428,14 @@ Birthday
 ========
 
 *********
+``1.3.0``
+*********
+
+2025-08-15
+
+- Improve error messages and information when the cog is partially setup
+
+*********
 ``1.2.3``
 *********
 
