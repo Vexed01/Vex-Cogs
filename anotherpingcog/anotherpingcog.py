@@ -64,7 +64,7 @@ class AnotherPingCog(commands.Cog):
         log.trace("Cache loaded: %s", self.cache)
 
     async def cog_unload(self) -> None:
-        global old_ping
+        global old_ping  # noqa: F824
         if old_ping:
             with contextlib.suppress(Exception):
                 self.bot.remove_command("ping")

@@ -83,7 +83,7 @@ class BetterUptime(commands.Cog, BUCommands, BUSlash, BULoop, Utils, metaclass=C
         if self.main_loop:
             self.main_loop.cancel()
 
-        global old_uptime
+        global old_uptime  # noqa: F824
         if old_uptime:
             try:
                 self.bot.remove_command("uptime")

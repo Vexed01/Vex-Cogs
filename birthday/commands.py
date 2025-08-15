@@ -209,7 +209,7 @@ class BirthdayCommands(MixinMeta):
             embeds = []
             for i in range(pages):
                 embed = discord.Embed(
-                    title=f"Upcoming Birthdays",
+                    title="Upcoming Birthdays",
                     description=f"Page {i + 1}/{pages}",
                     colour=await ctx.embed_colour(),
                 )

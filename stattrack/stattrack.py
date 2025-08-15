@@ -8,11 +8,9 @@ import discord
 import pandas
 import psutil
 from redbot.core import Config, commands
-import kaleido
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils import AsyncIter
-from choreographer.browsers.chromium import ChromeNotFoundError
 
 from stattrack.abc import CompositeMetaClass
 from stattrack.commands import StatTrackCommands
