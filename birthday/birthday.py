@@ -110,15 +110,26 @@ class Birthday(
         if ctx.guild:
             setup_state_detail, setup_state_brief = await self.setup_check_detail(ctx.guild, ctx)
         else:
-            setup_state_detail, setup_state_brief = {}, "Run this command in a server to check for setup details"
-        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__, extras=setup_state_detail) + "\n" + setup_state_brief)
+            setup_state_detail, setup_state_brief = (
+                {},
+                "Run this command in a server to check for setup details",
+            )
+        await ctx.send(
+            await format_info(
+                ctx, self.qualified_name, self.__version__, extras=setup_state_detail
+            )
+            + "\n"
+            + setup_state_brief
+        )
 
     async def check_if_setup(self, guild: discord.Guild) -> bool:
         state = await self.config.guild(guild).setup_state()
         log.trace("setup state: %s", state)
         return state == 5
 
-    async def setup_check_detail(self, guild: discord.Guild, ctx: commands.Context | None = None) -> dict[str, str], str:
+    async def setup_check_detail(
+        self, guild: discord.Guild, ctx: commands.Context | None = None
+    ) -> tuple[dict[str, str], str]:
         state = await self.config.guild(guild).setup_state()
         if state == 5:
             return {
@@ -151,5 +162,3 @@ class Birthday(
             if await self.config.guild(guild).role_id() is None:
                 state["Role ID"] = f"Not set. Use `{p}bdset role`"
             return state, "Initial setup is not yet complete, so the cog won't work."
-
-            
