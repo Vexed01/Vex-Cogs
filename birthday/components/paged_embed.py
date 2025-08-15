@@ -14,17 +14,19 @@ class PaginatedEmbedView(discord.ui.View):
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.current_page > 0:
             self.current_page -= 1
-            await interaction.response.edit_message(embed=self.pages[self.current_page])
         else:
-            await interaction.response.defer()
+            self.current_page = len(self.pages) - 1
+
+        await interaction.response.edit_message(embed=self.pages[self.current_page])
 
     @discord.ui.button(label="➡️", style=discord.ButtonStyle.primary)
     async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.current_page < len(self.pages) - 1:
             self.current_page += 1
-            await interaction.response.edit_message(embed=self.pages[self.current_page])
         else:
-            await interaction.response.defer()
+            self.current_page = 0
+
+        await interaction.response.edit_message(embed=self.pages[self.current_page])
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id == self.expected_autor:
