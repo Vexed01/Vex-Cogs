@@ -160,7 +160,8 @@ class Poll:
         guild = self.cog.bot.get_guild(self.guild_id)
         if guild is None:
             log.warning(
-                f"Guild {self.guild_id} not found. Unable to finish poll {self.unique_poll_id}."
+                f"Guild {self.guild_id} not found. Unable to finish poll {self.unique_poll_id} - "
+                "removing"
             )
 
             async with self.cog.config.guild_from_id(
@@ -258,8 +259,22 @@ class Poll:
             except discord.NotFound:
                 log.warning(
                     f"Poll {self.unique_poll_id}'s message was not found in channel "
-                    f"{self.channel_id}, so I cannot edit it."
+                    f"{self.channel_id}, so I cannot edit it to see results, the poll will now "
+                    "be removed."
                 )
+                async with self.cog.config.guild(guild).poll_settings() as poll_settings:
+                    try:
+                        del poll_settings[self.unique_poll_id]
+                    except KeyError:
+                        pass
+                async with self.cog.config.guild(guild).poll_user_choices() as poll_user_choices:
+                    try:
+                        del poll_user_choices[self.unique_poll_id]
+                    except KeyError:
+                        pass
+
+                return
+
         else:
             embed = discord.Embed(
                 colour=await self.cog.bot.get_embed_color(channel),
@@ -278,8 +293,20 @@ class Poll:
             except discord.NotFound:
                 log.warning(
                     f"Poll {self.unique_poll_id}'s message was not found in channel "
-                    f"{self.channel_id}, so I cannot end it."
+                    f"{self.channel_id}, so I cannot edit it to see results, the poll will now "
+                    "be removed."
                 )
+                async with self.cog.config.guild(guild).poll_settings() as poll_settings:
+                    try:
+                        del poll_settings[self.unique_poll_id]
+                    except KeyError:
+                        pass
+                async with self.cog.config.guild(guild).poll_user_choices() as poll_user_choices:
+                    try:
+                        del poll_user_choices[self.unique_poll_id]
+                    except KeyError:
+                        pass
+
                 return
 
             log.trace("edited old poll message")

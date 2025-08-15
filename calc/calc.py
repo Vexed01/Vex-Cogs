@@ -1,10 +1,9 @@
+from expr import EvaluatorError, evaluate
 from redbot.core import commands
 from redbot.core.bot import Red
 
 from .vexutils import format_help, format_info
-from .view import CalcView
-from .view import preprocess_expression
-from expr import evaluate, EvaluatorError
+from .view import CalcView, preprocess_expression
 
 
 class Calc(commands.Cog):

@@ -428,12 +428,20 @@ Birthday
 ========
 
 *********
-``1.3.0``
+``1.4.0``
+*********
+
+2025-08-16
+
+- Improve error messages and information when the cog is partially setup
+
+*********
+``1.3.1``
 *********
 
 2025-08-15
 
-- Improve error messages and information when the cog is partially setup
+- Pagify embeds in `[p]birthday upcoming` for when there are more than 25 entries
 
 *********
 ``1.2.3``
@@ -611,6 +619,15 @@ Calc
 ==========
 ButtonPoll
 ==========
+
+*********
+``1.2.2``
+*********
+
+2025-08-15
+
+- Fix an edge case where a completed poll's message was deleted and the poll set to edit, and logs
+were spammed with attempts to edit the message without removing from config
 
 *********
 ``1.2.1``

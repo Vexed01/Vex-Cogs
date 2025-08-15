@@ -11,7 +11,7 @@ from .consts import GEOS, TIMEFRAMES
 from .converters import GeoConverter, TimeframeConverter
 from .errors import NoData
 from .plot import TrendsPlot
-from .vexutils import url_buttons, kaleido_setup
+from .vexutils import kaleido_setup, url_buttons
 from .vexutils.meta import format_help, format_info
 
 
