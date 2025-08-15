@@ -17,7 +17,14 @@ try:
             log.info("Kaleido rendering engine (Chromium) not found, downloading now")
             location = await kaleido.get_chrome()
             log.info("Kaleido rendering engine backend is ready to use, at %s", location)
-
+        except AttributeError:
+            log.error(
+                "An old version of Kaleido is installed, it should already have been updated, "
+                "please restart your bot to ensure the latest version is used. If this doesn't "
+                "work, please contact Vexed for support in the cog support server "
+                "https://discord.gg/GD43Nb9H86"
+            )
+            return False
         return True
 
 except ImportError:
