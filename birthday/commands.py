@@ -15,6 +15,7 @@ from redbot.core.utils.predicates import ReactionPredicate
 from rich.table import Table  # type:ignore
 
 from .abc import MixinMeta
+from .components.paged_embed import PaginatedEmbedView
 from .components.setup import SetupView
 from .consts import MAX_BDAY_MSG_LEN, MIN_BDAY_YEAR
 from .converters import BirthdayConverter, TimeConverter
@@ -194,16 +195,30 @@ class BirthdayCommands(MixinMeta):
 
         sorted_parsed_bdays = sorted(parsed_bdays.items(), key=lambda x: x[0])
 
-        embed = discord.Embed(title="Upcoming Birthdays", colour=await ctx.embed_colour())
+        MAX_PER_PAGE = 25
 
-        if len(sorted_parsed_bdays) > 25:
-            embed.description = "Too many days to display. I've had to stop at 25."
-            sorted_parsed_bdays = sorted_parsed_bdays[:25]
+        if len(sorted_parsed_bdays) < MAX_PER_PAGE:
+            embed = discord.Embed(title="Upcoming Birthdays", colour=await ctx.embed_colour())
+            for day, members in sorted_parsed_bdays:
+                embed.add_field(name=number_day_mapping.get(day), value="\n".join(members))
+            await ctx.send(embed=embed)
+        else:
+            pages = len(sorted_parsed_bdays) // MAX_PER_PAGE + (
+                1 if len(sorted_parsed_bdays) % MAX_PER_PAGE > 0 else 0
+            )
+            embeds = []
+            for i in range(pages):
+                embed = discord.Embed(
+                    title=f"Upcoming Birthdays",
+                    description=f"Page {i + 1}/{pages}",
+                    colour=await ctx.embed_colour(),
+                )
+                for day, members in sorted_parsed_bdays[i * MAX_PER_PAGE : (i + 1) * MAX_PER_PAGE]:
+                    embed.add_field(name=number_day_mapping.get(day), value="\n".join(members))
+                embeds.append(embed)
 
-        for day, members in sorted_parsed_bdays:
-            embed.add_field(name=number_day_mapping.get(day), value="\n".join(members))
-
-        await ctx.send(embed=embed)
+            view = PaginatedEmbedView(embeds, ctx.author.id)
+            await ctx.send(embed=embeds[0], view=view)
 
 
 class BirthdayAdminCommands(MixinMeta):
@@ -215,7 +230,9 @@ class BirthdayAdminCommands(MixinMeta):
 
     @birthdaydebug.command(name="upcoming")
     async def debug_upcoming(self, ctx: commands.Context):
-        await ctx.send_interactive(pagify(str(await self.config.all_members(ctx.guild)), shorten_by=12), "py")
+        await ctx.send_interactive(
+            pagify(str(await self.config.all_members(ctx.guild)), shorten_by=12), "py"
+        )
 
     @commands.group()
     @commands.guild_only()  # type:ignore

@@ -428,6 +428,14 @@ Birthday
 ========
 
 *********
+``1.3.1``
+*********
+
+2025-08-15
+
+- Pagify embeds in `[p]birthday upcoming` for when there are more than 25 entries
+
+*********
 ``1.2.3``
 *********
 
