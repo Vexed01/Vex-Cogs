@@ -1,5 +1,9 @@
+import re
+from typing import Optional
+
+import discord
 from expr import EvaluatorError, evaluate
-from redbot.core import commands
+from redbot.core import Config, commands
 from redbot.core.bot import Red
 
 from .vexutils import format_help, format_info
@@ -14,6 +18,9 @@ class Calc(commands.Cog):
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
+        self.config = Config.get_conf(self, identifier=1234567890)
+        default_guild = {"auto_calc": False}
+        self.config.register_guild(**default_guild)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -23,12 +30,130 @@ class Calc(commands.Cog):
         """Nothing to delete"""
         return
 
+    def is_valid_calculation(self, text: str) -> bool:
+        text = text.strip()
+        if len(text) < 3 or len(text) > 200:
+            return False
+
+        math_pattern = r"^[0-9+\-*/().eE\s,kmbtKMBT]+$"
+
+        if not re.match(math_pattern, text):
+            return False
+
+        if not re.search(r"[+\-*/]", text):
+            return False
+
+        try:
+            preprocessed = preprocess_expression(text)
+            result = evaluate(preprocessed)
+            return isinstance(result, (int, float)) and not (isinstance(result, bool))
+        except Exception:
+            return False
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        if message.author.bot or not message.guild:
+            return
+
+        if not await self.config.guild(message.guild).auto_calc():
+            return
+
+        prefixes = await self.bot.get_valid_prefixes(message.guild)
+        if any(message.content.startswith(p) for p in prefixes):
+            return
+
+        if self.is_valid_calculation(message.content):
+            try:
+                await message.add_reaction("➕")
+            except discord.HTTPException:
+                pass
+
+    @commands.Cog.listener()
+    async def on_reaction_add(
+        self, reaction: discord.Reaction, user: discord.User
+    ) -> None:
+        if user.bot:
+            return
+
+        if str(reaction.emoji) != "➕" or user != reaction.message.author:
+            return
+
+        if (
+            not reaction.message.guild
+            or not await self.config.guild(reaction.message.guild).auto_calc()
+        ):
+            return
+
+        bot_reacted = False
+        async for reaction_user in reaction.users():
+            if reaction_user == self.bot.user:
+                bot_reacted = True
+                break
+
+        if not bot_reacted:
+            return
+
+        if not self.is_valid_calculation(reaction.message.content):
+            return
+
+        view = CalcView(self.bot, user.id)
+
+        try:
+            preprocessed = preprocess_expression(reaction.message.content)
+            result = evaluate(preprocessed)
+            view.input = reaction.message.content
+            view.output = str(result)
+        except EvaluatorError:
+            view.input = reaction.message.content
+            view.output = "Math Error"
+
+        try:
+            channel = reaction.message.channel
+            embed_color = discord.Color.blurple()
+
+            embed = await view.build_embed(embed_color)
+            message = await channel.send(
+                embed=embed, view=view, reference=reaction.message
+            )
+            view.message = message
+            view.ready.set()
+        except discord.HTTPException:
+            pass
+
+    @commands.group()
+    async def calcset(self, ctx: commands.Context):
+        """Calculator settings."""
+        pass
+
+    @calcset.command()
+    @commands.guild_only()
+    @commands.admin_or_permissions(manage_guild=True)
+    async def autocal(self, ctx: commands.Context, enabled: Optional[bool] = None):
+        """
+        Toggle automatic calculation detection.
+
+        When enabled, the bot will react with ➕ to messages containing valid calculations.
+        If the message author reacts with ➕ too, the bot will send the calculation result.
+        """
+        assert ctx.guild is not None
+
+        if enabled is None:
+            current = await self.config.guild(ctx.guild).auto_calc()
+            await ctx.send(
+                f"Automatic calculation detection is currently **{'enabled' if current else 'disabled'}**."
+            )
+            return
+
+        await self.config.guild(ctx.guild).auto_calc.set(enabled)
+        status = "enabled" if enabled else "disabled"
+        await ctx.send(f"Automatic calculation detection has been **{status}**.")
+
     @commands.command(hidden=True)
     async def calcinfo(self, ctx: commands.Context):
         await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.command()
-    async def calc(self, ctx: commands.Context, *, expression: str = None):
+    async def calc(self, ctx: commands.Context, *, expression: Optional[str] = None):
         """
         Start an interactive calculator using buttons.
 
