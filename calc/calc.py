@@ -18,7 +18,7 @@ class Calc(commands.Cog):
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=1234567890)
+        self.config = Config.get_conf(self, identifier=65465447941649894594798)
         default_guild = {"auto_calc": False}
         self.config.register_guild(**default_guild)
 
