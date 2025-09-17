@@ -59,6 +59,8 @@ class _PredButton(ui.Button):
         self.view.ref = self.ref
         self.view.pressed.set()
 
+        await interaction.response.defer()
+
 
 async def wait_for_press(
     ctx: commands.Context,

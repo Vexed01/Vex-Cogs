@@ -66,7 +66,8 @@ def format_help(self: commands.Cog, ctx: commands.Context) -> str:
     pre_processed = super(type(self), self).format_help_for_context(ctx)  # type:ignore
 
     return (
-        f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nCog Version: "  # type:ignore
+        f"{pre_processed}\n\nAuthor: **`{self.__author__}`**\nContributors: "
+        f"**`{self.__contributors__}`**\nCog Version: "  # type:ignore
         f"**`{self.__version__}`**\n{docs}"  # type:ignore
     )
     # adding docs link here so doesn't show up in auto generated docs
