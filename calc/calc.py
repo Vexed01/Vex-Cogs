@@ -15,6 +15,7 @@ class Calc(commands.Cog):
 
     __version__ = "0.0.4"
     __author__ = "@vexingvexed"
+    __contributors__ = ["@evanroby"]
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
