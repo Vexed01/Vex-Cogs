@@ -18,5 +18,5 @@ with open(Path(__file__).parent / "info.json", encoding="utf8") as fp:
 
 async def setup(bot: Red) -> None:
     cog = Calc(bot)
-    await out_of_date_check("calculator", cog.__version__)
+    await out_of_date_check("calc", cog.__version__)
     await bot.add_cog(cog)
