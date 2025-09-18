@@ -11,9 +11,14 @@ from .view import CalcView, preprocess_expression
 
 
 class Calc(commands.Cog):
-    """Calculate simple mathematical expressions."""
+    """Calculate simple mathematical expressions.
 
-    __version__ = "0.0.4"
+    Use the `calc` command to open an interactive calculator using buttons.
+
+    You can also enable automatic calculation detection with the `calcset autocal` command.
+    When enabled, the bot will react with ➕ to messages containing valid calculations."""
+
+    __version__ = "0.1.0"
     __author__ = "@vexingvexed"
     __contributors__ = ["@evanroby"]
 
@@ -30,6 +35,10 @@ class Calc(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs) -> None:
         """Nothing to delete"""
         return
+
+    @commands.command(hidden=True)
+    async def calcinfo(self, ctx: commands.Context):
+        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     def is_valid_calculation(self, text: str) -> bool:
         text = text.strip()
@@ -70,9 +79,7 @@ class Calc(commands.Cog):
                 pass
 
     @commands.Cog.listener()
-    async def on_reaction_add(
-        self, reaction: discord.Reaction, user: discord.User
-    ) -> None:
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User) -> None:
         if user.bot:
             return
 
@@ -113,9 +120,7 @@ class Calc(commands.Cog):
             embed_color = discord.Color.blurple()
 
             embed = await view.build_embed(embed_color)
-            message = await channel.send(
-                embed=embed, view=view, reference=reaction.message
-            )
+            message = await channel.send(embed=embed, view=view, reference=reaction.message)
             view.message = message
             view.ready.set()
         except discord.HTTPException:
@@ -148,10 +153,6 @@ class Calc(commands.Cog):
         await self.config.guild(ctx.guild).auto_calc.set(enabled)
         status = "enabled" if enabled else "disabled"
         await ctx.send(f"Automatic calculation detection has been **{status}**.")
-
-    @commands.command(hidden=True)
-    async def calcinfo(self, ctx: commands.Context):
-        await ctx.send(await format_info(ctx, self.qualified_name, self.__version__))
 
     @commands.command()
     async def calc(self, ctx: commands.Context, *, expression: Optional[str] = None):

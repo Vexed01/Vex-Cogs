@@ -3,9 +3,9 @@
     "author": [
         "Vexed (@vexingvexed)"
     ],
-    "description": "Calculate simple mathematical expressions, right in Discord with buttons.",
+    "description": "Calculate simple mathematical expressions, right in Discord with buttons or automatically from sent messages using reactions",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
-    "install_msg": "Thanks for installing! Load the cog and get started with the `calculator` command.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/calc>",
+    "install_msg": "Thanks for installing! Load the cog and get started with the `calculator` command, or configure automatic detection of expressions from messages with the `calcset autocal` command.\n\nThis cog has docs! Check them out at <https://go.vexcodes.com/c/calc>",
     "min_bot_version": "3.5.1",
     "min_python_version": [
         3,
@@ -17,7 +17,7 @@
         "expr.py",
         "asyncache"
     ],
-    "short": "Calculate simple mathematical expressions, right in Discord with buttons.",
+    "short": "Calculate simple mathematical expressions, right in Discord with buttons or automatically from sent messages.",
     "tags": [
         "utility",
         "calc",

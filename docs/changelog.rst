@@ -604,6 +604,16 @@ Calc
 ====
 
 *********
+``0.1.0``
+*********
+
+2025-09-18
+
+- Add support for auto-detecting and evalauting calculations sent as a chat
+- Get started with the ``calcset`` command
+- Thanks Evanroby (GH #152)
+
+*********
 ``0.0.4``
 *********
 
