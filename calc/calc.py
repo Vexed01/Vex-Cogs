@@ -5,9 +5,13 @@ import discord
 from expr import EvaluatorError, evaluate
 from redbot.core import Config, commands
 from redbot.core.bot import Red
+import decimal
 
-from .vexutils import format_help, format_info
+from .vexutils import format_help, format_info, get_vex_logger
 from .view import CalcView, preprocess_expression
+
+
+log = get_vex_logger(__name__)
 
 
 class Calc(commands.Cog):
@@ -56,7 +60,9 @@ class Calc(commands.Cog):
         try:
             preprocessed = preprocess_expression(text)
             result = evaluate(preprocessed)
-            return isinstance(result, (int, float)) and not (isinstance(result, bool))
+            return isinstance(result, (int, float, decimal.Decimal)) and not (
+                isinstance(result, bool)
+            )
         except Exception:
             return False
 
@@ -75,8 +81,10 @@ class Calc(commands.Cog):
         if self.is_valid_calculation(message.content):
             try:
                 await message.add_reaction("➕")
-            except discord.HTTPException:
-                pass
+            except discord.HTTPException as e:
+                log.warning(
+                    f"Failed to add reaction to message {message.id} in guild {message.guild.id}: {e}"
+                )
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User) -> None:
