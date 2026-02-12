@@ -428,6 +428,14 @@ Birthday
 ========
 
 *********
+``1.4.1``
+*********
+
+2026-02-12
+
+- Correctly check for manage roles permission at guild level instead of channel level during setup
+
+*********
 ``1.4.0``
 *********
 

@@ -245,7 +245,7 @@ class BirthdayAdminCommands(MixinMeta):
         Looking to set your own birthday? Use `[p]birthday set` or `[p]bday set`.
         """
 
-    @commands.bot_has_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
     @bdset.command()
     async def interactive(self, ctx: commands.Context):
         """Start interactive setup"""
@@ -295,8 +295,14 @@ class BirthdayAdminCommands(MixinMeta):
                     "Not set. All users can set their birthday and have it announced.",
                 )
 
-            message_w_year = conf["message_w_year"] or "No message set. You must set this before getting notifications."
-            message_wo_year = conf["message_wo_year"] or "No message set. You must set this before getting notifications."
+            message_w_year = (
+                conf["message_w_year"]
+                or "No message set. You must set this before getting notifications."
+            )
+            message_wo_year = (
+                conf["message_wo_year"]
+                or "No message set. You must set this before getting notifications."
+            )
 
         warnings = "\n"
         if (error := role is None) or (error := role_perm_check(ctx.me, role)):
