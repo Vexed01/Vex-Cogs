@@ -1,15 +1,14 @@
+import decimal
 import re
-from typing import Optional
+from typing import Any, NoReturn, Optional
 
 import discord
 from expr import EvaluatorError, evaluate
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-import decimal
 
 from .vexutils import format_help, format_info, get_vex_logger
 from .view import CalcView, preprocess_expression
-
 
 log = get_vex_logger(__name__)
 
@@ -36,9 +35,9 @@ class Calc(commands.Cog):
         """Thanks Sinbad."""
         return format_help(self, ctx)
 
-    async def red_delete_data_for_user(self, **kwargs) -> None:
+    async def red_delete_data_for_user(self, **kwargs: Any) -> NoReturn:
         """Nothing to delete"""
-        return
+        raise NotImplementedError
 
     @commands.command(hidden=True)
     async def calcinfo(self, ctx: commands.Context):
