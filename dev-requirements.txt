@@ -20,6 +20,7 @@ rapidfuzz  # timechannel
 wakeonlan  # wol
 expr.py  # calc
 aiosqlite  # stattrack
+pytz # timechannel
 
 # checking tools
 pyright
