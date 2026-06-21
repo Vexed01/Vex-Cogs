@@ -11,7 +11,9 @@ pandas
 
 # Cogs
 plotly  # betteruptime, stattrack, googletrends
-kaleido  # betteruptime, stattrack, googletrends
+kaleido  # stattrack, googletrends
+matplotlib  # betteruptime
+pillow  # betteruptime
 gidgethub  # ghissues, gitub
 pytrends  # googletrends
 psutil  # stattrack, system

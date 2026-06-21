@@ -13,12 +13,39 @@ from .commands import BUCommands
 from .loop import BULoop
 from .slash import BUSlash
 from .utils import Utils
-from .vexutils import format_help, format_info, get_vex_logger, kaleido_setup
+from .vexutils import format_help, format_info, get_vex_logger
 from .vexutils.chat import humanize_bytes
 from .vexutils.meta import out_of_date_check
 
 old_uptime = None
 log = get_vex_logger(__name__)
+
+
+try:
+    import matplotlib
+
+    matplotlib.use("Agg")
+
+    # Ensure Pillow is available for any image handling
+    try:
+        from PIL import Image  # type: ignore
+
+        def matplotlib_setup() -> bool:
+            """Check that Matplotlib (Agg) backend and Pillow are available."""
+            log.info("Matplotlib (Agg) and Pillow available for plotting")
+            return True
+
+    except ImportError:
+
+        def matplotlib_setup() -> bool:
+            log.error("Pillow is required for image output but is not installed")
+            return False
+
+except ImportError:
+
+    def matplotlib_setup() -> bool:
+        log.error("Matplotlib is not installed; plotting backend unavailable.")
+        return False
 
 
 # THIS COG WILL BE REWRITTEN/REFACTORED AT SOME POINT (#23)
@@ -61,10 +88,7 @@ class BetterUptime(commands.Cog, BUCommands, BUSlash, BULoop, Utils, metaclass=C
         except Exception:
             pass
 
-        self.bot.loop.create_task(self.kaleido_check())
-
-    async def kaleido_check(self) -> None:
-        self.plot_backend_ready = await kaleido_setup()
+        self.plot_backend_ready = matplotlib_setup()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
@@ -109,7 +133,7 @@ class BetterUptime(commands.Cog, BUCommands, BUSlash, BULoop, Utils, metaclass=C
                 self.__version__,
                 loops=loops,
                 extras={
-                    "Plot backend ready": self.plot_backend_ready,
+                    "Matplotlib backend ready": self.plot_backend_ready,
                     "Ready": self.ready.is_set(),
                     "Config ready": self.conf_ready.is_set(),
                     "Memory usage (cache size)": humanize_bytes(memory_usage),
