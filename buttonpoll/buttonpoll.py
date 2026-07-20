@@ -262,9 +262,9 @@ Choose wisely!`
             except ValueError:
                 try:
                     poll_finish = datetime.datetime.fromtimestamp(
-                        int(args.end), tz=datetime.timezone.utc
+                        int(" ".join(args.end)), tz=datetime.timezone.utc
                     )
-                except ValueError:
+                except (ValueError, OSError, OverflowError):
                     if not args.silent:
                         await ctx.send(
                             "Invalid end time. Must be in the format `YYYY-MM-DD HH:MM:SS` "
