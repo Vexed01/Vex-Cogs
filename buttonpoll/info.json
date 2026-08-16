@@ -13,9 +13,7 @@
     ],
     "name": "ButtonPoll",
     "requirements": [
-        "plotly",
-        "plotly[kaleido]",
-        "pandas"
+        "matplotlib"
     ],
     "short": "A poll in Discord, but with powered by buttons and with a pie chart at the end!",
     "tags": [
