@@ -6,20 +6,16 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import discord
-import pandas as pd
-import plotly.express as px
 from discord.channel import TextChannel
 from discord.enums import ButtonStyle
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
 
 from .components.poll import PollView
 from .vexutils import get_vex_logger
 
 if TYPE_CHECKING:
-    from plotly.graph_objs._figure import Figure
-
     from .buttonpoll import ButtonPoll
-else:
-    from plotly.graph_objs import Figure
 
 
 log = get_vex_logger(__name__)
@@ -336,33 +332,29 @@ class Poll:
 
     async def plot(self) -> discord.File:
         results = await self.get_results()
-        df = pd.DataFrame.from_dict(results, orient="index", columns=["count"])  # type:ignore
-
-        df = df.loc[df["count"] != 0]
+        results = {name: count for name, count in results.items() if count != 0}
 
         def _plot() -> discord.File:
-            """blocking"""
-            fig: Figure = px.pie(
-                df, template="plotly_dark", values="count", names=df.index, title=self.question
+            """Render the chart without a browser runtime."""
+            fig = Figure(figsize=(8, 5), dpi=100)
+            FigureCanvasAgg(fig)
+            fig.patch.set_facecolor("#2f3136")
+            axis = fig.add_subplot(111)
+            axis.set_facecolor("#2f3136")
+            axis.pie(
+                list(results.values()),
+                labels=list(results),
+                autopct="%1.1f%%",
+                startangle=90,
+                textprops={"color": "white", "fontsize": 12},
             )
-            fig.update_traces(textfont_size=18)
+            axis.set_title(self.question, color="white", fontsize=20)
+            axis.axis("equal")
 
-            # set legend font size to 18
-            fig.update_layout(
-                legend=dict(
-                    font=dict(size=18),
-                ),
-                title=dict(
-                    font=dict(size=20),
-                ),
-            )
-
-            bytes = fig.to_image(format="png", width=800, height=500, scale=1)
-            buffer = io.BytesIO(bytes)
+            buffer = io.BytesIO()
+            fig.savefig(buffer, format="png", dpi=100, bbox_inches="tight", facecolor=fig.get_facecolor())
             buffer.seek(0)
-            file = discord.File(buffer, filename="plot.png")
-            buffer.close()
-            return file
+            return discord.File(buffer, filename="plot.png")
 
         return await self.cog.bot.loop.run_in_executor(self.cog.plot_executor, _plot)
 
