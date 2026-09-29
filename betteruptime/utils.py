@@ -89,7 +89,7 @@ class UptimeData:
     # for these two below no need to copy because object is single use
     def daily_connected_percentages(self) -> pd.Series:
         midnight = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-        new = self.daily_connected_data
+        new = self.daily_connected_data.astype(float)
         for date in self.expected_index:
             if date == midnight:
                 continue
@@ -98,7 +98,7 @@ class UptimeData:
             del new[midnight]
         except KeyError:  # dunno how this could happen but it did once
             pass
-        return new.astype(float)
+        return new
 
     def daily_cog_loaded_percentages(self) -> pd.Series:
         midnight = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
